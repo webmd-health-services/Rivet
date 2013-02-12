@@ -1,6 +1,23 @@
 
 function Update-Database
 {
+    <#
+    .SYNOPSIS
+    Applies a set of migrations to the database.
+    
+    .DESCRIPTION
+    By default, applies all unapplied migrations to the database.  You can reverse all migrations with the `Down` switch.
+    
+    .EXAMPLE
+    Update-Database -Path C:\Projects\Pstep\Databases\Pstep\Migrations
+    
+    Applies all un-applied migrations from the `C:\Projects\Pstep\Databases\Pstep\Migrations` directory.
+    
+    .EXAMPLE
+    Update-Database -Path C:\Projects\Pstep\Databases\Pstep\Migrations -Down
+    
+    Reverses all migrations in the `C:\Projects\Pstep\Databases\Pstep\Migrations` directory
+    #>
     param(
         [Parameter(Mandatory=$true)]
         [string[]]
