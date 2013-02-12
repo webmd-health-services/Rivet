@@ -1,5 +1,5 @@
 
-function Invoke-Migration
+function Update-Database
 {
     param(
         [Parameter(Mandatory=$true)]
