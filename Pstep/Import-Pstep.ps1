@@ -23,4 +23,4 @@ if( (Get-Module Pstep) )
     Remove-Module Pstep
 }
 
-Import-Module -Path $PSScriptRoot -ArgumentList $SqlServerName,$Database
+Import-Module $PSScriptRoot -ArgumentList $SqlServerName,$Database
