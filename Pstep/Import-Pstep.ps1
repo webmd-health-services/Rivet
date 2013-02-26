@@ -4,6 +4,7 @@ Imports the Pstep module.
 #>
 [CmdletBinding()]
 param(
+    <#
     [Parameter(Mandatory=$true)]
     [string]
     # The name of the SQL Server to connect to.
@@ -13,6 +14,7 @@ param(
     [string]
     # The name of the database to synchronize/migrate.
     $Database
+    #>
 )
 
 Set-StrictMode -Version Latest
@@ -23,4 +25,4 @@ if( (Get-Module Pstep) )
     Remove-Module Pstep
 }
 
-Import-Module $PSScriptRoot -ArgumentList $SqlServerName,$Database
+Import-Module $PSScriptRoot #-ArgumentList $SqlServerName,$Database

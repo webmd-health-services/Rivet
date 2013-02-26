@@ -1,4 +1,4 @@
-
+<#
 param(
     [Parameter(Mandatory=$true,Position=0)]
     [string]
@@ -10,11 +10,12 @@ param(
     # The name of the database to synchronize.
     $Database
 )
+#>
 
 dir $PSScriptRoot *-*.ps1 |
     Where-Object { $_.BaseName -ne 'Import-Pstep' } |
     ForEach-Object { . $_.FullName }
     
-Initialize-Database
+#Initialize-Database
 
-Export-ModuleMember -Function Update-Database
+Export-ModuleMember -Function New-Migration
