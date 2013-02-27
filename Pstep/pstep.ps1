@@ -84,41 +84,7 @@ Import-Module $PSScriptRoot
 
 try
 {
-    if( $pscmdlet.ParameterSetName -eq 'New' )
-    {
-        New-Migration -Name $Name -Database $Database -Path $Path
-        exit $error.Count
-    }
-
-    $Database | ForEach-Object {
-
-        Connect-Database -SqlServerName $SqlServerName -Database $_ -ConnectionTimeout $ConnectionTimeout
-        
-        try
-        {
-            Initialize-Database
-
-            if( $pscmdlet.ParameterSetName -eq 'Push' )
-            {
-            }
-            elseif( $pscmdlet.ParameterSetName -eq 'PopByCount' )
-            {
-            }
-            elseif( $pscmdlet.ParameterSetName -eq 'PopByName' )
-            {
-            }
-            elseif( $pscmdlet.ParameterSetName -eq 'Redo' )
-            {
-            }
-        }
-        catch
-        {
-        }
-        finally
-        {
-            Disconnect-Database
-        }
-    }
+    Invoke-Pstep @PSBoundParameters
 }
 finally
 {
