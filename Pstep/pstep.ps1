@@ -64,33 +64,65 @@ param(
     [Parameter(Mandatory=$true,ParameterSetName='PopByCount')]
     [Parameter(Mandatory=$true,ParameterSetName='Redo')]
     [string]
-    # The path where database scripts are kept.  Migrations are assumed to be in `$Path\$Database\Migrations`.
-    $Path    
+    # The root directory where all scripts for all databases are kept.  Migrations are assumed to be in `$Path\$Database\Migrations`.
+    $Path,
+    
+    [UInt32]
+    # The time (in seconds) to wait for a connection to open. The default is 15 seconds.
+    $ConnectionTimeout = 15
 )
 
 Set-StrictMode -Version Latest
 $PSScriptRoot = Split-Path -Parent -Path $MyInvocation.MyCommand.Definition
 
-& (Join-Path $PSSCriptRoot Import-Pstep.ps1 -Resolve)
+if( (Get-Module Pstep) )
+{
+    Remove-Module Pstep
+}
+    
+Import-Module $PSScriptRoot
 
-if( $pscmdlet.ParameterSetName -eq 'New' )
+try
 {
-    New-Migration -Name $Name -Database $Database -Path $Path
-    exit $error.Count
-}
+    if( $pscmdlet.ParameterSetName -eq 'New' )
+    {
+        New-Migration -Name $Name -Database $Database -Path $Path
+        exit $error.Count
+    }
 
+    $Database | ForEach-Object {
 
-if( $pscmdlet.ParameterSetName -eq 'Push' )
-{
+        Connect-Database -SqlServerName $SqlServerName -Database $_ -ConnectionTimeout $ConnectionTimeout
+        
+        try
+        {
+            Initialize-Database
+
+            if( $pscmdlet.ParameterSetName -eq 'Push' )
+            {
+            }
+            elseif( $pscmdlet.ParameterSetName -eq 'PopByCount' )
+            {
+            }
+            elseif( $pscmdlet.ParameterSetName -eq 'PopByName' )
+            {
+            }
+            elseif( $pscmdlet.ParameterSetName -eq 'Redo' )
+            {
+            }
+        }
+        catch
+        {
+        }
+        finally
+        {
+            Disconnect-Database
+        }
+    }
 }
-elseif( $pscmdlet.ParameterSetName -eq 'PopByCount' )
+finally
 {
-}
-elseif( $pscmdlet.ParameterSetName -eq 'PopByName' )
-{
-}
-elseif( $pscmdlet.ParameterSetName -eq 'Redo' )
-{
+    Remove-Module Pstep
 }
 
 exit 0

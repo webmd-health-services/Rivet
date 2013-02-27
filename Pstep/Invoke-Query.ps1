@@ -38,106 +38,62 @@ function Invoke-Query
         [Switch]
         $Reader,
         
-        [string]
-        $SqlServerName = $SqlServerName,
-        
-        [string]
-        $Database = $Database,
-        
         [UInt32]
-        $ConnectionTimeout = 10,
-        
-        [UInt32]
-        $CommandTimeout = 10
+        # The time in seconds to wait for the command to execute. The default is 30 seconds.
+        $CommandTimeout = 30
     )
     
-    if( -not $SqlServerName )
-    {
-        Write-Error ('Missing value for SqlServerName parameter.')
-        return
+    $cmd = New-Object Data.SqlClient.SqlCommand ($Query,$Connection)
+    $cmd.CommandTimeout = $CommandTimeout
+    $Parameter.Keys | ForEach-Object {
+        $name = $_
+        $value = $Parameter[$name]
+        
+        [void] $cmd.Parameters.AddWithValue( ('@{0}' -f $name), $value )
     }
     
-    if( -not $Database )
-    {
-        Write-Error ('Missing value for Database parameter.')
-        return
-    }
-    
-    $connString = 'Server={0};Database={1};Integrated Security=True;Connection Timeout={2}' -f $SqlServerName,$Database,$ConnectionTimeout
-    $connection = New-Object Data.SqlClient.SqlConnection ($connString)
-
     try
-    {    
-        Write-Verbose $connString
-        
-        $connection.Open()
-
-        $cmd = New-Object Data.SqlClient.SqlCommand ($Query,$Connection)
-        $cmd.CommandTimeout = $CommandTimeout
-        $Parameter.Keys | ForEach-Object {
-            $name = $_
-            $value = $Parameter[$name]
-            
-            [void] $cmd.Parameters.AddWithValue( ('@{0}' -f $name), $value )
-        }
-        
-        try
-        {
-            if( $pscmdlet.ParameterSetName -eq 'ExecuteNonQuery' )
-            {
-                $cmd.ExecuteNonQuery()
-            }
-            elseif( $pscmdlet.ParameterSetName -eq 'ExecuteScalar' )
-            {
-                $cmd.ExecuteScalar()
-            }
-            elseif( $pscmdlet.ParameterSetName -eq 'ExecuteReader' )
-            {
-                $cmdReader = $cmd.ExecuteReader()
-                try
-                {
-                    if( -not $cmdReader.HasRows )
-                    {
-                        return
-                    }
-                    
-                    while( $cmdReader.Read() )
-                    {
-                        $row = @{ }
-                        for ($i= 0; $i -lt $cmdReader.FieldCount; $i++) 
-                        { 
-                            $row[$cmdReader.GetName( $i )] = $cmdReader.GetValue($i)
-                        }
-                        New-Object PsObject -Property $row
-                    }
-                }
-                finally
-                {
-                    $cmdReader.Close()
-                }
-            }
-            else
-            {
-                Write-Error ('Unknown parameter set {0}.' -f $pscmdlet.ParameterSetName)
-            }
-        }
-        finally
-        {
-            $cmd.Dispose()
-        }
-    }
-    catch
     {
-        $firstException = $_.Exception
-        while( $firstException.InnerException )
+        if( $pscmdlet.ParameterSetName -eq 'ExecuteNonQuery' )
         {
-            $firstException = $firstException.InnerException
+            $cmd.ExecuteNonQuery()
         }
-        Write-Error ('Failed to execute query: {0}' -f $firstException.Message)
-        return
+        elseif( $pscmdlet.ParameterSetName -eq 'ExecuteScalar' )
+        {
+            $cmd.ExecuteScalar()
+        }
+        elseif( $pscmdlet.ParameterSetName -eq 'ExecuteReader' )
+        {
+            $cmdReader = $cmd.ExecuteReader()
+            try
+            {
+                if( -not $cmdReader.HasRows )
+                {
+                    return
+                }
+                
+                while( $cmdReader.Read() )
+                {
+                    $row = @{ }
+                    for ($i= 0; $i -lt $cmdReader.FieldCount; $i++) 
+                    { 
+                        $row[$cmdReader.GetName( $i )] = $cmdReader.GetValue($i)
+                    }
+                    New-Object PsObject -Property $row
+                }
+            }
+            finally
+            {
+                $cmdReader.Close()
+            }
+        }
+        else
+        {
+            Write-Error ('Unknown parameter set {0}.' -f $pscmdlet.ParameterSetName)
+        }
     }
     finally
     {
-        $connection.Close()
+        $cmd.Dispose()
     }
 }
