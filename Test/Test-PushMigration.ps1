@@ -48,7 +48,6 @@ function Test-ShouldPushMigrations
     Assert-NotNull $rows
     Assert-Equal 2 $rows.Count
     $rows | ForEach-Object { Assert-True ($_.AtUtc -lt $createdBefore) }
-    
 }
 
 function Test-ShouldPushSpecificMigrationByName
@@ -103,7 +102,34 @@ function Test-ShouldNotReapplyASpecificMigration
         }
         
     $count = Invoke-Query -Query 'select count(*) from pstep.Migrations' -Connection $connection -AsScalar
-    Assert-Equal 1 $count 'applied too many migrations'}
+    Assert-Equal 1 $count 'applied too many migrations'
+
+}
+
+function Test-ShouldStopPushingMigrationsIfOneGivesAnError
+{
+    Copy-Item -Path (Join-Path $migrationsDir Extras\*.ps1) -Destination $migrationsDir
+    
+    & $pstep -Push -SqlServer $server -Database $database -Path $dbsRoot
+    Assert-LastProcessFailed
+    Assert-True ($error.Count -gt 0)
+    
+    ('TableWithoutColumnsWithColumn','TableWithoutColumns','FourthTable') | ForEach-Object {
+        $query = 'select count(*) from sys.tables where name = ''{0}''' -f $_
+        $tableCount = Invoke-Query -Query $query -Connection $connection -AsScalar
+        Assert-Equal 0 $tableCount ('table {0} created' -f $_)
+    }
+    
+    $query = 'select count(*) from InvokeQuery'
+    $rowCount = Invoke-Query -Query $query -Connection $connection -AsScalar
+    Assert-Equal 0 $tableCount 'insert statements not rolled back'
+
+    ('TableWithoutColumns','FourthTable') | ForEach-Object {
+        $query = 'select count(*) from pstep.Migrations where name = ''{0}''' -f $_
+        $rowCount = Invoke-Query -Query $query -Connection $connection -AsScalar
+        Assert-Equal 0 $rowCount ('migration {0} recorded' -f $_)
+    }
+}
 
 function Assert-Migration
 {

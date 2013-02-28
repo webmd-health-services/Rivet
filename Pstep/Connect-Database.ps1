@@ -23,4 +23,7 @@ function Connect-Database
     Set-Variable -Name 'Connection' -Scope 1 -Value (New-Object Data.SqlClient.SqlConnection ($connString))
 
     $Connection.Open()
+    
+    $Connection |
+        Add-Member -MemberType NoteProperty -Name Transaction -Value $null
 }

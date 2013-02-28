@@ -91,4 +91,4 @@ finally
     Remove-Module Pstep
 }
 
-exit 0
+exit $error.Count

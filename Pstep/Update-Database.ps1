@@ -31,6 +31,8 @@ function Update-Database
         $Pop
     )
     
+    $stopMigrating = $false
+    
     if( $pscmdlet.ParameterSetName -eq 'Push' )
     {
         $Pop = $false
@@ -76,6 +78,13 @@ function Update-Database
     Sort-Object -Property MigrationID -Descending:$Pop |
     ForEach-Object {
         
+        if( $stopMigrating )
+        {
+            return
+        }
+        
+        $migrationInfo = $_
+        
         $pushFunctionPath = 'function:Push-Migration'
         if( (Test-Path -Path $pushFunctionPath) )
         {
@@ -88,7 +97,7 @@ function Update-Database
             Remove-Item -Path $popFuntionPath
         }
         
-        . $_.FullName
+        . $migrationInfo.FullName
         
         
         $action = '+'
@@ -96,37 +105,60 @@ function Update-Database
         {
             $action = '-'
         }
-        $hostOutput = '[{0}] {1}{2}' -f $_.MigrationID,$action,$_.MigrationName
+        $hostOutput = '[{0}] {1}{2}' -f $migrationInfo.MigrationID,$action,$migrationInfo.MigrationName
         
-        if( $Pop )
+        try
         {
-            if( -not (Test-Path $popFuntionPath) )
+            $Connection.Transaction = $Connection.BeginTransaction()
+            if( $Pop )
             {
-                Write-Error ('Push function for migration {0} not found.' -f $_.FullName)
-                return
+                if( -not (Test-Path $popFuntionPath) )
+                {
+                    Write-Error ('Push function for migration {0} not found.' -f $migrationInfo.FullName)
+                    return
+                }
+                
+                Write-Host $hostOutput
+                Pop-Migration
+                Remove-Item -Path $popFuntionPath
+                $auditQuery = "delete from {0} where ID={1}" -f $PstepMigrationsTableFullName,$migrationInfo.MigrationID
+                Invoke-Query -Query $auditQuery
             }
-            
-            Write-Host $hostOutput
-            Pop-Migration
-            Remove-Item -Path $popFuntionPath
-            $auditQuery = "delete from {0} where ID={1}" -f $PstepMigrationsTableFullName,$_.MigrationID
-            Invoke-Query -Query $auditQuery
+            else
+            {
+                if( -not (Test-Path $pushFunctionPath) )
+                {
+                    Write-Error ('Push function for migration {0} not found.' -f $migrationInfo.FullName)
+                    return
+                }
+                
+                Write-Host $hostOutput
+                Push-Migration
+                Remove-Item -Path $pushFunctionPath
+                $auditQuery = "insert into {0} (ID,Name,Who,ComputerName) values ({1},'{2}','{3}','{4}')"
+                $who = '{0}\{1}' -f $env:USERDOMAIN,$env:USERNAME
+                $auditQuery = $auditQuery -f $PstepMigrationsTableFullName,$migrationInfo.MigrationID,$migrationInfo.MigrationName,$who,$env:COMPUTERNAME
+                Invoke-Query -Query $auditQuery
+            }
+            $Connection.Transaction.Commit()
         }
-        else
+        catch
         {
-            if( -not (Test-Path $pushFunctionPath) )
+            $Connection.Transaction.Rollback()
+            
+            $stopMigrating = $true
+            $firstException = $_.Exception
+            while( $firstException.InnerException )
             {
-                Write-Error ('Push function for migration {0} not found.' -f $_.FullName)
-                return
+                $firstException = $firstException.InnerException
             }
             
-            Write-Host $hostOutput
-            Push-Migration
-            Remove-Item -Path $pushFunctionPath
-            $auditQuery = "insert into {0} (ID,Name,Who,ComputerName) values ({1},'{2}','{3}','{4}')"
-            $who = '{0}\{1}' -f $env:USERDOMAIN,$env:USERNAME
-            $auditQuery = $auditQuery -f $PstepMigrationsTableFullName,$_.MigrationID,$_.MigrationName,$who,$env:COMPUTERNAME
-            Invoke-Query -Query $auditQuery
+            Write-Error ('Migration {0} failed{1}: {2}' -f $migrationInfo.FullName,$additionalDetails,$firstException.Message)
+            
+        }
+        finally
+        {
+            $Connection.Transaction = $null
         }
     }
 }
