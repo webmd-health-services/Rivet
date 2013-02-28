@@ -1,15 +1,13 @@
 
 $server = Get-Content (Join-Path $TestDir Server.txt) -TotalCount 1
-$database = 'PstepTest{0}' -f ((get-date).ToString('yyyyMMddHHmmss'))
 
 $connString = 'Server={0};Database=master;Integrated Security=True;' -f $server
 $masterConnection = New-Object Data.SqlClient.SqlConnection ($connString)
 $masterConnection.Open()
 
-$dbsRoot = New-TempDir
-
-Copy-Item -Path (Join-Path $TestDir Databases\PstepTest -Resolve) -Destination $dbsRoot -Recurse
-Rename-Item -Path (Join-Path $dbsRoot PstepTest -Resolve) -NewName $database
+$database = $null 
+$dbsRoot = $null
+$migrationsDir = $null
 
 $pstep = Join-Path $TestDir ..\Pstep\pstep.ps1 -Resolve
 
@@ -34,6 +32,13 @@ function Disconnect-Database
 function New-Database
 {
     Remove-Database
+    
+    Set-Variable -Name 'dbsRoot' -Value (New-TempDir) -Scope 1
+    Set-Variable -Name 'database' -Value ('PstepTest{0}' -f ((get-date).ToString('yyyyMMddHHmmss'))) -Scope 1
+    Set-Variable -Name 'migrationsDir' -Value (Join-Path $dbsRoot "$database\Migrations") -Scope 1
+
+    Copy-Item -Path (Join-Path $TestDir Databases\PstepTest -Resolve) -Destination $dbsRoot -Recurse
+    Rename-Item -Path (Join-Path $dbsRoot PstepTest -Resolve) -NewName $database
     
     $query = @'
     if( not exists( select name from sys.databases where Name = '{0}' ) )
@@ -107,17 +112,23 @@ function Invoke-Query
 
 function Remove-Database
 {
-    $query = @'
-    if( exists( select name from sys.databases where Name = '{0}' ) )
-    begin
-        ALTER DATABASE [{0}] SET  SINGLE_USER WITH ROLLBACK IMMEDIATE
+    if( $database )
+    {
+        $query = @'
+        if( exists( select name from sys.databases where Name = '{0}' ) )
+        begin
+            ALTER DATABASE [{0}] SET  SINGLE_USER WITH ROLLBACK IMMEDIATE
 
-        DROP DATABASE [{0}]
-    end
+            DROP DATABASE [{0}]
+        end
 '@ -f $database
 
-    $cmd = New-Object Data.SqlClient.SqlCommand ($query,$masterConnection)
-    $cmd.ExecuteNonQuery()
-    
+        Invoke-Query -Query $query -Connection $masterConnection
+    }
+        
+    if( $dbsRoot -and (Test-Path -Path $dbsRoot -PathType Container) )
+    {
+        Remove-Item -Path $dbsRoot -Recurse -Force -ErrorAction SilentlyContinue
+    }
 }
 
