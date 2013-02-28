@@ -91,6 +91,11 @@ function Invoke-Pstep
                 return
             }
             
+            if( $Name )
+            {
+                $dbMigrationsPath = Join-Path $dbMigrationsPath ("*_{0}.ps1" -f $Name)
+            }
+            
             if( $pscmdlet.ParameterSetName -eq 'Push' )
             {
                 Update-Database -Path $dbMigrationsPath
