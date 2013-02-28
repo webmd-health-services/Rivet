@@ -101,6 +101,8 @@ function Invoke-Pstep
             }
             elseif( $pscmdlet.ParameterSetName -eq 'Redo' )
             {
+                Update-Database -Pop 1 -Path $dbMigrationsPath
+                Update-Database -Path $dbMigrationsPath
             }
         }
         catch
