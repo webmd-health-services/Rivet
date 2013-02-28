@@ -54,17 +54,17 @@ function New-Migration
 
         @"
 
-        function Push-Migration()
-        {
-            Invoke-Query -Query @'
+function Push-Migration()
+{
+    Invoke-Query -Query @'
 '@
-        }
+}
 
-        function Pop-Migration()
-        {
-            Invoke-Query -Query @'
+function Pop-Migration()
+{
+    Invoke-Query -Query @'
 '@
-        }
+}
 "@ | Out-File -FilePath $migrationPath -Encoding OEM
 
     }

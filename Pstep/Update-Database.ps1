@@ -18,18 +18,25 @@ function Update-Database
     
     Reverses all migrations in the `C:\Projects\Pstep\Databases\Pstep\Migrations` directory
     #>
+    [CmdletBinding(DefaultParameterSetName='Push')]
     param(
         [Parameter(Mandatory=$true)]
         [string[]]
         # The path to the migration.
         $Path,
         
+        [Parameter(Mandatory=$true,ParameterSetName='Pop')]
         [Switch]
-        # Reverse the given migrations.
-        $Down
+        # Reverse the given migration(s).
+        $Pop
     )
     
-    Write-Host ('# {0}.{1}' -f $SqlServerName,$Database)
+    if( $pscmdlet.ParameterSetName -eq 'Push' )
+    {
+        $Pop = $false
+    }
+    
+    Write-Host ('# {0}.{1}' -f $Connection.DataSource,$Connection.Database)
     $Path | ForEach-Object {
         if( (Test-Path $_ -PathType Container) )
         {
@@ -57,7 +64,7 @@ function Update-Database
     } |
     Where-Object { 
         $migrationExists = Test-Migration -ID $_.MigrationID
-        if( $Down )
+        if( $Pop )
         {
             $migrationExists
         }
@@ -66,16 +73,16 @@ function Update-Database
             -not $migrationExists
         }
     } |
-    Sort-Object -Property MigrationID -Descending:$Down |
+    Sort-Object -Property MigrationID -Descending:$Pop |
     ForEach-Object {
         
-        $pushFunctionPath = 'function:Push'
+        $pushFunctionPath = 'function:Push-Migration'
         if( (Test-Path -Path $pushFunctionPath) )
         {
             Remove-Item -Path $pushFunctionPath
         }
         
-        $popFuntionPath = 'function:Pop'
+        $popFuntionPath = 'function:Pop-Migration'
         if( (Test-Path -Path $popFuntionPath) )
         {
             Remove-Item -Path $popFuntionPath
@@ -85,13 +92,13 @@ function Update-Database
         
         
         $action = '+'
-        if( $Down )
+        if( $Pop )
         {
             $action = '-'
         }
         $hostOutput = '[{0}] {1}{2}' -f $_.MigrationID,$action,$_.MigrationName
         
-        if( $Down )
+        if( $Pop )
         {
             if( -not (Test-Path $popFuntionPath) )
             {
@@ -100,9 +107,9 @@ function Update-Database
             }
             
             Write-Host $hostOutput
-            Pop
+            Pop-Migration
             Remove-Item -Path $popFuntionPath
-            $auditQuery = "delete from migrations.Migrations where ID={0}" -f $_.MigrationID
+            $auditQuery = "delete from {0} where ID={1}" -f $PstepMigrationsTableFullName,$_.MigrationID
             Invoke-Query -Query $auditQuery
         }
         else
@@ -114,10 +121,11 @@ function Update-Database
             }
             
             Write-Host $hostOutput
-            Push
+            Push-Migration
             Remove-Item -Path $pushFunctionPath
-            $auditQuery = "insert into migrations.Migrations (ID,Name,Who,ComputerName) values ({0},'{1}','{2}','{3}')"
-            $auditQuery = $auditQuery -f $_.MigrationID,$_.MigrationName,('{0}\{1}' -f $env:USERDOMAIN,$env:USERNAME),$env:COMPUTERNAME
+            $auditQuery = "insert into {0} (ID,Name,Who,ComputerName) values ({1},'{2}','{3}','{4}')"
+            $who = '{0}\{1}' -f $env:USERDOMAIN,$env:USERNAME
+            $auditQuery = $auditQuery -f $PstepMigrationsTableFullName,$_.MigrationID,$_.MigrationName,$who,$env:COMPUTERNAME
             Invoke-Query -Query $auditQuery
         }
     }

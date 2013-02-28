@@ -18,6 +18,7 @@ function Invoke-Query
     
     Executes a query against the non-current database.  Returns the rows as objects.
     #>
+    [CmdletBinding(DefaultParameterSetName='AsReader')]
     param(
         [Parameter(Mandatory=$true)]
         [string]
@@ -26,17 +27,13 @@ function Invoke-Query
         [Hashtable]
         $Parameter = @{ },
         
+        [Parameter(Mandatory=$true,ParameterSetName='ExecuteScalar')]
+        [Switch]
+        $AsScalar,
+        
         [Parameter(Mandatory=$true,ParameterSetName='ExecuteNonQuery')]
         [Switch]
         $NonQuery,
-        
-        [Parameter(Mandatory=$true,ParameterSetName='ExecuteScalar')]
-        [Switch]
-        $Scalar,
-        
-        [Parameter(Mandatory=$true,ParameterSetName='ExecuteReader')]
-        [Switch]
-        $Reader,
         
         [UInt32]
         # The time in seconds to wait for the command to execute. The default is 30 seconds.
@@ -62,7 +59,7 @@ function Invoke-Query
         {
             $cmd.ExecuteScalar()
         }
-        elseif( $pscmdlet.ParameterSetName -eq 'ExecuteReader' )
+        else
         {
             $cmdReader = $cmd.ExecuteReader()
             try
@@ -77,7 +74,12 @@ function Invoke-Query
                     $row = @{ }
                     for ($i= 0; $i -lt $cmdReader.FieldCount; $i++) 
                     { 
-                        $row[$cmdReader.GetName( $i )] = $cmdReader.GetValue($i)
+                        $name = $cmdReader.GetName( $i )
+                        if( -not $name )
+                        {
+                            $name = 'Column{0}' -f $i
+                        }
+                        $row[$name] = $cmdReader.GetValue($i)
                     }
                     New-Object PsObject -Property $row
                 }
@@ -86,10 +88,6 @@ function Invoke-Query
             {
                 $cmdReader.Close()
             }
-        }
-        else
-        {
-            Write-Error ('Unknown parameter set {0}.' -f $pscmdlet.ParameterSetName)
         }
     }
     finally

@@ -19,6 +19,6 @@ function Test-Migration
         $ID
     )
     
-    $migration = Invoke-Query -Query ('select count(*) as Count from migrations.Migrations where ID={0}' -f $ID)
+    $migration = Invoke-Query -Query ('select count(*) as Count from {0} where ID={1}' -f $PstepMigrationsTableFullName,$ID) -AsScalar
     return ( $migration.Count -gt 0 )
 }
