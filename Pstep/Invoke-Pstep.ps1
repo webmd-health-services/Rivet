@@ -110,6 +110,16 @@ function Invoke-Pstep
             {
             }
         }
+        catch
+        {
+            $firstException = $_.Exception
+            while( $firstException.InnerException )
+            {
+                $firstException = $firstException.InnerException
+            }
+            
+            Write-Error ('{0} database migration failed: {1}.' -f $databaseName,$firstException.Message)
+        }
         finally
         {
             Disconnect-Database

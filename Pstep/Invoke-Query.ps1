@@ -40,7 +40,7 @@ function Invoke-Query
         $CommandTimeout = 30
     )
     
-    $cmd = New-Object Data.SqlClient.SqlCommand ($Query,$Connection)
+    $cmd = New-Object Data.SqlClient.SqlCommand ($Query,$Connection,$Connection.Transaction)
     $cmd.CommandTimeout = $CommandTimeout
     $Parameter.Keys | ForEach-Object {
         $name = $_
