@@ -8,26 +8,26 @@ function Initialize-Database
     param(
     )
     
-    $query = 'select count(*) from sys.schemas where name = ''pstep'''
-    $schemaCount = Invoke-Query -Query $query -Scalar
+    $query = 'select count(*) from sys.schemas where name = ''{0}''' -f $PstepSchemaName
+    $schemaCount = Invoke-Query -Query $query -AsScalar
     if( $schemaCount -eq 0 )
     {
-        Write-Host ('Creating schema pstep.')
-        $query = 'create schema [pstep]'
-        Invoke-Query -Query $query -NonQuery
+        Write-Host ('Creating schema {0}.' -f $PstepSchemaName)
+        $query = 'create schema [{0}]' -f $PstepSchemaName
+        Invoke-Query -Query $query
     }
     
     $query = @'
         select count(*) from sys.tables t inner join 
             sys.schemas s on t.schema_id=s.schema_id 
-            where s.name = 'pstep' and t.name = 'Migrations'
-'@
-    $tableCount = Invoke-Query -Query $query -Scalar
+            where s.name = '{0}' and t.name = '{1}'
+'@ -f $PstepSchemaName,$PstepMigrationsTableName
+    $tableCount = Invoke-Query -Query $query -AsScalar
     if( $tableCount -eq 0 )
     {
-        Write-Host ('Creating table pstep.Migrations')
+        Write-Host ('Creating table {0}' -f $PstepMigrationsTableFullName)
         $query = @'
-            create table pstep.Migrations (
+            create table {0} (
                 ID bigint not null,
                 Name nvarchar(50) not null,
                 Who nvarchar(50) not null,
@@ -35,9 +35,9 @@ function Initialize-Database
                 AtUtc datetime not null
             )
 
-            alter table pstep.Migrations add constraint MigrationsPK primary key (ID)
-            alter table pstep.Migrations add constraint AtUtcDefault default (GetUtcDate()) for AtUtc
-'@
-        Invoke-Query -Query $query -NonQuery
+            alter table {0} add constraint MigrationsPK primary key (ID)
+            alter table {0} add constraint AtUtcDefault default (GetUtcDate()) for AtUtc
+'@ -f $PstepMigrationsTableFullName
+        Invoke-Query -Query $query
     }
 }

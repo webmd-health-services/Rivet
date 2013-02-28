@@ -76,14 +76,24 @@ function Invoke-Pstep
 
     $Database | ForEach-Object {
 
-        Connect-Database -SqlServerName $SqlServerName -Database $_ -ConnectionTimeout $ConnectionTimeout
+        $databaseName = $_
+        
+        Connect-Database -SqlServerName $SqlServerName -Database $databaseName -ConnectionTimeout $ConnectionTimeout
         
         try
         {
             Initialize-Database
 
+            $dbMigrationsPath = Join-Path $Path ('{0}\Migrations' -f $databaseName)
+            if( -not (Test-Path -Path $dbMigrationsPath -PathType Container) )
+            {
+                Write-Warning ('{0} database migrations directory ({1}) not found.' -f $databaseName,$dbMigrationsPath)
+                return
+            }
+            
             if( $pscmdlet.ParameterSetName -eq 'Push' )
             {
+                Update-Database -Path $dbMigrationsPath
             }
             elseif( $pscmdlet.ParameterSetName -eq 'PopByCount' )
             {
@@ -94,9 +104,6 @@ function Invoke-Pstep
             elseif( $pscmdlet.ParameterSetName -eq 'Redo' )
             {
             }
-        }
-        catch
-        {
         }
         finally
         {

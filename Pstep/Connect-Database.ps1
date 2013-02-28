@@ -14,11 +14,7 @@ function Connect-Database
         
         [UInt32]
         # The time (in seconds) to wait for a connection to open. The default is 10 seconds.
-        $ConnectionTimeout = 10,
-        
-        [Switch]
-        # Return the connection, too.
-        $PassThru
+        $ConnectionTimeout = 10
     )
     
     Disconnect-Database

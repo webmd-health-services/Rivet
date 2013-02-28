@@ -1,18 +1,8 @@
 
-$server = Get-Content (Join-Path $TestDir Server.txt) -TotalCount 1
-$database = 'PstepTest{0}' -f ((get-date).ToString('yyyyMMddHHmmss'))
-$masterConnection = $null
-$dbConnection = $null
-$dbsRoot = New-TempDir
-$null = New-Item -Path (Join-Path $dbsRoot "$database\Migrations") -ItemType Directory
+. (Join-Path $TestDir Initialize-PstepTest.ps1 -Resolve)
 
 function Setup
 {
-    $connString = 'Server={0};Database=master;Integrated Security=True;' -f $server
-    $masterConnection = New-Object Data.SqlClient.SqlConnection ($connString)
-    $masterConnection.Open()
-
-    Remove-Database
     New-Database
     Assert-True (_Test-Database)
 }
@@ -21,7 +11,7 @@ function TearDown
 {
     Remove-Database
     Assert-False (_Test-Database)
-    $masterConnection.Close()
+
     if( (Get-Module Pstep) )
     {
         Remove-Module Pstep
@@ -30,7 +20,7 @@ function TearDown
 
 function Test-ShouldCreatePstepObjectsInDatabase
 {
-    & (Join-Path $TestDir ..\Pstep\pstep.ps1 -Resolve) -Push -SqlServerName $server -Database $database -Path $dbsRoot
+    & $pstep -Push -SqlServerName $server -Database $database -Path $dbsRoot
     
     $connString = 'Server={0};Database={1};Integrated Security=True;' -f $server,$database
     $connection = New-Object Data.SqlClient.SqlConnection ($connString)
@@ -57,34 +47,6 @@ function Test-ShouldCreatePstepObjectsInDatabase
     {
         $connection.Close()
     }
-}
-
-function New-Database
-{
-    $query = @'
-    if( not exists( select name from sys.databases where Name = '{0}' ) )
-    begin
-        create database [{0}]
-    end
-'@ -f $database
-    $cmd = New-Object Data.SqlClient.SqlCommand ($query,$masterConnection)
-    $cmd.ExecuteNonQuery()
-}
-
-function Remove-Database
-{
-    $query = @'
-    if( exists( select name from sys.databases where Name = '{0}' ) )
-    begin
-        ALTER DATABASE [{0}] SET  SINGLE_USER WITH ROLLBACK IMMEDIATE
-
-        DROP DATABASE [{0}]
-    end
-'@ -f $database
-
-    $cmd = New-Object Data.SqlClient.SqlCommand ($query,$masterConnection)
-    $cmd.ExecuteNonQuery()
-    
 }
 
 function _Test-Database
