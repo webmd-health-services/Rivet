@@ -26,17 +26,15 @@ function Update-Database
         $Path,
         
         [Parameter(Mandatory=$true,ParameterSetName='Pop')]
-        [Switch]
+        [UInt32]
         # Reverse the given migration(s).
         $Pop
     )
     
     $stopMigrating = $false
     
-    if( $pscmdlet.ParameterSetName -eq 'Push' )
-    {
-        $Pop = $false
-    }
+    $popping = ($pscmdlet.ParameterSetName -eq 'Pop')
+    $numPopped = 0
     
     Write-Host ('# {0}.{1}' -f $Connection.DataSource,$Connection.Database)
     $Path | ForEach-Object {
@@ -64,18 +62,22 @@ function Update-Database
             Add-Member -MemberType NoteProperty -Name 'MigrationID' -Value $id -PassThru |
             Add-Member -MemberType NoteProperty -Name 'MigrationName' -Value $name -PassThru
     } |
+    Sort-Object -Property MigrationID -Descending:$popping |
     Where-Object { 
-        $migrationExists = Test-Migration -ID $_.MigrationID
-        if( $Pop )
+        if( $popping )
         {
-            $migrationExists
+            if( $numPopped -ge $Pop )
+            {
+                return $false
+            }
+            $numPopped++
+            Test-Migration -ID $_.MigrationID
         }
         else
         {
-            -not $migrationExists
+            -not (Test-Migration -ID $_.MigrationID)
         }
     } |
-    Sort-Object -Property MigrationID -Descending:$Pop |
     ForEach-Object {
         
         if( $stopMigrating )

@@ -110,6 +110,12 @@ function Invoke-Query
     }
 }
 
+function Measure-Migration
+{
+    $query = 'select count(*) from pstep.Migrations'
+    return Invoke-Query -Query $query -Connection $connection -AsScalar
+}
+
 function Remove-Database
 {
     if( $database )
@@ -132,3 +138,12 @@ function Remove-Database
     }
 }
 
+function _Test-Table
+{
+    param(
+        $Name
+    )
+    $query = 'select count(*) from sys.tables where name = ''{0}''' -f $Name
+    $tableCount = Invoke-Query -Query $query -Connection $connection -AsScalar
+    return ($tableCount -eq 1)
+}

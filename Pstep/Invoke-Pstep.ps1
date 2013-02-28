@@ -13,8 +13,7 @@ function Invoke-Pstep
         # Applies migrations.
         $Push,
         
-        [Parameter(Mandatory=$true,ParameterSetName='PopByName')]
-        [Parameter(Mandatory=$true,ParameterSetName='PopByCount')]
+        [Parameter(Mandatory=$true,ParameterSetName='Pop')]
         [Switch]
         # Reverts migrations.
         $Pop,
@@ -26,20 +25,18 @@ function Invoke-Pstep
 
         [Parameter(Mandatory=$true,ParameterSetName='New',Position=1)]
         [Parameter(ParameterSetName='Push')]
-        [Parameter(Mandatory=$true,ParameterSetName='PopByName')]
         [Parameter(ParameterSetName='Redo')]
         [string]
         # The name of the migration to create/push/pop/redo.  Wildcards accepted when pushing/popping.
         $Name,
         
-        [Parameter(ParameterSetName='PopByCount')]
+        [Parameter(ParameterSetName='Pop',Position=1)]
         [UInt32]
-        # The number of migrations to pop.  Defaults to 1.
+        # The number of migrations to pop. Default
         $Count = 1,
         
         [Parameter(Mandatory=$true,ParameterSetName='Push')]
-        [Parameter(Mandatory=$true,ParameterSetName='PopByName')]
-        [Parameter(Mandatory=$true,ParameterSetName='PopByCount')]
+        [Parameter(Mandatory=$true,ParameterSetName='Pop')]
         [Parameter(Mandatory=$true,ParameterSetName='Redo')]
         [string]
         # The SQL Server to connect to, e.g. `.\Instance`.
@@ -47,8 +44,7 @@ function Invoke-Pstep
         
         [Parameter(Mandatory=$true,ParameterSetName='New',Position=2)]
         [Parameter(Mandatory=$true,ParameterSetName='Push')]
-        [Parameter(Mandatory=$true,ParameterSetName='PopByName')]
-        [Parameter(Mandatory=$true,ParameterSetName='PopByCount')]
+        [Parameter(Mandatory=$true,ParameterSetName='Pop')]
         [Parameter(Mandatory=$true,ParameterSetName='Redo')]
         [string[]]
         # The databases to migrate.
@@ -56,8 +52,7 @@ function Invoke-Pstep
         
         [Parameter(Mandatory=$true,ParameterSetName='New',Position=3)]
         [Parameter(Mandatory=$true,ParameterSetName='Push')]
-        [Parameter(Mandatory=$true,ParameterSetName='PopByName')]
-        [Parameter(Mandatory=$true,ParameterSetName='PopByCount')]
+        [Parameter(Mandatory=$true,ParameterSetName='Pop')]
         [Parameter(Mandatory=$true,ParameterSetName='Redo')]
         [string]
         # The root directory where all scripts for all databases are kept.  Migrations are assumed to be in `$Path\$Database\Migrations`.
@@ -100,11 +95,9 @@ function Invoke-Pstep
             {
                 Update-Database -Path $dbMigrationsPath
             }
-            elseif( $pscmdlet.ParameterSetName -eq 'PopByCount' )
+            elseif( $pscmdlet.ParameterSetName -eq 'Pop' )
             {
-            }
-            elseif( $pscmdlet.ParameterSetName -eq 'PopByName' )
-            {
+                Update-Database -Pop $Count -Path $dbMigrationsPath
             }
             elseif( $pscmdlet.ParameterSetName -eq 'Redo' )
             {
