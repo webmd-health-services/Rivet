@@ -37,7 +37,7 @@ function Remove-UserDefinedFunction
         [Parameter()]
         [string]
         # The schema of the user-defined function.  Default is `dbo`.
-        $Schema,
+        $Schema = 'dbo',
         
         [Switch]
         # Only deletes the user-defined function if it exists.

@@ -26,5 +26,5 @@ function Connect-Database
     
     $Connection |
         Add-Member -MemberType NoteProperty -Name Transaction -Value $null -PassThru |
-        Add-Member -MemberType NoteProperty -Name ScriptsPath -Value $null
+        Add-Member -MemberType NoteProperty -Name ScriptsPath -Value $null 
 }

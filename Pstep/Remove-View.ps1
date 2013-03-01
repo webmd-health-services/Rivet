@@ -37,7 +37,7 @@ function Remove-View
         [Parameter()]
         [string]
         # The schema of the view.  Default is `dbo`.
-        $Schema,
+        $Schema = 'dbo',
         
         [Switch]
         # Only deletes the view if it exists.

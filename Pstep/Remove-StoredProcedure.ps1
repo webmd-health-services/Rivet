@@ -37,7 +37,7 @@ function Remove-StoredProcedure
         [Parameter()]
         [string]
         # The schema of the stored procedure.  Default is `dbo`.
-        $Schema,
+        $Schema = 'dbo',
         
         [Switch]
         # Only deletes the stored procedure if it exists.

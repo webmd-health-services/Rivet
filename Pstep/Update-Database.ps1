@@ -151,14 +151,12 @@ function Update-Database
             $Connection.Transaction.Rollback()
             
             $stopMigrating = $true
-            $firstException = $_.Exception
-            while( $firstException.InnerException )
+            
+            # TODO: Create custom exception for migration query errors so that we can report here when unknown things happen.
+            if( $_.Exception -isnot [ApplicationException] )
             {
-                $firstException = $firstException.InnerException
-            }
-            
-            Write-Error ('Migration {0} failed{1}: {2}' -f $migrationInfo.FullName,$additionalDetails,$firstException.Message)
-            
+                Write-PstepError -Message ('Migration {0} failed' -f $migrationInfo.FullName) -Exception $_.Exception -CallStack (Get-PSCallStack)
+            }            
         }
         finally
         {

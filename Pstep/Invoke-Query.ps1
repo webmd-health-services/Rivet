@@ -97,6 +97,12 @@ filter Invoke-Query
             }
         }
     }
+    catch
+    {
+        $errorMsg = 'Query failed: {0}' -f $Query
+        Write-PstepError -Message $errorMsg -Exception $_.Exception -CallStack (Get-PSCallStack)
+        throw (New-Object ApplicationException 'Migration failed.',$_.Exception)
+    }
     finally
     {
         $cmd.Dispose()
