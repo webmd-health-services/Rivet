@@ -138,12 +138,41 @@ function Remove-Database
     }
 }
 
+function _Test-DBObject
+{
+    param(
+        [Parameter(Mandatory=$true,ParameterSetName='U')]
+        [Switch]
+        $Table,
+        
+        [Parameter(Mandatory=$true,ParameterSetName='P')]
+        [Switch]
+        $StoredProcedure,
+        
+        [Parameter(Mandatory=$true,ParameterSetName='FN')]
+        [Switch]
+        $ScalarFunction,
+        
+        [Parameter(Mandatory=$true,ParameterSetName='V')]
+        [Switch]
+        $View,
+        
+        [Parameter(Mandatory=$true,Position=1)]
+        [string]
+        $Name
+    )
+    
+    
+    $query = "select count(*) from sys.objects where type = '{0}' and name = '{1}'" -f $pscmdlet.ParameterSetName,$Name
+    $objectCount = Invoke-Query -Query $query -Connection $connection -AsScalar
+    return ($objectCount -eq 1)
+}
+
 function _Test-Table
 {
     param(
         $Name
     )
-    $query = 'select count(*) from sys.tables where name = ''{0}''' -f $Name
-    $tableCount = Invoke-Query -Query $query -Connection $connection -AsScalar
-    return ($tableCount -eq 1)
+    return _Test-DBObject -Table -Name $Name
 }
+

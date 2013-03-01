@@ -1,5 +1,5 @@
 
-function Invoke-Query
+filter Invoke-Query
 {
     <#
     .SYNOPSIS
@@ -7,6 +7,8 @@ function Invoke-Query
     
     .DESCRIPTION
     All migrations eventually come down to this method.  It takes raw SQL and executes it against the database.
+    
+    You can pipe parameter-less queries to this method, too!
     
     .EXAMPLE
     Invoke-Query -Query 'create table pstep.Migrations( )'
@@ -17,10 +19,15 @@ function Invoke-Query
     Invoke-Query -Query 'select count(*) from MyTable' -Database MyOtherDatabase
     
     Executes a query against the non-current database.  Returns the rows as objects.
+    
+    .EXAMPLE
+    'select count(*) from sys.tables' | Invoke-Query -AsScalar
+    
+    Demonstrates how queries can be piped into `Invoke-Query`.  Also shows how a result can be returned as a scalar.
     #>
     [CmdletBinding(DefaultParameterSetName='AsReader')]
     param(
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory=$true,ValueFromPipeline=$true)]
         [string]
         $Query,
         
