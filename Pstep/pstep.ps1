@@ -30,7 +30,7 @@ param(
     [Parameter(Mandatory=$true,ParameterSetName='New',Position=1)]
     [Parameter(ParameterSetName='Push',Position=1)]
     [string]
-    # The name of the migration to create/push/pop/redo.  Wildcards accepted when pushing/popping.
+    # The name of the migration to create/push.  Wildcards accepted when pushing/popping.
     $Name,
     
     [Parameter(ParameterSetName='Pop',Position=1)]

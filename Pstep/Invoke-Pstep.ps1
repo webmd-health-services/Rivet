@@ -75,11 +75,13 @@ function Invoke-Pstep
         
         Connect-Database -SqlServerName $SqlServerName -Database $databaseName -ConnectionTimeout $ConnectionTimeout
         
+        $Connection.ScriptsPath = Join-Path $Path $databaseName
+        
         try
         {
             Initialize-Database
 
-            $dbMigrationsPath = Join-Path $Path ('{0}\Migrations' -f $databaseName)
+            $dbMigrationsPath = Join-Path $Connection.ScriptsPath Migrations
             if( -not (Test-Path -Path $dbMigrationsPath -PathType Container) )
             {
                 Write-Warning ('{0} database migrations directory ({1}) not found.' -f $databaseName,$dbMigrationsPath)

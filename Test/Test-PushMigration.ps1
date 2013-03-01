@@ -22,16 +22,20 @@ function Test-ShouldPushMigrations
     $createdAt = (Get-Date).ToUniversalTime()
     & $pstep -Push -SqlServerName $server -Database $database -Path $dbsRoot
     
-    Get-ChildItem $migrationsDir *.ps1 | ForEach-Object {
+    $migrationScripts = Get-ChildItem $migrationsDir *.ps1 
+    
+    $migrationScripts | ForEach-Object {
         
         $id,$name = $_.BaseName -split '_'
         
-        $query = 'select count(*) from sys.tables where name = ''{0}''' -f $name
-        $tableCount = Invoke-Query -Query $query -Connection $connection -AsScalar
-        Assert-Equal 1 $tableCount 'migration not run'
-        
         Assert-Migration -ID $id -Name $name
     }
+    
+    Assert-True (_Test-Table -Name 'InvokeQuery')
+    Assert-True (_Test-Table -Name 'SecondTable')
+    Assert-True (_Test-DBObject -StoredProcedure 'PstepTestSproc')
+    Assert-True (_Test-DBObject -ScalarFunction 'PstepTestFunction') 'user-defined function not created'
+    Assert-True (_Test-DBObject -View 'Migrators') 'view not created'
     
     # Make sure they are run in order.
     $query = 'select name from pstep.Migrations order by AtUtc'
@@ -39,6 +43,7 @@ function Test-ShouldPushMigrations
     Assert-NotNull $rows
     Assert-Equal 'InvokeQuery' $rows[0].Name
     Assert-Equal 'SecondTable' $rows[1].Name
+    Assert-Equal 'CreateObjectsFromFiles' $rows[2].Name
     
     $createdBefore = (Get-Date).ToUniversalTime()
     & $pstep -Push -SqlServerName $server -Database $database -Path $dbsRoot
@@ -46,7 +51,7 @@ function Test-ShouldPushMigrations
     $query = 'select name from pstep.Migrations order by AtUtc'
     $rows = Invoke-Query -Query $query -Connection $connection
     Assert-NotNull $rows
-    Assert-Equal 2 $rows.Count
+    Assert-Equal $migrationScripts.Count $rows.Count
     $rows | ForEach-Object { Assert-True ($_.AtUtc -lt $createdBefore) }
 }
 
