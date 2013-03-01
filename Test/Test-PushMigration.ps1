@@ -36,6 +36,7 @@ function Test-ShouldPushMigrations
     Assert-True (_Test-DBObject -StoredProcedure 'PstepTestSproc')
     Assert-True (_Test-DBObject -ScalarFunction 'PstepTestFunction') 'user-defined function not created'
     Assert-True (_Test-DBObject -View 'Migrators') 'view not created'
+    Assert-True (_Test-DBObject -ScalarFunction 'MiscellaneousObject') 'the miscellaneous function not created'
     
     # Make sure they are run in order.
     $query = 'select name from pstep.Migrations order by AtUtc'

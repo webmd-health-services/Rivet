@@ -112,6 +112,8 @@ function Update-Database
         try
         {
             $Connection.Transaction = $Connection.BeginTransaction()
+            $DBScriptRoot = $Connection.ScriptsPath
+
             if( $Pop )
             {
                 if( -not (Test-Path $popFuntionPath) )
