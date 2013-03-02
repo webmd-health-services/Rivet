@@ -93,6 +93,8 @@ function Invoke-Pstep
                 $dbMigrationsPath = Join-Path $dbMigrationsPath ("*_{0}.ps1" -f $Name)
             }
             
+            Write-Host ('# {0}.{1}' -f $Connection.DataSource,$Connection.Database)
+            
             if( $pscmdlet.ParameterSetName -eq 'Push' )
             {
                 Update-Database -Path $dbMigrationsPath
