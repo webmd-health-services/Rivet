@@ -44,8 +44,6 @@ function Remove-UserDefinedFunction
         $IfExists
     )
     
-    return
-    
     $query = 'DROP FUNCTION [{0}].[{1}]' -f $Schema,$Name
     
     if( $IfExists )
