@@ -9,6 +9,11 @@ function Setup
 
     $connection = Connect-Database
     
+    Get-ChildItem $migrationsDir *.ps1 | 
+        Sort-Object BaseName | 
+        Select-Object -Skip 2 | 
+        Remove-Item
+    
     & $pstep -Push -SqlServerName $server -Database $database -Path $dbsRoot
     
     Assert-Equal 2 (Measure-Migration)
