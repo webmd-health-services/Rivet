@@ -36,7 +36,6 @@ function Update-Database
     $popping = ($pscmdlet.ParameterSetName -eq 'Pop')
     $numPopped = 0
     
-    Write-Host ('# {0}.{1}' -f $Connection.DataSource,$Connection.Database)
     $Path | ForEach-Object {
         if( (Test-Path $_ -PathType Container) )
         {
