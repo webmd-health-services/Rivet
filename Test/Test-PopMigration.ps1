@@ -11,7 +11,8 @@ function Setup
     
     & $pstep -Push -SqlServerName $server -Database $database -Path $dbsRoot
     
-    Assert-Equal 2 (Measure-Migration)
+    $expectedCount = Get-ChildItem $migrationsDir *.ps1 | Measure-Object | Select-Object -ExpandProperty Count
+    Assert-Equal $expectedCount (Measure-Migration)
 }
 
 function TearDown
@@ -27,6 +28,7 @@ function Test-ShouldPopMultipleMigrations
     Assert-True ($migrationCount -gt 1)
     
     & $pstep -Pop $migrationCount -SqlServerName $server -Database $database -Path $dbsRoot
+    Assert-LastProcessSucceeded
     
     Assert-Equal 0 (Measure-Migration)
     
@@ -37,13 +39,21 @@ function Test-ShouldPopMultipleMigrations
         Assert-False (_Test-Table -Name $name)
     }
     
+    Assert-False (_Test-Table -Name 'InvokeQuery')
+    Assert-False (_Test-Table -Name 'SecondTable')
+    Assert-False (_Test-DBObject -StoredProcedure 'PstepTestSproc')
+    Assert-False (_Test-DBObject -ScalarFunction 'PstepTestFunction') 'user-defined function not dropped'
+    Assert-False (_Test-DBObject -View 'Migrators') 'view not dropped'
+    Assert-False (_Test-DBObject -ScalarFunction 'MiscellaneousObject') 'the miscellaneous function not dropped'
 }
 
 function Test-ShouldPopOneMigrationByDefault
 {
+    $totalMigrations = Measure-Migration
+    
     & $pstep -Pop -SqlServerName $server -Database $database -Path $dbsRoot
     
-    Assert-Equal 1 (Measure-Migration)
+    Assert-Equal ($totalMigrations - 1) (Measure-Migration)
     
     $firstMigration = Get-ChildItem $migrationsDir *.ps1 | 
                         Sort-Object BaseName |
@@ -55,20 +65,21 @@ function Test-ShouldPopOneMigrationByDefault
 
 function Test-ShouldNotRePopMigrations
 {
+    $originalMigrationCount = Measure-Migration
     & $pstep -Pop -SqlServerName $server -Database $database -Path $dbsRoot
     Assert-LastProcessSucceeded
     Assert-Equal 0 ($error.Count)
-    Assert-Equal 1 (Measure-Migration)
+    Assert-Equal ($originalMigrationCount - 1) (Measure-Migration)
     
     & $pstep -Pop 2 -SqlServerName $server -Database $database -Path $dbsRoot
     Assert-LastProcessSucceeded
     Assert-Equal 0 ($error.Count)
-    Assert-Equal 0 (Measure-Migration)
+    Assert-Equal ($originalMigrationCount - 2) (Measure-Migration)
     
     & $pstep -Pop 2 -SqlServerName $server -Database $database -Path $dbsRoot
     Assert-LastProcessSucceeded
     Assert-Equal 0 ($error.Count)
-    Assert-Equal 0 (Measure-Migration)
+    Assert-Equal ($originalMigrationCount - 2) (Measure-Migration)
 }
 
 function Test-ShouldSupportPoppingMoreThanAvailableMigrations
@@ -94,7 +105,7 @@ function Test-ShouldStopPoppingMigrationsIfOneGivesAnError
         Assert-True (_Test-Table -Name $_)
     }
 
-    & $pstep -Pop 3 -SqlServer $server -Database $database -Path $dbsRoot
+    & $pstep -Pop (Measure-Migration) -SqlServer $server -Database $database -Path $dbsRoot
     Assert-LastProcessFailed
     
     Assert-True (_Test-Table -Name 'SecondTable')
