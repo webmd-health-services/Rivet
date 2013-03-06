@@ -68,6 +68,8 @@ function Invoke-Pstep
         New-Migration -Name $Name -Database $Database -Path $Path
         exit $error.Count
     }
+    
+    $singleDatabase = ( $Database.Length -eq 1 )
 
     $Database | ForEach-Object {
 
@@ -75,7 +77,14 @@ function Invoke-Pstep
         
         Connect-Database -SqlServerName $SqlServerName -Database $databaseName -ConnectionTimeout $ConnectionTimeout
         
-        $Connection.ScriptsPath = Join-Path $Path $databaseName
+        if( $singleDatabase )
+        {
+            $Connection.ScriptsPath = $Path
+        }
+        else
+        {
+            $Connection.ScriptsPath = Join-Path $Path $databaseName
+        }
         
         try
         {

@@ -5,15 +5,23 @@ $connString = 'Server={0};Database=master;Integrated Security=True;' -f $server
 $masterConnection = New-Object Data.SqlClient.SqlConnection ($connString)
 $masterConnection.Open()
 
-$database = $null 
+$pstepTestDatabase = $null 
+$pstepTestTwoDatabase = $null
 $dbsRoot = $null
-$migrationsDir = $null
+$pstepTestRoot = $null
+$pstepTestTwoRoot = $null
+$pstepTestMigrationsDir = $null
+$pstepTestTwoMigrationsDir = $null
 
 $pstep = Join-Path $TestDir ..\Pstep\pstep.ps1 -Resolve
 
 function Connect-Database
 {
-    $connString = 'Server={0};Database={1};Integrated Security=True;' -f $server,$database
+    param(
+        $Name = 'PstepTest'
+    )
+    $dbName = Get-Variable -Name ('{0}Database' -f $Name) -ValueOnly
+    $connString = 'Server={0};Database={1};Integrated Security=True;' -f $server,$dbName
     $connection = New-Object Data.SqlClient.SqlConnection ($connString)
     $connection.Open()
     return $connection
@@ -31,21 +39,32 @@ function Disconnect-Database
 
 function New-Database
 {
-    Remove-Database
+    param(
+        $Name = 'PstepTest'
+    )
     
-    Set-Variable -Name 'dbsRoot' -Value (New-TempDir) -Scope 1
-    Set-Variable -Name 'database' -Value ('PstepTest{0}' -f ((get-date).ToString('yyyyMMddHHmmss'))) -Scope 1
-    Set-Variable -Name 'migrationsDir' -Value (Join-Path $dbsRoot "$database\Migrations") -Scope 1
+    Remove-Database -Name $Name
+    
+    if( -not $dbsRoot -or -not (Test-Path -Path $dbsRoot -PathType Container) )
+    {
+        Set-Variable -Name 'dbsRoot' -Value (New-TempDir) -Scope 1
+    }
+    
+    $dbName = '{0}{1}' -f $Name,(get-date).ToString('yyyyMMddHHmmss')
+    Set-Variable -Name ('{0}Database' -f $Name) -Value $dbName -Scope 1
+    $dbRoot = Join-Path $dbsRoot $dbName
+    Set-Variable -Name ('{0}Root' -f $Name) -Value $dbRoot -Scope 1
+    Set-Variable -Name ('{0}MigrationsDir' -f $Name) -Value (Join-Path $dbRoot "Migrations") -Scope 1
 
-    Copy-Item -Path (Join-Path $TestDir Databases\PstepTest -Resolve) -Destination $dbsRoot -Recurse
-    Rename-Item -Path (Join-Path $dbsRoot PstepTest -Resolve) -NewName $database
+    Copy-Item -Path (Join-Path $TestDir Databases\$Name -Resolve) -Destination $dbsRoot -Recurse
+    Rename-Item -Path (Join-Path $dbsRoot $Name -Resolve) -NewName $dbName
     
     $query = @'
     if( not exists( select name from sys.databases where Name = '{0}' ) )
     begin
         create database [{0}]
     end
-'@ -f $database
+'@ -f $dbName
     $cmd = New-Object Data.SqlClient.SqlCommand ($query,$masterConnection)
     $cmd.ExecuteNonQuery()
 }
@@ -112,13 +131,22 @@ function Invoke-Query
 
 function Measure-Migration
 {
+    param(
+        $Connection = $connection
+    )
+    
     $query = 'select count(*) from pstep.Migrations'
     return Invoke-Query -Query $query -Connection $connection -AsScalar
 }
 
 function Remove-Database
 {
-    if( $database )
+    param(
+        $Name = 'PstepTest'
+    )
+    
+    $dbName = Get-Variable -Name ('{0}Database' -f $Name) -ValueOnly
+    if( $dbName )
     {
         $query = @'
         if( exists( select name from sys.databases where Name = '{0}' ) )
@@ -127,12 +155,18 @@ function Remove-Database
 
             DROP DATABASE [{0}]
         end
-'@ -f $database
+'@ -f $dbName
 
         Invoke-Query -Query $query -Connection $masterConnection
     }
-        
-    if( $dbsRoot -and (Test-Path -Path $dbsRoot -PathType Container) )
+    
+    $dbRoot = Get-Variable -Name ('{0}Root' -f $Name) -ValueOnly
+    if( $dbRoot -and (Test-Path -Path $dbRoot -PathType Container) )
+    {
+        Remove-Item -Path $dbRoot -Recurse -Force -ErrorAction SilentlyContinue
+    }
+    
+    if( $dbsRoot -and (Test-Path -Path $dbsRoot -PathType Container) -and -not (Get-ChildItem -Path $dbsRoot) )
     {
         Remove-Item -Path $dbsRoot -Recurse -Force -ErrorAction SilentlyContinue
     }

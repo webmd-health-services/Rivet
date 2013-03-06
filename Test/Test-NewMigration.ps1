@@ -17,17 +17,18 @@ function TearDown
 
 function Test-ShouldCreateOneMigration
 {
-    & $pstepPath -New -Name 'ShouldCreateOneMigration' -Database One -Path $dbsRoot
+    $pstepTestRoot = Join-Path $dbsRoot PstepTest
+
+    & $pstepPath -New -Name 'ShouldCreateOneMigration' -Database PstepTest -Path $pstepTestRoot
     Assert-True $?
     Assert-LastProcessSucceeded
     
-    $dbRoot = Join-Path $dbsRoot One
-    Assert-DirectoryExists $dbRoot
-    $migrationRoot = Join-Path $dbRoot Migrations
+    Assert-DirectoryExists $pstepTestRoot
+    $migrationRoot = Join-Path $pstepTestRoot Migrations
     Assert-DirectoryExists $migrationRoot
     
     $id = (Get-Date).ToString('yyyyMMddHHmm')
-    $migrationPath = Join-Path $dbsRoot "One\Migrations\$($id)??_ShouldCreateOneMigration.ps1"
+    $migrationPath = Join-Path $pstepTestRoot "Migrations\$($id)??_ShouldCreateOneMigration.ps1"
     Assert-True (Test-Path -Path $migrationPath -PathType Leaf)
     $migration = Get-Item -Path $migrationPath
     Assert-NotNull $migration
@@ -38,11 +39,11 @@ function Test-ShouldCreateMultipleMigrations
 {
     $id = (Get-Date).ToString('yyyyMMddHHmm')
 
-    & $pstepPath -New -Name 'ShouldCreateMultipleMigrations' -Database One,Two -Path $dbsRoot
+    & $pstepPath -New -Name 'ShouldCreateMultipleMigrations' -Database PstepTest,PstepTest2 -Path $dbsRoot
     Assert-True $?
     Assert-LastProcessSucceeded
     
-    ('One','Two') | ForEach-Object {
+    ('PstepTest','PstepTest2') | ForEach-Object {
         
         $dbRoot = Join-Path $dbsRoot $_
         Assert-DirectoryExists $dbRoot
