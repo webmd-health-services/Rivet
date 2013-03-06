@@ -58,7 +58,7 @@ param(
     [Parameter(Mandatory=$true,ParameterSetName='Pop')]
     [Parameter(Mandatory=$true,ParameterSetName='Redo')]
     [string]
-    # The root directory where all scripts for all databases are kept.  Migrations are assumed to be in `$Path\$Database\Migrations`.
+    # The directory where the database scripts are kept.  If `$Database` is singular, migrations are assumed to be in `$Path\$Database\Migrations`.  If `$Database` contains multiple items, `$Path` is assumed to point to a directory which contains directories for each database (e.g. `$Path\$Database[$i]`) and migrations are assumed to be in `$Path\$Database[$i]\Migrations`.
     $Path,
     
     [UInt32]

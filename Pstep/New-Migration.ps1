@@ -31,8 +31,19 @@ function New-Migration
         $null = New-Item -Path $Path -ItemType Directory
     }
     
+    $singleDatabase = ($Database.Length -eq 1)
+    
     $Database | ForEach-Object {
-        $dbRootPath = Join-Path $Path $_
+    
+        if( $singleDatabase )
+        {
+            $dbRootPath = $Path
+        }
+        else
+        {
+            $dbRootPath = Join-Path $Path $_
+        }
+        
         if( -not (Test-Path -Path $dbRootPath -PathType Container) )
         {
             Write-Host ('Creating {0} database directory {1}.' -f $_,$dbRootPath)

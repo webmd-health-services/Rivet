@@ -20,9 +20,9 @@ function TearDown
 
 function Test-ShouldCreatePstepObjectsInDatabase
 {
-    & $pstep -Push -SqlServerName $server -Database $database -Path $dbsRoot
+    & $pstep -Push -SqlServerName $server -Database $pstepTestDatabase -Path $dbsRoot
     
-    $connString = 'Server={0};Database={1};Integrated Security=True;' -f $server,$database
+    $connString = 'Server={0};Database={1};Integrated Security=True;' -f $server,$pstepTestDatabase
     $connection = New-Object Data.SqlClient.SqlConnection ($connString)
     $connection.Open()
     
@@ -53,7 +53,7 @@ function _Test-Database
 {
     $query = @'
     select count(*) Count from sys.databases where Name = '{0}'
-'@ -f $database
+'@ -f $pstepTestDatabase
 
     $cmd = New-Object Data.SqlClient.SqlCommand ($query,$masterConnection)
     $dbCount = $cmd.ExecuteScalar()

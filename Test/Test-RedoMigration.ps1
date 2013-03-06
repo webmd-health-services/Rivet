@@ -9,12 +9,12 @@ function Setup
 
     $connection = Connect-Database
     
-    Get-ChildItem $migrationsDir *.ps1 | 
+    Get-ChildItem $pstepTestMigrationsDir *.ps1 | 
         Sort-Object BaseName | 
         Select-Object -Skip 2 | 
         Remove-Item
     
-    & $pstep -Push -SqlServerName $server -Database $database -Path $dbsRoot
+    & $pstep -Push -SqlServerName $server -Database $pstepTestDatabase -Path $pstepTestRoot
     
     Assert-Equal 2 (Measure-Migration)
 }
@@ -31,7 +31,7 @@ function Test-ShouldPopThenPushTopMigration
     $createdAt = Invoke-Query -Query 'select create_date from sys.tables where name = ''SecondTable''' -Connection $connection -AsScalar
     $migratedAt = Invoke-Query -Query 'select AtUtc from pstep.Migrations where name = ''SecondTable''' -Connection $connection -AsScalar
     
-    & $pstep -Redo -SqlServerName $server -Database $database -Path $dbsRoot
+    & $pstep -Redo -SqlServerName $server -Database $pstepTestDatabase -Path $pstepTestRoot
     
     $redoCreatedAt = Invoke-Query -Query 'select create_date from sys.tables where name = ''SecondTable''' -Connection $connection -AsScalar
     Assert-NotNull $redoCreatedAt

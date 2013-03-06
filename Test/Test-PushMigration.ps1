@@ -20,9 +20,9 @@ function TearDown
 function Test-ShouldPushMigrations
 {
     $createdAt = (Get-Date).ToUniversalTime()
-    & $pstep -Push -SqlServerName $server -Database $database -Path $dbsRoot
+    & $pstep -Push -SqlServerName $server -Database $pstepTestDatabase -Path $pstepTestRoot
     
-    $migrationScripts = Get-ChildItem $migrationsDir *.ps1 
+    $migrationScripts = Get-ChildItem $pstepTestMigrationsDir *.ps1 
     
     $migrationScripts | ForEach-Object {
         
@@ -47,7 +47,7 @@ function Test-ShouldPushMigrations
     Assert-Equal 'CreateObjectsFromFiles' $rows[2].Name
     
     $createdBefore = (Get-Date).ToUniversalTime()
-    & $pstep -Push -SqlServerName $server -Database $database -Path $dbsRoot
+    & $pstep -Push -SqlServerName $server -Database $pstepTestDatabase -Path $pstepTestRoot
    
     $query = 'select name from pstep.Migrations order by AtUtc'
     $rows = Invoke-Query -Query $query -Connection $connection
@@ -56,15 +56,35 @@ function Test-ShouldPushMigrations
     $rows | ForEach-Object { Assert-True ($_.AtUtc -lt $createdBefore) }
 }
 
+function Test-ShouldPushMigrationsForMultipleDBs
+{
+    New-Database -Name PstepTestTwo
+    
+    $twoConnection = Connect-Database -Name PstepTestTwo
+    
+    try
+    {
+        & $pstep -Push -SqlServerName $server -Database $pstepTestDatabase,$pstepTestTwoDatabase -Path $dbsRoot
+        
+        Assert-Migration -Path $pstepTestMigrationsDir 
+        Assert-Migration -Path $pstepTestTwoMigrationsDir -Connection $twoConnection
+    }
+    finally
+    {
+        Remove-Database -Name PstepTestTwo
+        Disconnect-Database -Connection $twoConnection
+    }
+}
+
 function Test-ShouldPushSpecificMigrationByName
 {
     $createdAfter = (Get-Date).ToUniversalTime()
-    Get-ChildItem $migrationsDir *.ps1 | 
+    Get-ChildItem $pstepTestMigrationsDir *.ps1 | 
         Select-Object -First 1 |
         ForEach-Object {
             $id,$name = $_.BaseName -split '_'
             
-            & $pstep -Push -Name $name -SqlServerName $server -Database $database -Path $dbsRoot
+            & $pstep -Push -Name $name -SqlServerName $server -Database $pstepTestDatabase -Path $pstepTestRoot
             
             Assert-Migration -ID $id -Name $name -CreatedAfter $CreatedAfter
         }
@@ -77,9 +97,9 @@ function Test-ShouldPushSpecificMigrationWithWildcard
 {
     $createdAfter = (Get-Date).ToUniversalTime()
     
-    & $pstep -Push -Name 'Invoke*' -SqlServerName $server -Database $database -Path $dbsRoot
+    & $pstep -Push -Name 'Invoke*' -SqlServerName $server -Database $pstepTestDatabase -Path $pstepTestRoot
     
-    $migration = Get-ChildItem $migrationsDir *_Invoke*.ps1
+    $migration = Get-ChildItem $pstepTestMigrationsDir *_Invoke*.ps1
     $id,$name = $migration.BaseName -split '_'
     Assert-Migration -ID $id -Name $name -CreatedAfter $CreatedAfter
         
@@ -90,18 +110,18 @@ function Test-ShouldPushSpecificMigrationWithWildcard
 function Test-ShouldNotReapplyASpecificMigration
 {
     $createdAfter = (Get-Date).ToUniversalTime()
-    Get-ChildItem $migrationsDir *.ps1 | 
+    Get-ChildItem $pstepTestMigrationsDir *.ps1 | 
         Select-Object -First 1 |
         ForEach-Object {
             $id,$name = $_.BaseName -split '_'
             
-            & $pstep -Push -Name $name -SqlServerName $server -Database $database -Path $dbsRoot
+            & $pstep -Push -Name $name -SqlServerName $server -Database $pstepTestDatabase -Path $pstepTestRoot
             
             Assert-Migration -ID $id -Name $name -CreatedAfter $CreatedAfter
             
             $createdBefore = (Get-Date).ToUniversalTime()
             
-            & $pstep -Push -Name $name -SqlServerName $server -Database $database -Path $dbsRoot
+            & $pstep -Push -Name $name -SqlServerName $server -Database $pstepTestDatabase -Path $pstepTestRoot
 
             $row = Assert-Migration -ID $id -Name $name -CreatedAfter $CreatedAfter -PassThru
             Assert-True ($row.AtUtc -lt $createdBefore)
@@ -114,9 +134,9 @@ function Test-ShouldNotReapplyASpecificMigration
 
 function Test-ShouldStopPushingMigrationsIfOneGivesAnError
 {
-    Copy-Item -Path (Join-Path $migrationsDir Extras\*.ps1) -Destination $migrationsDir
+    Copy-Item -Path (Join-Path $pstepTestMigrationsDir Extras\*.ps1) -Destination $pstepTestMigrationsDir
     
-    & $pstep -Push -SqlServer $server -Database $database -Path $dbsRoot
+    & $pstep -Push -SqlServer $server -Database $pstepTestDatabase -Path $pstepTestRoot
     Assert-LastProcessFailed
     Assert-True ($error.Count -gt 0)
     
@@ -140,16 +160,42 @@ function Test-ShouldStopPushingMigrationsIfOneGivesAnError
 function Assert-Migration
 {
     param(
+        [Parameter(ParameterSetName='ByID')]
         $ID,
+
+        [Parameter(ParameterSetName='ByID')]
         $Name,
+
+        [Parameter(ParameterSetName='ByID')]
         $CreatedAfter,
         
+        [Parameter(ParameterSetName='ByPath')]
+        $Path,
+        
         [Switch]
-        $PassThru
+        $PassThru,
+        
+        $Connection = $connection
     )
     
+    if( $pscmdlet.ParameterSetName -eq 'ByPath' )
+    {
+        $count = 0
+        Get-ChildItem $Path *.ps1 |
+            Select-Object -ExpandProperty BaseName |
+            Where-Object { $_ -match '^(\d+)_(.*)$' } |
+            ForEach-Object { 
+                $count++
+                $id  = $matches[1] 
+                $name = $matches[2]
+                Assert-Migration -ID $id -Name $name -Connection $Connection
+            }
+        Assert-True ($count -gt 0)
+        return
+    }
+    
     $query = 'select * from pstep.Migrations where name = ''{0}''' -f $Name
-    $migrationRow = Invoke-Query -Query $query -Connection $connection
+    $migrationRow = Invoke-Query -Query $query -Connection $Connection
     Assert-IsNotNull $migrationRow
     Assert-True ($migrationRow -is [PsObject]) 'not a PsObject'
     Assert-Equal $id $migrationRow.ID
