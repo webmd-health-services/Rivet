@@ -59,12 +59,15 @@ LONG DESCRIPTION
 
         Invoke-SqlScript -Path <string>
 
-    You should construct the value of the `Path` parameter using the special 
-    `$DBScriptRoot` variable, which points to the root of a database's scripts 
-    directory.
+    If the `Path` argument is a relative path, the full path to the SQL script
+    is resolved from the directory of the migration script.  For example, if
+    your database's migrations directory is 
+    `C:\Projects\Pstep\Databases\PstepTest\Migrations`, this path:
 
-        $scriptPath = Join-Path $DBScriptRoot Miscellaneous\CreateMyCustomObject.sql
-        Invoke-SqlScript -Path $scriptPath
+        Invoke-SqlScript -Path ..\Miscellaneous\CreateDesertedIsland.sql
+
+    would resolve to 
+	`C:\Projects\Pstep\Databases\PstepTest\Miscellaneous\CreatedDesertedIsland.sql`.
 
   Raw SQL
 

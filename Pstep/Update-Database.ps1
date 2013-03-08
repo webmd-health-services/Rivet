@@ -112,6 +112,7 @@ function Update-Database
         {
             $Connection.Transaction = $Connection.BeginTransaction()
             $DBScriptRoot = $Connection.ScriptsPath
+            $DBMigrationsRoot = Join-Path $DBScriptRoot Migrations
 
             if( $Pop )
             {
