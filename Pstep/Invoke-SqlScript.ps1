@@ -31,6 +31,11 @@ function Invoke-SqlScript
         $invokeQueryArgs.AsNonQuery = $true
     }
     
+    if( -not ([IO.Path]::IsPathRooted( $Path )) )
+    {
+        $Path = Join-Path $DBMigrationsRoot $Path
+    }
+    
     $currentQuery = New-Object Text.StringBuilder
     $inComment = $false
     $commentCouldBeStarting = $false

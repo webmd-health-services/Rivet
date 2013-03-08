@@ -21,6 +21,7 @@ function Test-ShouldPushMigrations
 {
     $createdAt = (Get-Date).ToUniversalTime()
     & $pstep -Push -SqlServerName $server -Database $pstepTestDatabase -Path $pstepTestRoot
+    Assert-LastProcessSucceeded
     
     $migrationScripts = Get-ChildItem $pstepTestMigrationsDir *.ps1 
     
@@ -37,6 +38,7 @@ function Test-ShouldPushMigrations
     Assert-True (_Test-DBObject -ScalarFunction 'PstepTestFunction') 'user-defined function not created'
     Assert-True (_Test-DBObject -View 'Migrators') 'view not created'
     Assert-True (_Test-DBObject -ScalarFunction 'MiscellaneousObject') 'the miscellaneous function not created'
+    Assert-True (_Test-DBObject -ScalarFunction 'ObjectMadeWithRelativePath') 'object specified with relative path to Invoke-SqlScript not created'
     
     # Make sure they are run in order.
     $query = 'select name from pstep.Migrations order by AtUtc'
