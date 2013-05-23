@@ -73,14 +73,14 @@ function Invoke-SqlScript
                     if( $currentQuery.Length -gt 0 )
                     {
                         $currentQuery.ToString()
-                        [void] $currentQuery.Length = 0
+                        $currentQuery.Length = 0
                     }
                 }
                 else
                 {
-                    [void] $currentQuery.Append( $currentLine )
+                    $null = $currentQuery.Append( $currentLine )
                 }
-                [void] $currentLine.Length = 0
+                $currentLine.Length = 0
             }
             
         } |
