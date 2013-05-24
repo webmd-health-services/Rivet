@@ -289,7 +289,7 @@ function Add-Column
         [Parameter(ParameterSetName='AsTimestamp')]
         [Parameter(ParameterSetName='AsHierarchyID')]
         [Parameter(ParameterSetName='ExplicitDataType')]
-        [string]
+        [Object]
         # The default column value.
         $Default,
 
@@ -353,7 +353,12 @@ function Add-Column
         $columnDefinition = '{0} not null' -f $columnDefinition
     }
 
-    Write-Host ('                   {0}.{1} + {2}' -f $TableSchema,$TableName,$columnDefinition)
+    $dfConstraintClause = ''
+    if( $Default )
+    {
+        $dfConstraintName = New-DefaultConstraintName -ColumnName $Name -TableName $TableName -TableSchema $TableSchema
+        $dfConstraintClause = 'constraint {0} default {1}' -f $dfConstraintName,$Default
+    }
 
     $descriptionQuery = ''
     if( $Description )
@@ -368,9 +373,11 @@ function Add-Column
 '@ -f $Description,$TableSchema,$TableName,$Name
     }
     $query = @'
-    alter table [{0}].[{1}] add {2}
+    alter table [{0}].[{1}] add {2} {3}
 
-    {3}
-'@ -f $TableSchema,$TableName,$columnDefinition,$descriptionQuery
+    {4}
+'@ -f $TableSchema,$TableName,$columnDefinition,$dfConstraintClause,$descriptionQuery
+
+    Write-Host ('                   {0}.{1} + {2}' -f $TableSchema,$TableName,$columnDefinition)
     Invoke-Query -Query $query
 }

@@ -36,5 +36,7 @@ $MasterConnection.Open()
 dir $PSScriptRoot *-*.ps1 |
     Where-Object { $_.BaseName -ne 'Import-PstepTest' } |
     ForEach-Object { . $_.FullName }
+
+. (Join-Path $PSScriptRoot '..\..\Pstep\New-DefaultConstraintName.ps1')
     
 Export-ModuleMember -Function * -Alias * -Variable *

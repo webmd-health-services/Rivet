@@ -11,20 +11,20 @@ function Push-Migration()
                         TableName = 'AddColumnDefaultsNotNull'
                    }
 
-    Add-Column -Name varchar -Varchar -Size 20 -NotNull -Default 'varchar' -Description 'varchar(20) not null' @commonArgs
-    Add-Column varcharmax -Varchar -NotNull -Default 'varcharmax' -Description 'varchar(max) not null' @commonArgs
-    Add-Column char -Char 10 -NotNull -Default 'char' -Description 'char(10) not null' @commonArgs
-    Add-Column nchar -Char 35 -Unicode -NotNull -Default 'nchar' -Description 'nchar(35) not null' @commonArgs
-    Add-Column nvarchar -VarChar 30 -Unicode -NotNull -Default 'nvarchar' -Description 'nvarchar(30) not null' @commonArgs
-    Add-Column nvarcharmax -VarChar -Unicode -NotNull -Default 'nvarcharmax' -Description 'nvarchar(max) not null' @commonArgs
-    Add-Column binary -Binary 40 -NotNull -Default 'binary' -Description 'binary(40) not null' @commonArgs
-    Add-Column varbinary -VarBinary 45 -NotNull -Default 'varbinary' -Description 'varbinary(45) not null' @commonArgs
-    Add-Column varbinarymax -VarBinary -NotNull -Default 'varbinarymax' -Description 'varbinary(max) not null' @commonArgs
+    Add-Column -Name varchar -Varchar -Size 20 -NotNull -Default "'varchar'" -Description 'varchar(20) not null' @commonArgs
+    Add-Column varcharmax -Varchar -NotNull -Default "'varcharmax'" -Description 'varchar(max) not null' @commonArgs
+    Add-Column char -Char 10 -NotNull -Default "'char'" -Description 'char(10) not null' @commonArgs
+    Add-Column nchar -Char 35 -Unicode -NotNull -Default "'nchar'" -Description 'nchar(35) not null' @commonArgs
+    Add-Column nvarchar -VarChar 30 -Unicode -NotNull -Default "'nvarchar'" -Description 'nvarchar(30) not null' @commonArgs
+    Add-Column nvarcharmax -VarChar -Unicode -NotNull -Default "'nvarcharmax'" -Description 'nvarchar(max) not null' @commonArgs
+    Add-Column binary -Binary 40 -NotNull -Default 1 -Description 'binary(40) not null' @commonArgs
+    Add-Column varbinary -VarBinary 45 -NotNull -Default 2 -Description 'varbinary(45) not null' @commonArgs
+    Add-Column varbinarymax -VarBinary -NotNull -Default 3 -Description 'varbinary(max) not null' @commonArgs
     Add-Column bigint -BigInt -NotNull -Default ([int64]::MaxValue) -Description 'bigint not null' @commonArgs
     Add-Column int -Int -NotNull -Default ([int]::MaxValue) -Description 'int not null' @commonArgs
     Add-Column smallint -SmallInt -NotNull -Default ([int16]::MaxValue) -Description 'smallint not null' @commonArgs
     Add-Column tinyint -TinyInt -NotNull -Default ([byte]::MaxValue) -Description 'tinyint not null' @commonArgs
-    Add-Column numeric -Numeric 1 -NotNull -Default '1.00' -Description 'numeric(1) not null' @commonArgs
+    Add-Column numeric -Numeric 1 -NotNull -Default '1.11' -Description 'numeric(1) not null' @commonArgs
     Add-Column numericwithscale -Numeric 2 2 -NotNull -Default '2.22' -Description 'numeric(2,2) not null' @commonArgs
     Add-Column decimal -Decimal 4 -NotNull -Default '3.33' -Description 'decimal(4) not null' @commonArgs
     Add-Column decimalwithscale -Decimal 5 5 -NotNull -Default '4.44' -Description 'decimal(5,5) not null' @commonArgs
@@ -41,8 +41,8 @@ function Push-Migration()
     Add-Column smalldatetime 'smalldatetime' -NotNull -Default 'getdate()' -Description 'smalldatetime not null' @commonArgs
     Add-Column time -Time -NotNull -Default 'getdate()' -Description 'time not null' @commonArgs
     Add-Column uniqueidentifier -UniqueIdentifier -NotNull -Default 'newid()' -Description 'uniqueidentifier not null' @commonArgs
-    Add-Column xml -Xml -NotNull -Default '<empty />' -Description 'xml not null' @commonArgs
-    Add-Column sql_variant -SqlVariant -NotNull -Default 'sql_variant' -Description 'sql_variant not null' @commonArgs
+    Add-Column xml -Xml -NotNull -Default "'<empty />'" -Description 'xml not null' @commonArgs
+    Add-Column sql_variant -SqlVariant -NotNull -Default "'sql_variant'" -Description 'sql_variant not null' @commonArgs
     Add-Column hierarchyid -HierarchyID -NotNull -Default '0x11' -Description 'hierarchyid not null' @commonArgs
 }
 
