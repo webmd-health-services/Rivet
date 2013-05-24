@@ -128,3 +128,12 @@ function Test-ShouldCreateRowGuidCol
 
     Assert-Column -Name 'uniqueidentiferasrowguidcol' 'uniqueidentifier' -RowGuidCol -TableName 'WithRowGuidCol'
 }
+
+function Test-ShouldSupportXmlDocument
+{
+    Invoke-Pstep -Push 'AddColumnXmlDocument'
+
+    Assert-Table 'WithXmlDocument'
+
+    Assert-Column -Name 'xmlasdocument' 'xml' -Document -TableName 'WithXmlDocument'
+}

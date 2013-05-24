@@ -37,6 +37,9 @@ function Assert-Column
         [Switch]
         $RowGuidCol,
 
+        [Switch]
+        $Document,
+
         [Object]
         $Default,
 
@@ -130,5 +133,10 @@ function Assert-Column
     if( $RowGuidCol )
     {
         Assert-True $column.is_rowguidcol ('column {0} rowguidcol flag not set' -f $Name)
+    }
+
+    if( $Document )
+    {
+        Assert-True $column.is_xml_document ('column {0} not an xml document' -f $Name)
     }
 }
