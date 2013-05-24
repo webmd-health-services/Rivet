@@ -421,6 +421,10 @@ function Add-Column
     if( $PSCmdlet.ParameterSetName -like '*Identity' )
     {
         $columnDefinition = '{0} identity ({1},{2})' -f $columnDefinition,$Seed,$Increment
+        if( $PSBoundParameters.ContainsKey('NotForReplication') )
+        {
+            $columnDefinition = '{0} not for replication' -f $columnDefinition
+        }
     }
     elseif( $PSBoundParameters.ContainsKey('NotNull') )
     {

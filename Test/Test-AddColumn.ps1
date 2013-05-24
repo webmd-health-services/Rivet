@@ -202,3 +202,28 @@ function Test-ShouldAddSparseColumns
     Assert-Column -Name 'uniqueidentifier' 'uniqueidentifier' -Sparse -Description 'uniqueidentifier sparse' @commonArgs
     Assert-Column -Name 'hierarchyid' 'hierarchyid' -Sparse -Description 'hierarchyid sparse' @commonArgs
 }
+
+
+function Test-ShouldCreateIdentitiesNotForReplication
+{
+    Invoke-Pstep -Push 'AddColumnNotForReplication'
+
+    Assert-Table 'BigIntIdentity'
+    Assert-Column -Name 'bigintidentity' 'bigint' -Seed 1 -Increment 2 -NotNull -NotForReplication  -TableName 'BigIntIdentity'
+
+    Assert-Table 'IntIdentity'
+    Assert-Column -Name 'intidentity' 'int' -Seed 3 -Increment 5 -NotNull -NotForReplication  -TableName 'IntIdentity'
+
+    Assert-Table 'SmallIntIdentity'
+    Assert-Column -Name 'smallintidentity' 'smallint' -Seed 7 -Increment 11 -NotNull -NotForReplication  -TableName 'SmallIntIdentity'
+
+    Assert-Table 'TinyIntIdentity'
+    Assert-Column -Name 'tinyintidentity' 'tinyint' -Seed 13 -Increment 17 -NotNull -NotForReplication  -TableName 'TinyIntIdentity'
+
+    Assert-Table 'NumericIdentity'
+    Assert-Column -Name 'numericidentity' 'numeric' -Size 5 -Seed 23 -Increment 29 -NotNull -NotForReplication  -TableName 'NumericIdentity'
+
+    Assert-Table 'DecimalIdentity'
+    Assert-Column -Name 'decimalidentity' 'decimal' -Size 5 -Seed 37 -Increment 41 -NotNull -NotForReplication  -TableName 'DecimalIdentity'
+}
+
