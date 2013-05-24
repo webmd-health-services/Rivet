@@ -40,6 +40,9 @@ function Assert-Column
         [Switch]
         $Document,
 
+        [Switch]
+        $FileStream,
+
         [Object]
         $Default,
 
@@ -138,5 +141,10 @@ function Assert-Column
     if( $Document )
     {
         Assert-True $column.is_xml_document ('column {0} not an xml document' -f $Name)
+    }
+
+    if( $FileStream )
+    {
+        Assert-True $column.is_filestream ('column {0} not a filestream' -f $Name)
     }
 }
