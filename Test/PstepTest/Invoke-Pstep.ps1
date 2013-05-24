@@ -8,7 +8,12 @@ function Invoke-Pstep
 
         [Parameter(Mandatory=$true,ParameterSEtName='Pull')]
         [Switch]
-        $Pull
+        $Pop,
+
+        [Parameter(Mandatory=$true,Position=1)]
+        [string]
+        # The name of the migration to push/pop.
+        $Name
     )
 
     & $PstepPath @PSBoundParameters -SqlServerName $Server -Database $DatabaseName -Path $DatabaseRoot 

@@ -10,10 +10,6 @@ function Assert-Column
         [string]
         $DataType,
 
-        [Parameter(Position=2)]
-        [Object]
-        $Default,
-
         [string]
         $Description,
 
@@ -32,6 +28,16 @@ function Assert-Column
         [bool]
         $Nullable,
 
+        [int]
+        $Seed,
+
+        [int]
+        $Increment,
+
+        [Object]
+        $Default,
+
+        [Parameter(Mandatory=$true)]
         $TableName,
 
         $TableSchema = 'dbo'
@@ -39,13 +45,14 @@ function Assert-Column
 
     $query = @'
     select 
-        ty.name type_name, c.*, ex.value MSDescription, dc.name default_constraint_name, dc.definition default_constraint
+        ty.name type_name, c.*, ex.value MSDescription, dc.name default_constraint_name, dc.definition default_constraint, ic.seed_value, ic.increment_value
     from sys.columns c join 
         sys.tables t on c.object_id = t.object_id join 
         sys.schemas s on t.schema_id = s.schema_id join
         sys.types ty on c.user_type_id = ty.user_type_id left outer join
         sys.extended_properties ex on ex.major_id = c.object_id and ex.minor_id = c.column_id and OBJECTPROPERTY(c.object_id, 'IsMsShipped') = 0 and ex.name = 'MS_Description' left outer join
-        sys.default_constraints dc on c.object_id = dc.parent_object_id and c.column_id = dc.parent_column_id
+        sys.default_constraints dc on c.object_id = dc.parent_object_id and c.column_id = dc.parent_column_id left outer join
+        sys.identity_columns ic on c.object_id = ic.object_id and c.column_id = ic.column_id
     where
         s.name = '{0}' and t.name = '{1}' and c.name = '{2}'
 '@ -f $TableSchema, $TableName, $Name
@@ -101,5 +108,19 @@ function Assert-Column
         $dfConstraintName = New-DefaultConstraintName -ColumnName $Name -TableName $TableName -TAbleSchema $TableSchema
         Assert-Equal $dfConstraintName $column.default_constraint_name ('column {0} default constraint name not set correctly' -f $Name)
         Assert-Match  $column.default_constraint ('{0}' -f ([Text.RegularExpressions.Regex]::Escape($Default))) ('column {0} default constraint not set' -f $Name)
+    }
+
+    if( $Seed -or $Increment )
+    {
+        Assert-True $column.is_identity ('column {0} not an identity' -f $Name)
+        if( $Seed )
+        {
+            Assert-Equal $Seed $column.seed_value ('column {0} identity seed value not set' -f $Name)
+        }
+
+        if( $Increment )
+        {
+            Assert-Equal $Increment $column.increment_value ('column {0} identity increment value not set' -f $Name)
+        }
     }
 }

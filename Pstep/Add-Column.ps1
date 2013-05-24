@@ -348,7 +348,11 @@ function Add-Column
         $columnDefinition = '[{0}] {1}{2}' -f $Name,$DataType,$typeSize
     }
 
-    if( $PSBoundParameters.ContainsKey('NotNull') )
+    if( $PSCmdlet.ParameterSetName -like '*Identity' )
+    {
+        $columnDefinition = '{0} identity ({1},{2})' -f $columnDefinition,$Seed,$Increment
+    }
+    elseif( $PSBoundParameters.ContainsKey('NotNull') )
     {
         $columnDefinition = '{0} not null' -f $columnDefinition
     }
