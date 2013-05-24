@@ -42,8 +42,8 @@ function Add-Column
         $VarBinary,
 
         [Parameter(Position=2,ParameterSetName='AsVarChar')]
-        [Parameter(Position=2,ParameterSetName='AsChar')]
-        [Parameter(Position=2,ParameterSetName='AsBinary')]
+        [Parameter(Mandatory=$true,Position=2,ParameterSetName='AsChar')]
+        [Parameter(Mandatory=$true,Position=2,ParameterSetName='AsBinary')]
         [Parameter(Position=2,ParameterSetName='AsVarBinary')]
         [int64]
         # The size/length of the column.  Default is `max`.
@@ -59,6 +59,12 @@ function Add-Column
         [Switch]
         # Stores the varbinary(max) data in a filestream data container on the file system.  Only valid for varbinary(max) columns.
         $FileStream,
+
+        [Parameter(ParameterSetName='AsVarChar')]
+        [Parameter(ParameterSetName='AsChar')]
+        [string]
+        # The collation to use for storing text.
+        $Collation,
 
         [Parameter(Mandatory=$true,ParameterSetName='AsBigInt')]
         [Parameter(Mandatory=$true,ParameterSetName='AsBigIntIdentity')]
@@ -365,6 +371,11 @@ function Add-Column
     if( $PSBoundParameters.ContainsKey('FileStream') )
     {
         $columnDefinition = '{0} filestream' -f $columnDefinition
+    }
+
+    if( $PSBoundParameters.ContainsKey('Collation') )
+    {
+        $columnDefinition = '{0} collate {1}' -f $columnDefinition,$Collation
     }
 
     if( $PSCmdlet.ParameterSetName -like '*Identity' )

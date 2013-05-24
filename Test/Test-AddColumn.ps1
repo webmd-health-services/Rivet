@@ -147,3 +147,15 @@ function Ignore-ShouldSupportFileStream
 
     Assert-Column -Name 'filestreamvarbinary' 'varbinary' -Max -FileStream -TableName 'WithVarBinaryFileStream'
 }
+
+function Test-ShouldSupportCollation
+{
+    Invoke-Pstep -Push 'AddColumnCollation'
+
+    Assert-Table 'WithCustomCollation'
+
+    Assert-Column -Name 'char' 'char' -Collation 'Japanese_BIN' -TableName 'WithCustomCollation'    
+    Assert-Column -Name 'nchar' 'nchar' -Collation 'Korean_Wansung_BIN' -TableName 'WithCustomCollation'    
+    Assert-Column -Name 'varchar' 'varchar' -Collation 'Chinese_Taiwan_Stroke_BIN' -TableName 'WithCustomCollation'    
+    Assert-Column -Name 'nvarchar' 'nvarchar' -Collation 'Thai_BIN' -TableName 'WithCustomCollation'    
+}

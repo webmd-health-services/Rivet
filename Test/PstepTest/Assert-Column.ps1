@@ -43,6 +43,9 @@ function Assert-Column
         [Switch]
         $FileStream,
 
+        [string]
+        $Collation,
+
         [Object]
         $Default,
 
@@ -146,5 +149,10 @@ function Assert-Column
     if( $FileStream )
     {
         Assert-True $column.is_filestream ('column {0} not a filestream' -f $Name)
+    }
+
+    if( $Collation )
+    {
+        Assert-Equal $Collation $column.collation_name ('column {0} collation not set' -f $Name)
     }
 }
