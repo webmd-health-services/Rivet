@@ -25,14 +25,17 @@ function Assert-Column
         [int]
         $Scale,
 
-        [bool]
-        $Nullable,
+        [Switch]
+        $NotNull,
 
         [int]
         $Seed,
 
         [int]
         $Increment,
+
+        [Switch]
+        $RowGuidCol,
 
         [Object]
         $Default,
@@ -88,13 +91,13 @@ function Assert-Column
         Assert-Equal $Scale $column.scale ('column {0} not expected scale' -f $Name)
     }
 
-    if( $Nullable )
+    if( $NotNull )
     {
-        Assert-True $column.is_nullable ('column {0} not nullable' -f $Name)
+        Assert-False $column.is_nullable ('column {0} nullable' -f $Name)
     }
     else
     {
-        Assert-False $column.is_nullable ('column {0} nullable' -f $Name)
+        Assert-True $column.is_nullable ('column {0} not nullable' -f $Name)
     }
 
     if( $Description )
@@ -122,5 +125,10 @@ function Assert-Column
         {
             Assert-Equal $Increment $column.increment_value ('column {0} identity increment value not set' -f $Name)
         }
+    }
+
+    if( $RowGuidCol )
+    {
+        Assert-True $column.is_rowguidcol ('column {0} rowguidcol flag not set' -f $Name)
     }
 }

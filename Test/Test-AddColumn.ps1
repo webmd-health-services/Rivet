@@ -17,7 +17,7 @@ function Test-ShouldAddNullableColumnsNoDefaults
 
     Assert-True (Test-Table -Name 'AddColumnNoDefaultsAllNull')
 
-    $commonArgs = @{ TableName = 'AddColumnNoDefaultsAllNull'; Nullable = $true; }
+    $commonArgs = @{ TableName = 'AddColumnNoDefaultsAllNull' }
     Assert-Column -Name 'varchar' 'varchar' -Size 20 -Description 'varchar(20) null' @commonArgs
     Assert-Column -Name 'varcharmax' 'varchar' -Max -Description 'varchar(max) null' @commonArgs
     Assert-Column -Name 'char' 'char' -Size 10 -Description 'char(10) null' @commonArgs
@@ -52,8 +52,7 @@ function Test-ShouldAddNullableColumnsNoDefaults
     Assert-Column -Name 'uniqueidentifier' 'uniqueidentifier' -Description 'uniqueidentifier null' @commonArgs
     Assert-Column -Name 'hierarchyid' 'hierarchyid' -Description 'hierarchyid null' @commonArgs
 
-    $commonArgs.Nullable = $false
-    Assert-Column -Name 'timestamp' 'timestamp' -Description 'timestamp' @commonArgs
+    Assert-Column -Name 'timestamp' 'timestamp' -NotNull -Description 'timestamp' @commonArgs
 }
 
 function Test-ShouldAddNotNullableColumnsWithDefaults
@@ -62,7 +61,7 @@ function Test-ShouldAddNotNullableColumnsWithDefaults
 
     Assert-True (Test-Table -Name 'AddColumnDefaultsNotNull')
 
-    $commonArgs = @{ TableName = 'AddColumnDefaultsNotNull'; Nullable = $false; }
+    $commonArgs = @{ TableName = 'AddColumnDefaultsNotNull'; NotNull = $true; }
     Assert-Column -Name 'varchar' 'varchar' -Size 20 -Default "'varchar'" -Description 'varchar(20) not null' @commonArgs
     Assert-Column -Name 'varcharmax' 'varchar' -Max -Default "'varcharmax'" -Description 'varchar(max) not null' @commonArgs
     Assert-Column -Name 'char' 'char' -Size 10 -Default "'char'" -Description 'char(10) not null' @commonArgs
@@ -102,23 +101,30 @@ function Test-ShouldCreateIdentities
 {
     Invoke-Pstep -Push 'AddColumnIdentityTables'
 
-
     Assert-Table 'BigIntIdentity'
-    Assert-Column -Name 'bigintidentity' 'bigint' -Seed 1 -Increment 2 -TableName 'BigIntIdentity'
+    Assert-Column -Name 'bigintidentity' 'bigint' -Seed 1 -Increment 2 -NotNull -TableName 'BigIntIdentity'
 
     Assert-Table 'IntIdentity'
-    Assert-Column -Name 'intidentity' 'int' -Seed 3 -Increment 5 -TableName 'IntIdentity'
+    Assert-Column -Name 'intidentity' 'int' -Seed 3 -Increment 5 -NotNull -TableName 'IntIdentity'
 
     Assert-Table 'SmallIntIdentity'
-    Assert-Column -Name 'smallintidentity' 'smallint' -Seed 7 -Increment 11 -TableName 'SmallIntIdentity'
+    Assert-Column -Name 'smallintidentity' 'smallint' -Seed 7 -Increment 11 -NotNull -TableName 'SmallIntIdentity'
 
     Assert-Table 'TinyIntIdentity'
-    Assert-Column -Name 'tinyintidentity' 'tinyint' -Seed 13 -Increment 17 -TableName 'TinyIntIdentity'
+    Assert-Column -Name 'tinyintidentity' 'tinyint' -Seed 13 -Increment 17 -NotNull -TableName 'TinyIntIdentity'
 
     Assert-Table 'NumericIdentity'
-    Assert-Column -Name 'numericidentity' 'numeric' -Size 5 -Seed 23 -Increment 29 -TableName 'NumericIdentity'
+    Assert-Column -Name 'numericidentity' 'numeric' -Size 5 -Seed 23 -Increment 29 -NotNull -TableName 'NumericIdentity'
 
     Assert-Table 'DecimalIdentity'
-    Assert-Column -Name 'decimalidentity' 'decimal' -Size 5 -Seed 37 -Increment 41 -TableName 'DecimalIdentity'
+    Assert-Column -Name 'decimalidentity' 'decimal' -Size 5 -Seed 37 -Increment 41 -NotNull -TableName 'DecimalIdentity'
+}
 
+function Test-ShouldCreateRowGuidCol
+{
+    Invoke-Pstep -Push 'AddColumnRowGuidCol'
+
+    Assert-Table 'WithRowGuidCol'
+
+    Assert-Column -Name 'uniqueidentiferasrowguidcol' 'uniqueidentifier' -RowGuidCol -TableName 'WithRowGuidCol'
 }
