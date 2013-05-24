@@ -159,3 +159,46 @@ function Test-ShouldSupportCollation
     Assert-Column -Name 'varchar' 'varchar' -Collation 'Chinese_Taiwan_Stroke_BIN' -TableName 'WithCustomCollation'    
     Assert-Column -Name 'nvarchar' 'nvarchar' -Collation 'Thai_BIN' -TableName 'WithCustomCollation'    
 }
+
+
+function Test-ShouldAddSparseColumns
+{
+    Invoke-Pstep -Push 'AddColumnSparse'
+
+    Assert-Table -Name 'WithSparseColumns'
+
+    $commonArgs = @{ TableName = 'WithSparseColumns' }
+    Assert-Column -Name 'varchar' 'varchar' -Size 20 -Sparse -Description 'varchar(20) sparse' @commonArgs
+    Assert-Column -Name 'varcharmax' 'varchar' -Max -Sparse -Description 'varchar(max) sparse' @commonArgs
+    Assert-Column -Name 'char' 'char' -Size 10 -Sparse -Description 'char(10) sparse' @commonArgs
+    Assert-Column -Name 'nvarchar' 'nvarchar' -Size 30 -Sparse -Description 'nvarchar(30) sparse' @commonArgs
+    Assert-Column -Name 'nvarcharmax' 'nvarchar' -Max -Sparse -Description 'nvarchar(max) sparse' @commonArgs
+    Assert-Column -Name 'nchar' 'nchar' -Size 35 -Sparse -Description 'nchar(35) sparse' @commonArgs
+    Assert-Column -Name 'binary' 'binary' -Size 40 -Sparse -Description 'binary(40) sparse' @commonArgs
+    Assert-Column -Name 'varbinary' 'varbinary' -Size 45 -Sparse -Description 'varbinary(45) sparse' @commonArgs
+    Assert-Column -Name 'varbinarymax' 'varbinary' -Max -Sparse -Description 'varbinary(max) sparse' @commonArgs
+    Assert-Column -Name 'bigint' 'bigint' -Sparse -Description 'bigint sparse' @commonArgs
+    Assert-Column -Name 'int' 'int' -Sparse -Description 'int sparse' @commonArgs
+    Assert-Column -Name 'smallint' 'smallint' -Sparse -Description 'smallint sparse' @commonArgs
+    Assert-Column -Name 'tinyint' 'tinyint' -Sparse -Description 'tinyint sparse' @commonArgs
+    Assert-Column -Name 'numeric' 'numeric' -Precision 1 -Sparse -Description 'numeric(1) sparse' @commonArgs
+    Assert-Column -Name 'numericwithscale' 'numeric' -Precision 2 -Scale 2 -Sparse -Description 'numeric(2,2) sparse' @commonArgs
+    Assert-Column -Name 'decimal' 'decimal' -Precision 4 -Sparse -Description 'decimal(4) sparse' @commonArgs
+    Assert-Column -Name 'decimalwithscale' 'decimal' -Precision 5 -Scale 5 -Sparse -Description 'decimal(5,5) sparse' @commonArgs
+    Assert-Column -Name 'bit' 'bit' -Sparse -Description 'bit sparse' @commonArgs
+    Assert-Column -Name 'money' 'money' -Sparse -Description 'money sparse' @commonArgs
+    Assert-Column -Name 'smallmoney' 'smallmoney' -Sparse -Description 'smallmoney sparse' @commonArgs
+    Assert-Column -Name 'float' 'float' -Sparse -Description 'float sparse' @commonArgs
+    Assert-Column -Name 'floatwithprecision' 'float' -Precision 53 -Sparse -Description 'float(53) sparse' @commonArgs
+    Assert-Column -Name 'real' 'real' -Sparse -Description 'real sparse' @commonArgs
+    Assert-Column -Name 'date' 'date' -Sparse -Description 'date sparse' @commonArgs
+    Assert-Column -Name 'datetime' 'datetime' -Sparse -Description 'datetime sparse' @commonArgs
+    Assert-Column -Name 'datetime2' 'datetime2' -Sparse -Description 'datetime2 sparse' @commonArgs
+    Assert-Column -Name 'datetimeoffset' 'datetimeoffset' -Sparse -Description 'datetimeoffset sparse' @commonArgs
+    Assert-Column -Name 'smalldatetime' 'smalldatetime' -Sparse -Description 'smalldatetime sparse' @commonArgs
+    Assert-Column -Name 'time' 'time' -Sparse -Description 'time sparse' @commonArgs
+    Assert-Column -Name 'xml' 'xml' -Sparse -Description 'xml sparse' @commonArgs
+    Assert-Column -Name 'sql_variant' 'sql_variant' -Sparse -Description 'sql_variant sparse' @commonArgs
+    Assert-Column -Name 'uniqueidentifier' 'uniqueidentifier' -Sparse -Description 'uniqueidentifier sparse' @commonArgs
+    Assert-Column -Name 'hierarchyid' 'hierarchyid' -Sparse -Description 'hierarchyid sparse' @commonArgs
+}

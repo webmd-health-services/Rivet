@@ -26,6 +26,9 @@ function Assert-Column
         $Scale,
 
         [Switch]
+        $Sparse,
+
+        [Switch]
         $NotNull,
 
         [int]
@@ -154,5 +157,10 @@ function Assert-Column
     if( $Collation )
     {
         Assert-Equal $Collation $column.collation_name ('column {0} collation not set' -f $Name)
+    }
+
+    if( $Sparse )
+    {
+        Assert-True $column.is_sparse ('column {0} is not sparse' -f $Name)
     }
 }
