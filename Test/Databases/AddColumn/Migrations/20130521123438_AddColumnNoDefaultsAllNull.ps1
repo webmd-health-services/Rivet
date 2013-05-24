@@ -57,14 +57,14 @@ function Push-Migration()
     Add-Column smallint -SmallInt -Description 'smallint null' @commonArgs
     Add-Column tinyint -TinyInt -Description 'tinyint null' @commonArgs
     Add-Column numeric -Numeric 1 -Description 'numeric(1) null' @commonArgs
-    Add-Column numericwithscale -Numeric 2 2 -Description 'numeric(2,3) null' @commonArgs
+    Add-Column numericwithscale -Numeric 2 2 -Description 'numeric(2,2) null' @commonArgs
     Add-Column decimal -Decimal 4 -Description 'decimal(4) null' @commonArgs
-    Add-Column decimalwithscale -Decimal 5 5 -Description 'decimal(5,6) null' @commonArgs
+    Add-Column decimalwithscale -Decimal 5 5 -Description 'decimal(5,5) null' @commonArgs
     Add-Column bit -Bit -Description 'bit null' @commonArgs
     Add-Column money -Money -Description 'money null' @commonArgs
     Add-Column smallmoney -SmallMoney -Description 'smallmoney null' @commonArgs
     Add-Column float -Float -Description 'float null' @commonArgs
-    Add-Column floatwithprecision -Float 53 -Description 'float(23) null' @commonArgs
+    Add-Column floatwithprecision -Float 53 -Description 'float(53) null' @commonArgs
     Add-Column real -Real -Description 'real null' @commonArgs
     Add-Column date -Date -Description 'date null' @commonArgs
     Add-Column datetime -DateTime -Description 'datetime null' @commonArgs

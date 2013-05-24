@@ -87,5 +87,18 @@ function Assert-Column
 
     if( $Description )
     {
+        $query = @'
+        select 
+            ex.value
+        from
+            sys.columns c join 
+            sys.tables t on c.object_id = t.object_id join 
+            sys.schemas s on t.schema_id = s.schema_id join
+            sys.extended_properties ex on ex.major_id = c.object_id and ex.minor_id = c.column_id and OBJECTPROPERTY(c.object_id, 'IsMsShipped') = 0 and ex.name = 'MS_Description'
+        where
+        s.name = '{0}' and t.name = '{1}' and c.name = '{2}'
+'@ -f $TableSchema, $TableName, $Name
+        $result = Invoke-PstepTestQuery -Query $query -Connection $DatabaseConnection
+        Assert-Equal $Description $result.value ('column {0} description not set' -f $Name)
     }
 }

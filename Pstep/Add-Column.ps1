@@ -342,11 +342,25 @@ function Add-Column
         }
     }
 
-    $columnDescription = '[{0}] {1}{2}' -f $Name,$datatype,$typeSize
-    Write-Host ('                   {0}.{1} + {2}' -f $TableSchema,$TableName,$columnDescription)
+    $columnDefinition = '[{0}] {1}{2}' -f $Name,$datatype,$typeSize
+    Write-Host ('                   {0}.{1} + {2}' -f $TableSchema,$TableName,$columnDefinition)
 
+    $descriptionQuery = ''
+    if( $Description )
+    {
+	
+        $descriptionQuery = @'
+        EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
+                                        @value=N'{0}' , 
+                                        @level0type=N'SCHEMA', @level0name=N'{1}', 
+                                        @level1type=N'TABLE',  @level1name=N'{2}', 
+                                        @level2type=N'COLUMN', @level2name=N'{3}'
+'@ -f $Description,$TableSchema,$TableName,$Name
+    }
     $query = @'
     alter table [{0}].[{1}] add {2}
-'@ -f $TableSchema,$TableName,$columnDescription
+
+    {3}
+'@ -f $TableSchema,$TableName,$columnDefinition,$descriptionQuery
     Invoke-Query -Query $query
 }
