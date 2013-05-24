@@ -38,6 +38,9 @@ function Assert-Column
         $Increment,
 
         [Switch]
+        $NotForReplication,
+
+        [Switch]
         $RowGuidCol,
 
         [Switch]
@@ -60,7 +63,7 @@ function Assert-Column
 
     $query = @'
     select 
-        ty.name type_name, c.*, ex.value MSDescription, dc.name default_constraint_name, dc.definition default_constraint, ic.seed_value, ic.increment_value
+        ty.name type_name, c.*, ex.value MSDescription, dc.name default_constraint_name, dc.definition default_constraint, ic.seed_value, ic.increment_value, ic.is_not_for_replication
     from sys.columns c join 
         sys.tables t on c.object_id = t.object_id join 
         sys.schemas s on t.schema_id = s.schema_id join
@@ -162,5 +165,10 @@ function Assert-Column
     if( $Sparse )
     {
         Assert-True $column.is_sparse ('column {0} is not sparse' -f $Name)
+    }
+
+    if( $NotForReplication )
+    {
+        Assert-True $column.is_not_for_replication ('column {0} is a replicated identity' -f $Name)
     }
 }
