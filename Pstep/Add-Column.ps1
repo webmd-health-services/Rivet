@@ -272,7 +272,36 @@ function Add-Column
         [Parameter(ParameterSetName='AsHierarchyID')]
         [Parameter(ParameterSetName='ExplicitDataType')]
         [Switch]
-        # Makes the column not nullable.
+        # Makes the column not nullable.  Cannot be used with the `NotNull` switch.
+        $Sparse,
+
+        [Parameter(ParameterSetName='AsVarChar')]
+        [Parameter(ParameterSetName='AsChar')]
+        [Parameter(ParameterSetName='AsBinary')]
+        [Parameter(ParameterSetName='AsVarBinary')]
+        [Parameter(ParameterSetName='AsBigInt')]
+        [Parameter(ParameterSetName='AsInt')]
+        [Parameter(ParameterSetName='AsSmallint')]
+        [Parameter(ParameterSetName='AsTinyint')]
+        [Parameter(ParameterSetName='AsNumeric')]
+        [Parameter(ParameterSetName='AsDecimal')]
+        [Parameter(ParameterSetName='AsBit')]
+        [Parameter(ParameterSetName='AsMoney')]
+        [Parameter(ParameterSetName='AsSmallmoney')]
+        [Parameter(ParameterSetName='AsFloat')]
+        [Parameter(ParameterSetName='AsReal')]
+        [Parameter(ParameterSetName='AsDate')]
+        [Parameter(ParameterSetName='AsDateTime2')]
+        [Parameter(ParameterSetName='AsDateTimeOffset')]
+        [Parameter(ParameterSetName='AsTime')]
+        [Parameter(ParameterSetName='AsUniqueIdentifier')]
+        [Parameter(ParameterSetName='AsXml')]
+        [Parameter(ParameterSetName='AsSql_Variant')]
+        [Parameter(ParameterSetName='AsTimestamp')]
+        [Parameter(ParameterSetName='AsHierarchyID')]
+        [Parameter(ParameterSetName='ExplicitDataType')]
+        [Switch]
+        # Makes the column not nullable.  Canno be used with the `Sparse` switch.
         $NotNull,
 
         [Parameter(ParameterSetName='AsVarChar')]
@@ -318,6 +347,12 @@ function Add-Column
         $TableSchema = 'dbo'
     )
 
+    if( $PSBoundParameters.ContainsKey('NotNull') -and $PSBoundParameters.ContainsKey('Sparse') )
+    {
+        throw ('Table {0}.{1}, column {1}: A column cannot be NOT NULL and SPARSE.  Please choose one switch: `NotNull` or `Sparse`, but not both.' -f $TableSchema,$TableName,$Name)
+        return
+    }
+
     if( $PSCmdlet.ParameterSetName -eq 'ExplicitDataType' )
     {
         $columnDefinition = '[{0}] {1}' -f $Name, $DataType
@@ -360,7 +395,7 @@ function Add-Column
         {
             if( -not $XmlSchemaCollection )
             {
-                throw ('Column {0}: Document-based XML columns must have an XML schema specified so that SQL Server can validate that you are inserting valid XML documents. Set the name of the XML schema collection with the XmlSchemaCollection parameter.' -f $Name)
+                throw ('Table {0}.{1}, column {2}: Document-based XML columns must have an XML schema specified so that SQL Server can validate that you are inserting valid XML documents. Set the name of the XML schema collection with the XmlSchemaCollection parameter.' -f $TableSchema,$TableName,$Name)
                 return
             }
             $typeSize = '(document {0})' -f $XmlSchemaCollection
@@ -376,6 +411,11 @@ function Add-Column
     if( $PSBoundParameters.ContainsKey('Collation') )
     {
         $columnDefinition = '{0} collate {1}' -f $columnDefinition,$Collation
+    }
+
+    if( $PSBoundParameters.ContainsKey('Sparse') )
+    {
+        $columnDefinition = '{0} sparse' -f $columnDefinition
     }
 
     if( $PSCmdlet.ParameterSetName -like '*Identity' )
