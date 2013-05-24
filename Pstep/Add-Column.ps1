@@ -364,6 +364,12 @@ function Add-Column
         $dfConstraintClause = 'constraint {0} default {1}' -f $dfConstraintName,$Default
     }
 
+    $rowGuidColClause = ''
+    if( $PSBoundParameters.ContainsKey( 'RowGuidCol' ) )
+    {
+        $rowGuidColClause = 'rowguidcol'
+    }
+
     $descriptionQuery = ''
     if( $Description )
     {
@@ -377,10 +383,10 @@ function Add-Column
 '@ -f $Description,$TableSchema,$TableName,$Name
     }
     $query = @'
-    alter table [{0}].[{1}] add {2} {3}
+    alter table [{0}].[{1}] add {2} {3} {4}
 
-    {4}
-'@ -f $TableSchema,$TableName,$columnDefinition,$dfConstraintClause,$descriptionQuery
+    {5}
+'@ -f $TableSchema,$TableName,$columnDefinition,$dfConstraintClause,$rowGuidColClause,$descriptionQuery
 
     Write-Host ('                   {0}.{1} + {2}' -f $TableSchema,$TableName,$columnDefinition)
     Invoke-Query -Query $query
