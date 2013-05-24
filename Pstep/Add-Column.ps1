@@ -96,16 +96,44 @@ function Add-Column
         # Creates a float column.
         $Float,
 
+        [Parameter(Mandatory=$true,ParameterSetName='AsReal')]
+        [Switch]
+        # Creates a real column.
+        $Real,
+
+        [Parameter(Mandatory=$true,ParameterSetName='AsDate')]
+        [Switch]
+        # Creates a date column.
+        $Date,
+
+        [Parameter(Mandatory=$true,ParameterSetName='AsDateTime2')]
+        [Switch]
+        # Creates a datetime2 column.
+        $Datetime2,
+
+        [Parameter(Mandatory=$true,ParameterSetName='AsDateTimeOffset')]
+        [Switch]
+        # Creates a datetimeoffset column.
+        $DateTimeOffset,
+
+        [Parameter(Mandatory=$true,ParameterSetName='AsTime')]
+        [Switch]
+        # Creates a date column.
+        $Time,
+
         [Parameter(Mandatory=$true,Position=2,ParameterSetName='AsNumeric')]
         [Parameter(Mandatory=$true,Position=2,ParameterSetName='AsNumericIdentity')]
         [Parameter(Mandatory=$true,Position=2,ParameterSetName='AsDecimal')]
         [Parameter(Mandatory=$true,Position=2,ParameterSetName='AsDecimalIdentity')]
         [Parameter(Position=2,ParameterSetName='AsFloat')]
+        [Parameter(Position=2,ParameterSetName='AsDateTime2')]
+        [Parameter(Position=2,ParameterSetName='AsDateTimeOffset')]
         [int]
         $Precision,
 
         [Parameter(Position=3,ParameterSetName='AsNumeric')]
         [Parameter(Position=3,ParameterSetName='AsDecimal')]
+        [Parameter(Position=3,ParameterSetName='AsDateTimeOffset')]
         [int]
         $Scale,
 
@@ -146,11 +174,6 @@ function Add-Column
         [Switch]
         $NotForReplication,
 
-        [Parameter(Mandatory=$true,ParameterSetName='AsReal')]
-        [Switch]
-        # Creates a real column.
-        $Real,
-
         [Parameter(Mandatory=$true,ParameterSetName='AsMoney')]
         [Switch]
         # Creates a money column.
@@ -165,36 +188,6 @@ function Add-Column
         [Switch]
         # Creates a bit column.
         $Bit,
-
-        [Parameter(Mandatory=$true,ParameterSetName='AsDate')]
-        [Switch]
-        # Creates a date column.
-        $Date,
-
-        [Parameter(Mandatory=$true,ParameterSetName='AsDatetime')]
-        [Switch]
-        # Creates a datetime column.
-        $DateTime,
-
-        [Parameter(Mandatory=$true,ParameterSetName='AsDatetime2')]
-        [Switch]
-        # Creates a datetime2 column.
-        $Datetime2,
-
-        [Parameter(Mandatory=$true,ParameterSetName='AsDatetimeoffset')]
-        [Switch]
-        # Creates a datetimeoffset column.
-        $DateTimeOffset,
-
-        [Parameter(Mandatory=$true,ParameterSetName='AsSmalldatetime')]
-        [Switch]
-        # Creates a date column.
-        $SmallDateTime,
-
-        [Parameter(Mandatory=$true,ParameterSetName='AsTime')]
-        [Switch]
-        # Creates a date column.
-        $Time,
 
         [Parameter(Mandatory=$true,ParameterSetName='AsUniqueIdentifier')]
         [Switch]
@@ -237,6 +230,11 @@ function Add-Column
         # Creates a hierarchyid column.
         $HierarchyID,
 
+        [Parameter(Mandatory=$true,Position=1,ParameterSetName='ExplicitDataType')]
+        [string]
+        # The datatype of the new column.
+        $DataType,
+
         [Parameter(ParameterSetName='AsVarChar')]
         [Parameter(ParameterSetName='AsChar')]
         [Parameter(ParameterSetName='AsBinary')]
@@ -253,15 +251,15 @@ function Add-Column
         [Parameter(ParameterSetName='AsFloat')]
         [Parameter(ParameterSetName='AsReal')]
         [Parameter(ParameterSetName='AsDate')]
-        [Parameter(ParameterSetName='AsDatetime')]
-        [Parameter(ParameterSetName='AsDatetime2')]
-        [Parameter(ParameterSetName='AsDatetimeoffset')]
-        [Parameter(ParameterSetName='AsSmalldatetime')]
+        [Parameter(ParameterSetName='AsDateTime2')]
+        [Parameter(ParameterSetName='AsDateTimeOffset')]
         [Parameter(ParameterSetName='AsTime')]
+        [Parameter(ParameterSetName='AsUniqueIdentifier')]
         [Parameter(ParameterSetName='AsXml')]
-        [Parameter(ParameterSetName='AsSqlVariant')]
-        [Parameter(ParameterSetName='AsRowVersion')]
+        [Parameter(ParameterSetName='AsSql_Variant')]
+        [Parameter(ParameterSetName='AsTimestamp')]
         [Parameter(ParameterSetName='AsHierarchyID')]
+        [Parameter(ParameterSetName='ExplicitDataType')]
         [Switch]
         # Makes the column not nullable.
         $NotNull,
@@ -282,15 +280,15 @@ function Add-Column
         [Parameter(ParameterSetName='AsFloat')]
         [Parameter(ParameterSetName='AsReal')]
         [Parameter(ParameterSetName='AsDate')]
-        [Parameter(ParameterSetName='AsDatetime')]
-        [Parameter(ParameterSetName='AsDatetime2')]
-        [Parameter(ParameterSetName='AsDatetimeoffset')]
-        [Parameter(ParameterSetName='AsSmalldatetime')]
+        [Parameter(ParameterSetName='AsDateTime2')]
+        [Parameter(ParameterSetName='AsDateTimeOffset')]
         [Parameter(ParameterSetName='AsTime')]
         [Parameter(ParameterSetName='AsXml')]
-        [Parameter(ParameterSetName='AsSqlVariant')]
-        [Parameter(ParameterSetName='AsRowVersion')]
+        [Parameter(ParameterSetName='AsSql_Variant')]
+        [Parameter(ParameterSetName='AsUniqueIdentifier')]
+        [Parameter(ParameterSetName='AsTimestamp')]
         [Parameter(ParameterSetName='AsHierarchyID')]
+        [Parameter(ParameterSetName='ExplicitDataType')]
         [string]
         # The default column value.
         $Default,
@@ -309,40 +307,52 @@ function Add-Column
         $TableSchema = 'dbo'
     )
 
-    if( $PSCmdlet.ParameterSetName -notmatch '^As(.*?)(Identity)?$' )
+    if( $PSCmdlet.ParameterSetName -eq 'ExplicitDataType' )
     {
-        throw ('Unknown parameter set {0}.' -f $PSCmdlet.ParameterSetName)
+        $columnDefinition = '[{0}] {1}' -f $Name, $DataType
     }
+    else
+    {
+        if( $PSCmdlet.ParameterSetName -notmatch '^As(.*?)(Identity)?$' )
+        {
+            throw ('Unknown parameter set {0}.' -f $PSCmdlet.ParameterSetName)
+        }
 
-    $datatype = $matches[1].ToLower()
-    if( $PSBoundParameters.ContainsKey('Unicode') )
-    {
-        $datatype = 'n{0}' -f $datatype
-    }
+        $DataType = $matches[1].ToLower()
+        if( $PSBoundParameters.ContainsKey('Unicode') )
+        {
+            $DataType = 'n{0}' -f $DataType
+        }
 
-    $typeSize = ''
-    if( $PSCmdlet.ParameterSetName -match 'As(Var)?(Binary|Char)' )
-    {
-        $typeSize = '(max)'
-    }
+        $typeSize = ''
+        if( $PSCmdlet.ParameterSetName -match 'As(Var)?(Binary|Char)' )
+        {
+            $typeSize = '(max)'
+        }
     
-    if( $PSBoundParameters.ContainsKey('Size') )
-    {
-        $typeSize = '({0})' -f $Size
-    }
-    elseif( $PSBoundParameters.ContainsKey('Precision') )
-    {
-        if( $PSBoundParameters.ContainsKey('Scale') )
+        if( $PSBoundParameters.ContainsKey('Size') )
         {
-            $typeSize = '({0},{1})' -f $Precision,$Scale
+            $typeSize = '({0})' -f $Size
         }
-        else
+        elseif( $PSBoundParameters.ContainsKey('Precision') )
         {
-            $typeSize = '({0})' -f $Precision
+            if( $PSBoundParameters.ContainsKey('Scale') )
+            {
+                $typeSize = '({0},{1})' -f $Precision,$Scale
+            }
+            else
+            {
+                $typeSize = '({0})' -f $Precision
+            }
         }
+        $columnDefinition = '[{0}] {1}{2}' -f $Name,$DataType,$typeSize
     }
 
-    $columnDefinition = '[{0}] {1}{2}' -f $Name,$datatype,$typeSize
+    if( $PSBoundParameters.ContainsKey('NotNull') )
+    {
+        $columnDefinition = '{0} not null' -f $columnDefinition
+    }
+
     Write-Host ('                   {0}.{1} + {2}' -f $TableSchema,$TableName,$columnDefinition)
 
     $descriptionQuery = ''
