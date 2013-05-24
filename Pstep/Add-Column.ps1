@@ -206,12 +206,12 @@ function Add-Column
 
         [Parameter(ParameterSetName='AsXml')]
         [Switch]
-        # Creates a column to store XML documents.
+        # Creates a column to store XML documents.  You must also specify the XmlSchemaCollection.
         $Document,
 
         [Parameter(ParameterSetName='AsXml')]
         [string]
-        # The XML schema collection for the XML column.
+        # The XML schema collection for the XML column.  Required when storing an XML document.
         $XmlSchemaCollection,
 
         [Parameter(Mandatory=$true,ParameterSetName='AsSql_Variant')]
@@ -344,6 +344,15 @@ function Add-Column
             {
                 $typeSize = '({0})' -f $Precision
             }
+        }
+        elseif( $PSBoundParameters.ContainsKey('Document') )
+        {
+            if( -not $XmlSchemaCollection )
+            {
+                throw ('Column {0}: Document-based XML columns must have an XML schema specified so that SQL Server can validate that you are inserting valid XML documents. Set the name of the XML schema collection with the XmlSchemaCollection parameter.' -f $Name)
+                return
+            }
+            $typeSize = '(document {0})' -f $XmlSchemaCollection
         }
         $columnDefinition = '[{0}] {1}{2}' -f $Name,$DataType,$typeSize
     }
