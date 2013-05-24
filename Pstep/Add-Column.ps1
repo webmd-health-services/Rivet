@@ -55,6 +55,11 @@ function Add-Column
         # Creates a char/varchar column to hold unicode values.
         $Unicode,
 
+        [Parameter(ParameterSetName='AsVarBinary')]
+        [Switch]
+        # Stores the varbinary(max) data in a filestream data container on the file system.  Only valid for varbinary(max) columns.
+        $FileStream,
+
         [Parameter(Mandatory=$true,ParameterSetName='AsBigInt')]
         [Parameter(Mandatory=$true,ParameterSetName='AsBigIntIdentity')]
         [Switch]
@@ -355,6 +360,11 @@ function Add-Column
             $typeSize = '(document {0})' -f $XmlSchemaCollection
         }
         $columnDefinition = '[{0}] {1}{2}' -f $Name,$DataType,$typeSize
+    }
+
+    if( $PSBoundParameters.ContainsKey('FileStream') )
+    {
+        $columnDefinition = '{0} filestream' -f $columnDefinition
     }
 
     if( $PSCmdlet.ParameterSetName -like '*Identity' )

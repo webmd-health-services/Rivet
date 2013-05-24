@@ -137,3 +137,13 @@ function Test-ShouldSupportXmlDocument
 
     Assert-Column -Name 'xmlasdocument' 'xml' -Document -TableName 'WithXmlDocument'
 }
+
+# This test won't work unless file streams are setup.  Don't know how to do that so ignoring this test for now.
+function Ignore-ShouldSupportFileStream
+{
+    Invoke-Pstep -Push 'AddColumnVarBinaryFileStream'
+
+    Assert-Table 'WithVarBinaryFileStream'
+
+    Assert-Column -Name 'filestreamvarbinary' 'varbinary' -Max -FileStream -TableName 'WithVarBinaryFileStream'
+}
