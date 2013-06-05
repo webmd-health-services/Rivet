@@ -87,6 +87,7 @@ Your migration is ready to go!  Here are all the built-in migrations you can use
     Set-StoredProcedure -Name <string> [-Schema <string>]
     Set-UserDefinedFunction -Name <string> [-Schema <string>]
     Set-View -Name <string> [-Schema <string>]
+    Update-Description [-Description] <String> [-SchemaName <String>] -TableName <String> [-ColumnName <String>]
     
 To execute raw SQL:
 
