@@ -448,7 +448,7 @@ function Add-Column
     alter table [{0}].[{1}] add {2} {3} {4}
 '@ -f $TableSchema,$TableName,$columnDefinition,$dfConstraintClause,$rowGuidColClause
 
-    Write-Host ('                   {0}.{1} + {2}' -f $TableSchema,$TableName,$columnDefinition)
+    Write-Host (' {0}.{1} +{2}' -f $TableSchema,$TableName,$columnDefinition)
     Invoke-Query -Query $query
 
     if( $Description )

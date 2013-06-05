@@ -1,30 +1,25 @@
 
-function Add-Description
+function Remove-Description
 {
     <#
     .SYNOPSIS
-    Adds the `MS_Description` extended property to a table or column.
+    Removes the `MS_Description` extended property for a table or column.
 
     .DESCRIPTION
-    The `sys.sp_addextendedproperty` stored procedure is used to set a table/column's description (i.e. the `MS_Description` extended property), but the syntax is weird.  This function hides that weirdness from you.  You're welcome.
+    The `sys.sp_dropextendedproperty` stored procedure is used to remove a table/column's description (i.e. the `MS_Description` extended property), but the syntax is weird.  This function hides that weirdness from you.  You're welcome.
 
     .EXAMPLE
-    Add-Description -Description 'Whoseit's whatsits table.' -TableName WhoseitsWhatsits 
+    Remove-Description -TableName WhoseitsWhatsits 
 
-    Adds a description (i.e. the `MS_Description` extended property) on the `WhoseitsWhatsits` table.
+    Removes the description (i.e. the `MS_Description` extended property) for the `WhoseitsWhatsits` table.
 
     .EXAMPLE
-    Add-Description  -Description 'Is it a snarfblat?' -TableName WhoseitsWhatsits -ColumnName IsSnarfblat
+    Remove-Description -TableName WhoseitsWhatsits -ColumnName IsSnarfblat
 
-    Adds a description (i.e. the `MS_Description` extended property) on the `WhoseitsWhatsits` table's `IsSnarfblat` column.
+    Removes the description (i.e. the `MS_Description` extended property) for the `WhoseitsWhatsits` table's `IsSnarfblat` column.
     #>
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory=$true,Position=0)]
-        [string]
-        # The value for the MS_Description extended property.
-        $Description,
-
         [Alias('Schema')]
         [string]
         # The schema.  Defaults to `dbo`.
@@ -49,14 +44,12 @@ function Add-Description
     )
 
     $descriptionQuery = @'
-        EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
-                                        @value=@Description,
+        EXEC sys.sp_dropextendedproperty @name=N'MS_Description', 
                                         @level0type=N'SCHEMA', @level0name=@SchemaName, 
                                         @level1type=N'TABLE',  @level1name=@TableName
 '@
 
     $queryParameters = @{
-                            Description = $Description;
                             SchemaName = $SchemaName;
                             TableName = $TableName;
                         }
@@ -71,7 +64,7 @@ function Add-Description
 
     if( -not $Quiet )
     {
-        Write-Host (' {0}.{1}{2} +MS_Description: {3}' -f $SchemaName,$TableName,$columnMsg,$Description)
+        Write-Host (' {0}.{1}{2} -MS_Description' -f $SchemaName,$TableName,$columnMsg)
     }
     Invoke-Query -Query $descriptionQuery -Parameter $queryParameters -Verbose
 }

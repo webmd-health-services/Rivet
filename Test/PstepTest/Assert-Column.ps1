@@ -115,7 +115,7 @@ function Assert-Column
         Assert-True $column.is_nullable ('column {0} not nullable' -f $Name)
     }
 
-    if( $Description )
+    if( $PSBoundParameters.ContainsKey('Description') )
     {
         Assert-Equal $Description $column.MSDescription ('column {0} description not set' -f $Name)
     }

@@ -71,7 +71,7 @@ function Update-Description
 
     if( -not $Quiet )
     {
-        Write-Host ('                   {0}.{1}{2} = sys.sp_updateextendedproperty @name=MS_Description, @value={3}' -f $SchemaName,$TableName,$columnMsg,$Description)
+        Write-Host (' {0}.{1}{2} =MS_Description: {3}' -f $SchemaName,$TableName,$columnMsg,$Description)
     }
     Invoke-Query -Query $descriptionQuery -Parameter $queryParameters -Verbose
 }
