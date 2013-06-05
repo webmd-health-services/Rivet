@@ -444,24 +444,16 @@ function Add-Column
         $rowGuidColClause = 'rowguidcol'
     }
 
-    $descriptionQuery = ''
-    if( $Description )
-    {
-	
-        $descriptionQuery = @'
-        EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
-                                        @value=N'{0}' , 
-                                        @level0type=N'SCHEMA', @level0name=N'{1}', 
-                                        @level1type=N'TABLE',  @level1name=N'{2}', 
-                                        @level2type=N'COLUMN', @level2name=N'{3}'
-'@ -f $Description,$TableSchema,$TableName,$Name
-    }
     $query = @'
     alter table [{0}].[{1}] add {2} {3} {4}
-
-    {5}
-'@ -f $TableSchema,$TableName,$columnDefinition,$dfConstraintClause,$rowGuidColClause,$descriptionQuery
+'@ -f $TableSchema,$TableName,$columnDefinition,$dfConstraintClause,$rowGuidColClause
 
     Write-Host ('                   {0}.{1} + {2}' -f $TableSchema,$TableName,$columnDefinition)
     Invoke-Query -Query $query
+
+    if( $Description )
+    {
+        Add-Description -Description $Description -SchemaName $TableSchema -TableName $TableName -ColumnName $Name -Quiet
+    }
+
 }

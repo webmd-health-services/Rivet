@@ -65,9 +65,7 @@ function New-Migration
 
         @"
 <#
-Your migration is ready to go!  We've set you up with default migrations that just run raw SQL.  Here are some other migrations:
-
-If you have a script for a scripted object, you can use these functions:
+Your migration is ready to go!  Here are all the built-in migrations you can use:
 
     Add-Column [-Name] <String> <-BigInt|-Int|-SmallInt|-TinyInt|-Date|-Time|-Money|-SmallMoney|-Bit|-SqlVariant|-RowVersion|-HierarchyID> [-Sparse] [-NotNull] [-Default <Object>] [-Description <String>] -TableName <String> [-TableSchema <String>]
     Add-Column [-Name] <String> <-VarChar|-Char> [[-Size] <Int64>] [-Unicode] [-Collation <String>] [-Sparse] [-NotNull] [-Default <Object>] [-Description <String>] -TableName <String> [-TableSchema <String>]
@@ -81,6 +79,7 @@ If you have a script for a scripted object, you can use these functions:
     Add-Column [-Name] <String> -UniqueIdentifier [-RowGuidCol] [-Sparse] [-NotNull] [-Default <Object>] [-Description <String>] -TableName <String> [-TableSchema <String>] 
     Add-Column [-Name] <String> -Xml [-Document] [-XmlSchemaCollection <String>] [-Sparse] [-NotNull] [-Default <Object>] [-Description <String>] -TableName <String> [-TableSchema <String>]
     Add-Column [-Name] <String> [-DataType] <String> [-Sparse] [-NotNull] [-Default <Object>] [-Description <String>] -TableName <String> [-TableSchema <String>] 
+    Add-Description [-Description] <String> [-SchemaName <String>] -TableName <String> [-ColumnName <String>]
     Remove-Column -Name <string> -TableName <string> [-TableSchema <string>]
     Remove-StoredProcedure -Name <string> [-Schema <string>] [-IfExists]
     Remove-UserDefinedFunction -Name <string> [-Schema <string>] [-IfExists]
@@ -91,7 +90,7 @@ If you have a script for a scripted object, you can use these functions:
     
 To execute raw SQL:
 
-    Invoke-Query -Query <string>
+    Invoke-Query [-Query] <String>
 
 You can use a PowerShell here string for longer queries and so you don't have to escape quotes:
 
