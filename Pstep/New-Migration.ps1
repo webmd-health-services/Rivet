@@ -69,6 +69,18 @@ Your migration is ready to go!  We've set you up with default migrations that ju
 
 If you have a script for a scripted object, you can use these functions:
 
+    Add-Column [-Name] <String> <-BigInt|-Int|-SmallInt|-TinyInt|-Date|-Time|-Money|-SmallMoney|-Bit|-SqlVariant|-RowVersion|-HierarchyID> [-Sparse] [-NotNull] [-Default <Object>] [-Description <String>] -TableName <String> [-TableSchema <String>]
+    Add-Column [-Name] <String> <-VarChar|-Char> [[-Size] <Int64>] [-Unicode] [-Collation <String>] [-Sparse] [-NotNull] [-Default <Object>] [-Description <String>] -TableName <String> [-TableSchema <String>]
+    Add-Column [-Name] <String> <-Binary|-VarBinary> [-Size] <Int64> [-Sparse] [-NotNull] [-Default <Object>] [-Description <String>] -TableName <String> [-TableSchema <String>]
+    Add-Column [-Name] <String> <-BigInt|-Int|-SmallInt|-TinyInt> -Identity [[-Seed] <Int32>] [[-Increment] <Int32>] [-NotForReplication] [-Description <String>] -TableName <String> [-TableSchema <String>] 
+    Add-Column [-Name] <String> <-Numeric|-Decimal> [-Precision] <Int32> -Identity [[-Seed] <Int32>] [[-Increment] <Int32>] [-NotForReplication] [-Description <String>] -TableName <String>  [-TableSchema <String>]
+    Add-Column [-Name] <String> <-Numeric|-Decimal> [-Precision] <Int32> [[-Scale] <Int32>] [-Sparse] [-NotNull] [-Default <Object>] [-Description <String>] -TableName <String> [-TableSchema <String>]
+    Add-Column [-Name] <String> -Float [[-Precision] <Int32>] [-Sparse] [-NotNull] [-Default <Object>] [-Description <String>] -TableName <String> [-TableSchema <String>] 
+    Add-Column [-Name] <String> -Datetime2 [[-Precision] <Int32>] [-Sparse] [-NotNull] [-Default <Object>] [-Description <String>] -TableName <String> [-TableSchema <String>] 
+    Add-Column [-Name] <String> -DateTimeOffset [[-Precision] <Int32>] [[-Scale] <Int32>] [-Sparse] [-NotNull] [-Default <Object>] [-Description <String>] -TableName <String> [-TableSchema <String>]
+    Add-Column [-Name] <String> -UniqueIdentifier [-RowGuidCol] [-Sparse] [-NotNull] [-Default <Object>] [-Description <String>] -TableName <String> [-TableSchema <String>] 
+    Add-Column [-Name] <String> -Xml [-Document] [-XmlSchemaCollection <String>] [-Sparse] [-NotNull] [-Default <Object>] [-Description <String>] -TableName <String> [-TableSchema <String>]
+    Add-Column [-Name] <String> [-DataType] <String> [-Sparse] [-NotNull] [-Default <Object>] [-Description <String>] -TableName <String> [-TableSchema <String>] 
     Remove-StoredProcedure -Name <string> [-Schema <string>] [-IfExists]
     Remove-UserDefinedFunction -Name <string> [-Schema <string>] [-IfExists]
     Remove-View -Name <string> [-Schema <string>] [-IfExists]
