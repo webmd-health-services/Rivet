@@ -49,7 +49,46 @@ function Push-Migration()
 
 function Pop-Migration()
 {
-    Invoke-Query -Query @'
-        drop table AddColumnNoDefaultsAllNull
+    $commonArgs = @{
+                        TableName = 'AddColumnNoDefaultsAllNull'
+                   }
+
+    Remove-Column -Name varchar @commonArgs
+    Remove-Column -Name varcharmax @commonArgs
+    Remove-Column char @commonArgs
+    Remove-Column nchar @commonArgs
+    Remove-Column nvarchar @commonArgs
+    Remove-Column nvarcharmax @commonArgs
+    Remove-Column binary @commonArgs
+    Remove-Column varbinary @commonArgs
+    Remove-Column varbinarymax @commonArgs
+    Remove-Column bigint @commonArgs
+    Remove-Column int @commonArgs
+    Remove-Column smallint @commonArgs
+    Remove-Column tinyint @commonArgs
+    Remove-Column numeric @commonArgs
+    Remove-Column numericwithscale @commonArgs
+    Remove-Column decimal @commonArgs
+    Remove-Column decimalwithscale @commonArgs
+    Remove-Column bit @commonArgs
+    Remove-Column money @commonArgs
+    Remove-Column smallmoney @commonArgs
+    Remove-Column float @commonArgs
+    Remove-Column floatwithprecision @commonArgs
+    Remove-Column real @commonArgs
+    Remove-Column date @commonArgs
+    Remove-Column datetime @commonArgs
+    Remove-Column datetime2 @commonArgs
+    Remove-Column datetimeoffset @commonArgs
+    Remove-Column smalldatetime @commonArgs
+    Remove-Column time @commonArgs
+    Remove-Column uniqueidentifier @commonArgs
+    Remove-Column xml @commonArgs
+    Remove-Column sql_variant @commonArgs
+    Remove-Column hierarchyid @commonArgs
+    Remove-Column timestamp @commonArgs
+
+   Invoke-Query -Query @'
+    drop table AddColumnNoDefaultsAllNull
 '@
 }
