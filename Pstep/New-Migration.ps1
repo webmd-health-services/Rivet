@@ -81,6 +81,7 @@ If you have a script for a scripted object, you can use these functions:
     Add-Column [-Name] <String> -UniqueIdentifier [-RowGuidCol] [-Sparse] [-NotNull] [-Default <Object>] [-Description <String>] -TableName <String> [-TableSchema <String>] 
     Add-Column [-Name] <String> -Xml [-Document] [-XmlSchemaCollection <String>] [-Sparse] [-NotNull] [-Default <Object>] [-Description <String>] -TableName <String> [-TableSchema <String>]
     Add-Column [-Name] <String> [-DataType] <String> [-Sparse] [-NotNull] [-Default <Object>] [-Description <String>] -TableName <String> [-TableSchema <String>] 
+    Remove-Column -Name <string> -TableName <string> [-TableSchema <string>]
     Remove-StoredProcedure -Name <string> [-Schema <string>] [-IfExists]
     Remove-UserDefinedFunction -Name <string> [-Schema <string>] [-IfExists]
     Remove-View -Name <string> [-Schema <string>] [-IfExists]
