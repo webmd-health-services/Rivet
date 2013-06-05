@@ -81,6 +81,7 @@ Your migration is ready to go!  Here are all the built-in migrations you can use
     Add-Column [-Name] <String> [-DataType] <String> [-Sparse] [-NotNull] [-Default <Object>] [-Description <String>] -TableName <String> [-TableSchema <String>] 
     Add-Description [-Description] <String> [-SchemaName <String>] -TableName <String> [-ColumnName <String>]
     Remove-Column -Name <string> -TableName <string> [-TableSchema <string>]
+    Remove-Description [-SchemaName <String>] -TableName <String> [-ColumnName <String>]
     Remove-StoredProcedure -Name <string> [-Schema <string>] [-IfExists]
     Remove-UserDefinedFunction -Name <string> [-Schema <string>] [-IfExists]
     Remove-View -Name <string> [-Schema <string>] [-IfExists]

@@ -24,7 +24,7 @@ function Assert-Table
     $table = Invoke-PstepTestQuery -Query $query -Connection $DatabaseConnection
     Assert-NotNull $table ('table {0} not found' -f $Name) 
 
-    if( $Description )
+    if( $PSBoundParameters.ContainsKey('Description') )
     {
         Assert-Equal $Description $table.MSDescription ('table {0} MS_Description extended property' -f $Name)
     }
