@@ -19,10 +19,10 @@ function New-DefaultConstraintName
         [Parameter()]
         [string]
         # The table's schema.  Default is `dbo`.
-        $TableSchema = 'dbo'
+        $SchemaName = 'dbo'
     )
 
-    $dfConstraintName = 'DF_{0}_{1}_{2}' -f $TableSchema,$TableName,$ColumnName
+    $dfConstraintName = 'DF_{0}_{1}_{2}' -f $SchemaName,$TableName,$ColumnName
     if( $TableSchema -eq 'dbo' )
     {
         $dfConstraintName = 'DF_{0}_{1}' -f $TableName,$ColumnName

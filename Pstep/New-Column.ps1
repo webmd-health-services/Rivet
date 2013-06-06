@@ -1,24 +1,28 @@
-function Add-Column
+function New-Column
 {
     <#
     .SYNOPSIS
-    Adds a column to a table.
+    Creates a column object which can be used with the `Add-Table` or `Add-Column` migrations.
 
     .DESCRIPTION
-    The column must not exist, otherwise the migration will fail.
+    Returns an object that can be used when adding columns or creating tables to get the SQL needed to create that column.  The returned object has the following members:
 
-    You can set the default value of a column.  Pstep will create a default constraint named `DF_<TableSchema>_<TableName>_<ColumnName>`.
+     * Name - the name of the column
+     * Definition - the simplified column definition, with no default constraint
+     * DefaultExpression - the expression for the default constraint, if any
+     * RowGuidCol - a boolean flag indicating if the column is a ROWGUIDCOL
+     * GetColumnDefinition(string schemaName, string tableName) - Gets the full, complete table definition SQL used to create the column
 
     .EXAMPLE
-    Add-Column -Name IsFunctioning -Bit -NotNull -Default 1 -TableName IronManSuits 
+    New-Column -Name IsFunctioning -Bit -NotNull -Default 1 
 
-    Adds the `IsFunctioning` column to the IronManSuites as a bit datatype, with a default value of 1.
+    Creates an object for gettng the to create an IsFunctioning column, e.g. `[IsFunctioning] bit not null constraint DF_<TableName>_<ColumnName> default 1`.
     #>
     [CmdletBinding()]
     param(
         [Parameter(Mandatory=$true,Position=0)]
         [string]
-        # The name of the column to add.
+        # The name of the column.
         $Name,
 
         [Parameter(Mandatory=$true,ParameterSetName='AsVarChar')]
@@ -140,14 +144,12 @@ function Add-Column
         [Parameter(Position=2,ParameterSetName='AsDateTime2')]
         [Parameter(Position=2,ParameterSetName='AsDateTimeOffset')]
         [int]
-        # The data type's precision.  Only valid for Numeric, Decimal, Float, DateTime2, and DateTimeOffset data tyes.
         $Precision,
 
         [Parameter(Position=3,ParameterSetName='AsNumeric')]
         [Parameter(Position=3,ParameterSetName='AsDecimal')]
         [Parameter(Position=3,ParameterSetName='AsDateTimeOffset')]
         [int]
-        # The data type's scale.  Only valid for Numeric, Decimal, and DateTimeOffset data tyes.
         $Scale,
 
         [Parameter(Mandatory=$true,ParameterSetName='AsTinyIntIdentity')]
@@ -157,7 +159,7 @@ function Add-Column
         [Parameter(Mandatory=$true,ParameterSetName='AsDecimalIdentity')]
         [Parameter(Mandatory=$true,ParameterSetName='AsNumericIdentity')]
         [Switch]
-        # Make this row an identity, with an auto-incrementing primary key. Only valid for TinyInt, SmallInt, Int, BigInt, Decimal, and Numeric data types.
+        # Make this row an identity, with an auto-incrementing primary key.
         $Identity,
 
         [Parameter(Position=2,ParameterSetName='AsTinyIntIdentity')]
@@ -167,7 +169,6 @@ function Add-Column
         [Parameter(Position=4,ParameterSetName='AsDecimalIdentity')]
         [Parameter(Position=4,ParameterSetName='AsNumericIdentity')]
         [int]
-        # The start value for the column's identity.  Default is `1`. Only valid for TinyInt, SmallInt, Int, BigInt, Decimal, and Numeric data types.
         $Seed = 1,
 
         [Parameter(Position=3,ParameterSetName='AsTinyIntIdentity')]
@@ -177,7 +178,6 @@ function Add-Column
         [Parameter(Position=5,ParameterSetName='AsDecimalIdentity')]
         [Parameter(Position=5,ParameterSetName='AsNumericIdentity')]
         [int]
-        # The increment value for the column's identity.  Default is `1`.  Only valid for TinyInt, SmallInt, Int, BigInt, Decimal, and Numeric data types.
         $Increment = 1,
 
         [Parameter(ParameterSetName='AsTinyIntIdentity')]
@@ -187,7 +187,6 @@ function Add-Column
         [Parameter(ParameterSetName='AsDecimalIdentity')]
         [Parameter(ParameterSetName='AsNumericIdentity')]
         [Switch]
-        # Don't replicate the identity column's value.  Only valid for TinyInt, SmallInt, Int, BigInt, Decimal, and Numeric data types.
         $NotForReplication,
 
         [Parameter(Mandatory=$true,ParameterSetName='AsMoney')]
@@ -277,7 +276,7 @@ function Add-Column
         [Parameter(ParameterSetName='AsHierarchyID')]
         [Parameter(ParameterSetName='ExplicitDataType')]
         [Switch]
-        # Makes the column not nullable.  Cannot be used with the `NotNull` switch.
+        # Optimizes the column storage for null values. Cannot be used with the `NotNull` switch.
         $Sparse,
 
         [Parameter(ParameterSetName='AsVarChar')]
@@ -335,40 +334,131 @@ function Add-Column
         [Parameter(ParameterSetName='AsHierarchyID')]
         [Parameter(ParameterSetName='ExplicitDataType')]
         [Object]
-        # The default column value.
-        $Default,
-
-        [string]
-        # A description of the column.
-        $Description,
-        
-        # The name of the table where the column should be added.
-        [Parameter(Mandatory=$true)]
-        [string]
-        $TableName,
-
-        [string]
-        # The schema of the table where the column should be added.  Default is `dbo`.
-        $TableSchema = 'dbo'
+        # A SQL Server expression for the column's default value.
+        $Default
     )
 
-    $newColumnArgs = @{} 
-    $PSBoundParameters.Keys | 
-        Where-Object { $_ -notmatch 'Description|TableName|TableSchema' } |
-        ForEach-Object { $newColumnArgs.$_ = $PSBoundParameters.$_ }
-
-    $column = New-Column @newColumnArgs
-
-    $query = @'
-    alter table [{0}].[{1}] add {2}
-'@ -f $TableSchema,$TableName,$column.GetColumnDefinition($TableName, $TableSchema)
-
-    Write-Host (' {0}.{1} +{2}' -f $TableSchema,$TableName,$column.Definition)
-    Invoke-Query -Query $query
-
-    if( $Description )
+    if( $PSBoundParameters.ContainsKey('NotNull') -and $PSBoundParameters.ContainsKey('Sparse') )
     {
-        Add-Description -Description $Description -SchemaName $TableSchema -TableName $TableName -ColumnName $Name -Quiet
+        throw ('Column {0}: A column cannot be NOT NULL and SPARSE.  Please choose one switch: `NotNull` or `Sparse`, but not both.' -f $Name)
+        return
     }
+
+    if( $PSCmdlet.ParameterSetName -eq 'ExplicitDataType' )
+    {
+        $columnDefinition = '[{0}] {1}' -f $Name, $DataType
+    }
+    else
+    {
+        if( $PSCmdlet.ParameterSetName -notmatch '^As(.*?)(Identity)?$' )
+        {
+            throw ('Unknown parameter set {0}.' -f $PSCmdlet.ParameterSetName)
+        }
+
+        $DataType = $matches[1].ToLower()
+        if( $PSBoundParameters.ContainsKey('Unicode') )
+        {
+            $DataType = 'n{0}' -f $DataType
+        }
+
+        $typeSize = ''
+        if( $PSCmdlet.ParameterSetName -match 'As(Var)?(Binary|Char)' )
+        {
+            $typeSize = '(max)'
+        }
+    
+        if( $PSBoundParameters.ContainsKey('Size') )
+        {
+            $typeSize = '({0})' -f $Size
+        }
+        elseif( $PSBoundParameters.ContainsKey('Precision') )
+        {
+            if( $PSBoundParameters.ContainsKey('Scale') )
+            {
+                $typeSize = '({0},{1})' -f $Precision,$Scale
+            }
+            else
+            {
+                $typeSize = '({0})' -f $Precision
+            }
+        }
+        elseif( $PSBoundParameters.ContainsKey('Document') )
+        {
+            if( -not $XmlSchemaCollection )
+            {
+                throw ('Table {0}.{1}, column {2}: Document-based XML columns must have an XML schema specified so that SQL Server can validate that you are inserting valid XML documents. Set the name of the XML schema collection with the XmlSchemaCollection parameter.' -f $TableSchema,$TableName,$Name)
+                return
+            }
+            $typeSize = '(document {0})' -f $XmlSchemaCollection
+        }
+        $columnDefinition = '[{0}] {1}{2}' -f $Name,$DataType,$typeSize
+    }
+
+    if( $PSBoundParameters.ContainsKey('FileStream') )
+    {
+        $columnDefinition = '{0} filestream' -f $columnDefinition
+    }
+
+    if( $PSBoundParameters.ContainsKey('Collation') )
+    {
+        $columnDefinition = '{0} collate {1}' -f $columnDefinition,$Collation
+    }
+
+    if( $PSBoundParameters.ContainsKey('Sparse') )
+    {
+        $columnDefinition = '{0} sparse' -f $columnDefinition
+    }
+
+    if( $PSCmdlet.ParameterSetName -like '*Identity' )
+    {
+        $columnDefinition = '{0} identity ({1},{2})' -f $columnDefinition,$Seed,$Increment
+        if( $PSBoundParameters.ContainsKey('NotForReplication') )
+        {
+            $columnDefinition = '{0} not for replication' -f $columnDefinition
+        }
+    }
+    elseif( $PSBoundParameters.ContainsKey('NotNull') )
+    {
+        $columnDefinition = '{0} not null' -f $columnDefinition
+    }
+
+    $columnInfo = @{ 
+                        Name = $Name;
+                        Definition = $columnDefinition;
+                        DefaultExpression = $Default;
+                        RowGuidCol = $PSBoundParameters.ContainsKey('RowGuidCol');
+                   }
+
+    $getColumnDefinitionMethod = {
+        param(
+            [Parameter(Mandatory=$true)]
+            [string]
+            # The name of the table where the column is getting added.
+            $TableName,
+
+            [string]
+            # The name of the table's schema. Default is `dbo`.
+            $SchemaName = 'dbo'
+        )
+
+        $dfConstraintClause = ''
+        if( $this.DefaultExpression )
+        {
+            $dfConstraintName = New-DefaultConstraintName -SchemaName $SchemaName -TableName $TableName -ColumnName $this.Name 
+            $dfConstraintClause = 'constraint {0} default {1}' -f $dfConstraintName,$this.DefaultExpression
+        }
+
+        $rowGuidColClause = ''
+        if( $this.RowGuidCol )
+        {
+            $rowGuidColClause = 'rowguidcol'
+        }
+
+        return '{0} {1} {2}' -f $this.Definition,$dfConstraintClause,$rowGuidColClause
+
+    }
+
+    New-Object PsObject -Property $columnInfo | 
+        Add-Member -MemberType ScriptMethod -Name 'GetColumnDefinition' -Value $getColumnDefinitionMethod -PassThru
 
 }
