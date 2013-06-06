@@ -347,28 +347,29 @@ function Add-Column
         [string]
         $TableName,
 
+        [Alias('TableSchema')]
         [string]
         # The schema of the table where the column should be added.  Default is `dbo`.
-        $TableSchema = 'dbo'
+        $SchemaName = 'dbo'
     )
 
     $newColumnArgs = @{} 
     $PSBoundParameters.Keys | 
-        Where-Object { $_ -notmatch 'Description|TableName|TableSchema' } |
+        Where-Object { $_ -notmatch 'TableName|SchemaName' } |
         ForEach-Object { $newColumnArgs.$_ = $PSBoundParameters.$_ }
 
     $column = New-Column @newColumnArgs
 
     $query = @'
     alter table [{0}].[{1}] add {2}
-'@ -f $TableSchema,$TableName,$column.GetColumnDefinition($TableName, $TableSchema)
+'@ -f $SchemaName,$TableName,$column.GetColumnDefinition($TableName, $SchemaName)
 
-    Write-Host (' {0}.{1} +{2}' -f $TableSchema,$TableName,$column.Definition)
+    Write-Host (' {0}.{1} +{2}' -f $SchemaName,$TableName,$column.Definition)
     Invoke-Query -Query $query
 
     if( $Description )
     {
-        Add-Description -Description $Description -SchemaName $TableSchema -TableName $TableName -ColumnName $Name -Quiet
+        Add-Description -Description $column.Description -SchemaName $SchemaName -TableName $TableName -ColumnName $Name -Quiet
     }
 
 }

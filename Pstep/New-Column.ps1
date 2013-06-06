@@ -335,7 +335,11 @@ function New-Column
         [Parameter(ParameterSetName='ExplicitDataType')]
         [Object]
         # A SQL Server expression for the column's default value.
-        $Default
+        $Default,
+
+        [string]
+        # A description of the column.
+        $Description        
     )
 
     if( $PSBoundParameters.ContainsKey('NotNull') -and $PSBoundParameters.ContainsKey('Sparse') )
@@ -425,6 +429,7 @@ function New-Column
     $columnInfo = @{ 
                         Name = $Name;
                         Definition = $columnDefinition;
+                        Description = $Description;
                         DefaultExpression = $Default;
                         RowGuidCol = $PSBoundParameters.ContainsKey('RowGuidCol');
                    }
