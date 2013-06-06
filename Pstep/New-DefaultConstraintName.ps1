@@ -23,7 +23,7 @@ function New-DefaultConstraintName
     )
 
     $dfConstraintName = 'DF_{0}_{1}_{2}' -f $SchemaName,$TableName,$ColumnName
-    if( $TableSchema -eq 'dbo' )
+    if( $SchemaName -eq 'dbo' )
     {
         $dfConstraintName = 'DF_{0}_{1}' -f $TableName,$ColumnName
     }

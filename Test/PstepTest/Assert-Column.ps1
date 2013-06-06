@@ -58,7 +58,8 @@ function Assert-Column
         [Parameter(Mandatory=$true)]
         $TableName,
 
-        $TableSchema = 'dbo'
+        [Alias('TableSchema')]
+        $SchemaName = 'dbo'
     )
 
     $query = @'
@@ -73,9 +74,9 @@ function Assert-Column
         sys.identity_columns ic on c.object_id = ic.object_id and c.column_id = ic.column_id
     where
         s.name = '{0}' and t.name = '{1}' and c.name = '{2}'
-'@ -f $TableSchema, $TableName, $Name
+'@ -f $SchemaName, $TableName, $Name
     $column = Invoke-PstepTestQuery -Query $query -Connection $DatabaseConnection
-    Assert-NotNull $column ('{0}.{1}: column {2} not found' -f $TableSchema,$TableName,$Name)
+    Assert-NotNull $column ('{0}.{1}: column {2} not found' -f $SchemaName,$TableName,$Name)
 
     Assert-Equal $DataType $column.type_name ('column {0} not expected type' -f $Name)
     
@@ -123,7 +124,7 @@ function Assert-Column
     if( $Default )
     {
         Assert-NotNull $column.default_constraint ('column {0} default constraint not created')
-        $dfConstraintName = New-DefaultConstraintName -ColumnName $Name -TableName $TableName -SchemaName $TableSchema
+        $dfConstraintName = New-DefaultConstraintName -ColumnName $Name -TableName $TableName -SchemaName $SchemaName
         Assert-Equal $dfConstraintName $column.default_constraint_name ('column {0} default constraint name not set correctly' -f $Name)
         Assert-Match  $column.default_constraint ('{0}' -f ([Text.RegularExpressions.Regex]::Escape($Default))) ('column {0} default constraint not set' -f $Name)
     }
