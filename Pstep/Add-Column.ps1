@@ -7,7 +7,7 @@ function Add-Column
     .DESCRIPTION
     The column must not exist, otherwise the migration will fail.
 
-    You can set the default value of a column.  Pstep will create a default constraint named `DF_<TableSchema>_<TableName>_<ColumnName>`.
+    You can set the default value of a column.  Pstep will create a default constraint named `DF_<SchemaName>_<TableName>_<ColumnName>`.
 
     .EXAMPLE
     Add-Column -Name IsFunctioning -Bit -NotNull -Default 1 -TableName IronManSuits 

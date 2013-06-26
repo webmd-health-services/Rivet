@@ -390,7 +390,7 @@ function New-Column
         {
             if( -not $XmlSchemaCollection )
             {
-                throw ('Table {0}.{1}, column {2}: Document-based XML columns must have an XML schema specified so that SQL Server can validate that you are inserting valid XML documents. Set the name of the XML schema collection with the XmlSchemaCollection parameter.' -f $TableSchema,$TableName,$Name)
+                throw ('Column {0}: Document-based XML columns must have an XML schema specified so that SQL Server can validate that you are inserting valid XML documents. Set the name of the XML schema collection with the XmlSchemaCollection parameter.' -f $Name)
                 return
             }
             $typeSize = '(document {0})' -f $XmlSchemaCollection
