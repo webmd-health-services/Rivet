@@ -24,12 +24,13 @@ function Remove-Column
         [string]
         $TableName,
 
+        [Alias('TableSchema')]
         [string]
         # The schema of the table where the column should be added.  Default is `dbo`.
-        $TableSchema = 'dbo'
+        $SchemaName = 'dbo'
     )
 
-    $query = 'alter table [{0}].[{1}] drop column [{2}]' -f $TableSchema,$TableName,$Name
-    Write-Host (' {0}.{1} -[{2}]' -f $TableSchema,$TableName,$Name)
+    $query = 'alter table [{0}].[{1}] drop column [{2}]' -f $SchemaName,$TableName,$Name
+    Write-Host (' {0}.{1} -[{2}]' -f $SchemaName,$TableName,$Name)
     Invoke-Query $query
 }
