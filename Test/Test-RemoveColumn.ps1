@@ -1,7 +1,7 @@
 
 function Setup
 {
-    Import-Module -Name (Join-Path $TestDir 'PstepTest') -ArgumentList 'AddColumn' 
+    Import-Module -Name (Join-Path $TestDir 'PstepTest') -ArgumentList 'RemoveColumn' 
     Start-PstepTest
 }
 
