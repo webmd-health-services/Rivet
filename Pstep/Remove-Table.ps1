@@ -19,7 +19,6 @@ function Remove-Table
         [string]
         $Name,
 
-        [Alias('TableSchema')]
         [string]
         # The schema of the table where the column should be added.  Default is `dbo`.
         $SchemaName = 'dbo'
