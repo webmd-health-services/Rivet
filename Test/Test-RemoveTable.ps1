@@ -20,13 +20,16 @@ function Test-ShouldRemoveTable
     Assert-False (Test-Table 'Ducati')
 }
 
-function Test-ShouldRemoveTableInCorrectSchema
+function Test-ShouldRemoveTableInCustomSchema
 {
-    # Create migration to add table with same name in two schemas
-    # .\Pstep\pstep.ps1 -New -Name AddTablesInDifferentSchemas -Database RemoveTable -Path .\Test\Databases\RemoveTable
-    # .\Pstep\pstep.ps1 -New -Name RemoveTableInCustomSchema -Database RemoveTable -Path .\Test\Databases\RemoveTable
-    # Test tables exist
-    # Create migration to remove table in custom schema
-    # Test dbo table exists
-    # Test custom schema table does not exist.
+    $Name = 'Ducati'
+    $CustomSchemaName = 'notDbo'
+    
+    Invoke-Pstep -Push 'AddTablesInDifferentSchemas'
+    Assert-True (Test-Table -Name $Name)
+    Assert-True (Test-Table -Name $Name -SchemaName $CustomSchemaName)
+    
+    Invoke-Pstep -Pop ([Int32]::MaxValue)
+    Assert-True (Test-Table -Name $Name)
+    Assert-False (Test-Table -Name $Name -SchemaName $CustomSchemaName)
 }

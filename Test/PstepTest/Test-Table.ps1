@@ -2,7 +2,9 @@
 function Test-Table
 {
     param(
-        $Name
+        $Name,
+        
+        $SchemaName = 'dbo'
     )
-    return Test-DatabaseObject -Table -Name $Name
+    return Test-DatabaseObject -Table -Name $Name -SchemaName $SchemaName
 }
