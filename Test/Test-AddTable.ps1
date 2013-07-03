@@ -15,7 +15,7 @@ function Test-ShouldCreateTable
 {
     Invoke-Pstep -Push 'CreateTable'
 
-    Assert-Table 'AddTable' -Description 'Testing Add-Table migration' -DataCompression 2
+    Assert-Table 'AddTable' -Description 'Testing Add-Table migration'
     Assert-Column -Name 'varchar' 'varchar' -NotNull -Description 'varchar(max) constraint DF_AddTable_varchar default default' -TableName 'AddTable'
     Assert-Column -Name 'id' 'bigint' -NotNull -Seed 1 -Increment 1 -TableName 'AddTable'
 
@@ -57,4 +57,18 @@ function Test-ShouldCreateWithCustomFileStreamFileGroup
     Assert-True (0 -lt $Error.Count)
     Assert-Like $Error[1].Exception.Message '*FILESTREAM_ON cannot be specified*'
     Assert-False (Test-Table -Name 'CustomFileStreamFileGroup')
+}
+
+function Test-ShouldCreateTableWithOptions
+{
+    Invoke-Pstep -Push 'CreateTableWithOption' -ErrorVariable pstepError -ErrorAction SilentlyContinue
+    
+    if( $pstepError )
+    {
+        Assert-Like $pstepError[0] '*Cannot enable compression for object ''AddTableWithOption''*'
+    }
+    else
+    {
+        Assert-Table 'AddTableWithOption' -Description 'Testing Add-Table migration' -DataCompression 2
+    }
 }

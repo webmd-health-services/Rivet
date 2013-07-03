@@ -43,6 +43,11 @@ function Update-Description
         # The name of the column where the extended property is getting updated.
         $ColumnName,
 
+        [Parameter(ParameterSetName='ForTable')]
+        [Switch]
+        # If you're using PowerShell v2.0, you need to specify this flag in order to set a table's description.
+        $ForTable,
+
         [Switch]
         # Don't output any messages.
         $Quiet
