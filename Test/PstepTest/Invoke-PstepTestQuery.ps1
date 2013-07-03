@@ -7,13 +7,22 @@ function Invoke-PstepTestQuery
         $Query,
         
         [Data.SqlClient.SqlConnection]
-        $Connection,
+        $Connection = $DatabaseConnection,
+
+        [Switch]
+        # Use the master connection, instead of the database connection.
+        $Master,
         
         [Parameter(ParameterSetName='AsScalar')]
         [Switch]
         $AsScalar
     )
     
+    if( $Master )
+    {
+        $Connection = $MasterConnection
+    }
+
     try
     {
         $cmd = New-Object Data.SqlClient.SqlCommand ($Query,$Connection)
