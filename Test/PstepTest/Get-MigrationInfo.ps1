@@ -4,14 +4,21 @@ function Get-MigrationInfo
     param(
         [string]
         # The name of the migration whose info to get.  Otherwise, returns all migrations.
-        $Name
+        $Name,
+
+        $Connection = $DatabaseConnection
     )
 
     $query = 'select * from pstep.Migrations'
     if( $Name )
     {
-        $query = $query + (' where name = ''{0}''' -f $Name)
+        $query = '{0} where name = ''{1}''' -f $query,$Name
+    }
+    else
+    {
+        $query = '{0} order by AtUtc' -f $query
     }
 
-    Invoke-PstepTestQuery -Query $query -Connection $DatabaseConnection
+
+    Invoke-PstepTestQuery -Query $query -Connection $Connection
 }

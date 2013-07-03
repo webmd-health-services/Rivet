@@ -1,6 +1,25 @@
 
 function New-TempDirectoryTree
 {
+    <#
+    .SYNOPSIS
+    Create a directory tree in a temporary directory.
+
+    .DESCRIPTION
+
+    Uses a simple DSL to create a temporary directory tree in the current user's `$env:TEMP` directory.  Here's an example:
+
+        New-TemporaryDirectoryTree -Tree @'
+        + Database1
+          + Migrations
+            * 20130703152600_CreateTable.ps1
+        + Database2
+          + Migrations
+            * 20130703152600_CreateTable.ps1
+        '@
+    
+    Databases are prefixed with `+`.  Files are prefixed with `+`.  To create an item underneath a directory, indent it two spaces further than the parent directory.
+    #>
     [CmdletBinding()]
     param(
         [Parameter(Mandatory=$true)]

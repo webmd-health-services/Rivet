@@ -21,9 +21,27 @@ function Invoke-Pstep
 
         [Parameter(ParameterSetName='Redo')]
         [Switch]
-        $Redo
+        $Redo,
+
+        [string[]]
+        $Database,
+
+        [string]
+        $Path
     )
 
-    & $PstepPath @PSBoundParameters -SqlServerName $Server -Database $DatabaseName -Path $DatabaseRoot 
+    $customParams = @{ }
+    if( -not $Database )
+    {
+        $customParams.Database = $DatabaseName
+    }
+
+    if( -not $Path )
+    {
+        $customParams.Path = $DatabaseRoot
+    }
+
+    $parms = $PSBoundParameters
+    & $PstepPath @PSBoundParameters @customParams -SqlServerName $Server
 
 }
