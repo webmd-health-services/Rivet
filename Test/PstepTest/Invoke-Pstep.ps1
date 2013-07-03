@@ -6,7 +6,7 @@ function Invoke-Pstep
         [Switch]
         $Push,
 
-        [Parameter(Mandatory=$true,Position=1,ParameterSetName='Push')]
+        [Parameter(Position=1,ParameterSetName='Push')]
         [string]
         # The name of the migration to push/pop.
         $Name,
@@ -15,11 +15,33 @@ function Invoke-Pstep
         [Switch]
         $Pop,
         
-        [Parameter(Mandatory=$true,Position=1,ParameterSetName='Pop')]
+        [Parameter(Position=1,ParameterSetName='Pop')]
         [UInt32]
-        $Count
+        $Count,
+
+        [Parameter(ParameterSetName='Redo')]
+        [Switch]
+        $Redo,
+
+        [string[]]
+        $Database,
+
+        [string]
+        $Path
     )
 
-    & $PstepPath @PSBoundParameters -SqlServerName $Server -Database $DatabaseName -Path $DatabaseRoot 
+    $customParams = @{ }
+    if( -not $Database )
+    {
+        $customParams.Database = $DatabaseName
+    }
+
+    if( -not $Path )
+    {
+        $customParams.Path = $DatabaseRoot
+    }
+
+    $parms = $PSBoundParameters
+    & $PstepPath @PSBoundParameters @customParams -SqlServerName $Server
 
 }

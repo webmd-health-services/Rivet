@@ -1,43 +1,38 @@
 
-. (Join-Path $TestDir Initialize-PstepTest.ps1 -Resolve)
-
-$connection = $null
-
 function Setup
 {
-    New-Database
+    Import-Module -Name (Join-Path $TestDir 'PstepTest') -ArgumentList 'RedoMigration' 
+    Start-PstepTest
 
-    $connection = Connect-Database
-    
-    Get-ChildItem $pstepTestMigrationsDir *.ps1 | 
-        Sort-Object BaseName | 
-        Select-Object -Skip 2 | 
-        Remove-Item
-    
-    & $pstep -Push -SqlServerName $server -Database $pstepTestDatabase -Path $pstepTestRoot
+    Invoke-Pstep -Push
     
     Assert-Equal 2 (Measure-Migration)
 }
 
 function TearDown
 {
-    Disconnect-Database -Connection $connection
-    
-    Remove-Database
+    Stop-PstepTest
+    Remove-Module PstepTest
 }
 
 function Test-ShouldPopThenPushTopMigration
 {
-    $createdAt = Invoke-Query -Query 'select create_date from sys.tables where name = ''SecondTable''' -Connection $connection -AsScalar
-    $migratedAt = Invoke-Query -Query 'select AtUtc from pstep.Migrations where name = ''SecondTable''' -Connection $connection -AsScalar
+    $redoMigrationTable = Get-Table -Name 'RedoMigration'
+    $secondTable = Get-Table -Name 'SecondTable'
+
+    $migrationInfo = Get-MigrationInfo -Name 'SecondTable'
     
-    & $pstep -Redo -SqlServerName $server -Database $pstepTestDatabase -Path $pstepTestRoot
+    Invoke-Pstep -Redo
     
-    $redoCreatedAt = Invoke-Query -Query 'select create_date from sys.tables where name = ''SecondTable''' -Connection $connection -AsScalar
-    Assert-NotNull $redoCreatedAt
-    $redoMigratedAt = Invoke-Query -Query 'select AtUtc from pstep.Migrations where name = ''SecondTable''' -Connection $connection -AsScalar
-    Assert-NotNull $redoMigratedAt
-    
-    Assert-True ($createdAt -lt $redoCreatedAt)
-    Assert-True ($migratedAt -lt $redoMigratedAt)
+    # Make sure only one migration was popped/pushed.
+    $redoMigrationTableRedo = Get-Table -Name 'RedoMigration'
+    Assert-Equal $redoMigrationTable.create_date $redoMigrationTableRedo.create_date
+
+    $secondTableRedo = Get-Table -Name 'SecondTable'
+    Assert-NotNull $secondTableRedo
+    Assert-True ($redoMigrationTable.create_date -lt $secondTableRedo.create_date)
+
+    $redoMigrationInfo = Get-MigrationInfo -Name 'AddColumn'
+    Assert-NotNull $redoMigrationInfo
+    Assert-True ($migrationInfo.AtUtc -lt $redoMigrationInfo.AtUtc)
 }

@@ -1,29 +1,22 @@
 
-. (Join-Path $TestDir Initialize-PstepTest.ps1 -Resolve)
-
-$connection = $null
-
 function Setup
 {
-    New-Database
-
-    $connection = Connect-Database
+    Import-Module -Name (Join-Path $TestDir 'PstepTest') -ArgumentList 'PstepTest' 
+    Start-PstepTest
 }
 
 function TearDown
 {
-    Disconnect-Database -Connection $connection
-    
-    Remove-Database
+    Stop-PstepTest
+    Remove-Module PstepTest
 }
 
 function Test-ShouldPushMigrations
 {
     $createdAt = (Get-Date).ToUniversalTime()
-    & $pstep -Push -SqlServerName $server -Database $pstepTestDatabase -Path $pstepTestRoot
-    Assert-LastProcessSucceeded
+    Invoke-Pstep -Push
     
-    $migrationScripts = Get-ChildItem $pstepTestMigrationsDir *.ps1 
+    $migrationScripts = Get-MigrationScript
     
     $migrationScripts | ForEach-Object {
         
@@ -32,27 +25,25 @@ function Test-ShouldPushMigrations
         Assert-Migration -ID $id -Name $name
     }
     
-    Assert-True (_Test-Table -Name 'InvokeQuery')
-    Assert-True (_Test-Table -Name 'SecondTable')
-    Assert-True (_Test-DBObject -StoredProcedure 'PstepTestSproc')
-    Assert-True (_Test-DBObject -ScalarFunction 'PstepTestFunction') 'user-defined function not created'
-    Assert-True (_Test-DBObject -View 'Migrators') 'view not created'
-    Assert-True (_Test-DBObject -ScalarFunction 'MiscellaneousObject') 'the miscellaneous function not created'
-    Assert-True (_Test-DBObject -ScalarFunction 'ObjectMadeWithRelativePath') 'object specified with relative path to Invoke-SqlScript not created'
+    Assert-True (Test-Table -Name 'InvokeQuery')
+    Assert-True (Test-Table -Name 'SecondTable')
+    Assert-True (Test-DatabaseObject -StoredProcedure 'PstepTestSproc')
+    Assert-True (Test-DatabaseObject -ScalarFunction 'PstepTestFunction') 'user-defined function not created'
+    Assert-True (Test-DatabaseObject -View 'Migrators') 'view not created'
+    Assert-True (Test-DatabaseObject -ScalarFunction 'MiscellaneousObject') 'the miscellaneous function not created'
+    Assert-True (Test-DatabaseObject -ScalarFunction 'ObjectMadeWithRelativePath') 'object specified with relative path to Invoke-SqlScript not created'
 
     # Make sure they are run in order.
-    $query = 'select name from pstep.Migrations order by AtUtc'
-    $rows = Invoke-Query -Query $query -Connection $connection
+    $rows = Get-MigrationInfo
     Assert-NotNull $rows
     Assert-Equal 'InvokeQuery' $rows[0].Name
     Assert-Equal 'SecondTable' $rows[1].Name
     Assert-Equal 'CreateObjectsFromFiles' $rows[2].Name
     
-    $createdBefore = (Get-Date).ToUniversalTime()
-    & $pstep -Push -SqlServerName $server -Database $pstepTestDatabase -Path $pstepTestRoot
+    $createdBefore = Get-SqlServerUtcDate
+    Invoke-Pstep -Push
    
-    $query = 'select name from pstep.Migrations order by AtUtc'
-    $rows = Invoke-Query -Query $query -Connection $connection
+    $rows = Get-MigrationInfo
     Assert-NotNull $rows
     Assert-Equal $migrationScripts.Count $rows.Count
     $rows | ForEach-Object { Assert-True ($_.AtUtc -lt $createdBefore) }
@@ -60,38 +51,78 @@ function Test-ShouldPushMigrations
 
 function Test-ShouldPushMigrationsForMultipleDBs
 {
-    New-Database -Name PstepTestTwo
-    
-    $twoConnection = Connect-Database -Name PstepTestTwo
+    $timestamp = '{0:yyyyMMddHHss}' -f (Get-Date)
+    $db1Name = 'PushMigration{0}' -f $timestamp
+    $db2Name = 'PushMigration{0}' -f $timestamp
+    $migrationFileName = '20130703152600_CreateTable.ps1'
+    $tree = @'
++ {0}
+  + Migrations
+    * {1}
++ {2}
+  + Migrations
+    * {1}
+'@ -f $db1Name,$migrationFileName,$db2Name
+
+    $tempDir = New-TempDirectoryTree -Tree $tree -Prefix 'Pstep.Push-Migration'
+
+    $migration = @'
+        function Push-Migration 
+        {
+            Add-Table Table1 {
+                New-Column 'id' -Int -Identity
+            }
+        }
+
+        function Pop-Migration
+        {
+            Remove-Table 'Table1'
+        }
+'@
+
+    $db1MigrationsDir = Join-Path $tempDir $db1Name\Migrations
+    $migration | Out-File (Join-Path $db1MigrationsDir $migrationFileName) -Encoding OEM
+
+    $db2MigrationsDir = Join-Path $tempDir $db2Name\Migrations
+    $migration | Out-File (Join-Path $db2MigrationsDir $migrationFileName) -Encoding OEM
+
+    New-Database -Name $db1Name
+    $db1Conn = New-SqlConnection -Database $db1Name
+
+    New-Database -Name $db2Name
+    $db2Conn = New-SqlConnection -Database $db2Name
     
     try
     {
-        & $pstep -Push -SqlServerName $server -Database $pstepTestDatabase,$pstepTestTwoDatabase -Path $dbsRoot
+        Invoke-Pstep -Push -Database $db1Name,$db2Name -Path $tempDir
         
-        Assert-Migration -Path $pstepTestMigrationsDir 
-        Assert-Migration -Path $pstepTestTwoMigrationsDir -Connection $twoConnection
+        Assert-Migration -Path $db1MigrationsDir -Connection $db1Conn
+        Assert-Migration -Path $db2MigrationsDir -Connection $db2Conn
     }
     finally
     {
-        Remove-Database -Name PstepTestTwo
-        Disconnect-Database -Connection $twoConnection
+        Remove-PstepTestDatabase -Name $db1Name
+        $db1Conn.Close()
+
+        Remove-PstepTestDatabase -Name $db2Name
+        $db2Conn.Close()
     }
 }
 
 function Test-ShouldPushSpecificMigrationByName
 {
     $createdAfter = (Get-Date).ToUniversalTime()
-    Get-ChildItem $pstepTestMigrationsDir *.ps1 | 
+    Get-MigrationScript | 
         Select-Object -First 1 |
         ForEach-Object {
             $id,$name = $_.BaseName -split '_'
             
-            & $pstep -Push -Name $name -SqlServerName $server -Database $pstepTestDatabase -Path $pstepTestRoot
+            Invoke-Pstep -Push $Name
             
             Assert-Migration -ID $id -Name $name -CreatedAfter $CreatedAfter
         }
         
-    $count = Invoke-Query -Query 'select count(*) from pstep.Migrations' -Connection $connection -AsScalar
+    $count = Measure-Migration
     Assert-Equal 1 $count 'applied too many migrations'
 }
 
@@ -99,69 +130,76 @@ function Test-ShouldPushSpecificMigrationWithWildcard
 {
     $createdAfter = (Get-Date).ToUniversalTime()
     
-    & $pstep -Push -Name 'Invoke*' -SqlServerName $server -Database $pstepTestDatabase -Path $pstepTestRoot
+    Invoke-Pstep -Push 'Invoke*'
     
-    $migration = Get-ChildItem $pstepTestMigrationsDir *_Invoke*.ps1
+    $migration = Get-MigrationScript | Where-Object { $_.Name -like '*_Invoke*.ps1' }
     $id,$name = $migration.BaseName -split '_'
     Assert-Migration -ID $id -Name $name -CreatedAfter $CreatedAfter
         
-    $count = Invoke-Query -Query 'select count(*) from pstep.Migrations' -Connection $connection -AsScalar
+    $count = Measure-Migration
     Assert-Equal 1 $count 'applied too many migrations'
 }
 
 function Test-ShouldNotReapplyASpecificMigration
 {
     $createdAfter = (Get-Date).ToUniversalTime()
-    Get-ChildItem $pstepTestMigrationsDir *.ps1 | 
+    Get-MigrationScript | 
         Select-Object -First 1 |
         ForEach-Object {
             $id,$name = $_.BaseName -split '_'
             
-            & $pstep -Push -Name $name -SqlServerName $server -Database $pstepTestDatabase -Path $pstepTestRoot
+            Invoke-Pstep -Push $name
             
             Assert-Migration -ID $id -Name $name -CreatedAfter $CreatedAfter
             
             $createdBefore = Get-SqlServerUtcDate
-            
-            & $pstep -Push -Name $name -SqlServerName $server -Database $pstepTestDatabase -Path $pstepTestRoot
+
+            Invoke-Pstep -Push $name            
 
             $row = Assert-Migration -ID $id -Name $name -CreatedAfter $CreatedAfter -PassThru
             Assert-True ($row.AtUtc -lt $createdBefore)
         }
         
-    $count = Invoke-Query -Query 'select count(*) from pstep.Migrations' -Connection $connection -AsScalar
+    $count = Measure-Migration 
     Assert-Equal 1 $count 'applied too many migrations'
 
 }
 
 function Test-ShouldStopPushingMigrationsIfOneGivesAnError
 {
-    Copy-Item -Path (Join-Path $pstepTestMigrationsDir Extras\*.ps1) -Destination $pstepTestMigrationsDir
+    $script = Get-MigrationScript | Select-Object -First 1
+    $migrationDir = Split-Path -Parent -Path $script.FullName
+    Copy-Item -Path (Join-Path $migrationDir Extras\*.ps1) -Destination $migrationDir
     
-    & $pstep -Push -SqlServer $server -Database $pstepTestDatabase -Path $pstepTestRoot -ErrorAction SilentlyContinue
-    Assert-LastProcessFailed
-    Assert-True ($error.Count -gt 0)
+    Invoke-Pstep -Push -ErrorAction SilentlyContinue -ErrorVariable pstepError
+    Assert-True ($pstepError.Count -gt 0)
     
     ('TableWithoutColumnsWithColumn','TableWithoutColumns','FourthTable') | ForEach-Object {
-        $query = 'select count(*) from sys.tables where name = ''{0}''' -f $_
-        $tableCount = Invoke-Query -Query $query -Connection $connection -AsScalar
-        Assert-Equal 0 $tableCount ('table {0} created' -f $_)
+        Assert-False (Test-Table -Name $_) ('table {0} created' -f $_)
     }
     
     $query = 'select count(*) from InvokeQuery'
-    $rowCount = Invoke-Query -Query $query -Connection $connection -AsScalar
-    Assert-Equal 0 $tableCount 'insert statements not rolled back'
+    $rowCount = Invoke-PstepTestQuery -Query $query -AsScalar
+    Assert-Equal 0 $rowCount 'insert statements not rolled back'
 
     ('TableWithoutColumns','FourthTable') | ForEach-Object {
-        $query = 'select count(*) from pstep.Migrations where name = ''{0}''' -f $_
-        $rowCount = Invoke-Query -Query $query -Connection $connection -AsScalar
-        Assert-Equal 0 $rowCount ('migration {0} recorded' -f $_)
+        $migration = Get-MigrationInfo -Name $_
+        Assert-Null $migration
     }
+}
+
+function Test-ShouldFailIfMigrationNameDoesNotExist
+{
+    $Error.Clear()
+    Invoke-Pstep -Push 'AMigrationWhichDoesNotExist' -ErrorAction SilentlyContinue
+
+    Assert-GreaterThan $Error.Count 0
+    Assert-Like $Error[0] '*not found*'
 }
 
 function Get-SqlServerUtcDate
 {
-    Invoke-Query -Query 'select getutcdate()' -AsScalar -Connection $connection
+    Invoke-PstepTestQuery -Query 'select getutcdate()' -AsScalar 
 }
 
 function Assert-Migration
@@ -182,9 +220,15 @@ function Assert-Migration
         [Switch]
         $PassThru,
         
-        $Connection = $connection
+        $Connection
     )
     
+    $connParam = @{ }
+    if( $Connection )
+    {
+        $connParam.Connection = $Connection
+    }
+
     if( $pscmdlet.ParameterSetName -eq 'ByPath' )
     {
         $count = 0
@@ -195,14 +239,13 @@ function Assert-Migration
                 $count++
                 $id  = $matches[1] 
                 $name = $matches[2]
-                Assert-Migration -ID $id -Name $name -Connection $Connection
+                Assert-Migration -ID $id -Name $name @connParam
             }
         Assert-True ($count -gt 0)
         return
     }
     
-    $query = 'select * from pstep.Migrations where name = ''{0}''' -f $Name
-    $migrationRow = Invoke-Query -Query $query -Connection $Connection
+    $migrationRow = Get-MigrationInfo -Name $Name @connParam
     Assert-IsNotNull $migrationRow
     Assert-True ($migrationRow -is [PsObject]) 'not a PsObject'
     Assert-Equal $id $migrationRow.ID
