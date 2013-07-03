@@ -66,7 +66,7 @@ function Add-Column
         # The collation to use for storing text.
         $Collation,
 
-        [Parameter(Mandatory=$true,ParameterSetName='AsBigInt')]
+        [Parameter(ParameterSetName='AsBigInt')]
         [Parameter(Mandatory=$true,ParameterSetName='AsBigIntIdentity')]
         [Switch]
         # Creates a bigint column.

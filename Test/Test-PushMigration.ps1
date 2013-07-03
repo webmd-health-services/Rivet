@@ -121,7 +121,7 @@ function Test-ShouldNotReapplyASpecificMigration
             
             Assert-Migration -ID $id -Name $name -CreatedAfter $CreatedAfter
             
-            $createdBefore = (Get-Date).ToUniversalTime()
+            $createdBefore = Get-SqlServerUtcDate
             
             & $pstep -Push -Name $name -SqlServerName $server -Database $pstepTestDatabase -Path $pstepTestRoot
 
@@ -138,7 +138,7 @@ function Test-ShouldStopPushingMigrationsIfOneGivesAnError
 {
     Copy-Item -Path (Join-Path $pstepTestMigrationsDir Extras\*.ps1) -Destination $pstepTestMigrationsDir
     
-    & $pstep -Push -SqlServer $server -Database $pstepTestDatabase -Path $pstepTestRoot
+    & $pstep -Push -SqlServer $server -Database $pstepTestDatabase -Path $pstepTestRoot -ErrorAction SilentlyContinue
     Assert-LastProcessFailed
     Assert-True ($error.Count -gt 0)
     
@@ -157,6 +157,11 @@ function Test-ShouldStopPushingMigrationsIfOneGivesAnError
         $rowCount = Invoke-Query -Query $query -Connection $connection -AsScalar
         Assert-Equal 0 $rowCount ('migration {0} recorded' -f $_)
     }
+}
+
+function Get-SqlServerUtcDate
+{
+    Invoke-Query -Query 'select getutcdate()' -AsScalar -Connection $connection
 }
 
 function Assert-Migration
@@ -205,7 +210,8 @@ function Assert-Migration
     Assert-Equal ('{0}\{1}' -f $env:USERDOMAIN,$env:USERNAME) $migrationRow.Who
     Assert-Equal $env:ComputerName $migrationRow.ComputerName
     Assert-True ($migrationRow.AtUtc -gt $CreatedAfter)
-    Assert-True ($migrationRow.AtUtc -lt ((Get-Date).ToUniversalTime()))
+    $now = Get-SqlServerUtcDate
+    Assert-True ($migrationRow.AtUtc -le $now) ('{0} >= {1}' -f $migrationRow.AtUtc,$now)
     
     if( $PassThru )
     {
