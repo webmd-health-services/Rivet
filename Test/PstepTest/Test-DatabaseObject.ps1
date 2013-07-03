@@ -20,11 +20,25 @@ function Test-DatabaseObject
         
         [Parameter(Mandatory=$true,Position=1)]
         [string]
-        $Name
+        $Name,
+        
+        [Parameter(Position=2)]
+        [string]
+        $SchemaName = 'dbo'
     )
     
     
-    $query = "select count(*) from sys.objects where type = '{0}' and name = '{1}'" -f $pscmdlet.ParameterSetName,$Name
+    #$query = "select count(*) from sys.objects where type = '{0}' and name = '{1}'"
+    $query = @'
+    select 
+        count(*) 
+    from 
+        sys.objects o join 
+        sys.schemas s on o.schema_id = s.schema_id 
+    where 
+        o.type = '{0}' and o.name = '{1}' and s.name = '{2}'
+'@ -f $pscmdlet.ParameterSetName,$Name,$SchemaName
+
     $objectCount = Invoke-PstepTestQuery -Query $query -Connection $DatabaseConnection -AsScalar
     return ($objectCount -eq 1)
 }
