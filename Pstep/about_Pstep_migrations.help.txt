@@ -11,19 +11,38 @@ LONG DESCRIPTION
     You can use the following special variables in your `Push-Migration` and 
     `Pop-Migration` functions:
     
-     * `$DBScriptRoot`: the path to the script root directory of the 
-       database you're migrating.
+     * `$DBScriptRoot`: the path to the script root directory of the database 
+       you're migrating.
 
-  Removing Objects
-
-    The following functions will remove objects of the specified type.  Use the
-    `IfExists` flag to only delete the object if it exists.
-
-        Remove-StoredProcedure -Name <string> [-Schema <string>] [-IfExists]
+  Tables
+  
+    The following functions are available for managing tables:
+     
+     * Add-Table
+     * Remove-Table 
         
-        Remove-UserDefinedFunction -Name <string> [-Schema <string>] [-IfExists]
-        
-        Remove-View -Name <string> [-Schema <string>] [-IfExists]
+    The `Add-Column`'s  `Column` parameter is a script block that should 
+    return columns as column objects, e.g.,
+    
+        Add-Table Customer {
+            New-Column 'ID' -Int -Identity
+            New-Column 'Name' -Varchar -Unicode -NotNull
+            New-Column 'ZipCode' -Int -NotNull
+        }
+
+  Columns
+
+     * Add-Column
+     * Remove-Column
+
+  Code Objects
+  
+     The following functions will remove objects of the specified type.  Use 
+     the `IfExists` flag to only delete the object if it exists.
+
+     * Remove-StoredProcedure 
+     * Remove-UserDefinedFunction 
+     * Remove-View 
 
   Executing Code Object Scripts
 
@@ -82,3 +101,21 @@ LONG DESCRIPTION
         Invoke-Query -Query @'
             -- SQL goes here.  You don't have to escape single quotes.
         '@  # '@ must be the first two characters on the line to close the string.
+
+SEE ALSO
+    Add-Column
+    Add-Description
+    Add-Table
+    Invoke-Query
+    Invoke-SqlScript
+    New-Column
+    Remove-Column
+    Remove-Description
+    Remove-StoredProcedure
+    Remove-Table
+    Remove-UserDefinedFunction
+    Remove-View
+    Set-StoredProcedure
+    Set-UserDefinedFunction
+    Set-View
+    Update-Description
