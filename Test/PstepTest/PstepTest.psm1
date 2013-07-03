@@ -11,7 +11,6 @@ $moduleVars = @(
                     'DatabaseSourcePath',
                     'DatabaseSourceName',
                     'DatabaseName',
-                    'DatabaseName',
                     'DatabasesRoot',
                     'DatabaseRoot',
                     'Server',
