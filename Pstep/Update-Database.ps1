@@ -41,9 +41,13 @@ function Update-Database
         {
             Get-ChildItem $_ '*_*.ps1'
         }
-        else
+        elseif( (Test-Path $_ -PathType Leaf) )
         {
             Get-Item $_
+        }
+        else
+        {
+            Write-Error ('Migration path ''{0}'' not found.' -f $_)
         }
         
     } | 
