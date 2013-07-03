@@ -1,6 +1,7 @@
 
 function Push-Migration()
 {
+
     Add-Table AddColumnNoDefaultsAllNull {
         New-Column 'id' -Int -Identity 
         New-Column 'varchar' -VarChar 50
@@ -12,13 +13,25 @@ function Push-Migration()
         New-Column 'binary' -Binary 50
         New-Column 'varbinary' -VarBinary 50
         New-Column 'varbinarymax' -VarBinary
-        New-Column 'bigint' -BigInt
-        New-Column 'int' -Int
-        New-Column 'smallint' -SmallInt 
-        New-Column 'tinyint' -TinyInt
-        New-Column 'numeric' -Numeric 5
+        if( $PSVersionTable.PSVersion -eq ([Version]'2.0') )
+        {
+            New-Column bigint 'BigInt'
+            New-Column int 'Int' 
+            New-Column smallint 'SmallInt' 
+            New-Column tinyint 'TinyInt' 
+            New-Column numeric 'numeric(1)' 
+            New-Column decimal 'decimal(4)'
+        }
+        else
+        {
+            New-Column bigint -BigInt 
+            New-Column int -Int 
+            New-Column smallint -SmallInt 
+            New-Column tinyint -TinyInt 
+            New-Column numeric -Numeric 1 
+            New-Column decimal -Decimal 4 
+        }
         New-Column 'numericwithscale' -Numeric 5 5
-        New-Column 'decimal' -Decimal 5
         New-Column 'decimalwithscale' -Decimal 5 5
         New-Column 'bit' -Bit
         New-Column 'money' -Money
