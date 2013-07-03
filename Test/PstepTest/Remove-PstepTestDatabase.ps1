@@ -1,6 +1,11 @@
 
 function Remove-PstepTestDatabase
 {
+    param(
+        [string]
+        # The name of the database to remove.
+        $Name = $DatabaseName
+    )
     $query = @'
     if( exists( select name from sys.databases where Name = '{0}' ) )
     begin
@@ -8,8 +13,8 @@ function Remove-PstepTestDatabase
 
         DROP DATABASE [{0}]
     end
-'@ -f $DatabaseName
+'@ -f $Name
 
-    Invoke-PstepTestQuery -Query $query -Connection $MasterConnection
+    Invoke-PstepTestQuery -Query $query -Master
 
 }
