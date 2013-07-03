@@ -61,11 +61,12 @@ function Test-ShouldCreateWithCustomFileStreamFileGroup
 
 function Test-ShouldCreateTableWithOptions
 {
-    Invoke-Pstep -Push 'CreateTableWithOption' -ErrorVariable pstepError -ErrorAction SilentlyContinue
+    $Error.Clear()
+    Invoke-Pstep -Push 'CreateTableWithOption' -ErrorAction SilentlyContinue
     
-    if( $pstepError )
+    if( $Error )
     {
-        Assert-Like $pstepError[0] '*Cannot enable compression for object ''AddTableWithOption''*'
+        Assert-Like $Error[0] '*Cannot enable compression for object ''AddTableWithOption''*'
     }
     else
     {

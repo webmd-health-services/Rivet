@@ -188,6 +188,15 @@ function Test-ShouldStopPushingMigrationsIfOneGivesAnError
     }
 }
 
+function Test-ShouldFailIfMigrationNameDoesNotExist
+{
+    $Error.Clear()
+    Invoke-Pstep -Push 'AMigrationWhichDoesNotExist' -ErrorAction SilentlyContinue
+
+    Assert-GreaterThan $Error.Count 0
+    Assert-Like $Error[0] '*not found*'
+}
+
 function Get-SqlServerUtcDate
 {
     Invoke-PstepTestQuery -Query 'select getutcdate()' -AsScalar 
