@@ -11,4 +11,23 @@ dir $PSScriptRoot *-*.ps1 |
     Where-Object { $_.BaseName -ne 'Import-Pstep' } |
     ForEach-Object { . $_.FullName }
     
-Export-ModuleMember -Function Invoke-Pstep
+$functionsToExport = @(
+                        'Add-Column',
+                        'Add-Description',
+                        'Add-Table',
+                        'Invoke-Query',
+                        'Invoke-Pstep',
+                        'Invoke-SqlScript',
+                        'New-Column',
+                        'Remove-Column',
+                        'Remove-Description',
+                        'Remove-StoredProcedure',
+                        'Remove-Table',
+                        'Remove-UserDefinedFunction',
+                        'Remove-View',
+                        'Set-StoredProcedure',
+                        'Set-UserDefinedFunction',
+                        'Set-View',
+                        'Update-Description'
+                      )
+Export-ModuleMember -Function $functionsToExport

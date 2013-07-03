@@ -60,7 +60,15 @@ param(
     [string]
     # The directory where the database scripts are kept.  If `$Database` is singular, migrations are assumed to be in `$Path\$Database\Migrations`.  If `$Database` contains multiple items, `$Path` is assumed to point to a directory which contains directories for each database (e.g. `$Path\$Database[$i]`) and migrations are assumed to be in `$Path\$Database[$i]\Migrations`.
     $Path,
-    
+
+    [Parameter(Mandatory=$true,ParameterSetName='Help')]
+    [Switch]
+    # Display Help.
+    $Help,
+
+    [Parameter(ParameterSetName='Push')]
+    [Parameter(ParameterSetName='Pop')]
+    [Parameter(ParameterSetName='Redo')]
     [UInt32]
     # The time (in seconds) to wait for a connection to open. The default is 15 seconds.
     $ConnectionTimeout = 15
@@ -76,13 +84,6 @@ if( (Get-Module Pstep) )
     
 Import-Module $PSScriptRoot
 
-try
-{
-    Invoke-Pstep @PSBoundParameters
-}
-finally
-{
-    Remove-Module Pstep
-}
+Invoke-Pstep @PSBoundParameters
 
 exit $error.Count
