@@ -15,7 +15,7 @@ function Invoke-Pstep
         [Switch]
         $Pop,
         
-        [Parameter(Mandatory=$true,Position=1,ParameterSetName='Pop')]
+        [Parameter(Position=1,ParameterSetName='Pop')]
         [UInt32]
         $Count,
 
