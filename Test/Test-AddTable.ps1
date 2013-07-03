@@ -66,7 +66,7 @@ function Test-ShouldCreateTableWithOptions
     
     if( $Error )
     {
-        Assert-Like $Error[0] '*Cannot enable compression for object ''AddTableWithOption''*'
+        Assert-Like $Error[1] '*Cannot enable compression for object ''AddTableWithOption''*'
     }
     else
     {
