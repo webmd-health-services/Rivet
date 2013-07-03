@@ -66,7 +66,8 @@ function Test-ShouldCreateTableWithOptions
     
     if( $Error )
     {
-        Assert-Like $Error[1] '*Cannot enable compression for object ''AddTableWithOption''*'
+        $bingo = $Error | Where-Object { $_ -like '*Cannot enable compression for object ''AddTableWithOption''*' }
+        Assert-NotNull $bingo 'Unable to find error that indicates options were added to create table sql'
     }
     else
     {
