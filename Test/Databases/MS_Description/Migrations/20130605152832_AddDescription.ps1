@@ -6,7 +6,12 @@ function Push-Migration()
         add_description varchar(max)
     )
 '@
-    Add-Description -Description 'new description' -TableName MS_Description
+    $tableParams = @{ }
+    if( $PSVersionTable.PSVersion -eq ([Version]'2.0') )
+    {
+        $tableParams.ForTable = $true
+    }
+    Add-Description -Description 'new description' -TableName MS_Description @tableParams
     Add-Description -Description 'new description' -TableName MS_Description -ColumnName 'add_description'
 }
 

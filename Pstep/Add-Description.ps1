@@ -17,6 +17,11 @@ function Add-Description
     Add-Description  -Description 'Is it a snarfblat?' -TableName WhoseitsWhatsits -ColumnName IsSnarfblat
 
     Adds a description (i.e. the `MS_Description` extended property) on the `WhoseitsWhatsits` table's `IsSnarfblat` column.
+    
+    .EXAMPLE
+    Add-Description -Description 'Whoseit's whatsits table.' -TableName WhoseitsWhatsits -ForTable
+    
+    PowerShell v2.0 doesn't parse the parameters correctly when setting a table name, so you have to explicitly tell it what to do.  Upgrade to PowerShell 3!
     #>
     [CmdletBinding()]
     param(
@@ -42,6 +47,11 @@ function Add-Description
         [string]
         # The name of the column where the extended property is getting set.
         $ColumnName,
+        
+        [Parameter(ParameterSetName='ForTable')]
+        [Switch]
+        # Swith so PowerShell v2.0 can find the correct parameter set name.
+        $ForTable,
 
         [Switch]
         # Don't output any messages.

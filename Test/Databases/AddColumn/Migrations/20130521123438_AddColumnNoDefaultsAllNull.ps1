@@ -20,13 +20,26 @@ function Push-Migration()
     Add-Column binary -Binary 40 -Description 'binary(40) null' @commonArgs
     Add-Column varbinary -VarBinary 45 -Description 'varbinary(45) null' @commonArgs
     Add-Column varbinarymax -VarBinary -Description 'varbinary(max) null' @commonArgs
-    Add-Column bigint -BigInt -Description 'bigint null' @commonArgs
-    Add-Column int -Int -Description 'int null' @commonArgs
-    Add-Column smallint -SmallInt -Description 'smallint null' @commonArgs
-    Add-Column tinyint -TinyInt -Description 'tinyint null' @commonArgs
-    Add-Column numeric -Numeric 1 -Description 'numeric(1) null' @commonArgs
+    if( $PSVersionTable.PSVersion -eq ([Version]'2.0') )
+    {
+        Add-Column bigint 'BigInt' -Description 'bigint null' @commonArgs
+        Add-Column int 'Int' -Description 'int null' @commonArgs
+        Add-Column smallint 'SmallInt' -Description 'smallint null' @commonArgs
+        Add-Column tinyint 'TinyInt' -Description 'tinyint null' @commonArgs
+        Add-Column numeric 'numeric(1)' -Description 'numeric(1) null' @commonArgs
+        Add-Column decimal 'decimal(4)' -Description 'decimal(4) null' @commonArgs
+    }
+    else
+    {
+        Add-Column bigint -BigInt -Description 'bigint null' @commonArgs
+        Add-Column int -Int -Description 'int null' @commonArgs
+        Add-Column smallint -SmallInt -Description 'smallint null' @commonArgs
+        Add-Column tinyint -TinyInt -Description 'tinyint null' @commonArgs
+        Add-Column numeric -Numeric 1 -Description 'numeric(1) null' @commonArgs
+        Add-Column decimal -Decimal 4 -Description 'decimal(4) null' @commonArgs
+    }
+    
     Add-Column numericwithscale -Numeric 2 2 -Description 'numeric(2,2) null' @commonArgs
-    Add-Column decimal -Decimal 4 -Description 'decimal(4) null' @commonArgs
     Add-Column decimalwithscale -Decimal 5 5 -Description 'decimal(5,5) null' @commonArgs
     Add-Column bit -Bit -Description 'bit null' @commonArgs
     Add-Column money -Money -Description 'money null' @commonArgs
