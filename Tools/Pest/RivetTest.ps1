@@ -124,7 +124,7 @@ if (Test-Path $lastRivetTestFile)
 ## Display tests
 if (Test-Path $lastRivetTestFile)
 {
-    Remove-Item $lastRivetTestFile
+    Remove-Item $lastRivetTestF ile
 }
 
 Write-Host "** RIVET TESTS **"
