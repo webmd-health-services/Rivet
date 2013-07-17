@@ -75,7 +75,7 @@ function Assert-Column
     where
         s.name = '{0}' and t.name = '{1}' and c.name = '{2}'
 '@ -f $SchemaName, $TableName, $Name
-    $column = Invoke-PstepTestQuery -Query $query -Connection $DatabaseConnection
+    $column = Invoke-RivetTestQuery -Query $query -Connection $DatabaseConnection
     Assert-NotNull $column ('{0}.{1}: column {2} not found' -f $SchemaName,$TableName,$Name)
 
     Assert-Equal $DataType $column.type_name ('column {0} not expected type' -f $Name)

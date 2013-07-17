@@ -1,5 +1,5 @@
 
-function Remove-PstepTestDatabase
+function Remove-RivetTestDatabase
 {
     param(
         [string]
@@ -15,6 +15,6 @@ function Remove-PstepTestDatabase
     end
 '@ -f $Name
 
-    Invoke-PstepTestQuery -Query $query -Master
+    Invoke-RivetTestQuery -Query $query -Master
 
 }

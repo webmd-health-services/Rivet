@@ -3,7 +3,7 @@
 A database migration tool for PowerShell.
 
 .DESCRIPTION
-Pstep (pronounced `/step/`, the "p" is silent, as in "pterodactyl"), a database migration tool for PowerShell.  Finally!  
+Rivet is a database migration tool for PowerShell.  Finally!  
 #>
 [CmdletBinding()]
 param(
@@ -77,13 +77,13 @@ param(
 Set-StrictMode -Version Latest
 $PSScriptRoot = Split-Path -Parent -Path $MyInvocation.MyCommand.Definition
 
-if( (Get-Module Pstep) )
+if( (Get-Module Rivet) )
 {
-    Remove-Module Pstep
+    Remove-Module Rivet
 }
     
 Import-Module $PSScriptRoot
 
-Invoke-Pstep @PSBoundParameters
+Invoke-Rivet @PSBoundParameters
 
 exit $error.Count

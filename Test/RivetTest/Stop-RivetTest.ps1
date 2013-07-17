@@ -1,9 +1,9 @@
 
-function Stop-PstepTest
+function Stop-RivetTest
 {
     $DatabaseConnection.Close()
 
-    Remove-PstepTestDatabase
+    Remove-RivetTestDatabase
 
     Remove-Item -Path $DatabasesRoot -Recurse
 }

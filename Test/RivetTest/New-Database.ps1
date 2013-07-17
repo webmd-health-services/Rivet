@@ -14,5 +14,5 @@ function New-Database
     end
 '@ -f $Name
 
-    Invoke-PstepTestQuery -Query $query -Master
+    Invoke-RivetTestQuery -Query $query -Master
 }

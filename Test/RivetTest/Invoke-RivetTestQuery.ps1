@@ -1,5 +1,5 @@
 
-function Invoke-PstepTestQuery
+function Invoke-RivetTestQuery
 {
     [CmdletBinding(DefaultParameterSetName='AsReader')]
     param(

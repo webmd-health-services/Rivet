@@ -39,7 +39,7 @@ function Test-Column
     where
         s.name = '{0}' and t.name = '{1}' and c.name = '{2}'
 '@ -f $TableSchema, $TableName, $Name
-    $column = Invoke-PstepTestQuery -Query $query -Connection $DatabaseConnection -AsScalar
+    $column = Invoke-RivetTestQuery -Query $query -Connection $DatabaseConnection -AsScalar
     return ($column -eq 1)
 
 }

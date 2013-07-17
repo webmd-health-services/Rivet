@@ -18,9 +18,9 @@ function Remove-View
     Removes the `dbo.MyView` view.
     
     .EXAMPLE
-    Remove-View -Name MyView -Schema pstep
+    Remove-View -Name MyView -Schema rivet
     
-    Removes the `pstep.MyView` view.
+    Removes the `rivet.MyView` view.
     
     .EXAMPLE
     Remove-View -Name MyView -IfExists

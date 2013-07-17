@@ -8,6 +8,6 @@ function Test-Database
     select count(*) Count from sys.databases where Name = '{0}'
 '@ -f $DatabaseName
 
-    $count = Invoke-PstepTestQuery -Query $query -Connection $MasterConnection -AsScalar
+    $count = Invoke-RivetTestQuery -Query $query -Connection $MasterConnection -AsScalar
     return ($count -eq 1)
 }

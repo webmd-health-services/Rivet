@@ -1,5 +1,5 @@
 
-function Invoke-Pstep
+function Invoke-Rivet
 {
     param(
         [Parameter(Mandatory=$true,ParameterSEtName='Push')]
@@ -42,6 +42,6 @@ function Invoke-Pstep
     }
 
     $parms = $PSBoundParameters
-    & $PstepPath @PSBoundParameters @customParams -SqlServerName $Server
+    & $RivetPath @PSBoundParameters @customParams -SqlServerName $Server
 
 }

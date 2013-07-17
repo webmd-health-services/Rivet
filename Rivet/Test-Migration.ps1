@@ -19,7 +19,7 @@ function Test-Migration
         $ID
     )
     
-    $query = 'select count(*) as Count from {0} where ID={1}' -f $PstepMigrationsTableFullName,$ID
+    $query = 'select count(*) as Count from {0} where ID={1}' -f $RivetMigrationsTableFullName,$ID
     $migrationCount = Invoke-Query -Query $query -AsScalar
     return ( $migrationCount -gt 0 )
 }

@@ -23,6 +23,6 @@ function Get-Table
         s.name = '{0}' and t.name = '{1}'
 '@ -f $SchemaName,$Name
 
-    Invoke-PstepTestQuery -Query $query -Connection $DatabaseConnection
+    Invoke-RivetTestQuery -Query $query -Connection $DatabaseConnection
 
 }

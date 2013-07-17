@@ -18,9 +18,9 @@ function Remove-UserDefinedFunction
     Removes the `dbo.MyFunc` user-defined function.
     
     .EXAMPLE
-    Remove-UserDefinedFunction -Name MyFunc -Schema pstep
+    Remove-UserDefinedFunction -Name MyFunc -Schema rivet
     
-    Removes the `pstep.MyFunc` user-defined function.
+    Removes the `rivet.MyFunc` user-defined function.
     
     .EXAMPLE
     Remove-UserDefinedFunction -Name MyFunc -IfExists

@@ -13,5 +13,5 @@ function Get-Schema
          $query = '{0} where name = ''{1}''' -f $query,$Name
     }
 
-    Invoke-PstepTestQuery -Query $query -Connection $DatabaseConnection
+    Invoke-RivetTestQuery -Query $query -Connection $DatabaseConnection
 }
