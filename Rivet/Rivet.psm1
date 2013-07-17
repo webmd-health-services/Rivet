@@ -3,12 +3,12 @@ $Connection = New-Object Data.SqlClient.SqlConnection
 $Connection | 
     Add-Member -MemberType NoteProperty -Name ScriptsPath -Value $null
     
-$PstepSchemaName = 'pstep'
-$PstepMigrationsTableName = 'Migrations'
-$PstepMigrationsTableFullName = '{0}.{1}' -f $PstepSchemaName,$PstepMigrationsTableName
+$RivetSchemaName = 'pstep'
+$RivetMigrationsTableName = 'Migrations'
+$RivetMigrationsTableFullName = '{0}.{1}' -f $RivetSchemaName,$RivetMigrationsTableName
 
 dir $PSScriptRoot *-*.ps1 |
-    Where-Object { $_.BaseName -ne 'Import-Pstep' } |
+    Where-Object { $_.BaseName -ne 'Import-Rivet' } |
     ForEach-Object { . $_.FullName }
     
 $functionsToExport = @(
@@ -16,7 +16,7 @@ $functionsToExport = @(
                         'Add-Description',
                         'Add-Table',
                         'Invoke-Query',
-                        'Invoke-Pstep',
+                        'Invoke-Rivet',
                         'Invoke-SqlScript',
                         'New-Column',
                         'Remove-Column',

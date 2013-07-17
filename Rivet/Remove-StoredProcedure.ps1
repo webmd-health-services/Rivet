@@ -18,9 +18,9 @@ function Remove-StoredProcedure
     Removes the `dbo.MySproc` stored procedure.
     
     .EXAMPLE
-    Remove-StoredProcedure -Name MySproc -Schema pstep
+    Remove-StoredProcedure -Name MySproc -Schema rivet
     
-    Removes the `pstep.MySproc` stored procedure.
+    Removes the `rivet.MySproc` stored procedure.
     
     .EXAMPLE
     Remove-StoredProcedure -Name MySproc -IfExists

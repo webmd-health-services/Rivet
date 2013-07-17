@@ -11,7 +11,7 @@ filter Invoke-Query
     You can pipe parameter-less queries to this method, too!
     
     .EXAMPLE
-    Invoke-Query -Query 'create table pstep.Migrations( )'
+    Invoke-Query -Query 'create table rivet.Migrations( )'
     
     Executes the create table syntax above against the database.
     
@@ -100,7 +100,7 @@ filter Invoke-Query
     catch
     {
         $errorMsg = 'Query failed: {0}' -f $Query
-        Write-PstepError -Message $errorMsg -Exception $_.Exception -CallStack (Get-PSCallStack)
+        Write-RivetError -Message $errorMsg -Exception $_.Exception -CallStack (Get-PSCallStack)
         throw (New-Object ApplicationException 'Migration failed.',$_.Exception)
     }
     finally

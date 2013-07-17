@@ -9,14 +9,14 @@ function Update-Database
     By default, applies all unapplied migrations to the database.  You can reverse all migrations with the `Down` switch.
     
     .EXAMPLE
-    Update-Database -Path C:\Projects\Pstep\Databases\Pstep\Migrations
+    Update-Database -Path C:\Projects\Rivet\Databases\Rivet\Migrations
     
-    Applies all un-applied migrations from the `C:\Projects\Pstep\Databases\Pstep\Migrations` directory.
+    Applies all un-applied migrations from the `C:\Projects\Rivet\Databases\Rivet\Migrations` directory.
     
     .EXAMPLE
-    Update-Database -Path C:\Projects\Pstep\Databases\Pstep\Migrations -Down
+    Update-Database -Path C:\Projects\Rivet\Databases\Rivet\Migrations -Down
     
-    Reverses all migrations in the `C:\Projects\Pstep\Databases\Pstep\Migrations` directory
+    Reverses all migrations in the `C:\Projects\Rivet\Databases\Rivet\Migrations` directory
     #>
     [CmdletBinding(DefaultParameterSetName='Push')]
     param(
@@ -129,7 +129,7 @@ function Update-Database
                 Write-Host $hostOutput
                 Pop-Migration
                 Remove-Item -Path $popFuntionPath
-                $auditQuery = "delete from {0} where ID={1}" -f $PstepMigrationsTableFullName,$migrationInfo.MigrationID
+                $auditQuery = "delete from {0} where ID={1}" -f $RivetMigrationsTableFullName,$migrationInfo.MigrationID
                 Invoke-Query -Query $auditQuery
             }
             else
@@ -145,7 +145,7 @@ function Update-Database
                 Remove-Item -Path $pushFunctionPath
                 $auditQuery = "insert into {0} (ID,Name,Who,ComputerName) values ({1},'{2}','{3}','{4}')"
                 $who = '{0}\{1}' -f $env:USERDOMAIN,$env:USERNAME
-                $auditQuery = $auditQuery -f $PstepMigrationsTableFullName,$migrationInfo.MigrationID,$migrationInfo.MigrationName,$who,$env:COMPUTERNAME
+                $auditQuery = $auditQuery -f $RivetMigrationsTableFullName,$migrationInfo.MigrationID,$migrationInfo.MigrationName,$who,$env:COMPUTERNAME
                 Invoke-Query -Query $auditQuery
             }
             $Connection.Transaction.Commit()
@@ -159,7 +159,7 @@ function Update-Database
             # TODO: Create custom exception for migration query errors so that we can report here when unknown things happen.
             if( $_.Exception -isnot [ApplicationException] )
             {
-                Write-PstepError -Message ('Migration {0} failed' -f $migrationInfo.FullName) -Exception $_.Exception -CallStack (Get-PSCallStack)
+                Write-RivetError -Message ('Migration {0} failed' -f $migrationInfo.FullName) -Exception $_.Exception -CallStack (Get-PSCallStack)
             }            
         }
         finally

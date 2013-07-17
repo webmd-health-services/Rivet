@@ -9,7 +9,7 @@ function Get-MigrationInfo
         $Connection = $DatabaseConnection
     )
 
-    $query = 'select * from pstep.Migrations'
+    $query = 'select * from {0}.Migrations' -f $RivetSchemaName
     if( $Name )
     {
         $query = '{0} where name = ''{1}''' -f $query,$Name
@@ -20,5 +20,5 @@ function Get-MigrationInfo
     }
 
 
-    Invoke-PstepTestQuery -Query $query -Connection $Connection
+    Invoke-RivetTestQuery -Query $query -Connection $Connection
 }

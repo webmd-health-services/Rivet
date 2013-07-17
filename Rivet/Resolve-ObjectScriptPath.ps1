@@ -9,7 +9,7 @@ function Resolve-ObjectScriptPath
     All scripts are expected to live under a database-specific parent directory in well-known directories by type name.  Each script should be stored by object name, prefixed with the schema if it isn't `dbo`.  For example:
     
      * Stored procedure `dbo.MySproc` is expected to be in `$Database\Stored Procedures\MySproc.sql`.
-     * Stored procedure `pstep.MySproc` is expected to be in `$Database\Stored Procedures\pstep.MySproc.sql`.
+     * Stored procedure `rivet.MySproc` is expected to be in `$Database\Stored Procedures\rivet.MySproc.sql`.
     
     .EXAMPLE
     Resolve-ObjectScriptPath -StoredProcedure -Name MySproc
@@ -17,9 +17,9 @@ function Resolve-ObjectScriptPath
     Returns the path to the `dbo.MySproc` stored procedure's script file.
     
     .EXAMPLE
-    Resolve-ObjectScriptPath -StoredProcedure -Name MySproc -Schema pstep
+    Resolve-ObjectScriptPath -StoredProcedure -Name MySproc -Schema rivet
     
-    Returns the path to the `pstep.MySproc` stored procedure's script file.
+    Returns the path to the `rivet.MySproc` stored procedure's script file.
     #>
     [CmdletBinding()]
     param(

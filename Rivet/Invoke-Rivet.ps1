@@ -1,5 +1,5 @@
 
-function Invoke-Pstep
+function Invoke-Rivet
 {
     [CmdletBinding()]
     param(
@@ -85,7 +85,7 @@ function Invoke-Pstep
         }
         else
         {
-            Get-Help about_Pstep
+            Get-Help about_Rivet
         }
         return
     }
@@ -162,4 +162,4 @@ function Invoke-Pstep
     }
 }
 
-Set-Alias -Name pstep -Value Invoke-Pstep
+Set-Alias -Name rivet -Value Invoke-Rivet

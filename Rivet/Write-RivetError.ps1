@@ -1,5 +1,5 @@
 
-function Write-PstepError
+function Write-RivetError
 {
     param(
         [Parameter(Mandatory=$true)]
