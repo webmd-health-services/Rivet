@@ -1,0 +1,23 @@
+{
+    ModuleName: "Pstep",
+    ModulePath: "Pstep",
+    
+    Title: "Pstep :: Write SQL Server Database Migrations with PowerShell",
+
+    AssemblyNames: [ ],
+    
+    CommandsToSkip: [ 'Invoke-Pstep' ],
+    
+    TitleSeparator: "::",
+    
+    Topics: [
+        {
+            Path: "about_Pstep.md",
+            FileName: "index.html"
+        },
+        {
+            Path: "about_Pstep_Migrations.md"
+        }
+    ]
+    
+}

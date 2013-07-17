@@ -1,6 +1,20 @@
 
 function Invoke-SqlScript
 {
+    <#
+    .SYNOPSIS
+    Runs a SQL script file as part of a migration.
+    
+    .DESCRIPTION
+    The SQL script is split on GO statements, which must be by themselves on a line, e.g.
+
+        select * from sys.tables
+        GO
+
+        select * from sys.views
+        GO
+
+    #>
     [CmdletBinding(DefaultParameterSetName='AsReader')]
     param(
         [Parameter(Mandatory=$true)]
