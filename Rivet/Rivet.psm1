@@ -30,4 +30,5 @@ $functionsToExport = @(
                         'Set-View',
                         'Update-Description'
                       )
+
 Export-ModuleMember -Function $functionsToExport

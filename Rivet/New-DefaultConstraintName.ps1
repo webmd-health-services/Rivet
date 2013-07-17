@@ -1,13 +1,14 @@
 
-function New-DefaultConstraintName
+function New-ConstraintName
 {
     <#
     .SYNOPSIS
     Creates a default constraint name for a column in a table.
     #>
+    [CmdletBinding(DefaultParameterSetName='DF')]
     param(
         [Parameter(Mandatory=$true)]
-        [string]
+        [string[]]
         # The column name.
         $ColumnName,
 
@@ -19,13 +20,26 @@ function New-DefaultConstraintName
         [Parameter()]
         [string]
         # The table's schema.  Default is `dbo`.
-        $SchemaName = 'dbo'
+        $SchemaName = 'dbo',
+
+        [Parameter(ParameterSetName='DF')]
+        [Switch]
+        # Creates a default constraint name.
+        $Default,
+
+        [Parameter(Mandatory=$true,ParameterSetName='PK')]
+        [Switch]
+        # Creates a primary key name.
+        $PrimaryKey
     )
 
-    $dfConstraintName = 'DF_{0}_{1}_{2}' -f $SchemaName,$TableName,$ColumnName
+    $columns = $ColumnName -join '_'
+    $name = '{0}_{1}_{2}_{3}' -f $PSCmdlet.ParameterSetName,$SchemaName,$TableName,$columns
     if( $SchemaName -eq 'dbo' )
     {
-        $dfConstraintName = 'DF_{0}_{1}' -f $TableName,$ColumnName
+        $name = '{0}_{1}_{2}' -f $PSCmdlet.ParameterSetName,$TableName,$columns
     }
-    return $dfConstraintName
+    return $name
 }
+
+Set-Alias -Name 'New-DefaultConstraintName' -Value 'New-ConstraintName'
