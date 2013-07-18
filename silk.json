@@ -1,0 +1,23 @@
+{
+    ModuleName: "Rivet",
+    ModulePath: "Rivet",
+    
+    Title: "Rivet :: Write SQL Server Database Migrations with PowerShell",
+
+    AssemblyNames: [ ],
+    
+    CommandsToSkip: [ 'Invoke-Rivet' ],
+    
+    TitleSeparator: "::",
+    
+    Topics: [
+        {
+            Path: "about_Rivet.md",
+            FileName: "index.html"
+        },
+        {
+            Path: "about_Rivet_Migrations.md"
+        }
+    ]
+    
+}
