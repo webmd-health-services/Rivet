@@ -1,22 +1,22 @@
 {
-    ModuleName: "Pstep",
-    ModulePath: "Pstep",
+    ModuleName: "Rivet",
+    ModulePath: "Rivet",
     
-    Title: "Pstep :: Write SQL Server Database Migrations with PowerShell",
+    Title: "Rivet :: Write SQL Server Database Migrations with PowerShell",
 
     AssemblyNames: [ ],
     
-    CommandsToSkip: [ 'Invoke-Pstep' ],
+    CommandsToSkip: [ 'Invoke-Rivet' ],
     
     TitleSeparator: "::",
     
     Topics: [
         {
-            Path: "about_Pstep.md",
+            Path: "about_Rivet.md",
             FileName: "index.html"
         },
         {
-            Path: "about_Pstep_Migrations.md"
+            Path: "about_Rivet_Migrations.md"
         }
     ]
     
