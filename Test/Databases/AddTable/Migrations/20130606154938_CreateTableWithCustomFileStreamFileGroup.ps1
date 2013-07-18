@@ -3,7 +3,7 @@ function Push-Migration()
 {
     Add-Table 'CustomTextImageFileGroup' {
         New-Column 'id' -Int -Identity
-    } -FileStreamFileGroup '"pstep"' 
+    } -FileStreamFileGroup '"rivet"' 
 }
 
 function Pop-Migration()
