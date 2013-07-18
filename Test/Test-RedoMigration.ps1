@@ -1,18 +1,18 @@
 
 function Setup
 {
-    Import-Module -Name (Join-Path $TestDir 'PstepTest') -ArgumentList 'RedoMigration' 
-    Start-PstepTest
+    Import-Module -Name (Join-Path $TestDir 'RivetTest') -ArgumentList 'RedoMigration' 
+    Start-RivetTest
 
-    Invoke-Pstep -Push
+    Invoke-Rivet -Push
     
     Assert-Equal 2 (Measure-Migration)
 }
 
 function TearDown
 {
-    Stop-PstepTest
-    Remove-Module PstepTest
+    Stop-RivetTest
+    Remove-Module RivetTest
 }
 
 function Test-ShouldPopThenPushTopMigration
@@ -22,7 +22,7 @@ function Test-ShouldPopThenPushTopMigration
 
     $migrationInfo = Get-MigrationInfo -Name 'SecondTable'
     
-    Invoke-Pstep -Redo
+    Invoke-Rivet -Redo
     
     # Make sure only one migration was popped/pushed.
     $redoMigrationTableRedo = Get-Table -Name 'RedoMigration'

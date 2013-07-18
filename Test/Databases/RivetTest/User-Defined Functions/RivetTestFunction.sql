@@ -1,4 +1,4 @@
-CREATE FUNCTION PstepTestFunction
+CREATE FUNCTION RivetTestFunction
 (
 )
 RETURNS datetime

@@ -1,7 +1,7 @@
 
 
-IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[PstepTestSproc]') AND type in (N'P', N'PC'))
-	drop procedure [dbo].[PstepTestSproc]
+IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[RivetTestSproc]') AND type in (N'P', N'PC'))
+	drop procedure [dbo].[RivetTestSproc]
 go
 
 /*
@@ -19,7 +19,7 @@ go
 go -- comment
 go-- really friendly comment
 
-CREATE PROCEDURE PstepTestSproc
+CREATE PROCEDURE RivetTestSproc
 AS
 BEGIN
 	select GETDATE()

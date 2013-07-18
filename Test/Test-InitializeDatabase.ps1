@@ -1,21 +1,21 @@
 
 function Setup
 {
-    Import-Module -Name (Join-Path $TestDir 'PstepTest') -ArgumentList 'PstepTest' 
-    Start-PstepTest
+    Import-Module -Name (Join-Path $TestDir 'RivetTest') -ArgumentList 'RivetTest' 
+    Start-RivetTest
 
     Assert-True (Test-Database)
 }
 
 function TearDown
 {
-    Stop-PstepTest
-    Remove-Module PstepTest
+    Stop-RivetTest
+    Remove-Module RivetTest
 }
 
-function Test-ShouldCreatePstepObjectsInDatabase
+function Test-ShouldCreateRivetObjectsInDatabase
 {
-    Invoke-Pstep -Push
+    Invoke-Rivet -Push
     
     Assert-True (Test-Database)
     Assert-True (Test-Schema -Name 'pstep')                

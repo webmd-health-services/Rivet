@@ -1,10 +1,10 @@
 
 function Setup
 {
-    Import-Module -Name (Join-Path $TestDir 'PstepTest') -ArgumentList 'PstepTest' 
-    Start-PstepTest
+    Import-Module -Name (Join-Path $TestDir 'RivetTest') -ArgumentList 'RivetTest' 
+    Start-RivetTest
 
-    Invoke-Pstep -Push
+    Invoke-Rivet -Push
     
     $expectedCount = Measure-MigrationScript
     Assert-Equal $expectedCount (Measure-Migration)
@@ -12,8 +12,8 @@ function Setup
 
 function TearDown
 {
-    Stop-PstepTest
-    Remove-Module PstepTest
+    Stop-RivetTest
+    Remove-Module RivetTest
 }
 
 function Test-ShouldPopAllMigrations
@@ -21,7 +21,7 @@ function Test-ShouldPopAllMigrations
     $migrationCount = Measure-Migration
     Assert-True ($migrationCount -gt 1)
     
-    Invoke-Pstep -Pop $migrationCount
+    Invoke-Rivet -Pop $migrationCount
     Assert-LastProcessSucceeded
     
     Assert-Equal 0 (Measure-Migration)
@@ -35,27 +35,27 @@ function Test-ShouldPopAllMigrations
     
     Assert-False (Test-Table -Name 'InvokeQuery')
     Assert-False (Test-Table -Name 'SecondTable')
-    Assert-False (Test-DatabaseObject -StoredProcedure 'PstepTestSproc')
-    Assert-False (Test-DatabaseObject -ScalarFunction 'PstepTestFunction') 'user-defined function not dropped'
+    Assert-False (Test-DatabaseObject -StoredProcedure 'RivetTestSproc')
+    Assert-False (Test-DatabaseObject -ScalarFunction 'RivetTestFunction') 'user-defined function not dropped'
     Assert-False (Test-DatabaseObject -View 'Migrators') 'view not dropped'
     Assert-False (Test-DatabaseObject -ScalarFunction 'MiscellaneousObject') 'the miscellaneous function not dropped'
 }
 
 function Test-ShouldPopSpecificNumberOfDatabaseMigrations
 {
-    $pstepCount = Measure-Migration
-    Assert-True ($pstepCount -gt 1)
+    $rivetCount = Measure-Migration
+    Assert-True ($rivetCount -gt 1)
 
-    Invoke-Pstep -Pop 2
+    Invoke-Rivet -Pop 2
         
-    Assert-Equal ($pstepCount - 2) (Measure-Migration)
+    Assert-Equal ($rivetCount - 2) (Measure-Migration)
 }
 
 function Test-ShouldPopOneMigrationByDefault
 {
     $totalMigrations = Measure-Migration
     
-    Invoke-Pstep -Pop
+    Invoke-Rivet -Pop
     
     Assert-Equal ($totalMigrations - 1) (Measure-Migration)
     
@@ -68,17 +68,17 @@ function Test-ShouldPopOneMigrationByDefault
 function Test-ShouldNotRePopMigrations
 {
     $originalMigrationCount = Measure-Migration
-    Invoke-Pstep -Pop
+    Invoke-Rivet -Pop
     Assert-LastProcessSucceeded
     Assert-Equal 0 ($error.Count)
     Assert-Equal ($originalMigrationCount - 1) (Measure-Migration)
     
-    Invoke-Pstep -Pop 2
+    Invoke-Rivet -Pop 2
     Assert-LastProcessSucceeded
     Assert-Equal 0 ($error.Count)
     Assert-Equal ($originalMigrationCount - 2) (Measure-Migration)
     
-    Invoke-Pstep -Pop 2
+    Invoke-Rivet -Pop 2
     Assert-LastProcessSucceeded
     Assert-Equal 0 ($error.Count)
     Assert-Equal ($originalMigrationCount - 2) (Measure-Migration)
@@ -87,7 +87,7 @@ function Test-ShouldNotRePopMigrations
 function Test-ShouldSupportPoppingMoreThanAvailableMigrations
 {
     $migrationCount = Measure-Migration
-    Invoke-Pstep -Pop ($migrationCount * 2) 
+    Invoke-Rivet -Pop ($migrationCount * 2) 
     Assert-LastProcessSucceeded
     Assert-Equal 0 ($error.Count)
     Assert-Equal 0 (Measure-Migration)
@@ -101,7 +101,7 @@ function Test-ShouldStopPoppingMigrationsIfOneGivesAnError
     Copy-Item -Path (Join-Path $migrationDir Extras\*.ps1) -Destination $migrationDir
     Remove-Item -Path (Join-Path $migrationDir *_TableWithoutColumns.ps1)
     
-    Invoke-Pstep -Push
+    Invoke-Rivet -Push
     Assert-LastProcessSucceeded
     Assert-True ($error.Count -eq 0)
     
@@ -109,10 +109,10 @@ function Test-ShouldStopPoppingMigrationsIfOneGivesAnError
         Assert-True (Test-Table -Name $_)
     }
 
-    Invoke-Pstep -Pop (Measure-Migration) -ErrorAction SilentlyContinue -ErrorVariable pstepError
+    Invoke-Rivet -Pop (Measure-Migration) -ErrorAction SilentlyContinue -ErrorVariable rivetError
 
-    Assert-NotNull $pstepError
-    Assert-Like $pstepError[0] '*cannot drop the table*'
+    Assert-NotNull $rivetError
+    Assert-Like $rivetError[0] '*cannot drop the table*'
     
     Assert-True (Test-Table -Name 'SecondTable')
     Assert-True (Test-Table -Name 'PushSucceedsPopFails')

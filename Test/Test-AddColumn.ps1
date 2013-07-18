@@ -1,19 +1,19 @@
 
 function Setup
 {
-    Import-Module -Name (Join-Path $TestDir 'PstepTest') -ArgumentList 'AddColumn' 
-    Start-PstepTest
+    Import-Module -Name (Join-Path $TestDir 'RivetTest') -ArgumentList 'AddColumn' 
+    Start-RivetTest
 }
 
 function TearDown
 {
-    Stop-PstepTest
-    Remove-Module PstepTest
+    Stop-RivetTest
+    Remove-Module RivetTest
 }
 
 function Test-ShouldAddNullableColumnsNoDefaults
 {
-    Invoke-Pstep -Push 'AddColumnNoDefaultsAllNull'
+    Invoke-Rivet -Push 'AddColumnNoDefaultsAllNull'
 
     Assert-True (Test-Table -Name 'AddColumnNoDefaultsAllNull')
 
@@ -57,7 +57,7 @@ function Test-ShouldAddNullableColumnsNoDefaults
 
 function Test-ShouldAddNotNullableColumnsWithDefaults
 {
-    Invoke-Pstep -Push 'AddColumnDefaultsNotNull'
+    Invoke-Rivet -Push 'AddColumnDefaultsNotNull'
 
     Assert-True (Test-Table -Name 'AddColumnDefaultsNotNull')
 
@@ -99,7 +99,7 @@ function Test-ShouldAddNotNullableColumnsWithDefaults
 
 function Test-ShouldCreateIdentities
 {
-    Invoke-Pstep -Push 'AddColumnIdentityTables'
+    Invoke-Rivet -Push 'AddColumnIdentityTables'
 
     Assert-Table 'BigIntIdentity'
     Assert-Column -Name 'bigintidentity' 'bigint' -Seed 1 -Increment 2 -NotNull -TableName 'BigIntIdentity'
@@ -122,7 +122,7 @@ function Test-ShouldCreateIdentities
 
 function Test-ShouldCreateRowGuidCol
 {
-    Invoke-Pstep -Push 'AddColumnRowGuidCol'
+    Invoke-Rivet -Push 'AddColumnRowGuidCol'
 
     Assert-Table 'WithRowGuidCol'
 
@@ -131,7 +131,7 @@ function Test-ShouldCreateRowGuidCol
 
 function Test-ShouldSupportXmlDocument
 {
-    Invoke-Pstep -Push 'AddColumnXmlDocument'
+    Invoke-Rivet -Push 'AddColumnXmlDocument'
 
     Assert-Table 'WithXmlDocument'
 
@@ -141,7 +141,7 @@ function Test-ShouldSupportXmlDocument
 # This test won't work unless file streams are setup.  Don't know how to do that so ignoring this test for now.
 function Ignore-ShouldSupportFileStream
 {
-    Invoke-Pstep -Push 'AddColumnVarBinaryFileStream'
+    Invoke-Rivet -Push 'AddColumnVarBinaryFileStream'
 
     Assert-Table 'WithVarBinaryFileStream'
 
@@ -150,7 +150,7 @@ function Ignore-ShouldSupportFileStream
 
 function Test-ShouldSupportCollation
 {
-    Invoke-Pstep -Push 'AddColumnCollation'
+    Invoke-Rivet -Push 'AddColumnCollation'
 
     Assert-Table 'WithCustomCollation'
 
@@ -163,7 +163,7 @@ function Test-ShouldSupportCollation
 
 function Test-ShouldAddSparseColumns
 {
-    Invoke-Pstep -Push 'AddColumnSparse'
+    Invoke-Rivet -Push 'AddColumnSparse'
 
     Assert-Table -Name 'WithSparseColumns'
 
@@ -206,7 +206,7 @@ function Test-ShouldAddSparseColumns
 
 function Test-ShouldCreateIdentitiesNotForReplication
 {
-    Invoke-Pstep -Push 'AddColumnNotForReplication'
+    Invoke-Rivet -Push 'AddColumnNotForReplication'
 
     Assert-Table 'BigIntIdentity'
     Assert-Column -Name 'bigintidentity' 'bigint' -Seed 1 -Increment 2 -NotNull -NotForReplication  -TableName 'BigIntIdentity'

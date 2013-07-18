@@ -1,19 +1,19 @@
 
 function Setup
 {
-    Import-Module -Name (Join-Path $TestDir 'PstepTest') -ArgumentList 'RemoveColumn' 
-    Start-PstepTest
+    Import-Module -Name (Join-Path $TestDir 'RivetTest') -ArgumentList 'RemoveColumn' 
+    Start-RivetTest
 }
 
 function TearDown
 {
-    Stop-PstepTest
-    Remove-Module PstepTest
+    Stop-RivetTest
+    Remove-Module RivetTest
 }
 
 function Test-ShouldRemoveColumns
 {
-    Invoke-Pstep -Push 'AddColumnNoDefaultsAllNull'
+    Invoke-Rivet -Push 'AddColumnNoDefaultsAllNull'
     
     Assert-True (Test-Table -Name 'AddColumnNoDefaultsAllNull')
 
@@ -53,7 +53,7 @@ function Test-ShouldRemoveColumns
     Assert-True (Test-Column -Name 'hierarchyid' @commonArgs)
     Assert-True (Test-Column -Name 'timestamp' @commonArgs)
 
-    Invoke-Pstep -Pop ([Int]::MaxValue)
+    Invoke-Rivet -Pop ([Int]::MaxValue)
 
     Assert-False (Test-Column -Name 'varchar' @commonArgs)
     Assert-False (Test-Column -Name 'varcharmax' @commonArgs)

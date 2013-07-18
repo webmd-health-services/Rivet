@@ -1,14 +1,14 @@
 
 function Push-Migration()
 {
-    Set-StoredProcedure -Name PstepTestSproc
-    Set-UserDefinedFunction -Name PstepTestFunction
+    Set-StoredProcedure -Name RivetTestSproc
+    Set-UserDefinedFunction -Name RivetTestFunction
     Set-View -Name Migrators
 }
 
 function Pop-Migration()
 {
     Remove-View -Name Migrators
-    Remove-UserDefinedFunction -Name PstepTestFunction
-    Remove-StoredProcedure -Name PstepTestSproc
+    Remove-UserDefinedFunction -Name RivetTestFunction
+    Remove-StoredProcedure -Name RivetTestSproc
 }
