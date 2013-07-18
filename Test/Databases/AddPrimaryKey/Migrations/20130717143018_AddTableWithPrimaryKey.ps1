@@ -10,7 +10,8 @@ function Push-Migration()
 
 function Pop-Migration()
 {
-    Remove-PrimaryKey -TableName 'PrimaryKey'
+    Remove-PrimaryKey -TableName 'PrimaryKey' -ColumnName 'id'
+    Remove-Table -Name 'PrimaryKey'
 }
 
     
