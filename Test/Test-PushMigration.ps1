@@ -1,20 +1,20 @@
 
 function Setup
 {
-    Import-Module -Name (Join-Path $TestDir 'PstepTest') -ArgumentList 'PstepTest' 
-    Start-PstepTest
+    Import-Module -Name (Join-Path $TestDir 'RivetTest') -ArgumentList 'RivetTest' 
+    Start-RivetTest
 }
 
 function TearDown
 {
-    Stop-PstepTest
-    Remove-Module PstepTest
+    Stop-RivetTest
+    Remove-Module RivetTest
 }
 
 function Test-ShouldPushMigrations
 {
     $createdAt = (Get-Date).ToUniversalTime()
-    Invoke-Pstep -Push
+    Invoke-Rivet -Push
     
     $migrationScripts = Get-MigrationScript
     
@@ -27,8 +27,8 @@ function Test-ShouldPushMigrations
     
     Assert-True (Test-Table -Name 'InvokeQuery')
     Assert-True (Test-Table -Name 'SecondTable')
-    Assert-True (Test-DatabaseObject -StoredProcedure 'PstepTestSproc')
-    Assert-True (Test-DatabaseObject -ScalarFunction 'PstepTestFunction') 'user-defined function not created'
+    Assert-True (Test-DatabaseObject -StoredProcedure 'RivetTestSproc')
+    Assert-True (Test-DatabaseObject -ScalarFunction 'RivetTestFunction') 'user-defined function not created'
     Assert-True (Test-DatabaseObject -View 'Migrators') 'view not created'
     Assert-True (Test-DatabaseObject -ScalarFunction 'MiscellaneousObject') 'the miscellaneous function not created'
     Assert-True (Test-DatabaseObject -ScalarFunction 'ObjectMadeWithRelativePath') 'object specified with relative path to Invoke-SqlScript not created'
@@ -41,7 +41,7 @@ function Test-ShouldPushMigrations
     Assert-Equal 'CreateObjectsFromFiles' $rows[2].Name
     
     $createdBefore = Get-SqlServerUtcDate
-    Invoke-Pstep -Push
+    Invoke-Rivet -Push
    
     $rows = Get-MigrationInfo
     Assert-NotNull $rows
@@ -64,7 +64,7 @@ function Test-ShouldPushMigrationsForMultipleDBs
     * {1}
 '@ -f $db1Name,$migrationFileName,$db2Name
 
-    $tempDir = New-TempDirectoryTree -Tree $tree -Prefix 'Pstep.Push-Migration'
+    $tempDir = New-TempDirectoryTree -Tree $tree -Prefix 'Rivet.Push-Migration'
 
     $migration = @'
         function Push-Migration 
@@ -94,17 +94,17 @@ function Test-ShouldPushMigrationsForMultipleDBs
     
     try
     {
-        Invoke-Pstep -Push -Database $db1Name,$db2Name -Path $tempDir
+        Invoke-Rivet -Push -Database $db1Name,$db2Name -Path $tempDir
         
         Assert-Migration -Path $db1MigrationsDir -Connection $db1Conn
         Assert-Migration -Path $db2MigrationsDir -Connection $db2Conn
     }
     finally
     {
-        Remove-PstepTestDatabase -Name $db1Name
+        Remove-RivetTestDatabase -Name $db1Name
         $db1Conn.Close()
 
-        Remove-PstepTestDatabase -Name $db2Name
+        Remove-RivetTestDatabase -Name $db2Name
         $db2Conn.Close()
     }
 }
@@ -117,7 +117,7 @@ function Test-ShouldPushSpecificMigrationByName
         ForEach-Object {
             $id,$name = $_.BaseName -split '_'
             
-            Invoke-Pstep -Push $Name
+            Invoke-Rivet -Push $Name
             
             Assert-Migration -ID $id -Name $name -CreatedAfter $CreatedAfter
         }
@@ -130,7 +130,7 @@ function Test-ShouldPushSpecificMigrationWithWildcard
 {
     $createdAfter = (Get-Date).ToUniversalTime()
     
-    Invoke-Pstep -Push 'Invoke*'
+    Invoke-Rivet -Push 'Invoke*'
     
     $migration = Get-MigrationScript | Where-Object { $_.Name -like '*_Invoke*.ps1' }
     $id,$name = $migration.BaseName -split '_'
@@ -148,13 +148,13 @@ function Test-ShouldNotReapplyASpecificMigration
         ForEach-Object {
             $id,$name = $_.BaseName -split '_'
             
-            Invoke-Pstep -Push $name
+            Invoke-Rivet -Push $name
             
             Assert-Migration -ID $id -Name $name -CreatedAfter $CreatedAfter
             
             $createdBefore = Get-SqlServerUtcDate
 
-            Invoke-Pstep -Push $name            
+            Invoke-Rivet -Push $name            
 
             $row = Assert-Migration -ID $id -Name $name -CreatedAfter $CreatedAfter -PassThru
             Assert-True ($row.AtUtc -lt $createdBefore)
@@ -171,15 +171,15 @@ function Test-ShouldStopPushingMigrationsIfOneGivesAnError
     $migrationDir = Split-Path -Parent -Path $script.FullName
     Copy-Item -Path (Join-Path $migrationDir Extras\*.ps1) -Destination $migrationDir
     
-    Invoke-Pstep -Push -ErrorAction SilentlyContinue -ErrorVariable pstepError
-    Assert-True ($pstepError.Count -gt 0)
+    Invoke-Rivet -Push -ErrorAction SilentlyContinue -ErrorVariable rivetError
+    Assert-True ($rivetError.Count -gt 0)
     
     ('TableWithoutColumnsWithColumn','TableWithoutColumns','FourthTable') | ForEach-Object {
         Assert-False (Test-Table -Name $_) ('table {0} created' -f $_)
     }
     
     $query = 'select count(*) from InvokeQuery'
-    $rowCount = Invoke-PstepTestQuery -Query $query -AsScalar
+    $rowCount = Invoke-RivetTestQuery -Query $query -AsScalar
     Assert-Equal 0 $rowCount 'insert statements not rolled back'
 
     ('TableWithoutColumns','FourthTable') | ForEach-Object {
@@ -191,7 +191,7 @@ function Test-ShouldStopPushingMigrationsIfOneGivesAnError
 function Test-ShouldFailIfMigrationNameDoesNotExist
 {
     $Error.Clear()
-    Invoke-Pstep -Push 'AMigrationWhichDoesNotExist' -ErrorAction SilentlyContinue
+    Invoke-Rivet -Push 'AMigrationWhichDoesNotExist' -ErrorAction SilentlyContinue
 
     Assert-GreaterThan $Error.Count 0
     Assert-Like $Error[0] '*not found*'
@@ -199,7 +199,7 @@ function Test-ShouldFailIfMigrationNameDoesNotExist
 
 function Get-SqlServerUtcDate
 {
-    Invoke-PstepTestQuery -Query 'select getutcdate()' -AsScalar 
+    Invoke-RivetTestQuery -Query 'select getutcdate()' -AsScalar 
 }
 
 function Assert-Migration

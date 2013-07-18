@@ -1,10 +1,10 @@
 
 function Push-Migration()
 {
-    Invoke-Query 'create schema psteptest'
-    Add-Table 'AddTableInPstepTest' {
-        New-Column 'id' -Int -Identity -Description 'AddTableInPstepTest identity column'
-    } -SchemaName 'psteptest' -Description 'Testing Add-Table migration for custom schema.' 
+    Invoke-Query 'create schema rivettest'
+    Add-Table 'AddTableInRivetTest' {
+        New-Column 'id' -Int -Identity -Description 'AddTableInRivetTest identity column'
+    } -SchemaName 'rivettest' -Description 'Testing Add-Table migration for custom schema.' 
 
     # Sql 2012 feature
     # Add-Table 'FileTable' -FileTable
@@ -13,5 +13,5 @@ function Push-Migration()
 function Pop-Migration()
 {
     Invoke-Query 'drop table AddTable'
-    Invoke-Query 'drop schema psteptest'
+    Invoke-Query 'drop schema rivettest'
 }

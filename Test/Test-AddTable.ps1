@@ -1,19 +1,19 @@
 
 function Setup
 {
-    Import-Module -Name (Join-Path $TestDir 'PstepTest') -ArgumentList 'AddTable' 
-    Start-PstepTest
+    Import-Module -Name (Join-Path $TestDir 'RivetTest') -ArgumentList 'AddTable' 
+    Start-RivetTest
 }
 
 function TearDown
 {
-    Stop-PstepTest
-    Remove-Module PstepTest
+    Stop-RivetTest
+    Remove-Module RivetTest
 }
 
 function Test-ShouldCreateTable
 {
-    Invoke-Pstep -Push 'CreateTable'
+    Invoke-Rivet -Push 'CreateTable'
 
     Assert-Table 'AddTable' -Description 'Testing Add-Table migration'
     Assert-Column -Name 'varchar' 'varchar' -NotNull -Description 'varchar(max) constraint DF_AddTable_varchar default default' -TableName 'AddTable'
@@ -26,16 +26,16 @@ function Test-ShouldCreateTable
 
 function Test-ShouldCreateTableInCustomSchema
 {
-    Invoke-Pstep -Push 'CreateTableInCustomSchema'
+    Invoke-Rivet -Push 'CreateTableInCustomSchema'
 
-    Assert-Table 'AddTableInPstepTest' -SchemaName 'psteptest' -Description 'Testing Add-Table migration for custom schema.'
-    Assert-Column -Name 'id' 'int' -NotNull -Seed 1 -Increment 1 -Description 'AddTableInPstepTest identity column' -TableName 'AddTableInPstepTest' -SchemaName 'psteptest'
+    Assert-Table 'AddTableInRivetTest' -SchemaName 'rivettest' -Description 'Testing Add-Table migration for custom schema.'
+    Assert-Column -Name 'id' 'int' -NotNull -Seed 1 -Increment 1 -Description 'AddTableInRivetTest identity column' -TableName 'AddTableInRivetTest' -SchemaName 'rivettest'
 }
 
 function Test-ShouldCreateWithCustomFileGroup
 {
     $Error.Clear()
-    Invoke-Pstep -Push 'CreateTableWithCustomFileGroup' -ErrorAction SilentlyContinue
+    Invoke-Rivet -Push 'CreateTableWithCustomFileGroup' -ErrorAction SilentlyContinue
     Assert-True (0 -lt $Error.Count)
     Assert-Like $Error[1].Exception.Message '*Invalid filegroup*'
     Assert-False (Test-Table -Name 'CustomFileGroup')
@@ -44,7 +44,7 @@ function Test-ShouldCreateWithCustomFileGroup
 function Test-ShouldCreateWithCustomTextImageFileGroup
 {
     $Error.Clear()
-    Invoke-Pstep -Push 'CreateTableWithCustomTextImageFileGroup' -ErrorAction SilentlyContinue
+    Invoke-Rivet -Push 'CreateTableWithCustomTextImageFileGroup' -ErrorAction SilentlyContinue
     Assert-True (0 -lt $Error.Count)
     Assert-Like $Error[1].Exception.Message '*Cannot use TEXTIMAGE_ON*'
     Assert-False (Test-Table -Name 'CustomTextImageFileGroup')
@@ -53,7 +53,7 @@ function Test-ShouldCreateWithCustomTextImageFileGroup
 function Test-ShouldCreateWithCustomFileStreamFileGroup
 {
     $Error.Clear()
-    Invoke-Pstep -Push 'CreateTableWithCustomFileStreamFileGroup' -ErrorAction SilentlyContinue
+    Invoke-Rivet -Push 'CreateTableWithCustomFileStreamFileGroup' -ErrorAction SilentlyContinue
     Assert-True (0 -lt $Error.Count)
     Assert-Like $Error[1].Exception.Message '*FILESTREAM_ON cannot be specified*'
     Assert-False (Test-Table -Name 'CustomFileStreamFileGroup')
@@ -62,7 +62,7 @@ function Test-ShouldCreateWithCustomFileStreamFileGroup
 function Test-ShouldCreateTableWithOptions
 {
     $Error.Clear()
-    Invoke-Pstep -Push 'CreateTableWithOption' -ErrorAction SilentlyContinue
+    Invoke-Rivet -Push 'CreateTableWithOption' -ErrorAction SilentlyContinue
     
     if( $Error )
     {

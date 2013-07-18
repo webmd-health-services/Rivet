@@ -1,6 +1,6 @@
 
 $dbsRoot = $null
-$pstepPath = Join-Path $TestDir ..\Pstep\pstep.ps1 -Resolve
+$rivetPath = Join-Path $TestDir ..\Rivet\rivet.ps1 -Resolve
 
 function Setup
 {
@@ -17,18 +17,18 @@ function TearDown
 
 function Test-ShouldCreateOneMigration
 {
-    $pstepTestRoot = Join-Path $dbsRoot PstepTest
+    $rivetTestRoot = Join-Path $dbsRoot RivetTest
 
-    & $pstepPath -New -Name 'ShouldCreateOneMigration' -Database PstepTest -Path $pstepTestRoot
+    & $rivetPath -New -Name 'ShouldCreateOneMigration' -Database RivetTest -Path $rivetTestRoot
     Assert-True $?
     Assert-LastProcessSucceeded
     
-    Assert-DirectoryExists $pstepTestRoot
-    $migrationRoot = Join-Path $pstepTestRoot Migrations
+    Assert-DirectoryExists $rivetTestRoot
+    $migrationRoot = Join-Path $rivetTestRoot Migrations
     Assert-DirectoryExists $migrationRoot
     
     $id = (Get-Date).ToString('yyyyMMddHHmm')
-    $migrationPath = Join-Path $pstepTestRoot "Migrations\$($id)??_ShouldCreateOneMigration.ps1"
+    $migrationPath = Join-Path $rivetTestRoot "Migrations\$($id)??_ShouldCreateOneMigration.ps1"
     Assert-True (Test-Path -Path $migrationPath -PathType Leaf)
     $migration = Get-Item -Path $migrationPath
     Assert-NotNull $migration
@@ -39,11 +39,11 @@ function Test-ShouldCreateMultipleMigrations
 {
     $id = (Get-Date).ToString('yyyyMMddHHmm')
 
-    & $pstepPath -New -Name 'ShouldCreateMultipleMigrations' -Database PstepTest,PstepTest2 -Path $dbsRoot
+    & $rivetPath -New -Name 'ShouldCreateMultipleMigrations' -Database RivetTest,RivetTest2 -Path $dbsRoot
     Assert-True $?
     Assert-LastProcessSucceeded
     
-    ('PstepTest','PstepTest2') | ForEach-Object {
+    ('RivetTest','RivetTest2') | ForEach-Object {
         
         $dbRoot = Join-Path $dbsRoot $_
         Assert-DirectoryExists $dbRoot
