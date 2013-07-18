@@ -3,7 +3,7 @@ function Push-Migration()
 {
     Add-Table 'CustomFileGroup' {
         New-Column 'id' -Int -Identity
-    } -FileGroup '"pstep"' 
+    } -FileGroup '"rivet"' 
 }
 
 function Pop-Migration()
