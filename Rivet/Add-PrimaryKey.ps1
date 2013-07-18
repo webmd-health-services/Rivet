@@ -51,16 +51,26 @@ function Add-PrimaryKey
 
     $name = New-ConstraintName -TableName $TableName -SchemaName $SchemaName -ColumnName $ColumnName -PrimaryKey
     $clusteredClause = 'clustered'
-    <#if( $NonClustered )
+    if( $NonClustered )
     {
-        $clusteredClause = 'non clustered'
+        $clusteredClause = 'NONCLUSTERED'
     }
-    #>
+
+    if ( $Option )
+    {
+        $Option = $Option -join ','
+        $optionClause = 'WITH ({0})' -f $Option
+    }
+    else
+    {
+        $optionClause = ''
+    }
+    
 
     $columns = $ColumnName -join ','
     $query = @'
-    alter table [{0}] add constraint {1} primary key {2} ({3})
-'@ -f $TableName,$name,$clusteredClause,$columns
+    alter table [{0}] add constraint {1} primary key {2} ({3}) {4}
+'@ -f $TableName,$name,$clusteredClause,$columns,$optionClause
 
     Write-Host (' +{0}.{1} primary key {2} ({3})' -f $SchemaName,$TableName,$name,$columns)
     Invoke-Query -Query $query
