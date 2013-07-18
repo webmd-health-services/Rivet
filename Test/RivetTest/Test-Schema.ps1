@@ -8,6 +8,8 @@ function Test-Schema
         $Name
     )
     
-    $schema = Get-Schema -Name $schema
+    Set-StrictMode -Version Latest
+
+    $schema = Get-Schema -Name $Name
     return ($schema -ne $null)
 }
