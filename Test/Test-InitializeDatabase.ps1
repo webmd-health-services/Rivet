@@ -49,3 +49,30 @@ function Test-ShouldRenamePstepSchemaToRivet
     Assert-True (Test-Schema -Name $RivetSchemaName)
     Assert-False (Test-Schema -Name $oldSchemaName)
 }
+
+function Test-ShouldChangeAtUtcToDatetime2
+{
+    Invoke-Rivet -Push
+
+    $rivetSchemaName = 'rivet'
+    $migrationsTableName = 'Migrations'
+
+    $assertColumnParams = @{ 
+                                TableName = $migrationsTableName ; 
+                                SchemaName = $rivetSchemaName ; 
+                                Name = 'Atutc' ;
+                                NotNull = $true ;
+                           }
+    Assert-Column -DataType 'datetime2' @assertColumnParams
+
+    $query = @'
+        alter table {0}.{1} drop constraint AtUtcDefault
+        alter table {0}.{1} alter column Atutc datetime not null
+        alter table {0}.{1} add constraint AtUtcDefault default (GetUtcDate()) for Atutc
+'@ -f $rivetSchemaName,$migrationsTableName
+    Invoke-RivetTestQuery -Query $query
+    Assert-Column -DataType 'datetime' @assertColumnParams
+
+    Invoke-Rivet -Push
+    Assert-Column -DataType 'datetime2' @assertColumnParams
+}
