@@ -66,10 +66,18 @@ function Add-PrimaryKey
         $optionClause = ''
     }
     
+    if ($SchemaName -ne 'dbo')
+    {
+        $TableName = "[" +$SchemaName + "].[" + $TableName + "]"
+    }
+    else
+    {
+        $TableName = "[" + "dbo" + "]" + "." + "[" + $TableName + "]"
+    }
 
     $columns = $ColumnName -join ','
     $query = @'
-    alter table [{0}] add constraint {1} primary key {2} ({3}) {4}
+    ALTER TABLE {0} ADD CONSTRAINT {1} PRIMARY KEY {2} ({3}) {4}
 '@ -f $TableName,$name,$clusteredClause,$columns,$optionClause
 
     Write-Host (' +{0}.{1} primary key {2} ({3})' -f $SchemaName,$TableName,$name,$columns)
