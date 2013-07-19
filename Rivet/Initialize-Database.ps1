@@ -40,7 +40,7 @@ function Initialize-Database
         $atUtcType = Invoke-Query $query -AsScalar
         if( $atUtcType -eq 'datetime' )
         {
-            Write-Host ('{0}.{1}.AtUtc datetime -> datetime2' -f $RivetSchemaName,$RivetMigrationsTableName)
+            Write-Host (' {0}.{1}.AtUtc datetime -> datetime2' -f $RivetSchemaName,$RivetMigrationsTableName)
             $query = @'
             alter table {0}.{1} drop constraint AtUtcDefault
             alter table {0}.{1} alter column AtUtc datetime2 not null
