@@ -20,6 +20,6 @@ function Remove-Schema
     )
 
     $query = 'drop schema [{0}]' -f $Name
-    Write-Host (' - {0}' -f $Name)
+    Write-Host (' -{0}' -f $Name)
     Invoke-Query -Query $query 
 }

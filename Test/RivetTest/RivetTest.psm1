@@ -22,7 +22,7 @@ $moduleVars = @(
                
 $moduleVars | ForEach-Object { Set-Variable -Name $_ -Value $null -Option AllScope }
 
-$RivetSchemaName = 'pstep'
+$RivetSchemaName = 'rivet'
 
 $DatabasesSourcePath = Join-Path $PSScriptRoot ..\Databases -Resolve
 $DatabaseSourcePath = Join-Path $DatabasesSourcePath $Name -Resolve

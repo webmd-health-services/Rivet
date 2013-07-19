@@ -29,6 +29,6 @@ function Add-Schema
     {
         $query = '{0} authorization [{1}]' -f $query,$Owner
     }
-    Write-Host (' + {0}' -f $Name)
+    Write-Host (' +{0}' -f $Name)
     Invoke-Query -Query $query 
 }
