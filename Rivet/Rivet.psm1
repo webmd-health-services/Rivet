@@ -3,7 +3,7 @@ $Connection = New-Object Data.SqlClient.SqlConnection
 $Connection | 
     Add-Member -MemberType NoteProperty -Name ScriptsPath -Value $null
     
-$RivetSchemaName = 'pstep'
+$RivetSchemaName = 'rivet'
 $RivetMigrationsTableName = 'Migrations'
 $RivetMigrationsTableFullName = '{0}.{1}' -f $RivetSchemaName,$RivetMigrationsTableName
 
