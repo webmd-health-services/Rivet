@@ -8,6 +8,8 @@
     
     CommandsToSkip: [ 'Invoke-Rivet' ],
     
+    Scripts: [ 'Rivet\\rivet.ps1', 'Rivet\\Import-Rivet.ps1' ],
+    
     TitleSeparator: "::",
     
     Topics: [
