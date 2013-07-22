@@ -50,6 +50,6 @@ function Test-ShouldRemovePrimaryKey
 function Test-ShouldAddPrimaryKeyToTableInCustomSchema
 {
     Invoke-Rivet -Push 'AddPrimaryKeyToTableInCustomSchema'
-    Assert-True (Test-Table 'PrimaryKey' -SchemaName 'pstep')
-    Assert-PrimaryKey -TableName 'PrimaryKey' -ColumnName 'id' -SchemaName 'pstep'
+    Assert-True (Test-Table 'PrimaryKey' -SchemaName 'rivet')
+    Assert-PrimaryKey -TableName 'PrimaryKey' -ColumnName 'id' -SchemaName 'rivet'
 }
