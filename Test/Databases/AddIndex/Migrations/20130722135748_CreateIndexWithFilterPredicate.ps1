@@ -7,7 +7,7 @@ function Push-Migration()
     }
 
     #Add an Index to 'IndexMe'
-    Add-Index -TableName 'AddIndex' -Column 'IndexMe' -Where 'EndDate IS NOT NULL'
+    Add-Index -TableName 'AddIndex' -ColumnName 'IndexMe' -Where 'EndDate IS NOT NULL'
 
 }
 

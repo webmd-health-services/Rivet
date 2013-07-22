@@ -8,7 +8,7 @@ function Push-Migration()
     }
 
     #Add an Index to 'IndexMe'
-    Add-Index -TableName 'AddIndex' -Column @('IndexMe','IndexMe2')
+    Add-Index -TableName 'AddIndex' -ColumnName @('IndexMe','IndexMe2')
 
 }
 

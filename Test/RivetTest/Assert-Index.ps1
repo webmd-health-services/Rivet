@@ -43,7 +43,8 @@ function Assert-Index
 
     )
 
-    $id = @(Get-Index -TableName $TableName)
+    $id = Get-Index -TableName $TableName
+    Assert-True ($id -isnot 'Object[]')
     $id_columns = @(Get-IndexColumns -TableName $TableName)
     
     if ($TestNoIndex)

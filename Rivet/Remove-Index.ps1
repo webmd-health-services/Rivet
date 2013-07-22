@@ -33,18 +33,15 @@ function Remove-Index
         [Parameter(Mandatory=$true)]
         [string[]]
         # The column(s) on which the index is based
-        $Column  
+        $ColumnName  
     )
 
     Set-StrictMode -Version Latest
 
     ## Construct Index name
 
-    $indexname = Join-String "IX_",$TableName
+    $indexname = New-ConstraintName -ColumnName $ColumnName -TableName $TableName -SchemaName $SchemaName -Index
 
-    ## Construct Comma Separated List of Columns
-
-    $ColumnString = [string]::join(',', $Column)
 
 $query = @'
     drop index {0}
