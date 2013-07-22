@@ -8,6 +8,8 @@
     
     CommandsToSkip: [ 'Invoke-Rivet' ],
     
+    Scripts: [ 'Rivet\\rivet.ps1', 'Rivet\\Import-Rivet.ps1' ],
+    
     TitleSeparator: "::",
     
     Topics: [
@@ -17,6 +19,9 @@
         },
         {
             Path: "about_Rivet_Migrations.md"
+        },
+        {
+            Path: "about_Rivet_Intellisense.md"
         }
     ]
     
