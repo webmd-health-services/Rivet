@@ -52,15 +52,15 @@ function Add-Index
         $Option,
 
         [string]
-        # A comma separated list of filter_predicate options
+        # The filter to use when creating a filtered index.
         $Where,
 
         [string]
-        # A comma separated list of partition_scheme / filegroup options
+        # The value of the `ON` clause, which controls the filegroup/partition to use for the index.
         $On,
 
         [string]
-        # An array of FileStreamOn options
+        # The value of the `FILESTREAM_ON` clause, which controls the placement of filestream data.
         $FileStreamOn
         
     )
@@ -74,19 +74,16 @@ function Add-Index
         $UniqueString = "unique "
     }
 
+    $clusteredString = ''
     if ($Clustered)
     {
         $ClusteredString = "clustered"
-    }
-    else
-    {
-        $ClusteredString = "nonclustered"
     }
 
     $OptionString = ""
     if ($Option)
     {
-        $OptionString = [string]::join(',', $Option)
+        $OptionString = $Option -join ','
         $OptionString = "WITH ({0})" -f $OptionString
     }
   
@@ -110,7 +107,7 @@ function Add-Index
 
     ## Construct Index name
 
-    $indexname = Join-String "IX_",$TableName
+    $indexname = "IX_{0}"  -f $TableName
 
     ## Construct Comma Separated List of Columns
 
@@ -123,7 +120,7 @@ $query = @'
 
 '@ -f $UniqueString, $ClusteredString, $indexname, $SchemaName, $TableName, $ColumnString, $OptionString, $WhereString, $OnString, $FileStreamString
     
-    Write-Host $query
+    Write-Host (' +{0}.{1} {2} ({3})' -f $SchemaName,$TableName,$indexname,$ColumnString)
 
     Invoke-Query -Query $query
 }
