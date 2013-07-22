@@ -53,32 +53,23 @@ function Add-PrimaryKey
     $clusteredClause = 'clustered'
     if( $NonClustered )
     {
-        $clusteredClause = 'NONCLUSTERED'
+        $clusteredClause = 'nonclustered'
     }
 
     if ( $Option )
     {
         $Option = $Option -join ','
-        $optionClause = 'WITH ({0})' -f $Option
+        $optionClause = 'with ({0})' -f $Option
     }
     else
     {
         $optionClause = ''
     }
     
-    if ($SchemaName -ne 'dbo')
-    {
-        $TableName = "[" +$SchemaName + "].[" + $TableName + "]"
-    }
-    else
-    {
-        $TableName = "[" + "dbo" + "]" + "." + "[" + $TableName + "]"
-    }
-
     $columns = $ColumnName -join ','
     $query = @'
-    ALTER TABLE {0} ADD CONSTRAINT {1} PRIMARY KEY {2} ({3}) {4}
-'@ -f $TableName,$name,$clusteredClause,$columns,$optionClause
+    ALTER TABLE [{0}].[{1}] ADD CONSTRAINT {2} PRIMARY KEY {3} ({4}) {5}
+'@ -f $SchemaName,$TableName,$name,$clusteredClause,$columns,$optionClause
 
     Write-Host (' +{0}.{1} primary key {2} ({3})' -f $SchemaName,$TableName,$name,$columns)
     Invoke-Query -Query $query
