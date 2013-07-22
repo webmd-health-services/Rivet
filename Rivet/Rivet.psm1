@@ -10,25 +10,22 @@ $RivetMigrationsTableFullName = '{0}.{1}' -f $RivetSchemaName,$RivetMigrationsTa
 dir $PSScriptRoot *-*.ps1 |
     Where-Object { $_.BaseName -ne 'Import-Rivet' } |
     ForEach-Object { . $_.FullName }
-    
-$functionsToExport = @(
-                        'Add-Column',
-                        'Add-Description',
-                        'Add-Table',
-                        'Invoke-Query',
-                        'Invoke-Rivet',
-                        'Invoke-SqlScript',
-                        'New-Column',
-                        'Remove-Column',
-                        'Remove-Description',
-                        'Remove-StoredProcedure',
-                        'Remove-Table',
-                        'Remove-UserDefinedFunction',
-                        'Remove-View',
-                        'Set-StoredProcedure',
-                        'Set-UserDefinedFunction',
-                        'Set-View',
-                        'Update-Description'
+
+$privateFunctions = @(
+                        'Connect-Database',
+                        'Disconnect-Database',
+                        'Initialize-Database',
+                        'New-ConstraintName',
+                        'New-Migration',
+                        'Resolve-ObjectScriptPath',
+                        'Test-Migration',
+                        'Test-Schema',
+                        'Test-Table',
+                        'Update-Database',
+                        'Write-RivetError'
                       )
+
+$functionsToExport = Get-Command -CommandType Function -Module Rivet |
+                        Where-Object { $privateFunctions -notcontains $_.Name }
 
 Export-ModuleMember -Function $functionsToExport
