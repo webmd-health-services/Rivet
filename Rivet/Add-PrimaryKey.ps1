@@ -50,27 +50,25 @@ function Add-PrimaryKey
     Set-StrictMode -Version Latest
 
     $name = New-ConstraintName -TableName $TableName -SchemaName $SchemaName -ColumnName $ColumnName -PrimaryKey
+
     $clusteredClause = 'clustered'
     if( $NonClustered )
     {
         $clusteredClause = 'nonclustered'
     }
 
+    $optionClause = ''
     if ( $Option )
     {
-        $Option = $Option -join ','
-        $optionClause = 'with ({0})' -f $Option
-    }
-    else
-    {
-        $optionClause = ''
+        $optionClause = $Option -join ','
+        $optionClause = 'with ({0})' -f $optionClause
     }
     
     $columns = $ColumnName -join ','
     $query = @'
-    ALTER TABLE [{0}].[{1}] ADD CONSTRAINT {2} PRIMARY KEY {3} ({4}) {5}
+    alter table [{0}].[{1}] add constraint {2} primary key {3} ({4}) {5}
 '@ -f $SchemaName,$TableName,$name,$clusteredClause,$columns,$optionClause
 
-    Write-Host (' +{0}.{1} primary key {2} ({3})' -f $SchemaName,$TableName,$name,$columns)
+    Write-Host (' +{0}.{1} {2} ({3})' -f $SchemaName,$TableName,$name,$columns)
     Invoke-Query -Query $query
 }
