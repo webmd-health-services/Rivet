@@ -17,6 +17,9 @@
         },
         {
             Path: "about_Rivet_Migrations.md"
+        },
+        {
+            Path: "about_Rivet_Intellisense.md"
         }
     ]
     
