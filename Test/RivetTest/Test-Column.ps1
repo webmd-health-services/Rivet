@@ -9,7 +9,7 @@ function Test-Column
     Returns `True` if the column exists, `False` otherwise.
 
     .EXAMPLE
-    Test-Column -Name 'CreatedAt' -Table 'Customers'
+    Test-Column -Name 'CreatedAt' -TableName 'Customers'
 
     REturns `True` if the `Customers` table contains a `CreatedAt` column.
     #>
