@@ -6,7 +6,7 @@ function Push-Migration()
     }
 
     #Add an Index to 'IndexMe'
-    Add-Index -TableName 'AddIndex' -Column 'IndexMe' -Unique -Option @('IGNORE_DUP_KEY = ON','ALLOW_ROW_LOCKS = OFF')
+    Add-Index -TableName 'AddIndex' -ColumnName 'IndexMe' -Unique -Option @('IGNORE_DUP_KEY = ON','ALLOW_ROW_LOCKS = OFF')
 
 }
 
