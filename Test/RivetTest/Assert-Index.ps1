@@ -16,6 +16,11 @@ function Assert-Index
         # Array of Column Names
         $ColumnName,
 
+        [Parameter()]
+        [string]
+        # The table's schema.  Default is `dbo`.
+        $SchemaName = 'dbo',
+
         [Switch]
         # Index Created Should be Clustered
         $TestClustered,
@@ -52,7 +57,7 @@ function Assert-Index
         Assert-NotNull $id_columns ('Clustered or NonClustered Index Column(s) on table {0} doesn''t exist.' -f $TableName)
 
         ## Assert Index Name
-        Assert-Equal (Join-String "IX_",$TableName) $id.name
+        Assert-Equal (New-ConstraintName -ColumnName $ColumnName -TableName $TableName -SchemaName $SchemaName -Index) $id.name
 
         ## Assert Count
         Assert-Equal $ColumnName.Count $id_columns.Count
