@@ -37,7 +37,7 @@ function Add-Index
         [Parameter(Mandatory=$true)]
         [string[]]
         # The column(s) on which the index is based
-        $Column,
+        $ColumnName,
 
         [Switch]
         # Create a unique index on a table or view
@@ -68,59 +68,59 @@ function Add-Index
     Set-StrictMode -Version Latest
 
     ## Read Flags, Set Strings
-    $UniqueString = ""
+    $UniqueClause = ""
     if ($Unique)
     {
-        $UniqueString = "unique "
+        $UniqueClause = "unique "
     }
 
-    $clusteredString = ''
+    $ClusteredClause = ''
     if ($Clustered)
     {
-        $ClusteredString = "clustered"
+        $ClusteredClause = "clustered"
     }
 
-    $OptionString = ""
+    $OptionClause = ""
     if ($Option)
     {
-        $OptionString = $Option -join ','
-        $OptionString = "WITH ({0})" -f $OptionString
+        $OptionClause = $Option -join ','
+        $OptionClause = "WITH ({0})" -f $OptionClause
     }
   
-    $WhereString = ""
+    $WhereClause = ""
     if ($Where)
     {
-        $WhereString = "where ({0})" -f $Where
+        $WhereClause = "where ({0})" -f $Where
     }
 
-    $OnString = ""
+    $OnClause = ""
     if ($On)
     {
-        $OnString = "on {0}" -f $On
+        $OnClause = "on {0}" -f $On
     }
 
-    $FileStreamString = ""
+    $FileStreamClause = ""
     if ($FileStreamOn)
     {
-        $FileStreamString = "filestream_on {0}" -f $FileStreamOn
+        $FileStreamClause = "filestream_on {0}" -f $FileStreamOn
     }
 
     ## Construct Index name
 
-    $indexname = "IX_{0}"  -f $TableName
+    $indexname = New-ConstraintName -ColumnName $ColumnName -TableName $TableName -SchemaName $SchemaName -Index
 
     ## Construct Comma Separated List of Columns
 
-    $ColumnString = [string]::join(',', $Column)
+    $ColumnClause = [string]::join(',', $ColumnName)
 
 $query = @'
     create {0}{1} index {2}
         on {3}.{4} ({5})
         {6}{7}{8}{9}
 
-'@ -f $UniqueString, $ClusteredString, $indexname, $SchemaName, $TableName, $ColumnString, $OptionString, $WhereString, $OnString, $FileStreamString
+'@ -f $UniqueClause, $ClusteredClause, $indexname, $SchemaName, $TableName, $ColumnClause, $OptionClause, $WhereClause, $OnClause, $FileStreamClause
     
-    Write-Host (' +{0}.{1} {2} ({3})' -f $SchemaName,$TableName,$indexname,$ColumnString)
+    Write-Host (' +{0}.{1} {2} ({3})' -f $SchemaName,$TableName,$indexname,$ColumnClause)
 
     Invoke-Query -Query $query
 }

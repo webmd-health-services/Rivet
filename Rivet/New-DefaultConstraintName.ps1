@@ -30,7 +30,12 @@ function New-ConstraintName
         [Parameter(Mandatory=$true,ParameterSetName='PK')]
         [Switch]
         # Creates a primary key name.
-        $PrimaryKey
+        $PrimaryKey,
+
+        [Parameter(Mandatory=$true,ParameterSetName='IX')]
+        [Switch]
+        # Creates an index name.
+        $Index
     )
 
     $columns = $ColumnName -join '_'
