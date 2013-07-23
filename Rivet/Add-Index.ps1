@@ -111,7 +111,7 @@ function Add-Index
 
     ## Construct Comma Separated List of Columns
 
-    $ColumnClause = [string]::join(',', $ColumnName)
+    $ColumnClause = $ColumnName -join ','
 
 $query = @'
     create {0}{1} index {2}

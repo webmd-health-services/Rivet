@@ -15,4 +15,5 @@ function New-Database
 '@ -f $Name
 
     Invoke-RivetTestQuery -Query $query -Master
+
 }

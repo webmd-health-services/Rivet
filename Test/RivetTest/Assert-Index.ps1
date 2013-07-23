@@ -43,10 +43,12 @@ function Assert-Index
 
     )
 
+    Set-StrictMode -Version Latest
+
     $id = Get-Index -TableName $TableName
     Assert-True ($id -isnot 'Object[]')
-    $id_columns = @(Get-IndexColumns -TableName $TableName)
-    
+    $id_columns = Get-IndexColumns -TableName $TableName
+
     if ($TestNoIndex)
     {
         Assert-Null $id ('Clustered or NonClustered Index on table {0} does exist.' -f $TableName)
@@ -61,7 +63,10 @@ function Assert-Index
         Assert-Equal (New-ConstraintName -ColumnName $ColumnName -TableName $TableName -SchemaName $SchemaName -Index) $id.name
 
         ## Assert Count
-        Assert-Equal $ColumnName.Count $id_columns.Count
+        if ($id_columns -is 'Object[]')
+        {
+            Assert-Equal $ColumnName.Count $id_columns.Count
+        }
 
         ## Assert Clustered / NonClustered
         if ($TestClustered)
