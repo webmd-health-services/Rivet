@@ -35,7 +35,12 @@ function New-ConstraintName
         [Parameter(Mandatory=$true,ParameterSetName='IX')]
         [Switch]
         # Creates an index name.
-        $Index
+        $Index,
+
+        [Parameter(Mandatory=$true,ParameterSetName='UQ')]
+        [Switch]
+        # Creates an 'unique' constraint name.
+        $Unique
     )
 
     $columns = $ColumnName -join '_'
