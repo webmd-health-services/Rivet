@@ -13,5 +13,5 @@ function Start-RivetTest
     
     New-Database
 
-    $DatabaseConnection = New-SqlConnection    
+    $DatabaseConnection = New-SqlConnection 
 }
