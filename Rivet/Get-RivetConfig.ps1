@@ -70,6 +70,11 @@ function Get-RivetConfig
             # Set the configuration value as an integer.
             $AsInt,
 
+            [Parameter(Mandatory=$true,ParameterSetName='AsList')]
+            [Switch]
+            # Set the configuration value as a list of strings.
+            $AsList,
+
             [Parameter(Mandatory=$true,ParameterSetName='AsPath')]
             [Switch]
             # Set the configuration value as a path.
@@ -101,6 +106,11 @@ function Get-RivetConfig
                     return $false
                 }
                 $properties.$Name = [int]$rawConfig.$Name
+                break
+            }
+            'AsList'
+            {
+                $properties.$Name = [Object[]]$rawConfig.$Name
                 break
             }
             'AsPath'
@@ -149,16 +159,12 @@ function Get-RivetConfig
 
     $configRoot = Split-Path -Parent -Path $Path
 
+    # Defaults
     $properties = @{
-                        SqlServerName = 'computername\instancename';
                         ConnectionTimeout = 15;
                         CommandTimeout = 30;
-                        Databases = @(
-                                        @{
-                                            Name = 'One';
-                                            ScriptsRoot = (Join-Path -Path $configRoot -ChildPath 'Databases\One');
-                                        }
-                                     )
+                        Databases = @();
+                        IgnoreDatabases = @();
                    }
 
     $rawConfig = ((Get-Content -Path $Path) -join "`n") | ConvertFrom-Json
@@ -166,13 +172,24 @@ function Get-RivetConfig
     $valid = (Set-ConfigProperty -Name SqlServerName -Required -AsString) -and `
                 (Set-ConfigProperty -Name DatabasesRoot -Required -AsPath) -and `
                 (Set-ConfigProperty -Name ConnectionTimeout -AsInt) -and `
-                (Set-ConfigProperty -Name CommandTimeout -AsInt)
+                (Set-ConfigProperty -Name CommandTimeout -AsInt) -and `
+                (Set-ConfigProperty -Name IgnoreDatabases -AsList)
     
 
     if( $valid )
     {
         $properties.Databases = Get-ChildItem -Path $properties.DatabasesRoot |
                                     Where-Object { $_.PsIsContainer } |
+                                    Where-Object { 
+                                        if( -not $properties.IgnoreDatabases )
+                                        {
+                                            return $true
+                                        }
+
+                                        $dbName = $_.Name                                        
+                                        $ignore = $properties.IgnoreDatabases | Where-Object { $dbName -like $_ }
+                                        return -not $ignore
+                                    } |
                                     ForEach-Object {
                                         $dbName = $_.Name
                                         $dbProps = @{
