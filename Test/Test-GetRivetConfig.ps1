@@ -209,6 +209,42 @@ function Test-ShouldFindAllDatabases
     }
 }
 
+function Test-ShouldIgnoreDatabases
+{
+    $dbNames = @( 'One', 'Two', 'Three' )
+    $dbNames | New-DatabaseDirectory
+
+    @'
+{
+    SqlServerName: '.\\Test',
+    DatabasesRoot: 'Databases',
+    IgnoreDatabases: [ 'Tw*', 'Thr*' ]
+}
+'@ | Set-RivetConfig
+
+    $config = Get-RivetConfig -Path $rivetConfigPath
+    Assert-NotNull $config
+    Assert-Equal 1 $config.Databases.Count
+    Assert-Equal 'One' $config.Databases[0].Name
+}
+
+function Test-ShouldHandleOneIgnoreRule
+{
+    'One' | New-DatabaseDirectory
+
+    @'
+{
+    SqlServerName: '.\\Test',
+    DatabasesRoot: 'Databases',
+    IgnoreDatabases: 'One'
+}
+'@ | Set-RivetConfig
+
+    $config = Get-RivetConfig -Path $rivetConfigPath
+    Assert-NotNull $config
+    Assert-Equal 0 $config.Databases.Count
+}
+
 function Set-RivetConfig
 {
     param(

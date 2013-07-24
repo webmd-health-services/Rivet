@@ -2,5 +2,6 @@
     SqlServerName: '.\Rivet',
     DatabaseScriptsRoot: '..\Test\Databases',
     ConnectionTimeout = 15,
-    CommandTimeout = 30
+    CommandTimeout = 30,
+    IgnoreDatabases = [ 'Shared' ]
 }
