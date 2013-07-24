@@ -167,9 +167,22 @@ function Get-RivetConfig
                 (Set-ConfigProperty -Name DatabasesRoot -Required -AsPath) -and `
                 (Set-ConfigProperty -Name ConnectionTimeout -AsInt) -and `
                 (Set-ConfigProperty -Name CommandTimeout -AsInt)
+    
 
     if( $valid )
     {
+        $properties.Databases = Get-ChildItem -Path $properties.DatabasesRoot |
+                                    Where-Object { $_.PsIsContainer } |
+                                    ForEach-Object {
+                                        $dbName = $_.Name
+                                        $dbProps = @{
+                                                        'Name' = $dbName;
+                                                        'Root' = $_.FullName;
+                                                    }
+                                        New-Object PsObject -Property $dbProps
+                                    }
+        $properties.Databases = [Object[]]$properties.Databases
+
         return New-Object PsObject -Property $properties
     }
 }
