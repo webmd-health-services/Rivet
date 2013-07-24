@@ -1,6 +1,12 @@
 
 $tempDir = $null
 $rivetConfigPath = $null
+$minConfig = @'
+{
+    SqlServerName: '.\\Test',
+    DatabasesRoot: 'Databases'
+}
+'@
 
 function Setup
 {
@@ -9,6 +15,8 @@ function Setup
 * rivet
 '@
     $rivetConfigPath = Join-Path -Path $tempDir -ChildPath 'rivet'
+    $minConfig | Set-RivetConfig
+    Assert-NotNull $rivetConfigPath
     . (Join-Path -Path $TestDir -ChildPath ..\Rivet\Get-RivetConfig.ps1 -Resolve)
 }
 
@@ -27,39 +35,24 @@ function TearDown
 
 function Test-ShouldParseMinimumConfig
 {
-    ('One') | 
-        ForEach-Object { Join-Path -Path $tempDir -ChildPath "Databases\$_" } |
-        ForEach-Object { New-Item -Path $_ -ItemType Container -Force } |
-        Out-Null
-
-    @'
-{
-    SqlServerName: 'computername\\instancename',
-    DatabasesRoot: 'Databases'
-}
-'@ | Set-RivetConfig
+    $dbName = [Guid]::NewGuid().ToString()
+    $dbName | New-DatabaseDirectory
 
     $config = Get-RivetConfig -Path $rivetConfigPath
 
     Assert-NotNull $config
-    Assert-Equal 'computername\instancename' $config.SqlServerName
+    Assert-Equal '.\Test' $config.SqlServerName
     Assert-Equal 15 $config.ConnectionTimeout   # Default
     Assert-Equal 30 $config.CommandTimeout      # Default
     Assert-True ($config.Databases -is 'Object[]')
     Assert-Equal 1 $config.Databases.Count 
-    Assert-Equal 'One' $config.Databases[0].Name
-    Assert-Equal (Join-Path -Path $tempDir -ChildPath 'Databases\One') $config.Databases[0].ScriptsRoot
+    Assert-Equal $dbName $config.Databases[0].Name
+    Assert-Equal (Join-Path -Path $tempDir -ChildPath "Databases\$dbName") $config.Databases[0].Root
 }
 
 function Test-ShouldValidateDatabasesDirectoryExists
 {
     Remove-Item -Path (Join-Path -Path $tempDir -ChildPath 'Databases') -Recurse
-    @'
-{
-    SqlServerName: 'Hello\\World',
-    DatabasesRoot: 'Databases'
-}
-'@ | Set-RivetConfig 
 
     $Error.Clear()
     $config = Get-RivetConfig -Path $rivetConfigPath -ErrorAction SilentlyContinue
@@ -199,19 +192,60 @@ function Test-ShouldParseRivetConfigInCurrentDirectory
     }
 }
 
-filter Set-RivetConfig
+function Test-ShouldFindAllDatabases
+{
+    $dbNames = @('One','Three','Two') 
+    $dbNames | New-DatabaseDirectory
+
+    $config = Get-RivetConfig -Path $rivetConfigPath
+    Assert-NotNull $config
+    Assert-Equal 3 $config.Databases.Count
+    
+    $idx = 0
+    $dbNames | ForEach-Object {
+        Assert-Equal $_ $config.Databases[$idx].Name 
+        Assert-Equal (Join-Path -Path $tempDir -ChildPath "Databases\$_") $config.Databases[$idx].Root
+        $idx += 1
+    }
+}
+
+function Set-RivetConfig
 {
     param(
+        [Parameter(Mandatory=$true,ValueFromPipeline=$true)]
+        [string]
+        # The config to set.
+        $InputObject,
+
+        [string]
+        # The filename to use.
         $FileName
     )
 
-    if( $FileName )
+    begin
     {
-        $rivetConfigPath = Join-Path -Path $tempDir -ChildPath $FileName
+        if( $FileName )
+        {
+            $rivetConfigPath = Join-Path -Path $tempDir -ChildPath $FileName
+        }
     }
-    else
+    process
     {
-        $rivetConfigPath = Join-Path -Path $tempDir -ChildPath 'rivet'
+        $InputObject | Set-Content -Path $rivetConfigPath
     }
-    $_ | Set-Content -Path $rivetConfigPath
+}
+
+filter New-DatabaseDirectory
+{
+    param(
+        [Parameter(Mandatory=$true,ValueFromPipeline=$true)]
+        [string]
+        $Name
+    )
+
+    $Name |
+        ForEach-Object { Join-Path -Path $tempDir -ChildPath "Databases\$_" } |
+        ForEach-Object { New-Item -Path $_ -ItemType Container -Force } |
+        Out-Null
+
 }
