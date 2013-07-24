@@ -1,47 +1,45 @@
 
 function New-TempDirectoryTree
 {
-    <#
-    .SYNOPSIS
-    Create a directory tree in a temporary directory.
-
-    .DESCRIPTION
-
-    Uses a simple DSL to create a temporary directory tree in the current user's `$env:TEMP` directory.  Here's an example:
-
-        New-TemporaryDirectoryTree -Tree @'
-        + Database1
-          + Migrations
-            * 20130703152600_CreateTable.ps1
-        + Database2
-          + Migrations
-            * 20130703152600_CreateTable.ps1
-        '@
-    
-    Databases are prefixed with `+`.  Files are prefixed with `+`.  To create an item underneath a directory, indent it two spaces further than the parent directory.
-    #>
-    [CmdletBinding()]
+    [CmdletBinding(DefaultParameterSetName='TempPath')]
     param(
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory=$true,Position=1)]
         [AllowEmptyString()]
         [string]
         # The directory tree to create.
         $Tree,
         
+        [Parameter(ParameterSetName='TempPath')]
         [string]
         # An optional prefix for the temporary directory's name.
-        $Prefix
+        $Prefix,
+
+        [Parameter(Mandatory=$true,ParameterSetName='ExistingPath')]
+        [string]
+        # The path where the directory tree should be created.  Defaults to a new directory in the `$env:TEMP` directory.
+        $Path
     )
     
     $stackName = 'New-TempDirectoryTree'
     
-    $optionalParams = @{ }
-    if( $Prefix )
+    if( $PSCmdlet.ParameterSetName -eq 'TempPath' )
     {
-        $optionalParams.Prefix = $Prefix
-    }
+        $optionalParams = @{ }
+        if( $Prefix )
+        {
+            $optionalParams.Prefix = $Prefix
+        }
     
-    $tempDir = New-TempDirectory @optionalParams
+        $tempDir = New-TempDirectory @optionalParams
+    }
+    else
+    {
+        if( -not (Test-Path -Path $Path -PathType Container) )
+        {
+            New-Item -Path $Path -ItemType Directory -Force
+        }
+        $tempDir = $Path
+    }
     $startLocation = Get-Location
     Push-Location -Path $tempDir -StackName $stackName
     
