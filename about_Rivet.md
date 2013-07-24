@@ -22,5 +22,8 @@ All changes made in either `Push-Migration` or `Pop-Migration` are wrapped in a 
     
 # SEE ALSO
 
-about_Rivet_migrations
+about_Rivet_Configuration
+about_Rivet_Intellisense
+about_Rivet_Migrations
+
 
