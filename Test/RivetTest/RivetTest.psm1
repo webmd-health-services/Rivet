@@ -6,22 +6,19 @@ param(
     $Name
 )
 
-$moduleVars = @(
-                    'DatabasesSourcePath',
-                    'DatabaseSourcePath',
-                    'DatabaseSourceName',
-                    'DatabaseName',
-                    'DatabasesRoot',
-                    'DatabaseRoot',
-                    'Server',
-                    'RivetPath',
-                    'RivetSchemaName',
-                    'DatabaseConnection',
-                    'MasterConnection'
-               ) 
-               
-$moduleVars | ForEach-Object { Set-Variable -Name $_ -Value $null -Option AllScope }
-
+$ConfigFilePath = 
+    $DatabasesSourcePath = 
+    $DatabaseSourcePath = 
+    $DatabaseSourceName = 
+    $DatabaseName = 
+    $DatabasesRoot = 
+    $DatabaseRoot = 
+    $Server = 
+    $RivetPath = 
+    $RivetSchemaName = 
+    $DatabaseConnection = 
+    $MasterConnection = $null
+                  
 $RivetSchemaName = 'rivet'
 
 $DatabasesSourcePath = Join-Path $PSScriptRoot ..\Databases -Resolve

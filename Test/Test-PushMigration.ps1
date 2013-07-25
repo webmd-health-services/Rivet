@@ -1,11 +1,11 @@
 
-function Setup
+function Start-Test
 {
     Import-Module -Name (Join-Path $TestDir 'RivetTest') -ArgumentList 'RivetTest' 
     Start-RivetTest
 }
 
-function TearDown
+function Stop-Test
 {
     Stop-RivetTest
     Remove-Module RivetTest
@@ -80,6 +80,14 @@ function Test-ShouldPushMigrationsForMultipleDBs
         }
 '@
 
+    $configFilePath = Join-Path -Path $tempDir -ChildPath 'rivet.json'
+    @"
+{
+    SqlServerName: "$($Server.Replace('\','\\'))",
+    DatabasesRoot: "$($tempDir.FullName.Replace('\','\\'))"
+}
+"@ | Set-Content -Path $configFilePath
+
     $db1MigrationsDir = Join-Path $tempDir $db1Name\Migrations
     $migration | Out-File (Join-Path $db1MigrationsDir $migrationFileName) -Encoding OEM
 
@@ -94,7 +102,7 @@ function Test-ShouldPushMigrationsForMultipleDBs
     
     try
     {
-        Invoke-Rivet -Push -Database $db1Name,$db2Name -Path $tempDir
+        Invoke-Rivet -Push -Database $db1Name,$db2Name -ConfigFilePath $configFilePath
         
         Assert-Migration -Path $db1MigrationsDir -Connection $db1Conn
         Assert-Migration -Path $db2MigrationsDir -Connection $db2Conn

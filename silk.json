@@ -22,6 +22,9 @@
         },
         {
             Path: "about_Rivet_Intellisense.md"
+        },
+        {
+            Path: "about_Rivet_Configuration.md"
         }
     ]
     

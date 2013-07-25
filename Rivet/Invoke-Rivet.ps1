@@ -26,98 +26,84 @@ function Invoke-Rivet
         [Parameter(Mandatory=$true,ParameterSetName='New',Position=1)]
         [Parameter(ParameterSetName='Push',Position=1)]
         [string]
-        # The name of the migration to create/push.  Wildcards accepted when pushing/popping.
+        # The name of the migration to create/push.  Wildcards accepted when pushing.
         $Name,
     
         [Parameter(ParameterSetName='Pop',Position=1)]
         [UInt32]
-        # The number of migrations to pop. Default
+        # The number of migrations to pop. Default is 1.
         $Count = 1,
-    
-        [Parameter(Mandatory=$true,ParameterSetName='Push')]
-        [Parameter(Mandatory=$true,ParameterSetName='Pop')]
-        [Parameter(Mandatory=$true,ParameterSetName='Redo')]
-        [string]
-        # The SQL Server to connect to, e.g. `.\Instance`.
-        $SqlServerName,
-    
-        [Parameter(Mandatory=$true,ParameterSetName='New',Position=2)]
-        [Parameter(Mandatory=$true,ParameterSetName='Push')]
-        [Parameter(Mandatory=$true,ParameterSetName='Pop')]
-        [Parameter(Mandatory=$true,ParameterSetName='Redo')]
-        [string[]]
-        # The databases to migrate.
-        $Database,
-    
-        [Parameter(Mandatory=$true,ParameterSetName='New',Position=3)]
-        [Parameter(Mandatory=$true,ParameterSetName='Push')]
-        [Parameter(Mandatory=$true,ParameterSetName='Pop')]
-        [Parameter(Mandatory=$true,ParameterSetName='Redo')]
-        [string]
-        # The directory where the database scripts are kept.  If `$Database` is singular, migrations are assumed to be in `$Path\$Database\Migrations`.  If `$Database` contains multiple items, `$Path` is assumed to point to a directory which contains directories for each database (e.g. `$Path\$Database[$i]`) and migrations are assumed to be in `$Path\$Database[$i]\Migrations`.
-        $Path,
 
-        [Parameter(Mandatory=$true,ParameterSetName='Help')]
-        [AllowNull()]
-        [AllowEmptyString()]
-        [Switch]
-        # Display Help.
-        $Help,
-    
-        [Parameter(ParameterSetName='Help',Position=0)]
-        [string]
-        # The help topic to display.
-        $TopicName,
-    
+        [Parameter(ParameterSetName='New',Position=2)]
         [Parameter(ParameterSetName='Push')]
         [Parameter(ParameterSetName='Pop')]
         [Parameter(ParameterSetName='Redo')]
-        [UInt32]
-        # The time (in seconds) to wait for a connection to open. The default is 15 seconds.
-        $ConnectionTimeout = 15
+        [string[]]
+        # The database(s) to migrate. Optional.  Will operate on all databases otherwise.
+        $Database,
+
+        [Parameter()]
+        [string]
+        # The environment you're working in.  Controls which settings Rivet loads from the `rivet.json` configuration file.
+        $Environment,
+
+        [Parameter()]
+        [string]
+        # The path to the Rivet configuration file.  Default behavior is to look in the current directory for a `rivet.json` file.  See `about_Rivet_Configuration` for more information.
+        $ConfigFilePath
     )
 
-    if( $pscmdlet.ParameterSetName -eq 'Help' )
+    $settings = Get-RivetConfig -Path $ConfigFilePath -Environment $Environment
+
+    if( $Database )
     {
-        if( $TopicName )
-        {
-            Get-Help $TopicName
-        }
-        else
-        {
-            Get-Help about_Rivet
-        }
+        $databases = $Database | 
+                        ForEach-Object {
+                            $property = @{
+                                            Name = $_;
+                                            Root = (Join-Path -Path $settings.DatabasesRoot -ChildPath $_ );
+                                         }
+                            New-Object PSObject -Property $property
+                        }
+    }
+    else
+    {
+        $databases = $settings.Databases
+    }
+
+    if( -not $databases )
+    {
+        Write-Error ('There are not database directories in ''{0}''.  Please create a database directory there or supply an explicit database name with the `Database` parameter.' -f $settings.DatabasesRoot)
         return
     }
 
-    if( $pscmdlet.ParameterSetName -eq 'New' )
-    {
-        New-Migration -Name $Name -Database $Database -Path $Path
-        exit $error.Count
-    }
+    $databases | ForEach-Object {
+
+        $databaseName = $_.Name
+        $dbScriptsPath = $_.Root
+        $dbMigrationsPath = Join-Path -Path $dbScriptsPath -ChildPath Migrations
+        
+        if( $pscmdlet.ParameterSetName -eq 'New' )
+        {
+            New-Migration -Name $Name -Path $dbMigrationsPath
+            return
+        }
     
-    $singleDatabase = ( $Database.Length -eq 1 )
+        Connect-Database -SqlServerName $settings.SqlServerName `
+                         -Database $databaseName `
+                         -ConnectionTimeout $settings.ConnectionTimeout
+        
+        $Connection.ScriptsPath = $dbScriptsPath
 
-    $Database | ForEach-Object {
-
-        $databaseName = $_
-        
-        Connect-Database -SqlServerName $SqlServerName -Database $databaseName -ConnectionTimeout $ConnectionTimeout
-        
-        if( $singleDatabase )
-        {
-            $Connection.ScriptsPath = $Path
-        }
-        else
-        {
-            $Connection.ScriptsPath = Join-Path $Path $databaseName
-        }
-        
         try
         {
             Initialize-Database
 
-            $dbMigrationsPath = Join-Path $Connection.ScriptsPath Migrations
+            $updateParams = @{
+                                Path = $dbMigrationsPath;
+                                DBScriptsPath = $dbScriptsPath;
+                             }
+
             if( -not (Test-Path -Path $dbMigrationsPath -PathType Container) )
             {
                 Write-Warning ('{0} database migrations directory ({1}) not found.' -f $databaseName,$dbMigrationsPath)
@@ -126,23 +112,23 @@ function Invoke-Rivet
             
             if( $Name )
             {
-                $dbMigrationsPath = Join-Path $dbMigrationsPath ("*_{0}.ps1" -f $Name)
+                $updateParams.Path = Join-Path $dbMigrationsPath ("*_{0}.ps1" -f $Name)
             }
             
             Write-Host ('# {0}.{1}' -f $Connection.DataSource,$Connection.Database)
             
             if( $pscmdlet.ParameterSetName -eq 'Push' )
             {
-                Update-Database -Path $dbMigrationsPath
+                Update-Database @updateParams
             }
             elseif( $pscmdlet.ParameterSetName -eq 'Pop' )
             {
-                Update-Database -Pop $Count -Path $dbMigrationsPath
+                Update-Database -Pop $Count @updateParams
             }
             elseif( $pscmdlet.ParameterSetName -eq 'Redo' )
             {
-                Update-Database -Pop 1 -Path $dbMigrationsPath
-                Update-Database -Path $dbMigrationsPath
+                Update-Database -Pop 1 @updateParams
+                Update-Database @updateParams
             }
         }
         catch
@@ -157,6 +143,7 @@ function Invoke-Rivet
         }
         finally
         {
+            $Connection.ScriptsPath = $null
             Disconnect-Database
         }
     }
