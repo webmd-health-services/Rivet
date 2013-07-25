@@ -1,7 +1,7 @@
 
-function Setup
+function Start-Test
 {
-    Import-Module -Name (Join-Path $TestDir 'RivetTest') -ArgumentList 'RedoMigration' 
+    & (Join-Path -Path $TestDir -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve) -DatabaseName 'RedoMigration' 
     Start-RivetTest
 
     Invoke-Rivet -Push
@@ -9,7 +9,7 @@ function Setup
     Assert-Equal 2 (Measure-Migration)
 }
 
-function TearDown
+function Stop-Test
 {
     Stop-RivetTest
     Remove-Module RivetTest

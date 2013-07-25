@@ -8,7 +8,7 @@ $minConfig = @'
 }
 '@
 
-function Setup
+function Start-Test
 {
     $tempDir = New-TempDirectoryTree -Prefix 'Rivet-Test-GetRivetConfig' @'
 + Databases
@@ -20,14 +20,14 @@ function Setup
     . (Join-Path -Path $TestDir -ChildPath ..\Rivet\Get-RivetConfig.ps1 -Resolve)
 }
 
-function TearDown
+function Stop-Test
 {
     if( (Test-Path -Path function:\Get-RivetConfig) )
     {
         Remove-Item -Path function:\Get-RivetConfig
     }
 
-    if( (Test-Path -Path $tempDir -PathType Container) )
+    if( $tempDir -and (Test-Path -Path $tempDir -PathType Container) )
     {
         Remove-Item -Path $tempDir -Recurse
     }
