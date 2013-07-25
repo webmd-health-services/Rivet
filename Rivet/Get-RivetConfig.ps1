@@ -24,6 +24,10 @@ function Get-RivetConfig
     [CmdletBinding()]
     param(
         [Parameter()]
+        # The name of the environment whose settings to return.  If not provided, uses the default settings.
+        $Environment,
+
+        [Parameter()]
         [string]
         # The path to the Rivet configuration file to load.  Defaults to `rivet.json` in the current directory.
         $Path
@@ -85,8 +89,23 @@ function Get-RivetConfig
             # Set the configuration value as a string.
             $AsString
         )
+        
+        $value = $null
 
-        if( -not ($rawConfig | Get-Member -Name $Name) )
+        if( $rawConfig | Get-Member -Name $Name )
+        {
+            $value = $rawConfig.$Name
+        }
+
+        if( $Environment -and 
+            ($rawConfig | Get-Member -Name 'Environments') -and 
+            ($rawConfig.Environments | Get-Member -Name $Environment) -and 
+            ($rawConfig.Environments.$Environment | Get-Member -Name $Name))
+        {
+            $value = $rawConfig.Environments.$Environment.$Name
+        }
+
+        if( -not $value )
         {
             if( $Required )
             {
@@ -100,22 +119,22 @@ function Get-RivetConfig
         {
             'AsInt'
             {
-                if( -not ($rawConfig.$Name -is 'int') )
+                if( -not ($value -is 'int') )
                 {
                     Write-ValidationError -Message ('setting ''{0}'' is invalid. It should be a positive integer.' -f $Name)
                     return $false
                 }
-                $properties.$Name = [int]$rawConfig.$Name
+                $properties.$Name = $value
                 break
             }
             'AsList'
             {
-                $properties.$Name = [Object[]]$rawConfig.$Name
+                $properties.$Name = [Object[]]$value
                 break
             }
             'AsPath'
             {
-                $path = $rawConfig.$Name  | Resolve-RivetConfigPath
+                $path = $value  | Resolve-RivetConfigPath
                 if( -not (Test-Path -Path $path -PathType Container) )
                 {
                     Write-ValidationError ('path {0} ''{1}'' not found.' -f $Name,$path)
@@ -126,7 +145,7 @@ function Get-RivetConfig
             }
             'AsString'
             {
-                $properties.$Name = $rawConfig.$Name
+                $properties.$Name = $value
                 break
             }
         }
@@ -142,7 +161,12 @@ function Get-RivetConfig
             # The error message to write.
             $Message
         )
-        Write-Error -Message ('Invalid Rivet configuration file ''{0}'': {1} See about_Rivet_Configuration for more information.' -f $Path,$Message)
+        $envMsg = ''
+        if( $Environment )
+        {
+            $envMsg = 'environment ''{0}'': ' -f $Environment
+        }
+        Write-Error -Message ('Invalid Rivet configuration file ''{0}'': {1}{2} See about_Rivet_Configuration for more information.' -f $Path,$envMsg,$Message)
     }
 
     if( -not $Path )

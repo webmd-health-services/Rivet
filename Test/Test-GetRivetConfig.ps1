@@ -245,6 +245,55 @@ function Test-ShouldHandleOneIgnoreRule
     Assert-Equal 0 $config.Databases.Count
 }
 
+function Test-ShouldOverrideSettingsFromEnvironment
+{
+    $uatDatabasesPath = Join-Path $tempDir 'UatDatabases'
+    $null = New-Item -Path $uatDatabasesPath -ItemType 'Directory'
+    $null = New-Item -Path (Join-Path $uatDatabasesPath 'Shared') -ItemType 'Directory'
+    $null = New-Item -Path (Join-Path $uatDatabasesPath 'UatDatabase') -ItemType 'Directory'
+    @'
+{
+    SqlServerName: '.\\Rivet',
+    DatabasesRoot: 'Databases',
+    Environments: {
+        UAT: {
+            SqlServerName: 'uatdb\\Rivet',
+            ConnectionTimeout: 999,
+            IgnoreDatabases: [ 'Shared' ],
+            DatabasesRoot: 'UatDatabases'
+        },
+        Prod: {
+            SqlServerName: 'proddb\\Rivet'
+        }
+    }
+}
+'@ | Set-RivetConfig
+
+    $databasesRootPath = Join-Path $tempDir 'Databases'
+    $defaultConfig = Get-RivetConfig -Path $rivetConfigPath
+    $uatConfig = Get-RivetConfig -Path $rivetConfigPath -Environment 'UAT'
+    $prodConfig = Get-RivetConfig -Path $rivetConfigPath -Environment 'Prod'
+    Assert-Equal '.\Rivet' $defaultConfig.SqlServerName
+    Assert-Equal $databasesRootPath $defaultConfig.DatabasesRoot
+    Assert-Equal 15 $defaultConfig.ConnectionTimeout
+    Assert-Equal 0 $defaultConfig.IgnoreDatabases.Count
+    Assert-Equal 0 $defaultConfig.Databases.Count
+
+    Assert-Equal 'uatdb\Rivet' $uatConfig.SqlServerName
+    Assert-Equal $uatDatabasesPath $uatConfig.DatabasesRoot
+    Assert-Equal 999 $uatConfig.ConnectionTimeout
+    Assert-Equal 1 $uatConfig.IgnoreDatabases.Count
+    Assert-Equal 'Shared' $uatConfig.IgnoreDatabases[0]
+    Assert-Equal 1 $uatConfig.Databases.Count
+    Assert-Equal 'UatDatabase' $uatConfig.Databases[0].Name
+
+    Assert-Equal 'proddb\Rivet' $prodConfig.SqlServerName
+    Assert-Equal $databasesRootPath $prodConfig.DatabasesRoot
+    Assert-Equal 15 $prodConfig.ConnectionTimeout
+    Assert-Equal 0 $prodConfig.IgnoreDatabases.Count
+    Assert-Equal 0 $prodConfig.Databases.Count
+}
+
 function Set-RivetConfig
 {
     param(
