@@ -27,7 +27,7 @@ function Invoke-Rivet
         $Database,
 
         [string]
-        $Path
+        $ConfigFilePath
     )
 
     $customParams = @{ }
@@ -36,12 +36,12 @@ function Invoke-Rivet
         $customParams.Database = $DatabaseName
     }
 
-    if( -not $Path )
+    if( -not $ConfigFilePath )
     {
-        $customParams.Path = $DatabaseRoot
+        $customParams.ConfigFilePath = $global:ConfigFilePath
     }
 
     $parms = $PSBoundParameters
-    & $RivetPath @PSBoundParameters @customParams -SqlServerName $Server
+    & $RivetPath @PSBoundParameters @customParams
 
 }

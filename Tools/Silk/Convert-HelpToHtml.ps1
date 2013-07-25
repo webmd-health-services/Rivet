@@ -30,7 +30,7 @@ filter Convert-HelpToHtml
     if( $syntax )
     {
         $syntax = @"
-    <h2>Syntax</h2>
+    <h1>Syntax</h1>
     <pre class="Syntax"><code>{0}</code></pre>
 "@ -f ($syntax -join "</code></pre>`n<pre class=""Syntax""><code>")
     }
@@ -39,7 +39,7 @@ filter Convert-HelpToHtml
     if( $description )
     {
         $description = @"
-    <h2>Description</h2>
+    <h1>Description</h1>
     <div class="Description">
         $description
     </div>
@@ -70,7 +70,7 @@ filter Convert-HelpToHtml
             $relatedCommands = " * {0}" -f (($relatedCommands -replace '_','\_') -join "`n * ")
         }
         $relatedCommands = @"
-        <h2>Related Commands</h2>
+        <h1>Related Commands</h1>
         {0}
 "@ -f ($relatedCommands | Convert-MarkdownToHtml)
     }
@@ -145,7 +145,7 @@ filter Convert-HelpToHtml
 "@
         }
         $parameters = @"
-		<h2> Parameters </h2>
+		<h1> Parameters </h1>
 		<table border='1'>
 			<tr>
 				<th>Name</th>
@@ -165,7 +165,7 @@ filter Convert-HelpToHtml
     if( $inputTypes )
     {
         $inputTypes = @"
-        <h2>Input Type</h2>
+        <h1>Input Type</h1>
         <div>{0}</div>
 "@ -f $inputTuypes
     }
@@ -188,7 +188,7 @@ filter Convert-HelpToHtml
         }
         $returnValues = $returnValues | Convert-MarkdownToHtml
         $returnValues = @"
-        <h2>Return Values</h2>
+        <h1>Return Values</h1>
         {0}
 "@ -f $returnValues
     }
@@ -197,7 +197,7 @@ filter Convert-HelpToHtml
     if( $notes )
     {
         $notes = @"
-        <h2>Notes</h2>
+        <h1>Notes</h1>
         <div>{0}</div>
 "@ -f $notes
     }
@@ -206,7 +206,7 @@ filter Convert-HelpToHtml
         Where-Object { $_ } |
         ForEach-Object {
             @"
-            <h2>{0}</h2>
+            <h1>{0}</h1>
             <pre><code>{1}</code></pre>
             <p>{2}</p>
 "@ -f $_.title.Trim(('-',' ')),($_.code | Out-HtmlString),(($_.remarks | Out-HtmlString | Convert-MarkdownToHtml) -join '</p><p>')

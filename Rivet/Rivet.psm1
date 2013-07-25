@@ -14,6 +14,7 @@ dir $PSScriptRoot *-*.ps1 |
 $privateFunctions = @(
                         'Connect-Database',
                         'Disconnect-Database',
+                        'Get-RivetConfig',
                         'Initialize-Database',
                         'New-ConstraintName',
                         'New-Migration',
