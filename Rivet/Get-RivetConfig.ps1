@@ -222,7 +222,14 @@ function Get-RivetConfig
                                                     }
                                         New-Object PsObject -Property $dbProps
                                     }
-        $properties.Databases = [Object[]]$properties.Databases
+        if( $properties.Databases )
+        {
+            $properties.Databases = [Object[]]$properties.Databases
+        }
+        else
+        {
+            $properties.Databases = @()
+        }
 
         return New-Object PsObject -Property $properties
     }

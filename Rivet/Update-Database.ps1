@@ -9,12 +9,12 @@ function Update-Database
     By default, applies all unapplied migrations to the database.  You can reverse all migrations with the `Down` switch.
     
     .EXAMPLE
-    Update-Database -Path C:\Projects\Rivet\Databases\Rivet\Migrations
+    Update-Database -Path C:\Projects\Rivet\Databases\Rivet\Migrations -DBScriptsPath C:\Projects\Rivet\Databases\Rivet
     
     Applies all un-applied migrations from the `C:\Projects\Rivet\Databases\Rivet\Migrations` directory.
     
     .EXAMPLE
-    Update-Database -Path C:\Projects\Rivet\Databases\Rivet\Migrations -Down
+    Update-Database -Path C:\Projects\Rivet\Databases\Rivet\Migrations -DBScriptsPath C:\Projects\Rivet\Databases\Rivet -Pop
     
     Reverses all migrations in the `C:\Projects\Rivet\Databases\Rivet\Migrations` directory
     #>
@@ -24,6 +24,11 @@ function Update-Database
         [string[]]
         # The path to the migration.
         $Path,
+
+        [Parameter(Mandatory=$true)]
+        [string]
+        # The path to the database's scripts directory.
+        $DBScriptsPath,
         
         [Parameter(Mandatory=$true,ParameterSetName='Pop')]
         [UInt32]
@@ -35,7 +40,7 @@ function Update-Database
     
     $popping = ($pscmdlet.ParameterSetName -eq 'Pop')
     $numPopped = 0
-    
+
     $Path | ForEach-Object {
         if( (Test-Path $_ -PathType Container) )
         {
@@ -115,8 +120,8 @@ function Update-Database
         try
         {
             $Connection.Transaction = $Connection.BeginTransaction()
-            $DBScriptRoot = $Connection.ScriptsPath
-            $DBMigrationsRoot = Join-Path $DBScriptRoot Migrations
+            $DBScriptRoot = $DBScriptsPath
+            $DBMigrationsRoot = Join-Path -Path $DBScriptsPath -ChildPath Migrations
 
             if( $Pop )
             {

@@ -7,6 +7,5 @@ function Disconnect-Database
     if( $Connection )
     {
         $Connection.Close()
-        $Connection.ScriptsPath = $null
     }
 }
