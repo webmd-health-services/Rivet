@@ -30,6 +30,8 @@ function Assert-PrimaryKey
         $WithOptions
 
     )
+    
+    Set-StrictMode -Version Latest
 
     $pk = Get-PrimaryKey -TableName $TableName -SchemaName $SchemaName
     Assert-NotNull $pk ('Primary Key on table {0}.{1} doesn''t exist.' -f $SchemaName,$TableName)

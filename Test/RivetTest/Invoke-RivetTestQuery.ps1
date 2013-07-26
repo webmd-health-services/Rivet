@@ -7,7 +7,7 @@ function Invoke-RivetTestQuery
         $Query,
         
         [Data.SqlClient.SqlConnection]
-        $Connection = $DatabaseConnection,
+        $Connection = $RTDatabaseConnection,
 
         [Switch]
         # Use the master connection, instead of the database connection.
@@ -18,9 +18,11 @@ function Invoke-RivetTestQuery
         $AsScalar
     )
     
+    Set-StrictMode -Version Latest
+    
     if( $Master )
     {
-        $Connection = $MasterConnection
+        $Connection = $RTMasterConnection
     }
 
     try

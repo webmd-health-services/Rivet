@@ -12,6 +12,7 @@ function Get-Table
         $SchemaName = 'dbo'
     )
 
+    Set-StrictMode -Version Latest
         $query = @'
     select 
         t.*, p.data_compression, ex.value MSDescription
@@ -23,6 +24,6 @@ function Get-Table
         s.name = '{0}' and t.name = '{1}'
 '@ -f $SchemaName,$Name
 
-    Invoke-RivetTestQuery -Query $query -Connection $DatabaseConnection
+    Invoke-RivetTestQuery -Query $query -Connection $RTDatabaseConnection
 
 }

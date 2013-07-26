@@ -38,7 +38,7 @@ function Assert-UniqueConstraint
         $TestNoUnique
 
     )
-
+    
     Set-StrictMode -Version Latest
 
     $key_constraint = Get-KeyConstraint -TableName 'AddUniqueConstraint' -ReturnUnique

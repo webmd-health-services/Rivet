@@ -1,7 +1,7 @@
 
 function Setup
 {
-    Import-Module -Name (Join-Path $TestDir 'RivetTest') -ArgumentList 'RemoveTable' 
+    & (Join-Path $TestDir 'RivetTest\Import-RivetTest.ps1' -Resolve) -DatabaseName 'RemoveTable' 
     Start-RivetTest
 }
 

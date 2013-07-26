@@ -1,9 +1,9 @@
 
 function Stop-RivetTest
 {
-    $DatabaseConnection.Close()
+    $RTDatabaseConnection.Close()
 
     Remove-RivetTestDatabase
 
-    Remove-Item -Path $DatabasesRoot -Recurse
+    Remove-Item -Path $RTDatabasesRoot -Recurse
 }

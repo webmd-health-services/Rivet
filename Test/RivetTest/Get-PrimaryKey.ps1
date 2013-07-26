@@ -17,6 +17,8 @@ function Get-PrimaryKey
         $SchemaName = 'dbo'
     )
 
+    Set-StrictMode -Version Latest
+    
     $query = @'
     SELECT
        s.name SchemaName, ta.name  TableName, col.name ColumnName, ind.*, indcol.*

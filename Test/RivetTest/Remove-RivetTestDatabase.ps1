@@ -4,8 +4,11 @@ function Remove-RivetTestDatabase
     param(
         [string]
         # The name of the database to remove.
-        $Name = $DatabaseName
+        $Name = $RTDatabaseName
     )
+    
+    Set-StrictMode -Version Latest
+    
     $query = @'
     if( exists( select name from sys.databases where Name = '{0}' ) )
     begin

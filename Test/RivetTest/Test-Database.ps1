@@ -6,8 +6,8 @@ function Test-Database
 
     $query = @'
     select count(*) Count from sys.databases where Name = '{0}'
-'@ -f $DatabaseName
+'@ -f $RTDatabaseName
 
-    $count = Invoke-RivetTestQuery -Query $query -Connection $MasterConnection -AsScalar
+    $count = Invoke-RivetTestQuery -Query $query -Connection $RTMasterConnection -AsScalar
     return ($count -eq 1)
 }

@@ -17,6 +17,8 @@ function Get-KeyConstraint
         $ReturnUnique
 
     )
+    
+    Set-StrictMode -Version Latest
 
     $uniqueclause = ''
     if ($ReturnUnique)
