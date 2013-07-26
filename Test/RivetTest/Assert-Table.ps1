@@ -13,6 +13,8 @@ function Assert-Table
         [int]
         $DataCompression
     )
+    
+    Set-StrictMode -Version Latest
 
     $table = Get-Table -Name $Name -SchemaName $SchemaName
     Assert-NotNull $table ('table {0} not found' -f $Name) 

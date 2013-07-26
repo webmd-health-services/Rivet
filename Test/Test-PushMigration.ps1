@@ -83,7 +83,7 @@ function Test-ShouldPushMigrationsForMultipleDBs
     $configFilePath = Join-Path -Path $tempDir -ChildPath 'rivet.json'
     @"
 {
-    SqlServerName: "$($Server.Replace('\','\\'))",
+    SqlServerName: "$($RTServer.Replace('\','\\'))",
     DatabasesRoot: "$($tempDir.FullName.Replace('\','\\'))"
 }
 "@ | Set-Content -Path $configFilePath

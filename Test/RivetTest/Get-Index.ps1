@@ -12,6 +12,8 @@ function Get-Index
         # The name of the table whose primary key to get.
         $TableName
     )
+    
+    Set-StrictMode -Version Latest
 
     $query = @'
     select * 

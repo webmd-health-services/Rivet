@@ -7,7 +7,7 @@ function Start-Test
     & (Join-Path -Path $TestDir -ChildPath RivetTest\Import-RivetTest.ps1 -Resolve) -DatabaseName 'RivetTest'
     Start-RivetTest
 
-    Get-ChildItem -Path (Join-Path -Path $DatabasesRoot *\Migrations\*.ps1) |
+    Get-ChildItem -Path (Join-Path -Path $RTDatabasesRoot *\Migrations\*.ps1) |
         Remove-Item
 }
 
@@ -18,11 +18,11 @@ function Stop-Test
 
 function Test-ShouldCreateOneMigration
 {
-    & $rivetPath -New -Name 'ShouldCreateOneMigration' -Database $DatabaseName -ConfigFilePath $ConfigFilePath
+    & $rivetPath -New -Name 'ShouldCreateOneMigration' -Database $RTDatabaseName -ConfigFilePath $RTConfigFilePath
     Assert-True $?
     Assert-LastProcessSucceeded
     
-    $rivetTestRoot = Join-Path $DatabasesRoot $DatabaseName
+    $rivetTestRoot = Join-Path $RTDatabasesRoot $RTDatabaseName
     Assert-DirectoryExists $rivetTestRoot
     $migrationRoot = Join-Path $rivetTestRoot Migrations
     Assert-DirectoryExists $migrationRoot
@@ -34,8 +34,8 @@ function Test-ShouldCreateOneMigration
     Assert-NotNull $migration
     Assert-True ($migration -is [IO.FileInfo])
 
-    $otherMigrations = Get-ChildItem (Join-Path -Path $DatabasesRoot -ChildPath *\Migrations\*.ps1) |
-                            Where-Object { $_.FullName -notlike "*\$DatabaseName\Migrations\*" }
+    $otherMigrations = Get-ChildItem (Join-Path -Path $RTDatabasesRoot -ChildPath *\Migrations\*.ps1) |
+                            Where-Object { $_.FullName -notlike "*\$RTDatabaseName\Migrations\*" }
     Assert-Null $otherMigrations
 }
 
@@ -43,13 +43,13 @@ function Test-ShouldCreateMultipleMigrations
 {
     $id = (Get-Date).ToString('yyyyMMddHHmm')
 
-    & $rivetPath -New -Name 'ShouldCreateMultipleMigrations' -Database $DatabaseName,RivetTestTwo -ConfigFilePath $ConfigFilePath
+    & $rivetPath -New -Name 'ShouldCreateMultipleMigrations' -Database $RTDatabaseName,RivetTestTwo -ConfigFilePath $RTConfigFilePath
     Assert-True $?
     Assert-LastProcessSucceeded
     
-    ($DatabaseName,'RivetTestTwo') | ForEach-Object {
+    ($RTDatabaseName,'RivetTestTwo') | ForEach-Object {
         
-        $dbRoot = Join-Path $DatabasesRoot $_
+        $dbRoot = Join-Path $RTDatabasesRoot $_
         Assert-DirectoryExists $dbRoot
         $migrationRoot = Join-Path $dbRoot Migrations
         Assert-DirectoryExists $migrationRoot
@@ -61,20 +61,20 @@ function Test-ShouldCreateMultipleMigrations
         Assert-True ($migration -is [IO.FileInfo])
     }
 
-    $otherMigrations = Get-ChildItem (Join-Path -Path $DatabasesRoot -ChildPath *\Migrations\*.ps1) |
-                        Where-Object { $_.FullName -notlike "*\$DatabaseName\Migrations\*" } |
+    $otherMigrations = Get-ChildItem (Join-Path -Path $RTDatabasesRoot -ChildPath *\Migrations\*.ps1) |
+                        Where-Object { $_.FullName -notlike "*\$RTDatabaseName\Migrations\*" } |
                         Where-Object { $_.FullName -notlike "*\RivetTestTwo\Migrations\*" }
     Assert-Null $otherMigrations
 }
 
 function Test-ShouldCreateMigrationInAllDatabases
 {
-    $migrations = Get-ChildItem (Join-Path -Path $DatabasesRoot -ChildPath *\Migrations\*.ps1)
+    $migrations = Get-ChildItem (Join-Path -Path $RTDatabasesRoot -ChildPath *\Migrations\*.ps1)
     Assert-Null $migrations
 
-    & $rivetPath -New -Name 'ShouldCreateMigrationAcrossAllDatabases' -ConfigFilePath $ConfigFilePath
+    & $rivetPath -New -Name 'ShouldCreateMigrationAcrossAllDatabases' -ConfigFilePath $RTConfigFilePath
     
-    Get-ChildItem -Path $DatabasesRoot |
+    Get-ChildItem -Path $RTDatabasesRoot |
         Where-Object { $_.PsIsContainer } |
         ForEach-Object {
             $migrationDirPath = Join-Path -Path $_.FullName -ChildPath Migrations
@@ -86,12 +86,12 @@ function Test-ShouldCreateMigrationInAllDatabases
 function Test-ShouldRequireDatabaseNameIfNewDatabase
 {
     # Remove database directories.
-    Get-ChildItem -Path $DatabasesRoot | 
+    Get-ChildItem -Path $RTDatabasesRoot | 
         Where-Object { $_.PsIsContainer } |
         Remove-Item -Recurse
 
     $Error.Clear()
-    & $rivetPath -New -Name 'ShouldCreateMigrationAcrossAllDatabases' -ConfigFilePath $ConfigFilePath -ErrorAction SilentlyContinue
+    & $rivetPath -New -Name 'ShouldCreateMigrationAcrossAllDatabases' -ConfigFilePath $RTConfigFilePath -ErrorAction SilentlyContinue
     Assert-LastProcessFailed
     Assert-Equal 1 $Error.Count
     Assert-Like $Error[0].Exception.Message '*explicit database name*'
@@ -100,10 +100,10 @@ function Test-ShouldRequireDatabaseNameIfNewDatabase
 function Test-ShouldCreateDatabaseDirectoryIfItDoesNotExist
 {
     $Error.Clear()
-    & $rivetPath -New -Name 'ShouldCreateMigrationForNewDatabase' -Database 'NewDatabase' -ConfigFilePath $ConfigFilePath
+    & $rivetPath -New -Name 'ShouldCreateMigrationForNewDatabase' -Database 'NewDatabase' -ConfigFilePath $RTConfigFilePath
     Assert-LastProcessSucceeded
-    Assert-FileExists (Join-Path $DatabasesRoot 'NewDatabase\Migrations\*_ShouldCreateMigrationForNewDatabase.ps1')
-    $otherMigrations = Get-ChildItem (Join-Path -Path $DatabasesRoot -ChildPath *\Migrations\*.ps1) |
+    Assert-FileExists (Join-Path $RTDatabasesRoot 'NewDatabase\Migrations\*_ShouldCreateMigrationForNewDatabase.ps1')
+    $otherMigrations = Get-ChildItem (Join-Path -Path $RTDatabasesRoot -ChildPath *\Migrations\*.ps1) |
                         Where-Object { $_.FullName -notlike "*\NewDatabase\Migrations\*" }
     Assert-Null $otherMigrations
 }

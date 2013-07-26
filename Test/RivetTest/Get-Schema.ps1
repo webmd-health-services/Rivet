@@ -6,6 +6,8 @@ function Get-Schema
         # The name of the schema.  Optional.  Returns all schemas otherwise.
         $Name
     )
+    
+    Set-StrictMode -Version Latest
 
     $query = @'
         select 
@@ -21,5 +23,5 @@ function Get-Schema
     }
     
 
-    Invoke-RivetTestQuery -Query $query -Connection $DatabaseConnection
+    Invoke-RivetTestQuery -Query $query -Connection $RTDatabaseConnection
 }

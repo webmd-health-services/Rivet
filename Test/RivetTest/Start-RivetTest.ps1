@@ -1,26 +1,32 @@
 
 function Start-RivetTest
 {
+    [CmdletBinding()]
+    param(
+    )
+    
+    Set-StrictMode -Version Latest
+    
     $tempDir = New-TempDir
-    $global:DatabasesRoot = Join-Path $tempDir (Split-Path -Leaf $DatabasesSourcePath)
-    $global:DatabaseName = '{0}{1}' -f $DatabaseSourceName,(get-date).ToString('yyyyMMddHHmmss')
+    $global:RTDatabasesRoot = Join-Path $tempDir (Split-Path -Leaf $RTDatabasesSourcePath)
+    $global:RTDatabaseName = '{0}{1}' -f $RTDatabaseSourceName,(get-date).ToString('yyyyMMddHHmmss')
 
     Remove-RivetTestDatabase
 
-    Copy-Item -Path $DatabasesSourcePath -Destination $tempDir -Recurse
-    Rename-Item -Path (Join-Path $DatabasesRoot $DatabaseSourceName) -NewName $DatabaseName
-    $global:DatabaseRoot = Join-Path $DatabasesRoot $DatabaseName
+    Copy-Item -Path $RTDatabasesSourcePath -Destination $tempDir -Recurse
+    Rename-Item -Path (Join-Path $RTDatabasesRoot $RTDatabaseSourceName) -NewName $RTDatabaseName
+    $global:RTDatabaseRoot = Join-Path $RTDatabasesRoot $RTDatabaseName
     
     New-Database
 
-    $global:DatabaseConnection = New-SqlConnection 
+    $global:RTDatabaseConnection = New-SqlConnection 
 
-    $global:ConfigFilePath = Join-Path -Path $tempDir -ChildPath 'rivet.json'
+    $global:RTConfigFilePath = Join-Path -Path $tempDir -ChildPath 'rivet.json'
 
     @"
 {
-    SqlServerName: '$($Server.Replace('\', '\\'))',
-    DatabasesRoot: '$($DatabasesRoot.Replace('\','\\'))'
+    SqlServerName: '$($RTServer.Replace('\', '\\'))',
+    DatabasesRoot: '$($RTDatabasesRoot.Replace('\','\\'))'
 }
-"@ | Set-Content -Path $ConfigFilePath
+"@ | Set-Content -Path $RTConfigFilePath
 }

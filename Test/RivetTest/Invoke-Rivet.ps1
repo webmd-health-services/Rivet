@@ -29,19 +29,21 @@ function Invoke-Rivet
         [string]
         $ConfigFilePath
     )
+    
+    Set-StrictMode -Version Latest
 
     $customParams = @{ }
     if( -not $Database )
     {
-        $customParams.Database = $DatabaseName
+        $customParams.Database = $RTDatabaseName
     }
 
     if( -not $ConfigFilePath )
     {
-        $customParams.ConfigFilePath = $global:ConfigFilePath
+        $customParams.ConfigFilePath = $RTConfigFilePath
     }
 
     $parms = $PSBoundParameters
-    & $RivetPath @PSBoundParameters @customParams
+    & $RTRivetPath @PSBoundParameters @customParams
 
 }
