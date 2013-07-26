@@ -234,3 +234,155 @@ function Get-RivetConfig
         return New-Object PsObject -Property $properties
     }
 }
+
+if( $PSVersionTable.PSVersion -eq '2.0' )
+{
+    function ConvertFrom-Json 
+    {
+        param(
+            $json,
+            [switch]$raw  
+        )
+
+        Begin
+        {
+            Set-StrictMode -Version Latest
+
+    	    $script:parsingValue = $false
+            $script:parsingString = $false
+    	    $script:parsingArray = $false	
+    	    $script:saveparsingArray = $false
+            $script:parsingKey = $false
+            $script:foundEscape = $false
+            $script:stringStart = $null
+
+    	    function scan-characters ($c) {
+
+                if( $script:parsingString )
+                {
+                    if( $script:foundEscape )
+                    {
+                        $c
+                        $script:foundEscape = $false
+                    }
+                    elseif( $c -eq '\' )
+                    {
+                        $script:foundEscape = $true
+                    }
+                    elseif( $c -eq $script:stringStart )
+                    {
+                        $script:parsingString = $false
+                        $script:stringStart
+                    }
+                    else
+                    {
+                        $c
+                    }
+                    return
+                }
+
+    		    switch -regex ($c)
+    		    {
+    			    "{" 
+                    { 
+    				    "(New-Object PSObject "
+    				    $script:saveparsingArray = $script:parsingArray
+    				    $script:parsingValue = $script:parsingArray = $false				
+    			    }
+
+    			    "}" 
+                    { 
+                        ")"
+                        $script:parsingArray = $script:saveparsingArray 
+                    }
+
+    			    '"|''' 
+                    {
+                        $script:parsingString = $true
+                        $script:stringStart = $c
+                        $c
+    			    }
+
+    			    "[a-z0-9A-Z@.]" 
+                    { 
+                        if( $script:parsingValue -or $script:parsingKey )
+                        {
+                            $c
+                        }
+                        else
+                        {
+                            if( -not $script:parsingValue )
+                            {
+                                $script:parsingKey = $true
+            				    ' | Add-Member -Passthru NoteProperty -Name "{0}' -f $c
+                            }
+                        }
+                    }
+
+    			    ":" 
+                    {
+                        '" -Value '
+                        $script:parsingKey = $false
+                        $script:parsingValue = $true
+                    }
+    			    "," 
+                    {
+    				    if($script:parsingArray) 
+                        { 
+                            "," 
+                        }
+    				    else 
+                        { 
+                            $script:parsingValue = $false
+                            $script:parsingKey = $false
+                        }
+    			    }	
+    			    "\[" 
+                    { 
+                        "@("
+                        $script:parsingArray = $true 
+                    }
+    			    "\]" 
+                    { 
+                        ")"
+                        $script:parsingArray = $false 
+                    }
+                    " "
+                    {
+                        if( $script:parsingString )
+                        {
+                            $c
+                        }
+                    }
+    			    "[\t\r\n]" 
+                    {
+                    }
+    		    }
+    	    }
+    	
+    	    function parse($target)
+    	    {
+    		    $result = ""
+    		    ForEach($c in $target.ToCharArray()) {	
+    			    $result += scan-characters $c
+    		    }
+                Write-Verbose $result
+    		    $result
+    	    }
+        }
+
+        Process { 
+            if($_) { $result = parse $_ } 
+        }
+
+        End { 
+            If($json) { $result = parse $json }
+
+            If(-Not $raw) {
+                $result | Invoke-Expression
+            } else {
+                $result 
+            }
+        }
+    }
+}
