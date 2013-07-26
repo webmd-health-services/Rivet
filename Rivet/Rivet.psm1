@@ -13,6 +13,7 @@ dir $PSScriptRoot *-*.ps1 |
 
 $privateFunctions = @(
                         'Connect-Database',
+                        'Convert-FromJson',
                         'Disconnect-Database',
                         'Get-RivetConfig',
                         'Initialize-Database',
