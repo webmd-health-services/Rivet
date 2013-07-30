@@ -14,5 +14,5 @@ function TearDown
 function Test-ShouldRemoveForeignKey
 {
     Invoke-Rivet -Push "RemoveForeignKey"
-    Assert-ForeignKey -TableName 'Source' -ColumnName 'source_id' -TestRemoval
+    Assert-ForeignKey -TableName 'Source' -References 'Reference' -TestRemoval
 }

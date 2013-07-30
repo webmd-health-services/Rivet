@@ -17,9 +17,14 @@ function Assert-ForeignKey
         $SchemaName = 'dbo',
 
         [Parameter(Mandatory=$true)]
-        [string[]]
-        # The column(s) that are part of the foreign key.
-        $ColumnName,
+        [string]
+        # The table that the foreign key references
+        $References,
+
+        [Parameter()]
+        [string]
+        # The schema name of the reference table.  Defaults to `dbo`.
+        $ReferencesSchema = 'dbo',
 
         [Parameter()]
         [string]
@@ -60,7 +65,7 @@ function Assert-ForeignKey
         Assert-NotNull $fk ('foreign Key on table {0}.{1} doesn''t exist.' -f $SchemaName,$TableName)
         Assert-NotNull $fkc ('foreign Key on table {0}.{1} doesn''t exist.' -f $SchemaName,$TableName)
 
-        $name = New-ConstraintName -TableName $TableName -SchemaName $SchemaName -ColumnName $ColumnName -ForeignKey
+        $name = New-ForeignKeyConstraintName -SourceSchema $SchemaName -SourceTable $TableName -TargetSchema $ReferencesSchema -TargetTable $References
     
         #Test for equal Constraint Name
         Assert-Equal $name $fk.name
