@@ -32,12 +32,17 @@ function Remove-ForeignKey
         [Parameter(Mandatory=$true)]
         [string]
         # The string that references the table
-        $References
+        $References,
+
+        [Parameter()]
+        [string]
+        # The schema name of the table.  Defaults to `dbo`.
+        $ReferencesSchema = 'dbo'
     )
 
     Set-StrictMode -Version Latest
 
-    $name = New-ConstraintName -TableName $TableName -SchemaName $SchemaName -ColumnName $References -ForeignKey
+    $name = New-ForeignKeyConstraintName -SourceSchema $SchemaName -SourceTable $TableName -TargetSchema $ReferencesSchema -TargetTable $References
 
     $query = @'
     ALTER TABLE {0} DROP CONSTRAINT {1}

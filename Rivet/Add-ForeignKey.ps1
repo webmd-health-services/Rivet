@@ -44,6 +44,11 @@ function Add-ForeignKey
         # The table that the foreign key references
         $References,
 
+        [Parameter()]
+        [string]
+        # The schema name of the reference table.  Defaults to `dbo`.
+        $ReferencesSchema = 'dbo',
+
         [Parameter(Mandatory=$true)]
         [string[]]
         # The column(s) that the foreign key references
@@ -69,7 +74,7 @@ function Add-ForeignKey
 
     Set-StrictMode -Version Latest
 
-    $name = New-ConstraintName -TableName $TableName -SchemaName $SchemaName -ColumnName $ColumnName -ForeignKey
+    $name = New-ForeignKeyConstraintName -SourceSchema $SchemaName -SourceTable $TableName -TargetSchema $ReferencesSchema -TargetTable $References
     
     $source_columns = $ColumnName -join ','
     $ref_columns = $ReferencedColumn -join ','
@@ -93,9 +98,9 @@ function Add-ForeignKey
     }
 
     $query = @'
-    alter table [{0}].[{1}] add constraint {2} foreign key ({3}) references {4}({5}) {6} {7} {8}
-'@ -f $SchemaName,$TableName,$name,$source_columns,$References,$ref_columns, $OnDeleteClause, $OnUpdateClause, $NotForReplicationClause
-    
+    alter table [{0}].[{1}] add constraint {2} foreign key ({3}) references {4}.{5}({6}) {7} {8} {9}
+'@ -f $SchemaName,$TableName,$name,$source_columns,$ReferencesSchema,$References,$ref_columns, $OnDeleteClause, $OnUpdateClause, $NotForReplicationClause
+
     Write-Host (' +{0}.{1} {2} ({3}) r({4})' -f $SchemaName,$TableName,$name,$source_columns,$ref_columns)
     Invoke-Query -Query $query
 }
