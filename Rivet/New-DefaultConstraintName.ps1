@@ -32,6 +32,11 @@ function New-ConstraintName
         # Creates a primary key name.
         $PrimaryKey,
 
+        [Parameter(Mandatory=$true,ParameterSetName='FK')]
+        [Switch]
+        # Creates a foreign key name.
+        $ForeignKey,
+
         [Parameter(Mandatory=$true,ParameterSetName='IX')]
         [Switch]
         # Creates an index name.
