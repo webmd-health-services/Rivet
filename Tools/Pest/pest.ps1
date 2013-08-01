@@ -196,11 +196,11 @@ function Invoke-Test($fixture, $function)
         {
             if( Test-Path function:Stop-Test )
             {
-                Stop-Test | Write-Verbose
+                . Stop-Test | Write-Verbose
             }
             elseif( Test-Path -Path function:TearDown )
             {
-                TearDown | Write-Verbose
+                . TearDown | Write-Verbose
             }
         }
         catch
