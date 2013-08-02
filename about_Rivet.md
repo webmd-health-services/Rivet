@@ -1,6 +1,6 @@
 # TOPIC
 
-about_Rivet
+about\_Rivet
 
 # SHORT DESCRIPTION
 
@@ -22,8 +22,8 @@ All changes made in either `Push-Migration` or `Pop-Migration` are wrapped in a 
     
 # SEE ALSO
 
-about_Rivet_Configuration
-about_Rivet_Intellisense
-about_Rivet_Migrations
-
+about\_Rivet\_Configuration  
+about\_Rivet\_Intellisense  
+about\_Rivet\_Migrations  
+about\_Rivet\_Plugins  
 

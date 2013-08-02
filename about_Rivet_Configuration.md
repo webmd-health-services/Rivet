@@ -1,6 +1,6 @@
 # Name
 
-about_Rivet_Configuration
+about\_Rivet\_Configuration
 
 # Synopsis
 
@@ -58,6 +58,16 @@ Rivet assumes a database's migration scripts are stored together.  in `$Database
 You can see directories for the `Rivet` and `RivetTest` databases under the `Databases` directory.  So, you'll set the `DatabasesRoot` setting to `Databases`.
 
 Rivet assumes there is a one-to-one mapping between the directories under `DatabasesRoot` and a database on the SQL Server.  If this is not the case, and you'd like to exclude/ignore a directory under `DatabasesRoot`, use the `IgnoreDatabases` setting.
+
+### PluginsRoot
+
+This should point to the directory which contains the directory for which plugins should be stored.  For example, given this directory structure:
+
+	* rivet.json
+	+Databases
+	+Plugins
+
+PluginsRoot should point to the "Plugins" directory
 
 ### Environments
 

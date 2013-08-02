@@ -17,6 +17,7 @@ $privateFunctions = @(
                         'Disconnect-Database',
                         'Get-RivetConfig',
                         'Initialize-Database',
+                        'Invoke-MigrationEvent',
                         'New-ConstraintName',
                         'New-Migration',
                         'Resolve-ObjectScriptPath',
