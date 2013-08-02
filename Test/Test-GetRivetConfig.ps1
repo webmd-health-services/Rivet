@@ -4,7 +4,8 @@ $rivetConfigPath = $null
 $minConfig = @'
 {
     SqlServerName: '.\\Test',
-    DatabasesRoot: 'Databases'
+    DatabasesRoot: 'Databases',
+    PluginsRoot: 'Plugins'
 }
 '@
 
@@ -12,6 +13,7 @@ function Start-Test
 {
     $tempDir = New-TempDirectoryTree -Prefix 'Rivet-Test-GetRivetConfig' @'
 + Databases
++ Plugins
 * rivet
 '@
     $rivetConfigPath = Join-Path -Path $tempDir -ChildPath 'rivet'
@@ -48,11 +50,24 @@ function Test-ShouldParseMinimumConfig
     Assert-Equal 1 $config.Databases.Count 
     Assert-Equal $dbName $config.Databases[0].Name
     Assert-Equal (Join-Path -Path $tempDir -ChildPath "Databases\$dbName") $config.Databases[0].Root
+    Assert-True ($config.PluginsRoot -is 'String')
+    Assert-Equal (Join-Path -Path $tempDir -ChildPath "Plugins") $config.PluginsRoot
 }
 
 function Test-ShouldValidateDatabasesDirectoryExists
 {
     Remove-Item -Path (Join-Path -Path $tempDir -ChildPath 'Databases') -Recurse
+
+    $Error.Clear()
+    $config = Get-RivetConfig -Path $rivetConfigPath -ErrorAction SilentlyContinue
+    Assert-Null $config
+    Assert-Equal 1 $Error.Count
+    Assert-Like $Error[0].Exception.Message '*not found*'
+}
+
+function Test-ShouldValidatePluginDirectoryExists
+{
+    Remove-Item -Path (Join-Path -Path $tempDir -ChildPath 'Plugins') -Recurse
 
     $Error.Clear()
     $config = Get-RivetConfig -Path $rivetConfigPath -ErrorAction SilentlyContinue

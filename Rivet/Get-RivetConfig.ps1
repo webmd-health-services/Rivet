@@ -169,12 +169,15 @@ function Get-RivetConfig
         Write-Error -Message ('Invalid Rivet configuration file ''{0}'': {1}{2} See about_Rivet_Configuration for more information.' -f $Path,$envMsg,$Message)
     }
 
+
+    ## If there is no $Path defined set $Path to current directory
     if( -not $Path )
     {
         $Path = Get-Location
         $Path = Join-Path -Path $Path -ChildPath 'rivet.json'
     }
 
+    ## Check for existence of rivet.json
     if( -not (Test-Path -Path $Path -PathType Leaf) )
     {
         Write-Error ('Rivet configuration file ''{0}'' not found.' -f $Path)
@@ -188,6 +191,7 @@ function Get-RivetConfig
                         ConnectionTimeout = 15;
                         CommandTimeout = 30;
                         Databases = @();
+                        PluginsRoot = @();
                         IgnoreDatabases = @();
                    }
 
@@ -195,10 +199,10 @@ function Get-RivetConfig
 
     $valid = (Set-ConfigProperty -Name SqlServerName -Required -AsString) -and `
                 (Set-ConfigProperty -Name DatabasesRoot -Required -AsPath) -and `
+                (Set-ConfigProperty -Name PluginsRoot -AsPath) -and `
                 (Set-ConfigProperty -Name ConnectionTimeout -AsInt) -and `
                 (Set-ConfigProperty -Name CommandTimeout -AsInt) -and `
                 (Set-ConfigProperty -Name IgnoreDatabases -AsList)
-    
 
     if( $valid )
     {
