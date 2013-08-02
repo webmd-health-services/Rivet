@@ -94,7 +94,16 @@ function Invoke-MigrationEvent
 
     $scriptName = ('Complete-{0}.ps1' -f $Name)
     $functionName = ('Complete-{0}' -f $Name)
-    $eventScript = Join-Path $settings.PluginsRoot $scriptName
+
+    ## If there is no PluginsRoot setting, Skip
+    
+    if ($settings.PluginsRoot)
+    {
+        $eventScript = Join-Path $settings.PluginsRoot $scriptName
+    }
+    else {
+        return
+    }
 
     ## Test that the script exists, if not exit
 

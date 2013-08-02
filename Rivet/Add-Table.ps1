@@ -14,7 +14,7 @@ function Add-Table
             New-Column 'color' -VarChar -NotNull
         }
 
-    Add-Table supports plugins.  At the end of the Add-Table migration, Invoke-MigrationEvent is invoked which will look for a script "Complete-AddTable.ps1" in the Plugins directory as defined by rivet.json.
+    Add-Table supports plugins.  At the end of the Add-Table migration, Invoke-MigrationEvent is invoked which will look for a script "Complete-AddTable.ps1" in the Plugins directory as defined by rivet.json.  For more information, see about_Rivet_Plugins
     
     .EXAMPLE
     Add-Table -Name 'Ties' -Column { New-Column 'color' -VarChar -NotNull }
