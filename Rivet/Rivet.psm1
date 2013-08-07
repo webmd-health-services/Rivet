@@ -2,6 +2,15 @@
 $Connection = New-Object Data.SqlClient.SqlConnection
 $Connection | 
     Add-Member -MemberType NoteProperty -Name ScriptsPath -Value $null
+
+Add-Type -TypeDefinition @'
+namespace Rivet
+{
+    public class Migration
+    {
+    }
+}
+'@
     
 $RivetSchemaName = 'rivet'
 $RivetMigrationsTableName = 'Migrations'
