@@ -60,22 +60,15 @@ function Add-Description
 
     $descriptionQuery = @'
         EXEC sys.sp_addextendedproperty @name=N'MS_Description', 
-                                        @value=@Description,
-                                        @level0type=N'SCHEMA', @level0name=@SchemaName, 
-                                        @level1type=N'TABLE',  @level1name=@TableName
-'@
-
-    $queryParameters = @{
-                            Description = $Description;
-                            SchemaName = $SchemaName;
-                            TableName = $TableName;
-                        }
+                                        @value='{0}',
+                                        @level0type=N'SCHEMA', @level0name='{1}', 
+                                        @level1type=N'TABLE',  @level1name='{2}'
+'@ -f $Description.Replace("'","''"),$SchemaName,$TableName
 
     $columnMsg = ''
     if( $PSCmdlet.ParameterSetName -eq 'ForColumn' )
     {
-        $descriptionQuery += ",`n                                        @level2type=N'COLUMN', @level2name=@ColumnName"
-        $queryParameters.ColumnName = $ColumnName
+        $descriptionQuery += ",`n                                        @level2type=N'COLUMN', @level2name='{0}'" -f $ColumnName
         $columnMsg = '.{0}' -f $ColumnName
     }
 
@@ -83,5 +76,5 @@ function Add-Description
     {
         Write-Host (' {0}.{1}{2} +MS_Description: {3}' -f $SchemaName,$TableName,$columnMsg,$Description)
     }
-    Invoke-Query -Query $descriptionQuery -Parameter $queryParameters -Verbose
+    Invoke-Query -Query $descriptionQuery -Verbose
 }

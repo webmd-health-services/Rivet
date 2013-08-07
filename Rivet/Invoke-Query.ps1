@@ -31,9 +31,6 @@ filter Invoke-Query
         [string]
         $Query,
         
-        [Hashtable]
-        $Parameter = @{ },
-        
         [Parameter(Mandatory=$true,ParameterSetName='ExecuteScalar')]
         [Switch]
         $AsScalar,
@@ -46,65 +43,24 @@ filter Invoke-Query
         # The time in seconds to wait for the command to execute. The default is 30 seconds.
         $CommandTimeout = 30
     )
-    
-    $cmd = New-Object Data.SqlClient.SqlCommand ($Query,$Connection,$Connection.Transaction)
-    $cmd.CommandTimeout = $CommandTimeout
-    $Parameter.Keys | ForEach-Object {
-        $name = $_
-        $value = $Parameter[$name]
-        
-        [void] $cmd.Parameters.AddWithValue( ('@{0}' -f $name), $value )
+
+    $invokeMigrationParams = @{
+                              }
+    if( $PSBoundParameters.ContainsKey( 'AsScalar' ) )
+    {
+        $invokeMigrationParams.AsScalar = $true
     }
     
-    try
+    if( $PSBoundParameters.ContainsKey( 'NonQuery' ) )
     {
-        if( $pscmdlet.ParameterSetName -eq 'ExecuteNonQuery' )
-        {
-            $cmd.ExecuteNonQuery()
-        }
-        elseif( $pscmdlet.ParameterSetName -eq 'ExecuteScalar' )
-        {
-            $cmd.ExecuteScalar()
-        }
-        else
-        {
-            $cmdReader = $cmd.ExecuteReader()
-            try
-            {
-                if( -not $cmdReader.HasRows )
-                {
-                    return
-                }
-                
-                while( $cmdReader.Read() )
-                {
-                    $row = @{ }
-                    for ($i= 0; $i -lt $cmdReader.FieldCount; $i++) 
-                    { 
-                        $name = $cmdReader.GetName( $i )
-                        if( -not $name )
-                        {
-                            $name = 'Column{0}' -f $i
-                        }
-                        $row[$name] = $cmdReader.GetValue($i)
-                    }
-                    New-Object PsObject -Property $row
-                }
-            }
-            finally
-            {
-                $cmdReader.Close()
-            }
-        }
+        $invokeMigrationParams.NonQuery = $true
     }
-    catch
+    
+    if( $PSBoundParameters.ContainsKey( 'CommandTimeout' ) )
     {
-        $errorMsg = 'Query failed: {0}' -f $Query
-        Write-RivetError -Message $errorMsg -Exception $_.Exception -CallStack (Get-PSCallStack)
-        throw (New-Object ApplicationException 'Migration failed.',$_.Exception)
+        $invokeMigrationParams.CommandTimeout = $CommandTimeout
     }
-    finally
-    {
-        $cmd.Dispose()
-    }
+
+    $migration = New-MigrationObject -Property @{ Query = $Query } -ToQueryMethod { return $this.Query }
+    Invoke-Migration -Migration $migration @invokeMigrationParams
 }
