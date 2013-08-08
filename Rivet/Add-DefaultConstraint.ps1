@@ -67,7 +67,7 @@ $query = @'
     add constraint {2} default {3} for {4} {5}
 '@ -f $SchemaName, $TableName, $DefaultConstraintName, $Expression, $ColumnName, $WithValuesClause
     
-    Write-Host (' +{0}.{1} {2} Expression: {3}' -f $SchemaName, $TableName, $ColumnName, $Expression)
+    Write-Host (' {0}.{1} +{2} {3} {4}' -f $SchemaName, $TableName, $DefaultConstraintName, $ColumnName, $Expression)
 
     Invoke-Query -Query $query
 }

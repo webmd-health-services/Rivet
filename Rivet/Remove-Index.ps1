@@ -49,7 +49,7 @@ $query = @'
 
 '@ -f $indexname, $SchemaName, $TableName
 
-    Write-Host $query
+    Write-Host (' {0}.{1} -{2}' -f $SchemaName,$TableName,$indexname)
 
     Invoke-Query -Query $query
 }

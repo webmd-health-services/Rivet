@@ -103,7 +103,7 @@ $query = @'
 
 '@ -f $SchemaName, $TableName, $constraintname, $ClusteredClause, $ColumnClause, $OptionClause, $OnClause
     
-    Write-Host (' +{0}.{1} {2} ({3})' -f $SchemaName,$TableName,$constraintname,$ColumnClause)
+    Write-Host (' {0}.{1} +{2} ({3})' -f $SchemaName,$TableName,$constraintname,$ColumnClause)
 
     Invoke-Query -Query $query
 }

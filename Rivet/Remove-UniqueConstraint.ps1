@@ -44,12 +44,11 @@ function Remove-UniqueConstraint
     $ColumnClause = $ColumnName -join ','
 
 $query = @'
-    alter table {0}.{1}
-    drop constraint {2}
+    alter table {0}.{1} drop constraint {2}
 
 '@ -f $SchemaName, $TableName, $UniqueConstraintname
 
-    Write-Host (' -{0}.{1} {2} ({3})' -f $SchemaName,$TableName,$UniqueConstraintname,$ColumnClause)
+    Write-Host (' {0}.{1} -{2} ({3})' -f $SchemaName,$TableName,$UniqueConstraintname,$ColumnClause)
 
     Invoke-Query -Query $query
 }
