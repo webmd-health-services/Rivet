@@ -69,5 +69,7 @@ $query = @'
     
     Write-Host (' {0}.{1} +{2} {3} {4}' -f $SchemaName, $TableName, $DefaultConstraintName, $ColumnName, $Expression)
 
-    Invoke-Query -Query $query
+    $migration = New-MigrationObject -Property @{ Query = $query } -ToQueryMethod { return $this.Query }
+
+    Invoke-Migration -Migration $migration 
 }

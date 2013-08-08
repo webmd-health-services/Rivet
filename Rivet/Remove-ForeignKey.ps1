@@ -49,5 +49,10 @@ function Remove-ForeignKey
 '@ -f $TableName,$name
 
     Write-Host (' {0}.{1} -{2}' -f $SchemaName,$TableName,$name)
-    Invoke-Query -Query $query
+    
+    #Construct Migration Object
+
+    $migration = New-MigrationObject -Property @{ Query = $query } -ToQueryMethod { return $this.Query }
+
+    Invoke-Migration -Migration $migration 
 }

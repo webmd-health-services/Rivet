@@ -114,7 +114,11 @@ function Add-Table
         {6}
 '@ -f $SchemaName,$Name,$columnDefinitionClause,$fileGroupClause,$textImageFileGroupClause,$fileStreamFileGroupClause,$optionClause
 
-    Invoke-Query -Query $query
+    #Construct Migration Object
+
+    $migration = New-MigrationObject -Property @{ Query = $query } -ToQueryMethod { return $this.Query }
+
+    Invoke-Migration -Migration $migration 
 
     $addDescriptionArgs = @{
                                 SchemaName = $SchemaName;

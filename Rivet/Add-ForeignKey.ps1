@@ -102,5 +102,13 @@ function Add-ForeignKey
 '@ -f $SchemaName,$TableName,$name,$source_columns,$ReferencesSchema,$References,$ref_columns, $OnDeleteClause, $OnUpdateClause, $NotForReplicationClause
 
     Write-Host (' {0}.{1} +{2} ({3}) => {4}.{5} ({6})' -f $SchemaName,$TableName,$name,$source_columns,$ReferencesSchema,$References,$ref_columns)
-    Invoke-Query -Query $query
+    
+    #Construct Migration Object
+
+    $migration = New-MigrationObject -Property @{ Query = $query } -ToQueryMethod { return $this.Query }
+
+    Invoke-Migration -Migration $migration 
+
 }
+
+    

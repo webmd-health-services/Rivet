@@ -70,5 +70,10 @@ function Add-PrimaryKey
 '@ -f $SchemaName,$TableName,$name,$clusteredClause,$columns,$optionClause
 
     Write-Host (' {0}.{1} +{2} ({3})' -f $SchemaName,$TableName,$name,$columns)
-    Invoke-Query -Query $query
+    
+    #Construct Migration Object
+
+    $migration = New-MigrationObject -Property @{ Query = $query } -ToQueryMethod { return $this.Query }
+
+    Invoke-Migration -Migration $migration 
 }

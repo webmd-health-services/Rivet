@@ -26,5 +26,10 @@ function Remove-Table
 
     Write-Host (' -{0}.{1}' -f $SchemaName,$Name)
     $query = 'drop table [{0}].[{1}]' -f $SchemaName,$Name
-    Invoke-Query $query
+    
+    #Construct Migration Object
+
+    $migration = New-MigrationObject -Property @{ Query = $query } -ToQueryMethod { return $this.Query }
+
+    Invoke-Migration -Migration $migration 
 }

@@ -54,5 +54,9 @@ function Remove-UserDefinedFunction
 '@ -f $Schema,$Name,$query
     }
     
-    Invoke-Query -Query $query
+    #Construct Migration Object
+
+    $migration = New-MigrationObject -Property @{ Query = $query } -ToQueryMethod { return $this.Query }
+
+    Invoke-Migration -Migration $migration 
 }

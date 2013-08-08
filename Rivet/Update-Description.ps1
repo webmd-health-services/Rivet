@@ -71,5 +71,10 @@ function Update-Description
     {
         Write-Host (' {0}.{1}{2} =MS_Description: {3}' -f $SchemaName,$TableName,$columnMsg,$Description)
     }
-    Invoke-Query -Query $descriptionQuery -Verbose
+    
+    #Construct Migration Object
+
+    $migration = New-MigrationObject -Property @{ Query = $descriptionQuery } -ToQueryMethod { return $this.Query }
+
+    Invoke-Migration -Migration $migration 
 }

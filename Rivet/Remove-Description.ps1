@@ -65,5 +65,10 @@ function Remove-Description
     {
         Write-Host (' {0}.{1}{2} -MS_Description' -f $SchemaName,$TableName,$columnMsg)
     }
-    Invoke-Query -Query $descriptionQuery -Verbose
+    
+    #Construct Migration Object
+
+    $migration = New-MigrationObject -Property @{ Query = $descriptionQuery } -ToQueryMethod { return $this.Query }
+
+    Invoke-Migration -Migration $migration 
 }
