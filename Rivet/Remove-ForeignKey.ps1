@@ -45,9 +45,9 @@ function Remove-ForeignKey
     $name = New-ForeignKeyConstraintName -SourceSchema $SchemaName -SourceTable $TableName -TargetSchema $ReferencesSchema -TargetTable $References
 
     $query = @'
-    ALTER TABLE {0} DROP CONSTRAINT {1}
+    alter table {0} drop constraint {1}
 '@ -f $TableName,$name
 
-    Write-Host (' +{0}.{1} remove foreign key {2} ({3})' -f $SchemaName,$TableName,$name,$References)
+    Write-Host (' {0}.{1} -{2}' -f $SchemaName,$TableName,$name)
     Invoke-Query -Query $query
 }

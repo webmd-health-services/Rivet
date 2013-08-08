@@ -120,7 +120,7 @@ $query = @'
 
 '@ -f $UniqueClause, $ClusteredClause, $indexname, $SchemaName, $TableName, $ColumnClause, $OptionClause, $WhereClause, $OnClause, $FileStreamClause
     
-    Write-Host (' +{0}.{1} {2} ({3})' -f $SchemaName,$TableName,$indexname,$ColumnClause)
+    Write-Host (' {0}.{1} +{2} ({3})' -f $SchemaName,$TableName,$indexname,$ColumnClause)
 
     Invoke-Query -Query $query
 }

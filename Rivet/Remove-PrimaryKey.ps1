@@ -41,9 +41,9 @@ function Remove-PrimaryKey
 
     $columns = $ColumnName -join ','
     $query = @'
-    ALTER TABLE {0} DROP CONSTRAINT {1}
+    alter table {0} drop constraint {1}
 '@ -f $TableName,$name
 
-    Write-Host (' +{0}.{1} remove primary key {2} ({3})' -f $SchemaName,$TableName,$name,$columns)
+    Write-Host (' {0}.{1} -{2} ({3})' -f $SchemaName,$TableName,$name,$columns)
     Invoke-Query -Query $query
 }

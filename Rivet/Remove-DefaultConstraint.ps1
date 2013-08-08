@@ -50,7 +50,7 @@ $query = @'
 
 '@ -f $SchemaName, $TableName, $DefaultConstraintname
 
-    Write-Host (' -{0}.{1} {2} ({3})' -f $SchemaName,$TableName,$DefaultConstraintname,$ColumnName)
+    Write-Host (' {0}.{1} -{2}' -f $SchemaName,$TableName,$DefaultConstraintname)
 
     Invoke-Query -Query $query
 }

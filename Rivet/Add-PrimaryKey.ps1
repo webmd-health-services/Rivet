@@ -69,6 +69,6 @@ function Add-PrimaryKey
     alter table [{0}].[{1}] add constraint {2} primary key {3} ({4}) {5}
 '@ -f $SchemaName,$TableName,$name,$clusteredClause,$columns,$optionClause
 
-    Write-Host (' +{0}.{1} {2} ({3})' -f $SchemaName,$TableName,$name,$columns)
+    Write-Host (' {0}.{1} +{2} ({3})' -f $SchemaName,$TableName,$name,$columns)
     Invoke-Query -Query $query
 }
