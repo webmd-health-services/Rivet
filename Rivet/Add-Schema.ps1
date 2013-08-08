@@ -30,5 +30,10 @@ function Add-Schema
         $query = '{0} authorization [{1}]' -f $query,$Owner
     }
     Write-Host (' +{0}' -f $Name)
-    Invoke-Query -Query $query 
+    
+    #Construct Migration Object
+
+    $migration = New-MigrationObject -Property @{ Query = $query } -ToQueryMethod { return $this.Query }
+
+    Invoke-Migration -Migration $migration 
 }

@@ -32,5 +32,10 @@ function Remove-Column
 
     $query = 'alter table [{0}].[{1}] drop column [{2}]' -f $SchemaName,$TableName,$Name
     Write-Host (' {0}.{1} -{2}' -f $SchemaName,$TableName,$Name)
-    Invoke-Query $query
+    
+    #Construct Migration Object
+
+    $migration = New-MigrationObject -Property @{ Query = $query } -ToQueryMethod { return $this.Query }
+
+    Invoke-Migration -Migration $migration 
 }
