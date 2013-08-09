@@ -244,7 +244,8 @@ function Get-RivetConfig
                                                     'Name' = $dbName;
                                                     'Root' = $_.FullName;
                                                 }
-                                    New-Object PsObject -Property $dbProps
+                                    New-Object PsObject -Property $dbProps |
+                                        Add-Member -MemberType ScriptProperty -Name MigrationsRoot -Value { Join-Path -Path $this.Root -ChildPath 'Migrations' } -PassThru
                                 }
         if( $properties.Databases )
         {
