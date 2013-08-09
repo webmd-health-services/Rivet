@@ -24,6 +24,11 @@ function Get-RivetConfig
     [CmdletBinding()]
     param(
         [Parameter()]
+        [string[]]
+        # The list of specific database names being operated on.
+        $Database,
+
+        [Parameter()]
         # The name of the environment whose settings to return.  If not provided, uses the default settings.
         $Environment,
 
@@ -206,26 +211,41 @@ function Get-RivetConfig
 
     if( $valid )
     {
-        $properties.Databases = Get-ChildItem -Path $properties.DatabasesRoot |
-                                    Where-Object { $_.PsIsContainer } |
-                                    Where-Object { 
-                                        if( -not $properties.IgnoreDatabases )
-                                        {
-                                            return $true
-                                        }
+        $properties.Databases = Invoke-Command {
 
-                                        $dbName = $_.Name                                        
-                                        $ignore = $properties.IgnoreDatabases | Where-Object { $dbName -like $_ }
-                                        return -not $ignore
-                                    } |
-                                    ForEach-Object {
-                                        $dbName = $_.Name
-                                        $dbProps = @{
-                                                        'Name' = $dbName;
-                                                        'Root' = $_.FullName;
-                                                    }
-                                        New-Object PsObject -Property $dbProps
+                                    # Get user-specified databases first
+                                    if( $Database )
+                                    {
+                                        $Database | 
+                                            Add-Member -MemberType ScriptProperty -Name Name -Value { $this } -PassThru |
+                                            Add-Member -MemberType ScriptProperty -Name FullName -Value { Join-Path -Path $properties.DatabasesRoot -ChildPath $this.Name } -PassThru
                                     }
+                                    else
+                                    {                                    
+                                        # Then get all of them
+                                        Get-ChildItem -Path $properties.DatabasesRoot |
+                                            Where-Object { $_.PsIsContainer }
+                                    }
+                                } |
+                                Select-Object -Property Name,FullName -Unique |
+                                Where-Object { 
+                                    if( -not $properties.IgnoreDatabases )
+                                    {
+                                        return $true
+                                    }
+
+                                    $dbName = $_.Name                                        
+                                    $ignore = $properties.IgnoreDatabases | Where-Object { $dbName -like $_ }
+                                    return -not $ignore
+                                } |
+                                ForEach-Object {
+                                    $dbName = $_.Name
+                                    $dbProps = @{
+                                                    'Name' = $dbName;
+                                                    'Root' = $_.FullName;
+                                                }
+                                    New-Object PsObject -Property $dbProps
+                                }
         if( $properties.Databases )
         {
             $properties.Databases = [Object[]]$properties.Databases

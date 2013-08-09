@@ -309,6 +309,41 @@ function Test-ShouldOverrideSettingsFromEnvironment
     Assert-Equal 0 $prodConfig.Databases.Count
 }
 
+function Test-ShouldReturnExplicitDatabases
+{
+    $config = Get-RivetConfig -Path $rivetConfigPath -Database 'one','two'
+    Assert-NotNull $config
+    Assert-Equal 2 $config.Databases.Count
+    Assert-Equal 'one' $config.Databases[0].Name
+    Assert-Equal (Join-Path -Path $tempDir -ChildPath "Databases\one") $config.Databases[0].Root
+    Assert-Equal 'two' $config.Databases[1].Name
+    Assert-Equal (Join-Path -Path $tempDir -ChildPath "Databases\two") $config.Databases[1].Root
+}
+
+function Test-ShouldReturnUniqueDatabases
+{
+    $db = [Guid]::NewGuid().ToString()
+    $db | New-DatabaseDirectory
+
+    $config = Get-RivetConfig -Path $rivetConfigPath -Database $db
+    Assert-NotNull $config
+    Assert-Equal 1 $config.Databases.Count
+    Assert-Equal $db $config.Databases[0].Name
+    Assert-Equal (Join-Path -Path $tempDir -ChildPath "Databases\$db") $config.Databases[0].Root
+}
+
+function Test-ShouldOnlyReturnExplicitDatabases
+{
+    $db = [Guid]::NewGuid().ToString()
+    $db | New-DatabaseDirectory
+
+    $config = Get-RivetConfig -Path $rivetConfigPath -Database 'one'
+    Assert-NotNull $config
+    Assert-Equal 1 $config.Databases.Count
+    Assert-Equal 'one' $config.Databases[0].Name
+    Assert-Equal (Join-Path -Path $tempDir -ChildPath "Databases\one") $config.Databases[0].Root
+}
+
 function Set-RivetConfig
 {
     param(
