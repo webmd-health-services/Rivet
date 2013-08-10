@@ -103,12 +103,8 @@ function Add-ForeignKey
 
     Write-Host (' {0}.{1} +{2} ({3}) => {4}.{5} ({6})' -f $SchemaName,$TableName,$name,$source_columns,$ReferencesSchema,$References,$ref_columns)
     
-    #Construct Migration Object
-
-    $migration = New-MigrationObject -Property @{ Query = $query } -ToQueryMethod { return $this.Query }
-
-    Invoke-Migration -Migration $migration 
-
+    $op = New-Object 'Rivet.Operations.RawQueryOperation' $query
+    Invoke-MigrationOperation -Operation $op
 }
 
     

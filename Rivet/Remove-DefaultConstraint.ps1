@@ -52,9 +52,6 @@ $query = @'
 
     Write-Host (' {0}.{1} -{2}' -f $SchemaName,$TableName,$DefaultConstraintname)
 
-    #Construct Migration Object
-
-    $migration = New-MigrationObject -Property @{ Query = $query } -ToQueryMethod { return $this.Query }
-
-    Invoke-Migration -Migration $migration 
+    $op = New-Object 'Rivet.Operations.RawQueryOperation' $query 
+    Invoke-MigrationOperation -Operation $op
 }

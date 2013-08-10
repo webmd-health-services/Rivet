@@ -61,6 +61,6 @@ filter Invoke-Query
         $invokeMigrationParams.CommandTimeout = $CommandTimeout
     }
 
-    $migration = New-MigrationObject -Property @{ Query = $Query } -ToQueryMethod { return $this.Query }
-    Invoke-Migration -Migration $migration @invokeMigrationParams
+    $operation = New-Object 'Rivet.Operations.RawQueryOperation' $Query
+    Invoke-MigrationOperation -Operation $operation @invokeMigrationParams
 }
