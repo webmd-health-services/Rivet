@@ -26,7 +26,7 @@ function New-MigrationObject
         $ToQueryMethod
     )
 
-    $o = New-Object 'Rivet.Migration'
+    $o = New-Object 'Rivet.Migration' '','','',''
     $Property.Keys | 
         ForEach-Object { $o | Add-Member -MemberType NoteProperty -Name $_ -Value $Property.$_ }
 

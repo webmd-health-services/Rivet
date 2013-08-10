@@ -114,11 +114,8 @@ function Add-Table
         {6}
 '@ -f $SchemaName,$Name,$columnDefinitionClause,$fileGroupClause,$textImageFileGroupClause,$fileStreamFileGroupClause,$optionClause
 
-    #Construct Migration Object
-
-    $migration = New-MigrationObject -Property @{ Query = $query } -ToQueryMethod { return $this.Query }
-
-    Invoke-Migration -Migration $migration 
+    $op = New-Object 'Rivet.Operations.RawQueryOperation' $query
+    Invoke-MigrationOperation -Operation $op
 
     $addDescriptionArgs = @{
                                 SchemaName = $SchemaName;

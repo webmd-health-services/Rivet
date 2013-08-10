@@ -9,16 +9,17 @@ function Invoke-Migration
     All Rivet migrations are described by instances of `Rivet.Migration` objects.  These objects eventually make their way here, at which point they are converted to SQL, and executed.
 
     .EXAMPLE
-    Invoke-Migration -Migration $migration
+    Invoke-Migration -Operation $operation
 
     This example demonstrates how to call `Invoke-Migration` with a migration object.
     #>
     [CmdletBinding(DefaultParameterSetName='AsReader')]
     param(
+        [Alias('Migration')]
         [Parameter(Mandatory=$true)]
-        [Rivet.Migration]
+        [Rivet.Operations.Operation]
         # The migration object to invoke.
-        $Migration,
+        $Operation,
         
         [Parameter(Mandatory=$true,ParameterSetName='ExecuteScalar')]
         [Switch]
@@ -33,7 +34,7 @@ function Invoke-Migration
         $CommandTimeout = 30
     )
 
-    $query = $Migration.ToQuery()
+    $query = $Operation.ToQuery()
 
     $cmd = New-Object Data.SqlClient.SqlCommand ($query,$Connection,$Connection.Transaction)
     $cmd.CommandTimeout = $CommandTimeout
@@ -91,3 +92,5 @@ function Invoke-Migration
     }
 
 }
+
+Set-Alias -Name Invoke-MigrationOperation -Value Invoke-Migration

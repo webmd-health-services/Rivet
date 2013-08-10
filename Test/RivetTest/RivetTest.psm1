@@ -13,6 +13,7 @@ $RTConfigFilePath =
     $RTDatabaseName = 
     $RTDatabasesRoot = 
     $RTDatabaseRoot = 
+    $RTDatabaseMigrationRoot =
     $RTServer = 
     $RTRivetPath = 
     $RTRivetSchemaName = 
@@ -22,7 +23,8 @@ $RTConfigFilePath =
 $RTRivetSchemaName = 'rivet'
 
 $RTDatabasesSourcePath = Join-Path $PSScriptRoot ..\Databases -Resolve
-$RTDatabaseSourcePath = Join-Path $RTDatabasesSourcePath $RTName -Resolve
+$RTDatabaseSourcePath = Join-Path $RTDatabasesSourcePath $RTName 
+$RTDatabaseSourcePath = [IO.Path]::GetFullPath( $RTDatabaseSourcePath )
 $RTDatabaseSourceName = $RTName
 
 $RTServer = Get-Content (Join-Path $PSScriptRoot ..\Server.txt) -TotalCount 1
@@ -36,5 +38,6 @@ dir $PSScriptRoot *-*.ps1 |
 $RTMasterConnection = New-SqlConnection -DatabaseName 'master'
 
 . (Join-Path $PSScriptRoot '..\..\Rivet\New-DefaultConstraintName.ps1')
+. (Join-Path $PSScriptRoot '..\..\Rivet\New-ForeignKeyConstraintName.ps1')
     
 Export-ModuleMember -Function * -Alias * -Variable *

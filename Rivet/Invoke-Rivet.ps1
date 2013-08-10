@@ -53,35 +53,19 @@ function Invoke-Rivet
         $ConfigFilePath
     )
 
-    $settings = Get-RivetConfig -Path $ConfigFilePath -Environment $Environment
+    $settings = Get-RivetConfig -Database $Database -Path $ConfigFilePath -Environment $Environment
 
-    if( $Database )
-    {
-        $databases = $Database | 
-                        ForEach-Object {
-                            $property = @{
-                                            Name = $_;
-                                            Root = (Join-Path -Path $settings.DatabasesRoot -ChildPath $_ );
-                                         }
-                            New-Object PSObject -Property $property
-                        }
-    }
-    else
-    {
-        $databases = $settings.Databases
-    }
-
-    if( -not $databases )
+    if( -not $settings.Databases )
     {
         Write-Error ('There are not database directories in ''{0}''.  Please create a database directory there or supply an explicit database name with the `Database` parameter.' -f $settings.DatabasesRoot)
         return
     }
 
-    $databases | ForEach-Object {
+    $settings.Databases | ForEach-Object {
 
         $databaseName = $_.Name
         $dbScriptsPath = $_.Root
-        $dbMigrationsPath = Join-Path -Path $dbScriptsPath -ChildPath Migrations
+        $dbMigrationsPath = $_.MigrationsRoot
         
         if( $pscmdlet.ParameterSetName -eq 'New' )
         {
