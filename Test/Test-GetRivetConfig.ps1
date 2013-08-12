@@ -35,6 +35,33 @@ function Stop-Test
     }
 }
 
+function Test-ShouldHandleRelativePath
+{
+    $tempDirName = Split-Path -Leaf -Path $tempDir
+    $tempDir2 = New-TempDir -Prefix 'Rivet-Test-GetRivetConfig'
+    $tempDir2Name = Split-Path -Leaf -Path $tempDir2
+    $configContents = @"
+{
+    SqlServerName: '.\\Test',
+    DatabasesRoot: '..\\$tempDirName\\Databases'
+}
+"@
+    $configContents | Set-Content -Path (Join-Path -Path $tempDir2 -ChildPath 'rivet.json')
+
+    Push-Location -Path $tempDir
+    try
+    {
+        $config = Get-RivetConfig -Path ('..\{0}\rivet.json' -f $tempDir2Name)
+        Assert-NotNull $config
+        Assert-Equal (Join-Path -Path $tempDir -ChildPath 'Databases') $config.DatabasesRoot
+    }
+    finally
+    {
+        Pop-Location
+        Remove-Item -Path $tempDir2 -Recurse
+    }
+}
+
 function Test-ShouldParseMinimumConfig
 {
     $dbName = [Guid]::NewGuid().ToString()

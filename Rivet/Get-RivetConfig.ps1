@@ -182,6 +182,13 @@ function Get-RivetConfig
         $Path = Join-Path -Path $Path -ChildPath 'rivet.json'
     }
 
+    if( -not [IO.Path]::IsPathRooted( $Path ) )
+    {
+        $Path = Join-Path -Path (Get-Location) -ChildPath $Path
+    }
+
+    $Path = [IO.Path]::GetFullPath( $Path )
+
     ## Check for existence of rivet.json
     if( -not (Test-Path -Path $Path -PathType Leaf) )
     {
