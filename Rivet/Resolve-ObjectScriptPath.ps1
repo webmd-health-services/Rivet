@@ -48,7 +48,7 @@ function Resolve-ObjectScriptPath
     
     $objectTypeDirName = $pscmdlet.ParameterSetName
     
-    $objectDirPath = Join-Path $Connection.ScriptsPath $objectTypeDirName
+    $objectDirPath = Join-Path $DBScriptRoot $objectTypeDirName
     if( -not (Test-Path -Path $objectDirPath -PathType Container) )
     {
         throw ('{0} script directory {1} not found.' -f $objectTypeDirName,$objectDirPath)

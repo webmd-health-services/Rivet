@@ -25,6 +25,8 @@ function Get-Migration
 
     $settings.Databases | ForEach-Object {
         $dbName = $_.Name
+        $DBScriptRoot = $_.Root
+        $DBMigrationsRoot = $_.MigrationsRoot
 
         Get-MigrationScript -Path $_.MigrationsRoot | ForEach-Object {
 
