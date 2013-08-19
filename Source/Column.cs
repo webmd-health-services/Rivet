@@ -232,7 +232,7 @@
 
 		public static Column NVarChar(string name, CharacterLength size, string collation, Nullable nullable, string defaultExpression, string description)
 		{
-			return new Column(name, DataType.NVarChar, size, collation, nullable, defaultExpression, description);
+			return new Column(name, DataType.NVarChar, size ?? new CharacterLength(), collation, nullable, defaultExpression, description);
 		}
 
 		public static Column Real(string name, Nullable nullable, string defaultExpression, string description)

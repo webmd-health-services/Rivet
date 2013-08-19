@@ -357,6 +357,61 @@ namespace Rivet.Test
 		}
 		#endregion Money
 
+		#region NChar
+		[Test]
+		public void ShouldCreateNCharColumn(
+			[Values("char")]
+			string name,
+
+			[Values(15, null)]
+			int? length,
+
+			[Values("collation")]
+			string collation,
+
+			[Values(Nullable.NotNull, Nullable.Null, Nullable.Sparse)]
+			Nullable nullable,
+
+			[Values("richard cory")]
+			string defaultExpression,
+
+			[Values("char")]
+			string description)
+		{
+			var size = (length == null) ? null : new CharacterLength(length.Value);
+			GivenColumn(Column.NChar(name, size, collation, nullable, defaultExpression, description));
+			ThenColumnShouldBe(name, DataType.NChar, size, collation, nullable, defaultExpression, description);
+		}
+		#endregion Char
+
+		#region NVarChar
+
+		[Test]
+		public void ShouldCreateNVarCharColumn(
+			[Values("Name")]
+			string name,
+
+			[Values(50, null)]
+			int? length,
+
+			[Values(null, "collation")]
+			string collation,
+
+			[Values(Nullable.NotNull, Nullable.Null, Nullable.Sparse)]
+			Nullable nullable,
+
+			[Values("''", "DEFAULT", null)]
+			string defaultExpression,
+
+			[Values("''", "varchar")]
+			string description)
+		{
+			var size = length == null ? null : new CharacterLength(length.Value);
+			GivenColumn(Column.NVarChar(name, size, collation, nullable, defaultExpression, description));
+			ThenColumnShouldBe(name, DataType.NVarChar, size, collation, nullable, defaultExpression, description);
+		}
+		#endregion NVarChar
+
 		#region Numeric
 
 		[Test]
