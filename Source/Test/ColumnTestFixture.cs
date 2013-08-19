@@ -55,84 +55,6 @@ namespace Rivet.Test
 
 		#endregion
 
-		#region Int
-
-		[Test]
-		public void ShouldCreateIntColumn(
-			[Values("Int")]
-			string name, 
-			[Values(Nullable.Null, Nullable.NotNull, Nullable.Sparse)]
-			Nullable nullable)
-		{
-			var c = Column.Int(name, nullable, "(0)", "int collumn");
-			GivenColumn(c);
-			ThenColumnShouldBe(name, DataType.Int, nullable, "(0)", "int collumn");
-		}
-
-		[Test]
-		public void ShouldCreateIntIdentityColumn()
-		{
-			foreach (var identity in Identities)
-			{
-				GivenColumn(Column.Int("IntIdentity", identity, "(1)", "int identity"));
-				ThenColumnShouldBe("IntIdentity", DataType.Int, identity, "(1)", "int identity");
-			}
-		}
-
-		#endregion
-
-		#region SmallInt
-
-		[Test]
-		public void ShouldCreateSmallIntColumn(
-			[Values("Int")]
-			string name, 
-			[Values(Nullable.Null, Nullable.NotNull, Nullable.Sparse)]
-			Nullable nullable)
-		{
-			var c = Column.SmallInt(name, nullable, "(4)", "small int");
-			GivenColumn(c);
-			ThenColumnShouldBe(name, DataType.SmallInt, nullable, "(4)", "small int");
-		}
-
-		[Test]
-		public void ShouldCreateSmallIntIdentityColumn()
-		{
-			foreach (var identity in Identities)
-			{
-				GivenColumn(Column.SmallInt("SmallIntIdentity", identity, "(1)", "small int identity"));
-				ThenColumnShouldBe("SmallIntIdentity", DataType.SmallInt, identity, "(1)", "small int identity");
-			}
-		}
-
-		#endregion
-
-		#region TinyInt
-
-		[Test]
-		public void ShouldCreateTinyIntColumn(
-			[Values("Int")]
-			string name, 
-			[Values(Nullable.Null, Nullable.NotNull, Nullable.Sparse)]
-			Nullable nullable)
-		{
-			var c = Column.TinyInt(name, nullable, "(6)", "tinyint");
-			GivenColumn(c);
-			ThenColumnShouldBe(name, DataType.TinyInt, nullable, "(6)", "tinyint");
-		}
-
-		[Test]
-		public void ShouldCreateTinyIntIdentityColumn()
-		{
-			foreach (var identity in Identities)
-			{
-				GivenColumn(Column.TinyInt("TinyIntIdentity", identity, "(7)", "tinyint identity"));
-				ThenColumnShouldBe("TinyIntIdentity", DataType.TinyInt, identity, "(7)", "tinyint identity");
-			}
-		}
-
-		#endregion
-
 		#region Decimal
 
 		[Test]
@@ -186,6 +108,32 @@ namespace Rivet.Test
 
 		#endregion
 
+		#region Int
+
+		[Test]
+		public void ShouldCreateIntColumn(
+			[Values("Int")]
+			string name, 
+			[Values(Nullable.Null, Nullable.NotNull, Nullable.Sparse)]
+			Nullable nullable)
+		{
+			var c = Column.Int(name, nullable, "(0)", "int collumn");
+			GivenColumn(c);
+			ThenColumnShouldBe(name, DataType.Int, nullable, "(0)", "int collumn");
+		}
+
+		[Test]
+		public void ShouldCreateIntIdentityColumn()
+		{
+			foreach (var identity in Identities)
+			{
+				GivenColumn(Column.Int("IntIdentity", identity, "(1)", "int identity"));
+				ThenColumnShouldBe("IntIdentity", DataType.Int, identity, "(1)", "int identity");
+			}
+		}
+
+		#endregion
+
 		#region Numeric
 
 		[Test]
@@ -234,6 +182,58 @@ namespace Rivet.Test
 					GivenColumn(c);
 					ThenColumnShouldBe("NumericWithPrecision", DataType.Numeric, ps, identity, "13.0", "numeric identity precision");
 				}
+			}
+		}
+
+		#endregion
+
+		#region SmallInt
+
+		[Test]
+		public void ShouldCreateSmallIntColumn(
+			[Values("Int")]
+			string name, 
+			[Values(Nullable.Null, Nullable.NotNull, Nullable.Sparse)]
+			Nullable nullable)
+		{
+			var c = Column.SmallInt(name, nullable, "(4)", "small int");
+			GivenColumn(c);
+			ThenColumnShouldBe(name, DataType.SmallInt, nullable, "(4)", "small int");
+		}
+
+		[Test]
+		public void ShouldCreateSmallIntIdentityColumn()
+		{
+			foreach (var identity in Identities)
+			{
+				GivenColumn(Column.SmallInt("SmallIntIdentity", identity, "(1)", "small int identity"));
+				ThenColumnShouldBe("SmallIntIdentity", DataType.SmallInt, identity, "(1)", "small int identity");
+			}
+		}
+
+		#endregion
+
+		#region TinyInt
+
+		[Test]
+		public void ShouldCreateTinyIntColumn(
+			[Values("Int")]
+			string name, 
+			[Values(Nullable.Null, Nullable.NotNull, Nullable.Sparse)]
+			Nullable nullable)
+		{
+			var c = Column.TinyInt(name, nullable, "(6)", "tinyint");
+			GivenColumn(c);
+			ThenColumnShouldBe(name, DataType.TinyInt, nullable, "(6)", "tinyint");
+		}
+
+		[Test]
+		public void ShouldCreateTinyIntIdentityColumn()
+		{
+			foreach (var identity in Identities)
+			{
+				GivenColumn(Column.TinyInt("TinyIntIdentity", identity, "(7)", "tinyint identity"));
+				ThenColumnShouldBe("TinyIntIdentity", DataType.TinyInt, identity, "(7)", "tinyint identity");
 			}
 		}
 
