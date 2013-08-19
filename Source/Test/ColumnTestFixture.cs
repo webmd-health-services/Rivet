@@ -79,6 +79,27 @@ namespace Rivet.Test
 		}
 		#endregion Binary
 
+		#region Bit
+		[Test]
+		public void ShouldCreateBitColumn(
+			[Values("bit")]
+			string name,
+
+			[Values(Nullable.NotNull, Nullable.Null, Nullable.Sparse)]
+			Nullable nullable,
+			
+			[Values("1", "0")]
+			string defaultExpression,
+
+			[Values("bit column")]
+			string description
+			)
+		{
+			GivenColumn(Column.Bit(name, nullable, defaultExpression, description));
+			ThenColumnShouldBe(name, DataType.Bit, nullable, defaultExpression, description);
+		}
+		#endregion Bit
+
 		#region Decimal
 
 		[Test]
