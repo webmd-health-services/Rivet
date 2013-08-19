@@ -127,6 +127,27 @@ namespace Rivet.Test
 		}
 		#endregion Char
 
+		#region Date
+		[Test]
+		public void ShouldCreateDateColumn(
+			[Values("date")]
+			string name,
+
+			[Values(Nullable.NotNull, Nullable.Null, Nullable.Sparse)]
+			Nullable nullable,
+			
+			[Values("getdate()", null)]
+			string defaultExpression,
+
+			[Values("bit column", null)]
+			string description
+			)
+		{
+			GivenColumn(Column.Date(name, nullable, defaultExpression, description));
+			ThenColumnShouldBe(name, DataType.Date, nullable, defaultExpression, description);
+		}
+		#endregion Date
+
 		#region Decimal
 
 		[Test]
@@ -180,6 +201,29 @@ namespace Rivet.Test
 
 		#endregion
 
+		#region HierarchyID
+		[Test]
+// ReSharper disable InconsistentNaming
+		public void ShouldCreateHierarchyIDColumn(
+// ReSharper restore InconsistentNaming
+			[Values("hid")]
+			string name,
+
+			[Values(Nullable.NotNull, Nullable.Null, Nullable.Sparse)]
+			Nullable nullable,
+
+			[Values("5", null)]
+			string defaultExpression,
+
+			[Values("hierarchyid column", null)]
+			string description
+			)
+		{
+			GivenColumn(Column.HierarchyID(name, nullable, defaultExpression, description));
+			ThenColumnShouldBe(name, DataType.HierarchyID, nullable, defaultExpression, description);
+		}
+		#endregion HierarchyID
+
 		#region Int
 
 		[Test]
@@ -205,6 +249,27 @@ namespace Rivet.Test
 		}
 
 		#endregion
+
+		#region Money
+		[Test]
+		public void ShouldCreateMoneyColumn(
+			[Values("money")]
+			string name,
+
+			[Values(Nullable.NotNull, Nullable.Null, Nullable.Sparse)]
+			Nullable nullable,
+
+			[Values("5.00", null)]
+			string defaultExpression,
+
+			[Values("money column", null)]
+			string description
+			)
+		{
+			GivenColumn(Column.Money(name, nullable, defaultExpression, description));
+			ThenColumnShouldBe(name, DataType.Money, nullable, defaultExpression, description);
+		}
+		#endregion Money
 
 		#region Numeric
 
@@ -259,6 +324,69 @@ namespace Rivet.Test
 
 		#endregion
 
+		#region Real
+		[Test]
+		public void ShouldCreateRealColumn(
+			[Values("real")]
+			string name,
+
+			[Values(Nullable.NotNull, Nullable.Null, Nullable.Sparse)]
+			Nullable nullable,
+
+			[Values("5.00", null)]
+			string defaultExpression,
+
+			[Values("real column", null)]
+			string description
+			)
+		{
+			GivenColumn(Column.Real(name, nullable, defaultExpression, description));
+			ThenColumnShouldBe(name, DataType.Real, nullable, defaultExpression, description);
+		}
+		#endregion Money
+
+		#region RowVersion
+		[Test]
+		public void ShouldCreateRowVersionColumn(
+			[Values("rowv")]
+			string name,
+
+			[Values(Nullable.NotNull, Nullable.Null, Nullable.Sparse)]
+			Nullable nullable,
+
+			[Values("1", null)]
+			string defaultExpression,
+
+			[Values("rowversion column", null)]
+			string description
+			)
+		{
+			GivenColumn(Column.RowVersion(name, nullable, defaultExpression, description));
+			ThenColumnShouldBe(name, DataType.RowVersion, nullable, defaultExpression, description);
+		}
+		#endregion RowVersion
+
+		#region SmallDateTime
+		[Test]
+		public void ShouldCreateSmallDateTimeColumn(
+			[Values("smalldt")]
+			string name,
+
+			[Values(Nullable.NotNull, Nullable.Null, Nullable.Sparse)]
+			Nullable nullable,
+
+			[Values("getdate()", null)]
+			string defaultExpression,
+
+			[Values("smalldatetime column", null)]
+			string description
+			)
+		{
+			GivenColumn(Column.SmallDateTime(name, nullable, defaultExpression, description));
+			ThenColumnShouldBe(name, DataType.SmallDateTime, nullable, defaultExpression, description);
+		}
+		#endregion SmallDateTime
+
 		#region SmallInt
 
 		[Test]
@@ -284,6 +412,27 @@ namespace Rivet.Test
 		}
 
 		#endregion
+
+		#region SqlVariant
+		[Test]
+		public void ShouldCreateSqlVariantColumn(
+			[Values("var")]
+			string name,
+
+			[Values(Nullable.NotNull, Nullable.Null, Nullable.Sparse)]
+			Nullable nullable,
+
+			[Values("'35'", null)]
+			string defaultExpression,
+
+			[Values("sql_variant column", null)]
+			string description
+			)
+		{
+			GivenColumn(Column.SqlVariant(name, nullable, defaultExpression, description));
+			ThenColumnShouldBe(name, DataType.SqlVariant, nullable, defaultExpression, description);
+		}
+		#endregion SqlVariant
 
 		#region TinyInt
 
@@ -446,7 +595,12 @@ namespace Rivet.Test
 				notNullClause = " sparse";
 			}
 
-			Assert.That(_column.GetColumnDefinition(), Is.EqualTo(string.Format("[{0}] {1}{2}", name, dataType.ToString().ToLowerInvariant(), notNullClause)));
+			var dataTypeName = dataType.ToString().ToLowerInvariant();
+			if (dataType == DataType.SqlVariant)
+			{
+				dataTypeName = "sql_variant";
+			}
+			Assert.That(_column.GetColumnDefinition(), Is.EqualTo(string.Format("[{0}] {1}{2}", name, dataTypeName, notNullClause)));
 		}
 
 		private void ThenColumnShouldBe(string name, DataType dataType, PrecisionScale size, bool filestream,
