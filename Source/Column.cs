@@ -175,11 +175,6 @@
 			return new Column(name, DataType.DateTime2, size, nullable, defaultExpression, description);
 		}
 
-		public static Column DateTimeOffset(string name, Nullable nullable, string defaultExpression, string description)
-		{
-			return new Column(name, DataType.DateTimeOffset, nullable, defaultExpression, description);
-		}
-
 		public static Column DateTimeOffset(string name, PrecisionScale size, Nullable nullable, string defaultExpression, string description)
 		{
 			return new Column(name, DataType.DateTimeOffset, size, nullable, defaultExpression, description);

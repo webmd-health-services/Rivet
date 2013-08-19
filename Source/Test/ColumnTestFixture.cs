@@ -148,8 +148,55 @@ namespace Rivet.Test
 		}
 		#endregion Date
 
-		#region Decimal
+		#region DateTime2
+		[Test]
+		public void ShouldCreateDateTime2Column(
+			[Values("CreatedAt")]
+			string name,
+			
+			[Values(7, null)]
+			int? precision,
 
+			[Values(Nullable.Null, Nullable.NotNull, Nullable.Sparse)]
+			Nullable nullable,
+
+			[Values("getdate()", null)]
+			string defaultExpression,
+			
+			[Values("datetime2 column", null)]
+			string description)
+		{
+			var size = (precision == null) ? null : new PrecisionScale(precision.Value);
+			GivenColumn(Column.DateTime2(name, size, nullable, defaultExpression, description));
+			ThenColumnShouldBe(name, DataType.DateTime2,  size, nullable, defaultExpression, description);
+		}
+		#endregion DateTime2
+
+		#region DateTimeOffset
+		[Test]
+		public void ShouldCreateDateTimeoffsetColumn(
+			[Values("CreatedAtTZ")]
+			string name,
+
+			[Values(7, null)]
+			int? precision,
+
+			[Values(Nullable.Null, Nullable.NotNull, Nullable.Sparse)]
+			Nullable nullable,
+
+			[Values("getdate()", null)]
+			string defaultExpression,
+
+			[Values("datetimeoffset column", null)]
+			string description)
+		{
+			var size = (precision == null) ? null : new PrecisionScale(precision.Value);
+			GivenColumn(Column.DateTimeOffset(name, size, nullable, defaultExpression, description));
+			ThenColumnShouldBe(name, DataType.DateTimeOffset, size, nullable, defaultExpression, description);
+		}
+		#endregion DateTime2
+
+		#region Decimal
 		[Test]
 		public void ShouldCreateDecimalColumn(
 			[Values("Decimal")]
@@ -200,6 +247,45 @@ namespace Rivet.Test
 		}
 
 		#endregion
+
+		#region Float
+		[Test]
+		public void ShouldCreateFloatColumn(
+			[Values("somefloat")]
+			string name,
+
+			[Values(7, null)]
+			int? precision,
+
+			[Values(4, null)]
+			int? scale,
+
+			[Values(Nullable.Null, Nullable.NotNull, Nullable.Sparse)]
+			Nullable nullable,
+
+			[Values("2.9999999999999", null)]
+			string defaultExpression,
+
+			[Values("float column", null)]
+			string description)
+		{
+			PrecisionScale size = null;
+			if (precision == null && scale == null)
+			{
+			}
+			else if (precision != null && scale == null)
+			{
+				size = new PrecisionScale(precision.Value);
+			}
+			else if( precision != null )
+			{
+				size = new PrecisionScale(precision.Value, scale.Value);
+			}
+
+			GivenColumn(Column.Float(name, size, nullable, defaultExpression, description));
+			ThenColumnShouldBe(name, DataType.Float, size, nullable, defaultExpression, description);
+		}
+		#endregion Float
 
 		#region HierarchyID
 		[Test]
@@ -433,6 +519,30 @@ namespace Rivet.Test
 			ThenColumnShouldBe(name, DataType.SqlVariant, nullable, defaultExpression, description);
 		}
 		#endregion SqlVariant
+
+		#region Time
+		[Test]
+		public void ShouldCreateTimeColumn(
+			[Values("Schedule")]
+			string name,
+
+			[Values(7, null)]
+			int? precision,
+
+			[Values(Nullable.Null, Nullable.NotNull, Nullable.Sparse)]
+			Nullable nullable,
+
+			[Values("gettime()", null)]
+			string defaultExpression,
+
+			[Values("time column", null)]
+			string description)
+		{
+			var size = (precision == null) ? null : new PrecisionScale(precision.Value);
+			GivenColumn(Column.Time(name, size, nullable, defaultExpression, description));
+			ThenColumnShouldBe(name, DataType.Time, size, nullable, defaultExpression, description);
+		}
+		#endregion DateTime2
 
 		#region TinyInt
 
