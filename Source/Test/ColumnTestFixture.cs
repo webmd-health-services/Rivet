@@ -55,6 +55,30 @@ namespace Rivet.Test
 
 		#endregion
 
+		#region Binary
+		[Test]
+		public void ShouldCreateBinaryColumn(
+			[Values("binary")]
+			string name, 
+			
+			[Values(1, null)]
+			int? length, 
+			
+			[Values(Nullable.NotNull, Nullable.Null, Nullable.Sparse)]
+			Nullable nullable, 
+			
+			[Values("'Hello'")]
+			string defaultExpression,
+			
+			[Values("varbinary")]
+			string description)
+		{
+			var size = (length == null) ? null : new CharacterLength(length.Value);
+			GivenColumn(Column.Binary(name, size, nullable, defaultExpression, description));
+			ThenColumnShouldBe(name, DataType.Binary, size, nullable, defaultExpression, description);
+		}
+		#endregion Binary
+
 		#region Decimal
 
 		[Test]
@@ -239,6 +263,33 @@ namespace Rivet.Test
 
 		#endregion
 
+		#region VarBinary
+		[Test]
+		public void ShouldCreateVarBinaryColumn(
+			[Values("varbinary")]
+			string name,
+
+			[Values(100, null)]
+			int? length,
+
+			[Values(true,false)]
+			bool filestream,
+
+			[Values(Nullable.NotNull, Nullable.Null, Nullable.Sparse)]
+			Nullable nullable,
+
+			[Values("'Hello'")]
+			string defaultExpression,
+
+			[Values("varbinary")]
+			string description)
+		{
+			var size = (length == null) ? null : new CharacterLength(length.Value);
+			GivenColumn(Column.VarBinary(name, size, filestream, nullable, defaultExpression, description));
+			ThenColumnShouldBe(name, DataType.VarBinary, size, filestream, nullable, defaultExpression, description);
+		}
+		#endregion Binary
+
 		#region VarChar
 
 		[Test]
@@ -261,15 +312,7 @@ namespace Rivet.Test
 			[Values("''", "varchar")]
 			string description)
 		{
-			CharacterLength size;
-			if (length == null)
-			{
-				size = null;
-			}
-			else
-			{
-				size = new CharacterLength(length.Value);
-			}
+			var size = length == null ? null : new CharacterLength(length.Value);
 			GivenColumn(Column.VarChar(name, size, collation, nullable, defaultExpression, description));
 			ThenColumnShouldBe(name, DataType.VarChar, length, collation, nullable, defaultExpression, description);
 		}
@@ -348,13 +391,40 @@ namespace Rivet.Test
 			Assert.That(_column.GetColumnDefinition(), Is.EqualTo(string.Format("[{0}] {1}{2}", name, dataType.ToString().ToLowerInvariant(), notNullClause)));
 		}
 
+		private void ThenColumnShouldBe(string name, DataType dataType, PrecisionScale size, bool filestream,
+		                                Nullable nullable, string defaultExpression, string description)
+		{
+			Assert.That(_column.FileStream, Is.EqualTo(filestream));
+			ThenColumnShouldBe(name, dataType, size, nullable, defaultExpression, description);
+		}
+
 		private void ThenColumnShouldBe(string name, DataType dataType, PrecisionScale size, Nullable nullable, string defaultExpression, string description)
 		{
 			ThenColumnShouldBe(name, dataType, defaultExpression, description);
-			Assert.That(_column.Size, Is.Not.Null);
-			Assert.That(_column.Size.Precision, Is.EqualTo(size.Precision));
-			Assert.That(_column.Size.Scale, Is.EqualTo(size.Scale));
-			Assert.That(_column.Size.ToString(), Is.EqualTo(size.ToString()));
+			var sizeClause = "";
+			if (size == null)
+			{
+				if (dataType == DataType.VarChar || dataType == DataType.VarBinary || dataType == DataType.NVarChar)
+				{
+					Assert.That(_column.Size, Is.Not.Null);
+					Assert.That(_column.Size.GetType(), Is.EqualTo(typeof (CharacterLength)));
+					Assert.That(_column.Size.Precision, Is.EqualTo(0));
+					Assert.That(_column.Size.ToString(), Is.EqualTo("(max)"));
+					sizeClause = "(max)";
+				}
+				else
+				{
+					Assert.That(_column.Size, Is.Null);
+				}
+			}
+			else
+			{
+				Assert.That(_column.Size, Is.Not.Null);
+				Assert.That(_column.Size.Precision, Is.EqualTo(size.Precision));
+				Assert.That(_column.Size.Scale, Is.EqualTo(size.Scale));
+				Assert.That(_column.Size.ToString(), Is.EqualTo(size.ToString()));
+				sizeClause = size.ToString();
+			}
 			Assert.That(_column.Nullable, Is.EqualTo(nullable));
 			
 			var notNullClause = "";
@@ -367,7 +437,13 @@ namespace Rivet.Test
 				notNullClause = " sparse";
 			}
 
-			var expectedDefinition = string.Format("[{0}] {1}{2}{3}", name, dataType.ToString().ToLowerInvariant(), size, notNullClause);
+			var filestreamClause = "";
+			if (_column.FileStream)
+			{
+				filestreamClause = " filestream";
+			}
+
+			var expectedDefinition = string.Format("[{0}] {1}{2}{3}{4}", name, dataType.ToString().ToLowerInvariant(), sizeClause, filestreamClause, notNullClause);
 			Assert.That(_column.GetColumnDefinition(), Is.EqualTo(expectedDefinition));
 		}
 
