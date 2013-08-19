@@ -4,3 +4,4 @@ relre:.*\obj\.*
 relre:.*\.pdb
 relre:.*\.user
 relre:.*\.suo
+glob:Test\bin
