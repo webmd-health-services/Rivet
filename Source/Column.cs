@@ -318,6 +318,10 @@
 			{
 				dataTypeClause = CustomDefinition;
 			}
+			else if (DataType == DataType.SqlVariant)
+			{
+				dataTypeClause = "sql_variant";
+			}
 
 			var fileStreamClause = "";
 			if (FileStream)
