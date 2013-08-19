@@ -297,7 +297,7 @@
 
 		public static Column VarBinary(string name, CharacterLength size, bool filestream, Nullable nullable, string defaultExpression, string description)
 		{
-			return new Column(name, DataType.Binary, size, filestream, nullable, defaultExpression, description);
+			return new Column(name, DataType.VarBinary, size ?? new CharacterLength(), filestream, nullable, defaultExpression, description);
 		}
 
 		public static Column VarChar(string name, CharacterLength size, string collation, Nullable nullable, string defaultExpression, string description)

@@ -26,12 +26,10 @@
 
 		// Character Strings
 		Char,
-		Text,
 		VarChar,
 
 		// Unicode Character Strings
 		NChar,
-		NText,
 		NVarChar,
 
 		// Binary Strings
