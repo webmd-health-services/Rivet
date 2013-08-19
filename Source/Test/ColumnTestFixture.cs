@@ -384,34 +384,6 @@ namespace Rivet.Test
 		}
 		#endregion Char
 
-		#region NVarChar
-
-		[Test]
-		public void ShouldCreateNVarCharColumn(
-			[Values("Name")]
-			string name,
-
-			[Values(50, null)]
-			int? length,
-
-			[Values(null, "collation")]
-			string collation,
-
-			[Values(Nullable.NotNull, Nullable.Null, Nullable.Sparse)]
-			Nullable nullable,
-
-			[Values("''", "DEFAULT", null)]
-			string defaultExpression,
-
-			[Values("''", "varchar")]
-			string description)
-		{
-			var size = length == null ? null : new CharacterLength(length.Value);
-			GivenColumn(Column.NVarChar(name, size, collation, nullable, defaultExpression, description));
-			ThenColumnShouldBe(name, DataType.NVarChar, size, collation, nullable, defaultExpression, description);
-		}
-		#endregion NVarChar
-
 		#region Numeric
 
 		[Test]
@@ -464,6 +436,34 @@ namespace Rivet.Test
 		}
 
 		#endregion
+
+		#region NVarChar
+
+		[Test]
+		public void ShouldCreateNVarCharColumn(
+			[Values("Name")]
+			string name,
+
+			[Values(50, null)]
+			int? length,
+
+			[Values(null, "collation")]
+			string collation,
+
+			[Values(Nullable.NotNull, Nullable.Null, Nullable.Sparse)]
+			Nullable nullable,
+
+			[Values("''", "DEFAULT", null)]
+			string defaultExpression,
+
+			[Values("''", "varchar")]
+			string description)
+		{
+			var size = length == null ? null : new CharacterLength(length.Value);
+			GivenColumn(Column.NVarChar(name, size, collation, nullable, defaultExpression, description));
+			ThenColumnShouldBe(name, DataType.NVarChar, size, collation, nullable, defaultExpression, description);
+		}
+		#endregion NVarChar
 
 		#region Real
 		[Test]
@@ -679,6 +679,13 @@ namespace Rivet.Test
 			ThenColumnShouldBe(name, DataType.VarChar, size, collation, nullable, defaultExpression, description);
 		}
 
+		#endregion VarChar
+
+		private void GivenColumn(Column column)
+		{
+			_column = column;
+		}
+
 		private void ThenColumnShouldBe(string name, DataType dataType, CharacterLength size, string collation, Nullable nullable, string defaultExpression, string description)
 		{
 			ThenColumnShouldBe(name, dataType, defaultExpression, description);
@@ -728,13 +735,6 @@ namespace Rivet.Test
 			var expectedDefintion = string.Format("[{0}] {1}{2}{3}{4}{5}", name, dataType.ToString().ToLowerInvariant(), sizeClause, collationClause, notNullClause,
 			                                      sparseClause);
 			Assert.That(_column.GetColumnDefinition(), Is.EqualTo(expectedDefintion));
-		}
-
-		#endregion VarChar
-
-		private void GivenColumn(Column column)
-		{
-			_column = column;
 		}
 
 		private void ThenColumnShouldBe(string name, DataType dataType, string defaultExpression, string description)
