@@ -20,7 +20,6 @@
 		// Date and Time
 		Date,
 		DateTime2,
-		DateTime,
 		DateTimeOffset,
 		SmallDateTime,
 		Time,
@@ -37,14 +36,16 @@
 
 		// Binary Strings
 		Binary,
-		Image,
 		VarBinary,
 
 		// Other Data Types
 		HierarchyID,
 		SqlVariant,
-		TimeStamp,
+		RowVersion,
 		UniqueIdentifier,
-		Xml
+		Xml,
+
+		// Custom
+		Custom
 	}
 }
