@@ -36,22 +36,21 @@ namespace Rivet
 
 	public sealed class CharacterLength : PrecisionScale
 	{
-		private bool _isMax;
-		
 		public CharacterLength(int length) : base(length)
 		{
-			_isMax = false;
+			IsMax = false;
 		}
 
 		public CharacterLength() : base(0)
 		{
-			_isMax = true;
+			IsMax = true;
 		}
 
+		public bool IsMax { get; private set; }
 
 		public override string ToString()
 		{
-			return _isMax ? "(max)" : base.ToString();
+			return IsMax ? "(max)" : base.ToString();
 		}
 	}
 

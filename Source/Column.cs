@@ -162,7 +162,7 @@
 
 		public static Column Char(string name, CharacterLength size, string collation, Nullable nullable, string defaultExpression, string description)
 		{
-			return new Column(name, DataType.NVarChar, size, collation, nullable, defaultExpression, description);
+			return new Column(name, DataType.Char, size, collation, nullable, defaultExpression, description);
 		}
 
 		public static Column Date(string name, Nullable nullable, string defaultExpression, string description)

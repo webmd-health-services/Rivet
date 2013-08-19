@@ -100,6 +100,33 @@ namespace Rivet.Test
 		}
 		#endregion Bit
 
+		#region Char
+		[Test]
+		public void ShouldCreateCharColumn(
+			[Values("char")]
+			string name, 
+			
+			[Values(15,null)]
+			int? length, 
+			
+			[Values("collation")]
+			string collation,
+
+			[Values(Nullable.NotNull, Nullable.Null, Nullable.Sparse)]
+			Nullable nullable, 
+			
+			[Values("richard cory")]
+			string defaultExpression, 
+			
+			[Values("char")]
+			string description)
+		{
+			var size = (length == null) ? null : new CharacterLength(length.Value);
+			GivenColumn(Column.Char(name, size, collation, nullable, defaultExpression, description));
+			ThenColumnShouldBe(name, DataType.Char, size, collation, nullable, defaultExpression, description);
+		}
+		#endregion Char
+
 		#region Decimal
 
 		[Test]
@@ -335,23 +362,33 @@ namespace Rivet.Test
 		{
 			var size = length == null ? null : new CharacterLength(length.Value);
 			GivenColumn(Column.VarChar(name, size, collation, nullable, defaultExpression, description));
-			ThenColumnShouldBe(name, DataType.VarChar, length, collation, nullable, defaultExpression, description);
+			ThenColumnShouldBe(name, DataType.VarChar, size, collation, nullable, defaultExpression, description);
 		}
 
-		private void ThenColumnShouldBe(string name, DataType dataType, int? length, string collation, Nullable nullable, string defaultExpression, string description)
+		private void ThenColumnShouldBe(string name, DataType dataType, CharacterLength size, string collation, Nullable nullable, string defaultExpression, string description)
 		{
 			ThenColumnShouldBe(name, dataType, defaultExpression, description);
 			Assert.That(_column.Nullable, Is.EqualTo(nullable));
 
 			var sizeClause = "(max)";
-			if (length == null)
+			if (size == null )
 			{
-				Assert.That(_column.Size, Is.Not.Null);
-				Assert.That(_column.Size.ToString(), Is.EqualTo("(max)"));
+				if (dataType.ToString().Contains("Var"))
+				{
+					Assert.That(_column.Size, Is.Not.Null);
+					Assert.That(_column.Size.Precision, Is.EqualTo(0));
+					Assert.That(((CharacterLength)_column.Size).IsMax, Is.True);
+					Assert.That(_column.Size.ToString(), Is.EqualTo("(max)"));
+				}
+				else
+				{
+					Assert.That(_column.Size, Is.Null);
+					sizeClause = "";
+				}
 			}
 			else
 			{
-				Assert.That(_column.Size.Precision, Is.EqualTo(length.Value));
+				Assert.That(_column.Size.Precision, Is.EqualTo(size.Precision));
 				sizeClause = string.Format("({0})", _column.Size.Precision);
 			}
 			Assert.That(_column.Collation, Is.EqualTo(collation));
@@ -374,7 +411,7 @@ namespace Rivet.Test
 				sparseClause = " sparse";
 			}
 
-			var expectedDefintion = string.Format("[{0}] varchar{1}{2}{3}{4}", name, sizeClause, collationClause, notNullClause,
+			var expectedDefintion = string.Format("[{0}] {1}{2}{3}{4}{5}", name, dataType.ToString().ToLowerInvariant(), sizeClause, collationClause, notNullClause,
 			                                      sparseClause);
 			Assert.That(_column.GetColumnDefinition(), Is.EqualTo(expectedDefintion));
 		}
@@ -425,7 +462,7 @@ namespace Rivet.Test
 			var sizeClause = "";
 			if (size == null)
 			{
-				if (dataType == DataType.VarChar || dataType == DataType.VarBinary || dataType == DataType.NVarChar)
+				if (dataType.ToString().Contains("Var"))
 				{
 					Assert.That(_column.Size, Is.Not.Null);
 					Assert.That(_column.Size.GetType(), Is.EqualTo(typeof (CharacterLength)));
