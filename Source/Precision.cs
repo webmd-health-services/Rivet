@@ -84,7 +84,7 @@ namespace Rivet
 			{
 				clause = "document";
 			}
-			return String.Format(" {0} {1}", clause, XmlSchemaCollection);
+			return String.Format("({0} {1})", clause, XmlSchemaCollection);
 		}
 	}
 }

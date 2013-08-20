@@ -52,15 +52,15 @@
 			Nullable = nullable;
 		}
 
-		private Column(string name, DataType dataType, Identity identity, string defaultExpression, string description)
-			: this(name, dataType, defaultExpression, description)
+		private Column(string name, DataType dataType, Identity identity, string description)
+			: this(name, dataType, (string)null, description)
 		{
 			Identity = identity;
 			Nullable = Nullable.NotNull;
 		}
 
-		private Column(string name, DataType dataType, PrecisionScale size, Identity identity, string defaultExpression, string description)
-			: this(name, dataType, defaultExpression, description)
+		private Column(string name, DataType dataType, PrecisionScale size, Identity identity, string description)
+			: this(name, dataType, (string)null, description)
 		{
 			if (size != null)
 			{
@@ -145,9 +145,9 @@
 			return new Column(name, DataType.BigInt, nullable, defaultExpression, description);
 		}
 
-		public static Column BigInt(string name, Identity identity, string defaultExpression, string description)
+		public static Column BigInt(string name, Identity identity, string description)
 		{
-			return new Column(name, DataType.BigInt, identity, defaultExpression, description);
+			return new Column(name, DataType.BigInt, identity, description);
 		}
 
 		public static Column Binary(string name, CharacterLength size, Nullable nullable, string defaultExpression, string description)
@@ -185,9 +185,9 @@
 			return new Column(name, DataType.Decimal, size, nullable, defaultExpression, description);
 		}
 
-		public static Column Decimal(string name, PrecisionScale size, Identity identity, string defaultExpression, string description)
+		public static Column Decimal(string name, PrecisionScale size, Identity identity, string description)
 		{
-			return new Column(name, DataType.Decimal, size, identity, defaultExpression, description);
+			return new Column(name, DataType.Decimal, size, identity, description);
 		}
 
 		public static Column Float(string name, PrecisionScale size, Nullable nullable, string defaultExpression, string description)
@@ -195,7 +195,9 @@
 			return new Column(name, DataType.Float, size, nullable, defaultExpression, description);
 		}
 
+// ReSharper disable InconsistentNaming
 		public static Column HierarchyID(string name, Nullable nullable, string defaultExpression, string description)
+// ReSharper restore InconsistentNaming
 		{
 			return new Column(name, DataType.HierarchyID, nullable, defaultExpression, description);
 		}
@@ -205,9 +207,9 @@
 			return new Column(name, DataType.Int, nullable, defaultExpression, description);
 		}
 
-		public static Column Int(string name, Identity identity, string defaultExpression, string description)
+		public static Column Int(string name, Identity identity, string description)
 		{
-			return new Column(name, DataType.Int, identity, defaultExpression, description);
+			return new Column(name, DataType.Int, identity, description);
 		}
 
 		public static Column Money(string name, Nullable nullable, string defaultExpression, string description)
@@ -225,9 +227,9 @@
 			return new Column(name, DataType.Numeric, size, nullable, defaultExpression, description);
 		}
 
-		public static Column Numeric(string name, PrecisionScale size, Identity identity, string defaultExpression, string description)
+		public static Column Numeric(string name, PrecisionScale size, Identity identity, string description)
 		{
-			return new Column(name, DataType.Numeric, size, identity, defaultExpression, description);
+			return new Column(name, DataType.Numeric, size, identity, description);
 		}
 
 		public static Column NVarChar(string name, CharacterLength size, string collation, Nullable nullable, string defaultExpression, string description)
@@ -255,9 +257,9 @@
 			return new Column(name, DataType.SmallInt, nullable, defaultExpression, description);
 		}
 
-		public static Column SmallInt(string name, Identity identity, string defaultExpression, string description)
+		public static Column SmallInt(string name, Identity identity, string description)
 		{
-			return new Column(name, DataType.SmallInt, identity, defaultExpression, description);
+			return new Column(name, DataType.SmallInt, identity, description);
 		}
 
 		public static Column SmallMoney(string name, Nullable nullable, string defaultExpression, string description)
@@ -280,9 +282,9 @@
 			return new Column(name, DataType.TinyInt, nullable, defaultExpression, description);
 		}
 
-		public static Column TinyInt(string name, Identity identity, string defaultExpression, string description)
+		public static Column TinyInt(string name, Identity identity, string description)
 		{
-			return new Column(name, DataType.TinyInt, identity, defaultExpression, description);
+			return new Column(name, DataType.TinyInt, identity, description);
 		}
 
 		public static Column UniqueIdentifier(string name, bool rowGuidCol, Nullable nullable, string defaultExpression, string description)
@@ -306,7 +308,7 @@
 		}
 		#endregion
 
-		public virtual string GetColumnDefinition()
+		public virtual string GetColumnDefinition(string tableName, string schemaName, bool withValues)
 		{
 			string dataTypeClause = DataType.ToString().ToLowerInvariant();
 			if (DataType == DataType.Custom)
@@ -344,6 +346,22 @@
 				identityClause = string.Format(" {0}", Identity);
 			}
 
+			var defaultClause = "";
+			if (!string.IsNullOrEmpty(DefaultExpression))
+			{
+				var constraintName = string.Format("{0}_{1}", schemaName, tableName);
+				if (schemaName == "dbo")
+				{
+					constraintName = tableName;
+				}
+				var withValuesClause = "";
+				if (withValues)
+				{
+					withValuesClause = " with values";
+				}
+				defaultClause = string.Format(" constraint DF_{0}_{1} default {2}{3}", constraintName, Name, DefaultExpression, withValuesClause);
+			}
+
 			var rowGuidColClause = "";
 			if (RowGuidCol)
 			{
@@ -356,7 +374,7 @@
 				sparseClause = " sparse";
 			}
 
-			return string.Format("[{0}] {1}{2}{3}{4}{5}{6}{7}{8}", Name, dataTypeClause, Size, fileStreamClause, collateClause, notNullClause, identityClause, rowGuidColClause, sparseClause);
+			return string.Format("[{0}] {1}{2}{3}{4}{5}{6}{7}{8}{9}", Name, dataTypeClause, Size, fileStreamClause, collateClause, notNullClause, defaultClause, identityClause, rowGuidColClause, sparseClause);
 		}
 	}
 }

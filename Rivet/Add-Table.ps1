@@ -69,7 +69,7 @@ function Add-Table
     {
         $columns = & $Column
         $columnDefinitions = $columns | 
-                                ForEach-Object { $_.GetColumnDefinition( $SchemaName, $Name ) }
+                                ForEach-Object { $_.GetColumnDefinition( $SchemaName, $Name, $false ) }
         $columnDefinitionClause = @'
 (
         {0}

@@ -3,6 +3,21 @@ function Push-Migration()
 {
 
     Invoke-Query -Query @'
+create xml schema collection EmptyXsd as 
+N'
+<xsd:schema targetNamespace="http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelManuInstructions" 
+   xmlns          ="http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelManuInstructions" 
+   elementFormDefault="qualified" 
+   attributeFormDefault="unqualified"
+   xmlns:xsd="http://www.w3.org/2001/XMLSchema" >
+
+	<xsd:element  name="root" />
+
+</xsd:schema>
+';
+'@
+
+    Invoke-Query -Query @'
     create table AddColumnDefaultsNotNull (
         id int not null
     )
@@ -41,7 +56,7 @@ function Push-Migration()
     Add-Column smalldatetime 'smalldatetime' -NotNull -Default 'getdate()' -Description 'smalldatetime not null' @commonArgs
     Add-Column time -Time -NotNull -Default 'getdate()' -Description 'time not null' @commonArgs
     Add-Column uniqueidentifier -UniqueIdentifier -NotNull -Default 'newid()' -Description 'uniqueidentifier not null' @commonArgs
-    Add-Column xml -Xml -NotNull -Default "'<empty />'" -Description 'xml not null' @commonArgs
+    Add-Column xml -Xml -XmlSchemaCollection 'EmptyXsd' -NotNull -Default "'<empty />'" -Description 'xml not null' @commonArgs
     Add-Column sql_variant -SqlVariant -NotNull -Default "'sql_variant'" -Description 'sql_variant not null' @commonArgs
     Add-Column hierarchyid -HierarchyID -NotNull -Default '0x11' -Description 'hierarchyid not null' @commonArgs
 }

@@ -225,7 +225,7 @@ function Add-Column
         # Creates a column to store XML documents.  You must also specify the XmlSchemaCollection.
         $Document,
 
-        [Parameter(ParameterSetName='AsXml')]
+        [Parameter(Mandatory=$true,Position=2,ParameterSetName='AsXml')]
         [string]
         # The XML schema collection for the XML column.  Required when storing an XML document.
         $XmlSchemaCollection,
@@ -309,34 +309,13 @@ function Add-Column
         # Makes the column not nullable.  Canno be used with the `Sparse` switch.
         $NotNull,
 
-        [Parameter(ParameterSetName='AsVarChar')]
-        [Parameter(ParameterSetName='AsChar')]
-        [Parameter(ParameterSetName='AsBinary')]
-        [Parameter(ParameterSetName='AsVarBinary')]
-        [Parameter(ParameterSetName='AsBigInt')]
-        [Parameter(ParameterSetName='AsInt')]
-        [Parameter(ParameterSetName='AsSmallint')]
-        [Parameter(ParameterSetName='AsTinyint')]
-        [Parameter(ParameterSetName='AsNumeric')]
-        [Parameter(ParameterSetName='AsDecimal')]
-        [Parameter(ParameterSetName='AsBit')]
-        [Parameter(ParameterSetName='AsMoney')]
-        [Parameter(ParameterSetName='AsSmallmoney')]
-        [Parameter(ParameterSetName='AsFloat')]
-        [Parameter(ParameterSetName='AsReal')]
-        [Parameter(ParameterSetName='AsDate')]
-        [Parameter(ParameterSetName='AsDateTime2')]
-        [Parameter(ParameterSetName='AsDateTimeOffset')]
-        [Parameter(ParameterSetName='AsTime')]
-        [Parameter(ParameterSetName='AsXml')]
-        [Parameter(ParameterSetName='AsSql_Variant')]
-        [Parameter(ParameterSetName='AsUniqueIdentifier')]
-        [Parameter(ParameterSetName='AsTimestamp')]
-        [Parameter(ParameterSetName='AsHierarchyID')]
-        [Parameter(ParameterSetName='ExplicitDataType')]
         [Object]
         # The default column value.
         $Default,
+
+        [Switch]
+        # Store the default value in the new column for existing rows.  Only used if `Default` parameter is given a value.
+        $WithValues,
 
         [string]
         # A description of the column.
@@ -355,18 +334,14 @@ function Add-Column
 
     $newColumnArgs = @{} 
     $PSBoundParameters.Keys | 
-        Where-Object { $_ -notmatch 'TableName|SchemaName' } |
+        Where-Object { $_ -notmatch 'TableName|SchemaName|WithValues' } |
         ForEach-Object { $newColumnArgs.$_ = $PSBoundParameters.$_ }
 
     $column = New-Column @newColumnArgs
 
-    $query = @'
-    alter table [{0}].[{1}] add {2}
-'@ -f $SchemaName,$TableName,$column.GetColumnDefinition($TableName, $SchemaName)
+    Write-Host (' {0}.{1} +{2}' -f $SchemaName,$TableName,$column.GetColumnDefinition($TableName,$SchemaName,$WithValues))
 
-    Write-Host (' {0}.{1} +{2}' -f $SchemaName,$TableName,$column.Definition)
-
-    $op = New-Object 'Rivet.Operations.RawQueryOperation' $query
+    $op = New-Object 'Rivet.Operations.AddColumnOperation' $TableName,$SchemaName,$column,$WithValues
     Invoke-MigrationOperation -Operation $op
 
     if( $Description )
