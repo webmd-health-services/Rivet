@@ -2,6 +2,21 @@
 function Push-Migration()
 {
 
+   Invoke-Query -Query @'
+create xml schema collection EmptyXsd as 
+N'
+<xsd:schema targetNamespace="http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelManuInstructions" 
+   xmlns          ="http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelManuInstructions" 
+   elementFormDefault="qualified" 
+   attributeFormDefault="unqualified"
+   xmlns:xsd="http://www.w3.org/2001/XMLSchema" >
+
+	<xsd:element  name="root" />
+
+</xsd:schema>
+';
+'@
+
     Add-Table AddColumnNoDefaultsAllNull {
         New-Column 'id' -Int -Identity 
         New-Column 'varchar' -VarChar 50
@@ -45,7 +60,7 @@ function Push-Migration()
         New-Column 'datetimeoffset' -DateTimeOffset
         New-Column 'smalldatetime' 'smalldatetime'
         New-Column 'time' -Time
-        New-Column 'xml' -Xml
+        New-Column 'xml' -Xml 'EmptyXsd'
         New-Column 'sql_variant' -SqlVariant
         New-Column 'uniqueidentifier' -UniqueIdentifier
         New-Column 'hierarchyid' -HierarchyID

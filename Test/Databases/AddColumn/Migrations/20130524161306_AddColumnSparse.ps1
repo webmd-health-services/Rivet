@@ -3,6 +3,21 @@ function Push-Migration()
 {
 
     Invoke-Query -Query @'
+create xml schema collection EmptyXsd as 
+N'
+<xsd:schema targetNamespace="http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelManuInstructions" 
+   xmlns          ="http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelManuInstructions" 
+   elementFormDefault="qualified" 
+   attributeFormDefault="unqualified"
+   xmlns:xsd="http://www.w3.org/2001/XMLSchema" >
+
+	<xsd:element  name="root" />
+
+</xsd:schema>
+';
+'@
+
+    Invoke-Query -Query @'
     create table WithSparseColumns (
         name varchar(max) not null,
     ) 
@@ -41,7 +56,7 @@ function Push-Migration()
     Add-Column smalldatetime 'smalldatetime' -Sparse -Description 'smalldatetime sparse' @commonArgs
     Add-Column time -Time -Sparse -Description 'time sparse' @commonArgs
     Add-Column uniqueidentifier -UniqueIdentifier -Sparse -Description 'uniqueidentifier sparse' @commonArgs
-    Add-Column xml -Xml -Sparse -Description 'xml sparse' @commonArgs
+    Add-Column xml -Xml -XmlSchemaCollection 'EmptyXsd' -Sparse -Description 'xml sparse' @commonArgs
     Add-Column sql_variant -SqlVariant -Sparse -Description 'sql_variant sparse' @commonArgs
     Add-Column hierarchyid -HierarchyID -Sparse -Description 'hierarchyid sparse' @commonArgs
 }

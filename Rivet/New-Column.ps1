@@ -224,17 +224,17 @@ function New-Column
         # Creates a column to store XML documents.  You must also specify the XmlSchemaCollection.
         $Document,
 
-        [Parameter(ParameterSetName='AsXml')]
+        [Parameter(Mandatory=$true,Position=2,ParameterSetName='AsXml')]
         [string]
         # The XML schema collection for the XML column.  Required when storing an XML document.
         $XmlSchemaCollection,
 
-        [Parameter(Mandatory=$true,ParameterSetName='AsSql_Variant')]
+        [Parameter(Mandatory=$true,ParameterSetName='AsSqlVariant')]
         [Switch]
         # Creates a sqlvariant column.
         $SqlVariant,
 
-        [Parameter(Mandatory=$true,ParameterSetName='AsTimestamp')]
+        [Parameter(Mandatory=$true,ParameterSetName='AsRowVersion')]
         [Switch]
         [Alias('TimeStamp')]
         # Creates a rowversion/timestamp column.
@@ -271,8 +271,8 @@ function New-Column
         [Parameter(ParameterSetName='AsTime')]
         [Parameter(ParameterSetName='AsUniqueIdentifier')]
         [Parameter(ParameterSetName='AsXml')]
-        [Parameter(ParameterSetName='AsSql_Variant')]
-        [Parameter(ParameterSetName='AsTimestamp')]
+        [Parameter(ParameterSetName='AsSqlVariant')]
+        [Parameter(ParameterSetName='AsRowVersion')]
         [Parameter(ParameterSetName='AsHierarchyID')]
         [Parameter(ParameterSetName='ExplicitDataType')]
         [Switch]
@@ -300,39 +300,14 @@ function New-Column
         [Parameter(ParameterSetName='AsTime')]
         [Parameter(ParameterSetName='AsUniqueIdentifier')]
         [Parameter(ParameterSetName='AsXml')]
-        [Parameter(ParameterSetName='AsSql_Variant')]
-        [Parameter(ParameterSetName='AsTimestamp')]
+        [Parameter(ParameterSetName='AsSqlVariant')]
+        [Parameter(ParameterSetName='AsRowVersion')]
         [Parameter(ParameterSetName='AsHierarchyID')]
         [Parameter(ParameterSetName='ExplicitDataType')]
         [Switch]
         # Makes the column not nullable.  Canno be used with the `Sparse` switch.
         $NotNull,
 
-        [Parameter(ParameterSetName='AsVarChar')]
-        [Parameter(ParameterSetName='AsChar')]
-        [Parameter(ParameterSetName='AsBinary')]
-        [Parameter(ParameterSetName='AsVarBinary')]
-        [Parameter(ParameterSetName='AsBigInt')]
-        [Parameter(ParameterSetName='AsInt')]
-        [Parameter(ParameterSetName='AsSmallint')]
-        [Parameter(ParameterSetName='AsTinyint')]
-        [Parameter(ParameterSetName='AsNumeric')]
-        [Parameter(ParameterSetName='AsDecimal')]
-        [Parameter(ParameterSetName='AsBit')]
-        [Parameter(ParameterSetName='AsMoney')]
-        [Parameter(ParameterSetName='AsSmallmoney')]
-        [Parameter(ParameterSetName='AsFloat')]
-        [Parameter(ParameterSetName='AsReal')]
-        [Parameter(ParameterSetName='AsDate')]
-        [Parameter(ParameterSetName='AsDateTime2')]
-        [Parameter(ParameterSetName='AsDateTimeOffset')]
-        [Parameter(ParameterSetName='AsTime')]
-        [Parameter(ParameterSetName='AsXml')]
-        [Parameter(ParameterSetName='AsSql_Variant')]
-        [Parameter(ParameterSetName='AsUniqueIdentifier')]
-        [Parameter(ParameterSetName='AsTimestamp')]
-        [Parameter(ParameterSetName='AsHierarchyID')]
-        [Parameter(ParameterSetName='ExplicitDataType')]
         [Object]
         # A SQL Server expression for the column's default value.
         $Default,
@@ -358,16 +333,16 @@ function New-Column
         $nullable = 'Sparse'
     }
 
-    $identity = $null
+    $columnIdentity = $null
     if( $PSCmdlet.ParameterSetName -like 'As*Identity' )
     {
         if( $PSBoundParameters.ContainsKey('Seed') )
         {
-            $identity = New-Object Rivet.Identity $Seed,$Increment,$NotForReplication
+            $columnIdentity = New-Object Rivet.Identity $Seed,$Increment,$NotForReplication.IsPresent
         }
         else
         {
-            $identity = New-Object Rivet.Identity $NotForReplication
+            $columnIdentity = New-Object Rivet.Identity $NotForReplication.IsPresent
         }
     }
 
@@ -378,184 +353,192 @@ function New-Column
     }
     elseif( $PSBoundParameters.ContainsKey('Precision') -and $PSBoundParameters.ContainsKey('Scale') )
     {
-        $dataSize = New-Object Rivet.CharacterLength $Precision,$Scale
+        $dataSize = New-Object Rivet.PrecisionScale $Precision,$Scale
     }
     elseif( $PSBoundParameters.ContainsKey('Precision')  )
     {
-        $dataSize = New-Object Rivet.CharacterLength $Precision
+        $dataSize = New-Object Rivet.PrecisionScale $Precision
     }
 
-    $col = switch ($PSCmdlet.ParameterSetName)
+    switch ($PSCmdlet.ParameterSetName)
     {
         'AsBigInt'
         {
-           [Rivet.Column]::BigInt( $Name, $nullable ) 
+           [Rivet.Column]::BigInt( $Name, $nullable, $Default, $Description ) 
            break
         }
         'AsBigIntIdentity'
         {
-            [Rivet.Column]::BigInt( $Name, $Identity )
+            [Rivet.Column]::BigInt( $Name, $columnIdentity, $Description )
             break
         }
         'AsBinary'
         {
-            [Rivet.Column]::Binary( $Name, $dataSize, $nullable )
+            [Rivet.Column]::Binary( $Name, $dataSize, $nullable, $Default, $Description )
             break
         }
         'AsBit'
         {
-            [Rivet.Column]::Bit( $Name, $nullable )
+            [Rivet.Column]::Bit( $Name, $nullable, $Default, $Description )
             break
         }
         'AsChar'
         {
             if( $Unicode )
             {
-                [Rivet.Collumn]::NChar( $Name, $dataSize, $Collation, $nullable )
+                [Rivet.Column]::NChar( $Name, $dataSize, $Collation, $nullable, $Default, $Description )
             }
             else
             {
-                [Rivet.Collumn]::Char( $Name, $dataSize, $Collation, $nullable )
+                [Rivet.Column]::Char( $Name, $dataSize, $Collation, $nullable, $Default, $Description )
             }
             break
         }
         'AsDate'
         {
-            [Rivet.Column]::Date( $Name, $nullable )
+            [Rivet.Column]::Date( $Name, $nullable, $Default, $Description )
             break
         }
         'AsDateTime2'
         {
-            [Rivet.Column]::DateTime2( $Name, $dataSize, $nullable )
+            [Rivet.Column]::DateTime2( $Name, $dataSize, $nullable, $Default, $Description )
             break
         }
         'AsDateTimeOffset'
         {
-            [Rivet.Column]::DateTimeOffset( $Name, $dataSize, $nullable )
+            [Rivet.Column]::DateTimeOffset( $Name, $dataSize, $nullable, $Default, $Description )
             break
         }
         'AsDecimal'
         {
-           [Rivet.Column]::Decimal( $Name, $dataSize, $nullable ) 
+           [Rivet.Column]::Decimal( $Name, $dataSize, $nullable, $Default, $Description ) 
            break
         }
         'AsDecimalIdentity'
         {
-            [Rivet.Column]::Decimal( $Name, $dataSize, $Identity )
+            [Rivet.Column]::Decimal( $Name, $dataSize, $columnIdentity, $Description )
             break
         }
         'AsFloat'
         {
-            [Rivet.Column]::Float( $Name, $dataSize, $nullable )
+            [Rivet.Column]::Float( $Name, $dataSize, $nullable, $Default, $Description )
             break
         }
         'AsHierarchyID'
         {
-            [Rivet.Column]::HierarchyID( $Name, $nullable )
+            [Rivet.Column]::HierarchyID( $Name, $nullable, $Default, $Description )
         }
         'AsInt'
         {
-           [Rivet.Column]::Int( $Name, $nullable ) 
+           [Rivet.Column]::Int( $Name, $nullable, $Default, $Description ) 
            break
         }
         'AsIntIdentity'
         {
-            [Rivet.Column]::Int( $Name, $Identity )
+            [Rivet.Column]::Int( $Name, $columnIdentity, $Description )
             break
         }
         'AsMoney'
         {
-            [Rivet.Column]::Money( $Name, $nullable )
+            [Rivet.Column]::Money( $Name, $nullable, $Default, $Description )
             break
         }
         'AsNumeric'
         {
-           [Rivet.Column]::Numeric( $Name, $dataSize, $nullable ) 
+           [Rivet.Column]::Numeric( $Name, $dataSize, $nullable, $Default, $Description ) 
            break
         }
         'AsNumericIdentity'
         {
-            [Rivet.Column]::Numeric( $Name, $dataSize, $Identity )
+            [Rivet.Column]::Numeric( $Name, $dataSize, $columnIdentity, $Description )
             break
         }
         'AsReal'
         {
-            [Rivet.Column]::Real( $Name, $nullable )
+            [Rivet.Column]::Real( $Name, $nullable, $Default, $Description )
             break
         }
         'AsRowVersion'
         {
-            [Rivet.Column]::RowVersion( $Name, $nullable )
+            [Rivet.Column]::RowVersion( $Name, $nullable, $Default, $Description )
             break
         }
         'AsSmallInt'
         {
-           [Rivet.Column]::SmallInt( $Name, $nullable ) 
+           [Rivet.Column]::SmallInt( $Name, $nullable, $Default, $Description ) 
            break
         }
         'AsSmallIntIdentity'
         {
-            [Rivet.Column]::SmallInt( $Name, $Identity )
+            [Rivet.Column]::SmallInt( $Name, $columnIdentity, $Description )
             break
         }
         'AsSmallMoney'
         {
-            [Rivet.Column]::SmallMoney( $Name, $nullable )
+            [Rivet.Column]::SmallMoney( $Name, $nullable, $Default, $Description )
             break
         }
         'AsSqlVariant'
         {
-            [Rivet.Column]::SqlVariant( $Name, $nullable )
+            [Rivet.Column]::SqlVariant( $Name, $nullable, $Default, $Description )
             break
         }
         'AsTime'
         {
-            [Rivet.Column]::Time( $Name, $nullable )
+            [Rivet.Column]::Time( $Name, $dataSize, $nullable, $Default, $Description )
             break
         }
         'AsTinyInt'
         {
-           [Rivet.Column]::TinyInt( $Name, $nullable ) 
+           [Rivet.Column]::TinyInt( $Name, $nullable, $Default, $Description ) 
            break
         }
         'AsTinyIntIdentity'
         {
-            [Rivet.Column]::TinyInt( $Name, $Identity )
+            [Rivet.Column]::TinyInt( $Name, $columnIdentity, $Description )
             break
         }
         'AsUniqueIdentifier'
         {
-            [Rivet.Column]::UniqueIdentifier( $Name, $RowGuidCol, $nullable )
+            [Rivet.Column]::UniqueIdentifier( $Name, $RowGuidCol, $nullable, $Default, $Description )
             break
         }
         'AsVarBinary'
         {
-            [Rivet.Column]::VarBinary( $Name, $dataSize, $FileStream, $nullable )
+            [Rivet.Column]::VarBinary( $Name, $dataSize, $FileStream, $nullable, $Default, $Description )
             break
         }
         'AsVarChar'
         {
             if( $Unicode )
             {
-                [Rivet.Column]::NVarChar( $Name, $dataSize, $Collation, $nullable )
+                [Rivet.Column]::NVarChar( $Name, $dataSize, $Collation, $nullable, $Default, $Description )
             }
             else
             {
-                [Rivet.Column]::VarChar( $Name, $dataSize, $Collation, $nullable )
+                [Rivet.Column]::VarChar( $Name, $dataSize, $Collation, $nullable, $Default, $Description )
             }
             break
         }
         'AsXml'
         {
-            [Rivet.Column]::Xml( $Name, $Document, $XmlSchemaCollection, $nullable )
+            [Rivet.Column]::Xml( $Name, $Document, $XmlSchemaCollection, $nullable, $Default, $Description )
             break
         }
         'ExplicitDataType'
         {
-            New-Object Rivet.Column $Name,'Custom',$dataType,$nullable
+            New-Object Rivet.Column $Name,$DataType,$nullable,$Default,$Description
+            break
+        }
+        default
+        {
+            $params = $PSBoundParameters.Keys | ForEach-Object { '{0}: {1}' -f $_,$PSBoundParameters.$_ }
+            $params = $params -join '; '
+            throw ('Unknown parameter set ''{0}'': @{{ {1} }}' -f $PSCmdlet.ParameterSetName,$params)
         }
     }
         
+    return
 
     if( $PSCmdlet.ParameterSetName -eq 'ExplicitDataType' )
     {
