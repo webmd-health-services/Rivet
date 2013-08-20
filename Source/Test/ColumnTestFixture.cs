@@ -729,6 +729,49 @@ namespace Rivet.Test
 
 		#endregion VarChar
 
+		#region Xml
+
+		[Test]
+		public void ShouldCreateXmlColumn(
+			[Values("xmldoc")]
+			string name,
+
+			[Values(true,false)]
+			bool isDocument,
+
+			[Values("schema1")]
+			string xmlSchemaCollection,
+
+			[Values(Nullable.NotNull, Nullable.Null, Nullable.Sparse)]
+			Nullable nullable,
+
+			[Values("<hello/>", null)]
+			string defaultExpression,
+
+			[Values("xml column", null)]
+			string description
+			)
+		{
+			GivenColumn(Column.Xml(name, isDocument, xmlSchemaCollection, nullable, defaultExpression, description));
+			ThenColumnShouldBe(name, DataType.Xml, isDocument, xmlSchemaCollection, nullable, defaultExpression, description);
+		}
+
+		private void ThenColumnShouldBe(string name, DataType dataType, bool isDocument, string xmlSchemaCollection, Nullable nullable, string defaultExpression, string description)
+		{
+			ThenColumnShouldBe(name, dataType, defaultExpression, description);
+			Assert.That(_column.Nullable, Is.EqualTo(nullable));
+
+			var notNullClause = ConvertToNotNullClause(nullable);
+			var sparseClause = ConvertToSparseClause(nullable);
+
+			var size = new XmlPrecisionScale(isDocument, xmlSchemaCollection);
+			Assert.That(_column.Size.ToString(), Is.EqualTo(size.ToString()));
+
+			Assert.That(_column.GetColumnDefinition(), Is.EqualTo(string.Format("[{0}] xml{1}{2}{3}", name, size, notNullClause, sparseClause)));
+		}
+
+		#endregion Xml
+
 		private void GivenColumn(Column column)
 		{
 			_column = column;
