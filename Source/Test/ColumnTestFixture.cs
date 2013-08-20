@@ -554,6 +554,27 @@ namespace Rivet.Test
 
 		#endregion
 
+		#region SmallMoney
+		[Test]
+		public void ShouldCreateSmallMoneyColumn(
+			[Values("cheapprice")]
+			string name,
+
+			[Values(Nullable.NotNull, Nullable.Null, Nullable.Sparse)]
+			Nullable nullable,
+
+			[Values("5.00", null)]
+			string defaultExpression,
+
+			[Values("money column", null)]
+			string description
+			)
+		{
+			GivenColumn(Column.SmallMoney(name, nullable, defaultExpression, description));
+			ThenColumnShouldBe(name, DataType.SmallMoney, nullable, defaultExpression, description);
+		}
+		#endregion SmallMoney
+
 		#region SqlVariant
 		[Test]
 		public void ShouldCreateSqlVariantColumn(
@@ -625,7 +646,33 @@ namespace Rivet.Test
 
 		#endregion
 
+		#region UniqueIdentifier
+		[Test]
+		public void ShouldCreateUniqueIdentifierColumn(
+			[Values("guid")]
+			string name,
+
+			[Values(true,false)]
+			bool rowGuidCol,
+
+			[Values(Nullable.NotNull, Nullable.Null, Nullable.Sparse)]
+			Nullable nullable,
+
+			[Values("newsequentialid()", null)]
+			string defaultExpression,
+
+			[Values("uniqueidentifier column", null)]
+			string description
+			)
+		{
+			GivenColumn(Column.UniqueIdentifier(name, rowGuidCol, nullable, defaultExpression, description));
+			ThenColumnShouldBe(name, DataType.UniqueIdentifier, rowGuidCol, nullable, defaultExpression, description);
+		}
+
+		#endregion UniqueIdentifier
+
 		#region VarBinary
+
 		[Test]
 		public void ShouldCreateVarBinaryColumn(
 			[Values("varbinary")]
@@ -650,6 +697,7 @@ namespace Rivet.Test
 			GivenColumn(Column.VarBinary(name, size, filestream, nullable, defaultExpression, description));
 			ThenColumnShouldBe(name, DataType.VarBinary, size, filestream, nullable, defaultExpression, description);
 		}
+
 		#endregion Binary
 
 		#region VarChar
@@ -686,6 +734,24 @@ namespace Rivet.Test
 			_column = column;
 		}
 
+		private void ThenColumnShouldBe(string name, DataType dataType, bool rowGuidCol, Nullable nullable, string defaultExpression, string description)
+		{
+			ThenColumnShouldBe(name, dataType, defaultExpression, description);
+			Assert.That(_column.Nullable, Is.EqualTo(nullable));
+
+			var notNullClause = ConvertToNotNullClause(nullable);
+			var sparseClause = ConvertToSparseClause(nullable);
+
+			var rowGuidColClause = "";
+			if (rowGuidCol)
+			{
+				rowGuidColClause = " rowguidcol";
+			}
+
+			var dataTypeName = dataType.ToString().ToLowerInvariant();
+			Assert.That(_column.GetColumnDefinition(), Is.EqualTo(string.Format("[{0}] {1}{2}{3}{4}", name, dataTypeName, notNullClause, rowGuidColClause,sparseClause)));
+		}
+
 		private void ThenColumnShouldBe(string name, DataType dataType, CharacterLength size, string collation, Nullable nullable, string defaultExpression, string description)
 		{
 			ThenColumnShouldBe(name, dataType, defaultExpression, description);
@@ -720,17 +786,8 @@ namespace Rivet.Test
 				collationClause = string.Format(" collate {0}", collation);
 			}
 
-			var notNullClause = "";
-			if (nullable == Nullable.NotNull)
-			{
-				notNullClause = " not null";
-			}
-
-			var sparseClause = "";
-			if (nullable == Nullable.Sparse)
-			{
-				sparseClause = " sparse";
-			}
+			var notNullClause = ConvertToNotNullClause(nullable);
+			var sparseClause = ConvertToSparseClause(nullable);
 
 			var expectedDefintion = string.Format("[{0}] {1}{2}{3}{4}{5}", name, dataType.ToString().ToLowerInvariant(), sizeClause, collationClause, notNullClause,
 			                                      sparseClause);
@@ -750,22 +807,15 @@ namespace Rivet.Test
 			ThenColumnShouldBe(name, dataType, defaultExpression, description);
 			Assert.That(_column.Nullable, Is.EqualTo(nullable));
 
-			var notNullClause = "";
-			if (nullable == Nullable.NotNull)
-			{
-				notNullClause = " not null";
-			}
-			else if (nullable == Nullable.Sparse)
-			{
-				notNullClause = " sparse";
-			}
+			var notNullClause = ConvertToNotNullClause(nullable);
+			var sparseClause = ConvertToSparseClause(nullable);
 
 			var dataTypeName = dataType.ToString().ToLowerInvariant();
 			if (dataType == DataType.SqlVariant)
 			{
 				dataTypeName = "sql_variant";
 			}
-			Assert.That(_column.GetColumnDefinition(), Is.EqualTo(string.Format("[{0}] {1}{2}", name, dataTypeName, notNullClause)));
+			Assert.That(_column.GetColumnDefinition(), Is.EqualTo(string.Format("[{0}] {1}{2}{3}", name, dataTypeName, notNullClause,sparseClause)));
 		}
 
 		private void ThenColumnShouldBe(string name, DataType dataType, PrecisionScale size, bool filestream,
@@ -804,15 +854,8 @@ namespace Rivet.Test
 			}
 			Assert.That(_column.Nullable, Is.EqualTo(nullable));
 			
-			var notNullClause = "";
-			if (nullable == Nullable.NotNull)
-			{
-				notNullClause = " not null";
-			}
-			else if (nullable == Nullable.Sparse)
-			{
-				notNullClause = " sparse";
-			}
+			var notNullClause = ConvertToNotNullClause(nullable);
+			var sparseClause = ConvertToSparseClause(nullable);
 
 			var filestreamClause = "";
 			if (_column.FileStream)
@@ -820,7 +863,7 @@ namespace Rivet.Test
 				filestreamClause = " filestream";
 			}
 
-			var expectedDefinition = string.Format("[{0}] {1}{2}{3}{4}", name, dataType.ToString().ToLowerInvariant(), sizeClause, filestreamClause, notNullClause);
+			var expectedDefinition = string.Format("[{0}] {1}{2}{3}{4}{5}", name, dataType.ToString().ToLowerInvariant(), sizeClause, filestreamClause, notNullClause,sparseClause);
 			Assert.That(_column.GetColumnDefinition(), Is.EqualTo(expectedDefinition));
 		}
 
@@ -850,6 +893,26 @@ namespace Rivet.Test
 			Assert.That(_column.Identity.ToString(), Is.EqualTo(identity.ToString()));
 			var expectedDefinition = string.Format("[{0}] {1}{2} {3}", name, dataType.ToString().ToLowerInvariant(), size, identity);
 			Assert.That(_column.GetColumnDefinition(), Is.EqualTo(expectedDefinition));
+		}
+
+		private static string ConvertToNotNullClause(Nullable nullable)
+		{
+			var notNullClause = "";
+			if (nullable == Nullable.NotNull)
+			{
+				notNullClause = " not null";
+			}
+			return notNullClause;
+		}
+
+		private static string ConvertToSparseClause(Nullable nullable)
+		{
+			var sparseClause = "";
+			if (nullable == Nullable.Sparse)
+			{
+				sparseClause = " sparse";
+			}
+			return sparseClause;
 		}
 	}
 
