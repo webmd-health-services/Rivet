@@ -13,7 +13,7 @@ namespace Rivet.Test.Operations
 		}
 
 		[Test]
-		public void ShouldSetProperties()
+		public void ShouldSetPropertiesforColumn()
 		{
 			var tableName = "tableName";
 			var schemaName = "schemaName";

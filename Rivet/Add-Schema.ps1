@@ -24,6 +24,7 @@ function Add-Schema
         $Owner
     )
 
+    <#
     $query = 'create schema [{0}]' -f $Name
     if( $Owner )
     {
@@ -31,6 +32,9 @@ function Add-Schema
     }
     Write-Host (' +{0}' -f $Name)
     
-    $op = New-Object 'Rivet.Operations.RawQueryOperation' $query
+    #>
+
+    Write-Host ("+{0} {1}" -f $Name, $Owner)
+    $op = New-Object 'Rivet.Operations.AddSchemaOperation' $Name, $Owner
     Invoke-MigrationOperation -Operation $op
 }
