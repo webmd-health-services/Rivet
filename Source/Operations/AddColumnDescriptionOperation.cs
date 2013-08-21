@@ -7,7 +7,7 @@ namespace Rivet.Operations
 {
 	public sealed class AddColumnDescriptionOperation : Operation
 	{
-		public AddColumnDescriptionOperation(string tableName, string schemaName, string columnName, string description)
+		public AddColumnDescriptionOperation(string schemaName, string tableName, string columnName, string description)
 		{
 			
 		}

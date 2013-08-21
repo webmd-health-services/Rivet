@@ -19,7 +19,7 @@ namespace Rivet.Test.Operations
 			var schemaName = "schemaName";
 			var column = Column.VarChar("name", new CharacterLength(50), null, Nullable.NotNull, "''", "varchar column");
 			var withValues = true;
-			var op = new AddColumnOperation(tableName, schemaName, column, withValues);
+			var op = new AddColumnOperation(schemaName, tableName, column, withValues);
 			Assert.That(op.TableName, Is.EqualTo(tableName));
 			Assert.That(op.SchemaName, Is.EqualTo(schemaName));
 			Assert.That(op.Column, Is.SameAs(column));
