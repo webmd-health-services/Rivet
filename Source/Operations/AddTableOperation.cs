@@ -4,7 +4,7 @@ namespace Rivet.Operations
 {
 	public sealed class AddTableOperation : Operation
 	{
-		public AddTableOperation(string tableName, string schemaName)
+		public AddTableOperation(string schemaName, string tableName)
 		{
 			TableName = tableName;
 			SchemaName = schemaName;

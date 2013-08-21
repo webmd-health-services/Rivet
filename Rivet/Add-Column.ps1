@@ -341,7 +341,7 @@ function Add-Column
 
     Write-Host (' {0}.{1} +{2}' -f $SchemaName,$TableName,$column.GetColumnDefinition($TableName,$SchemaName,$WithValues))
 
-    $op = New-Object 'Rivet.Operations.AddColumnOperation' $TableName,$SchemaName,$column,$WithValues
+    $op = New-Object 'Rivet.Operations.AddColumnOperation' $SchemaName,$TableName,$column,$WithValues
     Invoke-MigrationOperation -Operation $op
 
     if( $Description )

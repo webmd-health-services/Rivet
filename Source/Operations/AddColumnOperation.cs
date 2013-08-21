@@ -2,7 +2,7 @@
 {
 	public sealed class AddColumnOperation : Operation
 	{
-		public AddColumnOperation(string tableName, string schemaName, Column column, bool withValues)
+		public AddColumnOperation(string schemaName, string tableName, Column column, bool withValues)
 		{
 			Column = column;
 			TableName = tableName;
