@@ -13,15 +13,13 @@ namespace Rivet.Operations
 		
 		public override string ToQuery()
 		{
-            string query;
-            if (SchemaOwner == "" || SchemaOwner == null)
-            {
-                query = string.Format("create schema [{0}]", SchemaName);
-            }
-			else
+			string query = string.Format("create schema [{0}]", SchemaName);
+			
+			if (!string.IsNullOrEmpty(SchemaOwner)) 
 			{
-                query = string.Format("create schema [{0}] authorization [{1}]", SchemaName, SchemaOwner);
+				query = string.Format("{0} authorization [{1}]", query, SchemaOwner);
 			}
+
 			return query;
 		}
 	}
