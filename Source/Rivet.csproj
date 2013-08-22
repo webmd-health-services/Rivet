@@ -44,6 +44,7 @@
     <Compile Include="Identity.cs" />
     <Compile Include="Migration.cs" />
     <Compile Include="Operations\AddColumnOperation.cs" />
+    <Compile Include="Operations\AddDescriptionOperation.cs" />
     <Compile Include="Operations\AddSchemaOperation.cs" />
     <Compile Include="Operations\AddTableOperation.cs" />
     <Compile Include="Operations\RemoveSchemaOperation.cs" />

@@ -124,7 +124,7 @@ function Add-Table
 
     if( $Description )
     {
-        Add-Description -Description $Description @addDescriptionArgs -ForTable -Quiet
+        Add-Description -Description $Description @addDescriptionArgs -Quiet
     }
 
     $columns | 
