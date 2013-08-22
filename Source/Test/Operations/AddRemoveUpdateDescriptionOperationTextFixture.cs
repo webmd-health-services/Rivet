@@ -47,6 +47,32 @@ namespace Rivet.Test.Operations
 			expectedQuery += string.Format(",\n											@level2type=N'COLUMN', @level2name='{0}'", columnName);
 			Assert.That(op.ToQuery(), Is.EqualTo(expectedQuery));
 
+			/** REMOVE DESCRIPTION OPERATION **/
+
+			//For Table
+			var op_remove = new RemoveDescriptionOperation(schemaName, tableName);
+			Assert.That(op_remove.SchemaName, Is.EqualTo(schemaName));
+			Assert.That(op_remove.TableName, Is.EqualTo(tableName));
+			Assert.That(op_remove.ForTable, Is.EqualTo(true));
+			Assert.That(op_remove.ForColumn, Is.EqualTo(false));
+
+			expectedQuery = string.Format(@"
+			EXEC sys.sp_dropextendedproperty	@name=N'MS_Description',
+												@level0type=N'SCHEMA', @level0name='{0}',
+												@level1type=N'TABLE',  @level1name='{1}'", schemaName, tableName);
+			Assert.That(op_remove.ToQuery(), Is.EqualTo(expectedQuery));
+
+			//For Column
+			op_remove = new RemoveDescriptionOperation(schemaName, tableName, columnName);
+			Assert.That(op_remove.SchemaName, Is.EqualTo(schemaName));
+			Assert.That(op_remove.TableName, Is.EqualTo(tableName));
+			Assert.That(op_remove.ColumnName, Is.EqualTo(columnName));
+			Assert.That(op_remove.ForTable, Is.EqualTo(false));
+			Assert.That(op_remove.ForColumn, Is.EqualTo(true));
+
+			expectedQuery += string.Format(",\n												@level2type=N'COLUMN', @level2name='{0}'", columnName);
+			Assert.That(op_remove.ToQuery(), Is.EqualTo(expectedQuery));
+			
 		}
 	}
 }
