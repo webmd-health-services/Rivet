@@ -72,7 +72,35 @@ namespace Rivet.Test.Operations
 
 			expectedQuery += string.Format(",\n												@level2type=N'COLUMN', @level2name='{0}'", columnName);
 			Assert.That(op_remove.ToQuery(), Is.EqualTo(expectedQuery));
-			
+
+			/** UPDATE DESCRIPTION OPERATION **/
+
+			//For Table
+			var op_update = new UpdateDescriptionOperation(schemaName, tableName, description);
+			Assert.That(op_update.SchemaName, Is.EqualTo(schemaName));
+			Assert.That(op_update.TableName, Is.EqualTo(tableName));
+			Assert.That(op_update.Description, Is.EqualTo(description));
+			Assert.That(op_update.ForTable, Is.EqualTo(true));
+			Assert.That(op_update.ForColumn, Is.EqualTo(false));
+
+			expectedQuery = string.Format(@"
+			EXEC sys.sp_updateextendedproperty	@name=N'MS_Description',
+												@value='{0}',
+												@level0type=N'SCHEMA', @level0name='{1}', 
+												@level1type=N'TABLE',  @level1name='{2}'", description.Replace("'", "''"), schemaName, tableName);
+			Assert.That(op_update.ToQuery(), Is.EqualTo(expectedQuery));
+
+			//For Column
+			op_update = new UpdateDescriptionOperation(schemaName, tableName, columnName, description);
+			Assert.That(op_update.ForTable, Is.EqualTo(false));
+			Assert.That(op_update.ForColumn, Is.EqualTo(true));
+			Assert.That(op_update.SchemaName, Is.EqualTo(schemaName));
+			Assert.That(op_update.TableName, Is.EqualTo(tableName));
+			Assert.That(op_update.ColumnName, Is.EqualTo(columnName));
+			Assert.That(op_update.Description, Is.EqualTo(description));
+
+			expectedQuery += string.Format(",\n												@level2type=N'COLUMN', @level2name='{0}'", columnName);
+			Assert.That(op_update.ToQuery(), Is.EqualTo(expectedQuery));
 		}
 	}
 }
