@@ -19,9 +19,7 @@ function Remove-Schema
         $Name
     )
 
-    $query = 'drop schema [{0}]' -f $Name
     Write-Host (' -{0}' -f $Name)
-    
-    $op = New-Object 'Rivet.Operations.RawQueryOperation' $query
+    $op = New-Object 'Rivet.Operations.RemoveSchemaOperation' $Name
     Invoke-MigrationOperation -Operation $op
 }

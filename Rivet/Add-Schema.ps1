@@ -24,16 +24,6 @@ function Add-Schema
         $Owner
     )
 
-    <#
-    $query = 'create schema [{0}]' -f $Name
-    if( $Owner )
-    {
-        $query = '{0} authorization [{1}]' -f $query,$Owner
-    }
-    Write-Host (' +{0}' -f $Name)
-    
-    #>
-
     Write-Host ("+{0} {1}" -f $Name, $Owner)
     $op = New-Object 'Rivet.Operations.AddSchemaOperation' $Name, $Owner
     Invoke-MigrationOperation -Operation $op

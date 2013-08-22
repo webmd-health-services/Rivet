@@ -4,7 +4,7 @@ using Rivet.Operations;
 namespace Rivet.Test.Operations
 {
 	[TestFixture]
-	public sealed class AddSchemaOperationTestFixture
+	public sealed class AddRemoveSchemaOperationTestFixture
 	{
 		[SetUp]
 		public void SetUp()
@@ -17,6 +17,8 @@ namespace Rivet.Test.Operations
 		{
 			var schemaName = "schemaName";
 			var schemaOwner = "schemaOwner";
+
+			/** ADD SCHEMA OPERATION **/
 
             //Test for Input with Both Schema and Owner
             var op = new AddSchemaOperation(schemaName, schemaOwner);
@@ -33,6 +35,14 @@ namespace Rivet.Test.Operations
 
             expectedQuery = string.Format("create schema [{0}]", schemaName);
             Assert.That(op.ToQuery(), Is.EqualTo(expectedQuery));
+
+			/** REMOVE SCHEMA OPERATION **/
+
+			var op_remove = new RemoveSchemaOperation(schemaName);
+			Assert.That(op_remove.SchemaName, Is.EqualTo(schemaName));
+
+			expectedQuery = string.Format("drop schema [{0}]", schemaName);
+			Assert.That(op_remove.ToQuery(), Is.EqualTo(expectedQuery));
 		}
 	}
 }
