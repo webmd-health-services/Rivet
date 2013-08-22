@@ -1,4 +1,3 @@
-
 function Remove-Column
 {
     <#
@@ -30,9 +29,8 @@ function Remove-Column
         $SchemaName = 'dbo'
     )
 
-    $query = 'alter table [{0}].[{1}] drop column [{2}]' -f $SchemaName,$TableName,$Name
     Write-Host (' {0}.{1} -{2}' -f $SchemaName,$TableName,$Name)
     
-    $op = New-Object 'Rivet.Operations.RawQueryOperation' $query
+    $op = New-Object 'Rivet.Operations.RemoveColumnOperation' $SchemaName,$TableName,$Name
     Invoke-MigrationOperation -Operation $op
 }

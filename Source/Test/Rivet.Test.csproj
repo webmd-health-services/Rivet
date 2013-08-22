@@ -63,6 +63,7 @@
     <Compile Include="Operations\AddColumnOperationTestFixture.cs" />
     <Compile Include="Operations\AddRemoveSchemaOperationTestFixture.cs" />
     <Compile Include="Operations\AddRemoveUpdateDescriptionOperationTextFixture.cs" />
+    <Compile Include="Operations\RemoveColumnOperationTestFixture.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

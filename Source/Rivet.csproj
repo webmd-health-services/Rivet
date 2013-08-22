@@ -47,6 +47,7 @@
     <Compile Include="Operations\AddDescriptionOperation.cs" />
     <Compile Include="Operations\AddSchemaOperation.cs" />
     <Compile Include="Operations\AddTableOperation.cs" />
+    <Compile Include="Operations\RemoveColumnOperation.cs" />
     <Compile Include="Operations\RemoveDescriptionOperation.cs" />
     <Compile Include="Operations\RemoveSchemaOperation.cs" />
     <Compile Include="Operations\Operation.cs" />
