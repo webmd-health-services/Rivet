@@ -1,12 +1,7 @@
 
 function Push-Migration()
 {
-    $removeArgs = @{ }
-    if( $PSVersionTable.PSVersion -eq ([Version]'2.0') )
-    {
-        $removeArgs.ForTable = $true
-    }
-    Remove-Description -TableName MS_Description @removeArgs
+    Remove-Description -TableName MS_Description 
     Remove-Description -TableName MS_Description -ColumnName 'add_description'
 }
 
