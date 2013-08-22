@@ -2,7 +2,7 @@
 
 namespace Rivet.Operations
 {
-	public sealed class RemoveDescriptionOperation  : Operation
+	public sealed class RemoveDescriptionOperation : Operation
 	{
 		public RemoveDescriptionOperation(string schemaName, string tableName, string columnName)
 		{
