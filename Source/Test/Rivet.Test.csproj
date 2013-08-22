@@ -61,7 +61,7 @@
   <ItemGroup>
     <Compile Include="ColumnTestFixture.cs" />
     <Compile Include="Operations\AddColumnOperationTestFixture.cs" />
-    <Compile Include="Operations\AddSchemaOperationTestFixture.cs" />
+    <Compile Include="Operations\AddRemoveSchemaOperationTestFixture.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
