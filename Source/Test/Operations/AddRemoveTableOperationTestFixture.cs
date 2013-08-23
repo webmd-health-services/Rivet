@@ -207,6 +207,27 @@ namespace Rivet.Test.Operations
 			Assert.AreEqual(op.ToQuery(), expectedQuery);
 		}
 
+		[Test]
+		public void ShouldSetPropertiesForRemoveTable()
+		{
+			var schemaName = "schemaName";
+			var tableName = "tableName";
 
+			var op = new RemoveTableOperation(schemaName, tableName);
+
+			Assert.AreEqual(schemaName, op.SchemaName);
+			Assert.AreEqual(tableName, op.TableName);
+		}
+
+		[Test]
+		public void ShouldWriteQueryForRemoveTable()
+		{
+			var schemaName = "schemaName";
+			var tableName = "tableName";
+
+			var op = new RemoveTableOperation(schemaName, tableName);
+			var expectedQuery = string.Format("drop table [{0}].[{1}]", schemaName, tableName);
+			Assert.AreEqual(expectedQuery, op.ToQuery());
+		}
 	}
 }
