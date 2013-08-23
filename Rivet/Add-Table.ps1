@@ -63,58 +63,13 @@ function Add-Table
         $Description
 
     )
-    
-    $columnDefinitionClause = ''
-    if( $PSCmdlet.ParameterSetName -eq 'AsNormalTable' )
-    {
-        $columns = & $Column
-        $columnDefinitions = $columns | 
-                                ForEach-Object { $_.GetColumnDefinition( $SchemaName, $Name, $false ) }
-        $columnDefinitionClause = @'
-(
-        {0}
-    )
-'@ -f ($columnDefinitions -join ",`n        ")
-    }
-    else
-    {
-        $columnDefinitionClause = 'as FileTable'
-    }
 
-    $fileGroupClause = ''
-    if( $FileGroup )
-    {
-        $fileGroupClause = 'on {0}' -f $FileGroup
-    }
-
-    $textImageFileGroupClause = ''
-    if( $TextImageFileGroup )
-    {
-        $textImageFileGroupClause = 'textimage_on {0}' -f $TextImageFileGroup
-    }
-
-    $fileStreamFileGroupClause = ''
-    if( $FileStreamFileGroup )
-    {
-        $fileStreamFileGroupClause = 'filestream_on {0}' -f $FileStreamFileGroup
-    }
-
-    $optionClause = ''
-    if( $Option )
-    {
-       $optionClause = 'with ( {0} )' -f ($Option -join ', ')
-    }
+    # Process Column Scriptblock -> Rivet.Column[]
+    $columns = & $Column
 
     Write-Host (' +{0}.{1}' -f $SchemaName,$Name)
-    $query = @'
-    create table [{0}].[{1}] {2}
-        {3}
-        {4}
-        {5}
-        {6}
-'@ -f $SchemaName,$Name,$columnDefinitionClause,$fileGroupClause,$textImageFileGroupClause,$fileStreamFileGroupClause,$optionClause
 
-    $op = New-Object 'Rivet.Operations.RawQueryOperation' $query
+    $op = New-Object 'Rivet.Operations.AddTableOperation' $SchemaName, $Name, $columns, $FileTableBool, $FileGroup, $TextImageFileGroup, $FileStreamFileGroup, $Option, $Description
     Invoke-MigrationOperation -Operation $op
 
     $addDescriptionArgs = @{
@@ -132,7 +87,6 @@ function Add-Table
         ForEach-Object { Add-Description -Description $_.Description -ColumnName $_.Name @addDescriptionArgs -Quiet }
 
     ## Migration Event Call
-
     Invoke-MigrationEvent -OnComplete -Name 'AddTable' -EventArg @{ TableName = $Name ; SchemaName = $SchemaName }
 
 }
