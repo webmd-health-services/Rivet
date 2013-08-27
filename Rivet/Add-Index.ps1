@@ -67,44 +67,6 @@ function Add-Index
 
     Set-StrictMode -Version Latest
 
-    ## Read Flags, Set Strings
-    $UniqueClause = ""
-    if ($Unique)
-    {
-        $UniqueClause = "unique "
-    }
-
-    $ClusteredClause = ''
-    if ($Clustered)
-    {
-        $ClusteredClause = "clustered"
-    }
-
-    $OptionClause = ""
-    if ($Option)
-    {
-        $OptionClause = $Option -join ','
-        $OptionClause = "WITH ({0})" -f $OptionClause
-    }
-  
-    $WhereClause = ""
-    if ($Where)
-    {
-        $WhereClause = "where ({0})" -f $Where
-    }
-
-    $OnClause = ""
-    if ($On)
-    {
-        $OnClause = "on {0}" -f $On
-    }
-
-    $FileStreamClause = ""
-    if ($FileStreamOn)
-    {
-        $FileStreamClause = "filestream_on {0}" -f $FileStreamOn
-    }
-
     ## Construct Index name
 
     $indexname = New-ConstraintName -ColumnName $ColumnName -TableName $TableName -SchemaName $SchemaName -Index
@@ -113,15 +75,8 @@ function Add-Index
 
     $ColumnClause = $ColumnName -join ','
 
-$query = @'
-    create {0}{1} index {2}
-        on {3}.{4} ({5})
-        {6}{7}{8}{9}
-
-'@ -f $UniqueClause, $ClusteredClause, $indexname, $SchemaName, $TableName, $ColumnClause, $OptionClause, $WhereClause, $OnClause, $FileStreamClause
-    
     Write-Host (' {0}.{1} +{2} ({3})' -f $SchemaName,$TableName,$indexname,$ColumnClause)
 
-    $op = New-Object 'Rivet.Operations.RawQueryOperation' $query
+    $op = New-Object 'Rivet.Operations.AddIndexOperation' $SchemaName, $TableName, $ColumnName, $Unique, $Clustered, $Option, $Where, $On, $FileStreamOn
     Invoke-MigrationOperation -Operation $op
 }
