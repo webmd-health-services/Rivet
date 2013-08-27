@@ -82,5 +82,34 @@ namespace Rivet.Test.Operations
 			var expectedQuery = "create  index IX_schemaName_tableName_column1 on schemaName.tableName (column1)    ";
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}
+
+		[Test]
+		public void ShouldSetPropertiesForRemoveIndex()
+		{
+			var schemaName = "schemaName";
+			var tableName = "tableName";
+			string[] columnName = new string[] { "column1", "column2" };
+			string[] smokeColumnName = new string[] { "column1" };
+
+			var op = new RemoveIndexOperation(schemaName, tableName, columnName);
+			Assert.AreEqual(schemaName, op.SchemaName);
+			Assert.AreEqual(tableName, op.TableName);
+			Assert.AreEqual(columnName, op.ColumnName);
+			Assert.AreNotEqual(smokeColumnName, op.ColumnName);
+		}
+
+		[Test]
+		public void ShouldWriteQueryForRemoveIndex()
+		{
+			var schemaName = "schemaName";
+			var tableName = "tableName";
+			string[] columnName = new string[] { "column1", "column2" };
+			string[] smokeColumnName = new string[] { "column1" };
+
+			var op = new RemoveIndexOperation(schemaName, tableName, columnName);
+			var expectedQuery = "drop index IX_schemaName_tableName_column1_column2 on schemaName.tableName";
+			Assert.AreEqual(expectedQuery, op.ToQuery());
+		}
+
 	}
 }

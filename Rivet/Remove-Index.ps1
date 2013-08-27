@@ -42,11 +42,8 @@ function Remove-Index
 
     $indexname = New-ConstraintName -ColumnName $ColumnName -TableName $TableName -SchemaName $SchemaName -Index
 
-
-    $query = 'drop index {0} on {1}.{2}' -f $indexname, $SchemaName, $TableName
-
     Write-Host (' {0}.{1} -{2}' -f $SchemaName,$TableName,$indexname)
 
-    $op = New-Object 'Rivet.Operations.RawQueryOperation' $query
+    $op = New-Object 'Rivet.Operations.RemoveIndexOperation' $SchemaName, $TableName, $ColumnName
     Invoke-MigrationOperation -Operation $op
 }

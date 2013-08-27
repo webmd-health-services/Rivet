@@ -4,14 +4,22 @@ namespace Rivet.Operations
 {
 	public sealed class RemoveIndexOperation : Operation
 	{
-		public RemoveIndexOperation(string schemaName, string tableName, string columnName)
+		public RemoveIndexOperation(string schemaName, string tableName, string [] columnName)
 		{
-			
+			Cons = new ConstraintName(schemaName, tableName, columnName, ConstraintType.Index);
+			SchemaName = schemaName;
+			TableName = tableName;
+			ColumnName = (string[])columnName.Clone();
 		}
+
+		public ConstraintName Cons { get; private set; }
+		public string SchemaName { get; private set; }
+		public string TableName { get; private set; }
+		public string [] ColumnName { get; private set; } //Only for testing purposes
 
 		public override string ToQuery()
 		{
-			throw new NotImplementedException();
+			return string.Format("drop index {0} on {1}.{2}", Cons.ReturnConstraintName(), SchemaName, TableName);
 		}
 	}
 }
