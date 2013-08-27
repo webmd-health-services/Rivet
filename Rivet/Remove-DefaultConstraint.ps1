@@ -43,15 +43,8 @@ function Remove-DefaultConstraint
 
     $DefaultConstraintname = New-ConstraintName -ColumnName $ColumnName -TableName $TableName -SchemaName $SchemaName -Default
 
-    
-$query = @'
-    alter table {0}.{1}
-    drop constraint {2}
-
-'@ -f $SchemaName, $TableName, $DefaultConstraintname
-
     Write-Host (' {0}.{1} -{2}' -f $SchemaName,$TableName,$DefaultConstraintname)
 
-    $op = New-Object 'Rivet.Operations.RawQueryOperation' $query 
+    $op = New-Object 'Rivet.Operations.RemoveDefaultConstraintOperation' $SchemaName, $TableName, $ColumnName
     Invoke-MigrationOperation -Operation $op
 }
