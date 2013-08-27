@@ -55,20 +55,9 @@ function Add-DefaultConstraint
     Set-StrictMode -Version Latest
 
     $DefaultConstraintName = New-ConstraintName -ColumnName $ColumnName -TableName $TableName -SchemaName $SchemaName -Default
-
-    $WithValuesClause = ''
-    if ($WithValues)
-    {
-        $WithValuesClause = 'with values'
-    }
-
-$query = @'
-    alter table {0}.{1}
-    add constraint {2} default {3} for {4} {5}
-'@ -f $SchemaName, $TableName, $DefaultConstraintName, $Expression, $ColumnName, $WithValuesClause
     
     Write-Host (' {0}.{1} +{2} {3} {4}' -f $SchemaName, $TableName, $DefaultConstraintName, $ColumnName, $Expression)
 
-    $op = New-Object 'Rivet.Operations.RawQueryOperation' $query
+    $op = New-Object 'Rivet.Operations.AddDefaultConstraintOperation' $SchemaName, $TableName, $Expression, $ColumnName, $WithValues
     Invoke-MigrationOperation -Operation $op
 }

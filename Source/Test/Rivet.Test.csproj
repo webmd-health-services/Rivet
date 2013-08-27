@@ -66,6 +66,7 @@
     <Compile Include="Operations\AddRemoveTableOperationTestFixture.cs" />
     <Compile Include="Operations\AddRemoveIndexOperationTestFixture.cs" />
     <Compile Include="ConstraintNameTestFixture.cs" />
+    <Compile Include="Operations\AddRemoveDefaultConstraintOperationTestFixture.cs" />
     <Compile Include="Operations\RemoveColumnOperationTestFixture.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
