@@ -60,6 +60,32 @@ namespace Rivet.Test.Operations
 					add constraint DF_tableName_columnName default expression for columnName ";
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}
+
+		[Test]
+		public void ShouldSetPropertiesForRemoveDefaultConstraint()
+		{
+			var schemaName = "schemaName";
+			var tableName = "tableName";
+			var columnName = "columnName";
+
+			var op = new RemoveDefaultConstraintOperation(schemaName, tableName, columnName);
+			Assert.AreEqual(schemaName, op.SchemaName);
+			Assert.AreEqual(tableName, op.TableName);
+			Assert.AreEqual(columnName, op.ColumnName);
+		}
+
+		[Test]
+		public void ShouldWriteQueryForRemoveDefaultConstrait()
+		{
+			var schemaName = "schemaName";
+			var tableName = "tableName";
+			var columnName = "columnName";
+
+			var op = new RemoveDefaultConstraintOperation(schemaName, tableName, columnName);
+			var expectedQuery = "alter table schemaName.tableName drop constraint DF_schemaName_tableName_columnName";
+			Assert.AreEqual(expectedQuery, op.ToQuery());
+		}
+
 	}
 
 }
