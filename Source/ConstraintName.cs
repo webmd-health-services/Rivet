@@ -40,10 +40,6 @@ namespace Rivet
 					keyname = "PK";
 					break;
 
-				case ConstraintType.ForeignKey:
-					keyname = "FK";
-					break;
-
 				case ConstraintType.Index:
 					keyname = "IX";
 					break;

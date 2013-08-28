@@ -79,31 +79,9 @@ function Add-ForeignKey
     $source_columns = $ColumnName -join ','
     $ref_columns = $ReferencedColumn -join ','
 
-    $OnDeleteClause = ''
-    if ($OnDelete)
-    {
-        $OnDeleteClause = "on delete {0}" -f $OnDelete
-    }
-
-    $OnUpdateClause = ''
-    if ($OnUpdate)
-    {
-        $OnUpdateClause = "on update {0}" -f $OnUpdate
-    }
-
-    $NotForReplicationClause = ''
-    if ($NotForReplication)
-    {
-        $NotForReplicationClause = "not for replication"
-    }
-
-    $query = @'
-    alter table [{0}].[{1}] add constraint {2} foreign key ({3}) references {4}.{5}({6}) {7} {8} {9}
-'@ -f $SchemaName,$TableName,$name,$source_columns,$ReferencesSchema,$References,$ref_columns, $OnDeleteClause, $OnUpdateClause, $NotForReplicationClause
-
     Write-Host (' {0}.{1} +{2} ({3}) => {4}.{5} ({6})' -f $SchemaName,$TableName,$name,$source_columns,$ReferencesSchema,$References,$ref_columns)
     
-    $op = New-Object 'Rivet.Operations.RawQueryOperation' $query
+    $op = New-Object 'Rivet.Operations.AddForeignKeyOperation' $SchemaName, $TableName, $ColumnName, $ReferencesSchema, $references, $ReferencedColumn, $OnDelete, $OnUpdate, $NotForReplication
     Invoke-MigrationOperation -Operation $op
 }
 
