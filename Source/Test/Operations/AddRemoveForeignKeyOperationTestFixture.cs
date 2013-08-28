@@ -58,6 +58,36 @@ namespace Rivet.Test.Operations
 			var expectedQuery = "alter table [schemaName].[tableName] add constraint FK_schemaName_tableName_rschemaName_rtableName foreign key (column1,column2) references rschemaName.rtableName (rcolumn1,rcolumn2) on delete onDelete on update onUpdate not for replication";
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}
+
+		[Test]
+		public void ShouldSetPropertiesForRemoveForeignKey()
+		{
+			var schemaName = "schemaName";
+			var tableName = "tableName";
+			var referencesSchemaName = "rschemaName";
+			var referencesTableName = "rtableName";
+
+			var op = new RemoveForeignKeyOperation(schemaName, tableName, referencesSchemaName, referencesTableName);
+			Assert.AreEqual(schemaName, op.SchemaName);
+			Assert.AreEqual(tableName, op.TableName);
+			Assert.AreEqual(referencesSchemaName, op.ReferencesSchemaName);
+			Assert.AreEqual(referencesTableName, op.ReferencesTableName);
+		}
+
+		[Test]
+		public void ShouldWriteQueryForRemoveForeignKey()
+		{
+			var schemaName = "schemaName";
+			var tableName = "tableName";
+			var referencesSchemaName = "rschemaName";
+			var referencesTableName = "rtableName";
+
+			var op = new RemoveForeignKeyOperation(schemaName, tableName, referencesSchemaName, referencesTableName);
+			System.Console.WriteLine(op.ToQuery());
+			var expectedQuery = "alter table tableName drop constraint FK_schemaName_tableName_rschemaName_rtableName";
+			Assert.AreEqual(expectedQuery, op.ToQuery());
+		}
+
 	}
 
 }
