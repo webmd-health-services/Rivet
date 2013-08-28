@@ -37,7 +37,7 @@ function Test-ShouldAddUniqueConstraintWithClustered
 function Test-ShouldAddUniqueConstraintWithFillFactor
 {
     Invoke-Rivet -Push 'AddUniqueConstraintWithFillFactor'
-    Assert-UniqueConstraint -TableName 'AddUniqueConstraint' -ColumnName 'UniqueConstraintMe','UniqueConstraintMe2' -TestFillFactor 80
+    Assert-UniqueConstraint -TableName 'AddUniqueConstraint' -ColumnName 'UniqueConstraintMe','UniqueConstraintMe2' -TestFillFactor 80 -TestOption
 }
 
 function Test-ShouldAddUniqueConstraintWithOptions

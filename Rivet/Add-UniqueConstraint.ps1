@@ -61,33 +61,6 @@ function Add-UniqueConstraint
 
     Set-StrictMode -Version Latest
 
-    ## Read Flags, Set Strings
-
-    $ClusteredClause = ''
-    if ($Clustered)
-    {
-        $ClusteredClause = "clustered"
-    }
-
-    $FillFactorClause = ''
-    $OptionClause = ''
-    if ($Option -or $FillFactor)
-    {
-        if ($FillFactor)
-        {
-            $FillFactorClause = "fillfactor=" + $FillFactor.ToString()
-            $Option = $Option + $FillFactorClause
-        }
-        $OptionClause = $Option -join ','
-        $OptionClause = "with ({0})" -f $OptionClause
-    }
-  
-    $OnClause = ''
-    if ($On)
-    {
-        $OnClause = "on {0}" -f $On
-    }
-
     ## Construct Index name
 
     $constraintname = New-ConstraintName -ColumnName $ColumnName -TableName $TableName -SchemaName $SchemaName -Unique
@@ -95,16 +68,9 @@ function Add-UniqueConstraint
     ## Construct Comma Separated List of Columns
 
     $ColumnClause = $ColumnName -join ','
-
-$query = @'
-    alter table {0}.{1}
-        add constraint {2} unique {3}({4})
-        {5}{6}
-
-'@ -f $SchemaName, $TableName, $constraintname, $ClusteredClause, $ColumnClause, $OptionClause, $OnClause
     
     Write-Host (' {0}.{1} +{2} ({3})' -f $SchemaName,$TableName,$constraintname,$ColumnClause)
 
-    $op = New-Object 'Rivet.Operations.RawQueryOperation' $query
+    $op = New-Object 'Rivet.Operations.AddUniqueConstraintOperation' $SchemaName, $TableName, $ColumnName, $Clustered, $FillFactor, $Option, $On
     Invoke-MigrationOperation -Operation $op
 }
