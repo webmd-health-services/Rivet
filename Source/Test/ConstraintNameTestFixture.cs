@@ -89,14 +89,14 @@ namespace Rivet.Test
 		[Test]
 		public void ShouldReturnForeignKeyConstraintNameForConstraintNameClassTestFixture()
 		{
-			var schemaName = "schemaName";
-			var tableName = "tableName";
-			string[] columnName = new string[] { "column1", "column2" };
-			string[] smokeColumnName = new string[] { "column1" };
-			ConstraintType c_type = ConstraintType.ForeignKey;
+			var sourceSchema = "sourceSchema";
+			var sourceTable = "sourceTable";
+			var targetSchema = "targetSchema";
+			var targetTable = "targetTable";
 
-			var cons = new ConstraintName(schemaName, tableName, columnName, c_type);
-			var expectedConstraintString = "FK_schemaName_tableName_column1_column2";
+
+			var cons = new ForeignConstraintName(sourceSchema, sourceTable, targetSchema, targetTable);
+			var expectedConstraintString = "FK_sourceSchema_sourceTable_targetSchema_targetTable";
 			Assert.AreEqual(expectedConstraintString, cons.ReturnConstraintName());
 		}
 
