@@ -44,12 +44,8 @@ function Remove-ForeignKey
 
     $name = New-ForeignKeyConstraintName -SourceSchema $SchemaName -SourceTable $TableName -TargetSchema $ReferencesSchema -TargetTable $References
 
-    $query = @'
-    alter table {0} drop constraint {1}
-'@ -f $TableName,$name
-
     Write-Host (' {0}.{1} -{2}' -f $SchemaName,$TableName,$name)
     
-    $op = New-Object 'Rivet.Operations.RawQueryOperation' $query
+    $op = New-Object 'Rivet.Operations.RemoveForeignKeyOperation' $SchemaName, $TableName, $ReferencesSchema, $References
     Invoke-MigrationOperation -Operation $op
 }
