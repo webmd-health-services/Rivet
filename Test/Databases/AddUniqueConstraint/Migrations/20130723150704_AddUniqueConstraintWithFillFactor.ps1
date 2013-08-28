@@ -6,7 +6,7 @@ function Push-Migration()
         New-Column 'DoNotUniqueConstraintMe' -Int -NotNull
     }
 
-    Add-UniqueConstraint -TableName 'AddUniqueConstraint' -ColumnName 'UniqueConstraintMe','UniqueConstraintMe2' -FillFactor 80
+    Add-UniqueConstraint -TableName 'AddUniqueConstraint' -ColumnName 'UniqueConstraintMe','UniqueConstraintMe2' -Option @('IGNORE_DUP_KEY = ON','ALLOW_ROW_LOCKS = OFF') -FillFactor 80
 }
 
 function Pop-Migration()

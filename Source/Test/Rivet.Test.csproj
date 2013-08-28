@@ -68,6 +68,7 @@
     <Compile Include="ConstraintNameTestFixture.cs" />
     <Compile Include="Operations\AddRemoveDefaultConstraintOperationTestFixture.cs" />
     <Compile Include="Operations\AddRemovePrimaryKeyOperationTestFixture.cs" />
+    <Compile Include="Operations\AddRemoveUniqueConstraintTestFixture.cs" />
     <Compile Include="Operations\RemoveColumnOperationTestFixture.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
