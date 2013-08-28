@@ -38,14 +38,10 @@ function Remove-PrimaryKey
     Set-StrictMode -Version Latest
 
     $name = New-ConstraintName -TableName $TableName -SchemaName $SchemaName -ColumnName $ColumnName -PrimaryKey
-
     $columns = $ColumnName -join ','
-    $query = @'
-    alter table {0} drop constraint {1}
-'@ -f $TableName,$name
 
     Write-Host (' {0}.{1} -{2} ({3})' -f $SchemaName,$TableName,$name,$columns)
     
-    $op = New-Object 'Rivet.Operations.RawQueryOperation' $query
+    $op = New-Object 'Rivet.Operations.RemovePrimaryKeyOperation' $SchemaName, $TableName, $ColumnName
     Invoke-MigrationOperation -Operation $op
 }
