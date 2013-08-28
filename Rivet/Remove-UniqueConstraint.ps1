@@ -43,13 +43,8 @@ function Remove-UniqueConstraint
     $UniqueConstraintname = New-ConstraintName -ColumnName $ColumnName -TableName $TableName -SchemaName $SchemaName -Unique
     $ColumnClause = $ColumnName -join ','
 
-$query = @'
-    alter table {0}.{1} drop constraint {2}
-
-'@ -f $SchemaName, $TableName, $UniqueConstraintname
-
     Write-Host (' {0}.{1} -{2} ({3})' -f $SchemaName,$TableName,$UniqueConstraintname,$ColumnClause)
 
-    $op = New-Object 'Rivet.Operations.RawQueryOperation' $query
+    $op = New-Object 'Rivet.Operations.RemoveUniqueConstraintOperation' $SchemaName, $TableName, $ColumnName
     Invoke-MigrationOperation -Operation $op
 }
