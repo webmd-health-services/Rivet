@@ -50,27 +50,10 @@ function Add-PrimaryKey
     Set-StrictMode -Version Latest
 
     $name = New-ConstraintName -TableName $TableName -SchemaName $SchemaName -ColumnName $ColumnName -PrimaryKey
-
-    $clusteredClause = 'clustered'
-    if( $NonClustered )
-    {
-        $clusteredClause = 'nonclustered'
-    }
-
-    $optionClause = ''
-    if ( $Option )
-    {
-        $optionClause = $Option -join ','
-        $optionClause = 'with ({0})' -f $optionClause
-    }
-    
     $columns = $ColumnName -join ','
-    $query = @'
-    alter table [{0}].[{1}] add constraint {2} primary key {3} ({4}) {5}
-'@ -f $SchemaName,$TableName,$name,$clusteredClause,$columns,$optionClause
 
     Write-Host (' {0}.{1} +{2} ({3})' -f $SchemaName,$TableName,$name,$columns)
     
-    $op = New-Object 'Rivet.Operations.RawQueryOperation' $query
+    $op = New-Object 'Rivet.Operations.AddPrimaryKeyOperation' $SchemaName, $TableName, $ColumnName, $NonClustered, $Option
     Invoke-MigrationOperation -Operation $op
 }
