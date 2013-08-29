@@ -34,6 +34,5 @@ function Set-UserDefinedFunction
     )
     
     $scriptPath = Resolve-ObjectScriptPath -UserDefinedFunction -Name $Name -Schema $Schema
-    Remove-UserDefinedFunction -Name $Name -Schema $Schema -IfExists
     Invoke-SqlScript -Path $ScriptPath
 }

@@ -34,6 +34,5 @@ function Set-StoredProcedure
     )
     
     $scriptPath = Resolve-ObjectScriptPath -StoredProcedure -Name $Name -Schema $Schema
-    Remove-StoredProcedure -Name $Name -Schema $Schema -IfExists
     Invoke-SqlScript -Path $ScriptPath
 }
