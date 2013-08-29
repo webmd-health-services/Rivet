@@ -38,13 +38,9 @@ function Remove-UniqueConstraint
 
     Set-StrictMode -Version Latest
 
-    ## Construct UniqueConstraint name
-
-    $UniqueConstraintname = New-ConstraintName -ColumnName $ColumnName -TableName $TableName -SchemaName $SchemaName -Unique
     $ColumnClause = $ColumnName -join ','
 
-    Write-Host (' {0}.{1} -{2} ({3})' -f $SchemaName,$TableName,$UniqueConstraintname,$ColumnClause)
-
     $op = New-Object 'Rivet.Operations.RemoveUniqueConstraintOperation' $SchemaName, $TableName, $ColumnName
+    Write-Host (' {0}.{1} -{2} ({3})' -f $SchemaName,$TableName,$op.ConstraintName.Name,$ColumnClause)
     Invoke-MigrationOperation -Operation $op
 }

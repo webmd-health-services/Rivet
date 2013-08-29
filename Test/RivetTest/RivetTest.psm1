@@ -37,7 +37,7 @@ dir $PSScriptRoot *-*.ps1 |
 
 $RTMasterConnection = New-SqlConnection -DatabaseName 'master'
 
-. (Join-Path $PSScriptRoot '..\..\Rivet\New-DefaultConstraintName.ps1')
-. (Join-Path $PSScriptRoot '..\..\Rivet\New-ForeignKeyConstraintName.ps1')
+. (Join-Path $PSScriptRoot '..\..\Test\RivetTest\New-ConstraintName.ps1')
+. (Join-Path $PSScriptRoot '..\..\Test\RivetTest\New-ForeignKeyConstraintName.ps1')
     
 Export-ModuleMember -Function * -Alias * -Variable *

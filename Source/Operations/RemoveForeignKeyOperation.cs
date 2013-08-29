@@ -6,14 +6,14 @@ namespace Rivet.Operations
 	{
 		public RemoveForeignKeyOperation(string schemaName, string tableName, string referencesSchemaName, string referencesTableName)
 		{
-			Cons = new ForeignConstraintName(schemaName, tableName, referencesSchemaName, referencesTableName);
-			SchemaName = schemaName; //Testing Purposes Only
+			ForeignKeyConstraintName = new ForeignKeyConstraintName(schemaName, tableName, referencesSchemaName, referencesTableName);
+			SchemaName = schemaName;
 			TableName = tableName;
  			ReferencesSchemaName = referencesSchemaName; //Testing Purposes Only
 			ReferencesTableName = referencesTableName; //Testing Purposes Only
 		}
 
-		public ForeignConstraintName Cons { get; private set; }
+		public ForeignKeyConstraintName ForeignKeyConstraintName { get; private set; }
 		public string SchemaName { get; private set; }
 		public string TableName { get; private set; }
 		public string ReferencesSchemaName { get; private set; }
@@ -21,7 +21,7 @@ namespace Rivet.Operations
 
 		public override string ToQuery()
 		{
-			return string.Format("alter table {0} drop constraint {1}", TableName, Cons.ReturnConstraintName());
+			return string.Format("alter table [{0}].[{1}] drop constraint {2}", SchemaName, TableName, ForeignKeyConstraintName.ToString());
 		}
 	}
 }

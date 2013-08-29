@@ -57,7 +57,7 @@ namespace Rivet.Test.Operations
 			var filestreamonString = "filestreamonString";
 
 			var op = new AddIndexOperation(schemaName, tableName, columnName, unique, clustered, options, whereString, onString, filestreamonString);
-			var expectedQuery = "create unique clustered index IX_schemaName_tableName_column1_column2 on schemaName.tableName (column1,column2) with ( option1, option2 ) where ( whereString ) on onString filestream_on filestreamonString";
+			var expectedQuery = "create unique clustered index IX_schemaName_tableName_column1_column2 on [schemaName].[tableName] (column1,column2) with ( option1, option2 ) where ( whereString ) on onString filestream_on filestreamonString";
 
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}
@@ -79,7 +79,7 @@ namespace Rivet.Test.Operations
 
 			
 			var op = new AddIndexOperation(schemaName, tableName, columnName, unique, clustered, options, whereString, onString, filestreamonString);
-			var expectedQuery = "create  index IX_schemaName_tableName_column1 on schemaName.tableName (column1)    ";
+			var expectedQuery = "create  index IX_schemaName_tableName_column1 on [schemaName].[tableName] (column1)    ";
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}
 
@@ -107,7 +107,7 @@ namespace Rivet.Test.Operations
 			string[] smokeColumnName = new string[] { "column1" };
 
 			var op = new RemoveIndexOperation(schemaName, tableName, columnName);
-			var expectedQuery = "drop index IX_schemaName_tableName_column1_column2 on schemaName.tableName";
+			var expectedQuery = "drop index IX_schemaName_tableName_column1_column2 on [schemaName].[tableName]";
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}
 

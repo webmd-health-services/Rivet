@@ -7,7 +7,7 @@ namespace Rivet.Operations
 		public AddPrimaryKeyOperation(string schemaName, string tableName, string [] columnName, bool nonClustered,
 		                              string[] options)
 		{
-			Cons = new ConstraintName(schemaName, tableName, columnName, ConstraintType.PrimaryKey);
+			ConstraintName = new ConstraintName(schemaName, tableName, columnName, ConstraintType.PrimaryKey);
 			SchemaName = schemaName;
 			TableName = tableName;
 			ColumnName = (string[])columnName.Clone();
@@ -22,7 +22,7 @@ namespace Rivet.Operations
 			}
 		}
 
-		public ConstraintName Cons { get; private set; }
+		public ConstraintName ConstraintName { get; private set; }
 		public string SchemaName { get; private set; }
 		public string TableName { get; private set; }
 		public string[] ColumnName { get; private set; }
@@ -47,7 +47,7 @@ namespace Rivet.Operations
 			var ColumnClause = string.Join(",", ColumnName);
 
 			return string.Format("alter table [{0}].[{1}] add constraint {2} primary key {3} ({4}){5}", 
-				SchemaName, TableName, Cons.ReturnConstraintName(), ClusteredClause, ColumnClause, OptionClause);
+				SchemaName, TableName, ConstraintName.ToString(), ClusteredClause, ColumnClause, OptionClause);
 		}
 	}
 }

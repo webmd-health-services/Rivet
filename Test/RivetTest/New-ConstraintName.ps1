@@ -32,11 +32,6 @@ function New-ConstraintName
         # Creates a primary key name.
         $PrimaryKey,
 
-        [Parameter(Mandatory=$true,ParameterSetName='FK')]
-        [Switch]
-        # Creates a foreign key name.
-        $ForeignKey,
-
         [Parameter(Mandatory=$true,ParameterSetName='IX')]
         [Switch]
         # Creates an index name.
@@ -48,13 +43,28 @@ function New-ConstraintName
         $Unique
     )
 
-    $columns = $ColumnName -join '_'
-    $name = '{0}_{1}_{2}_{3}' -f $PSCmdlet.ParameterSetName,$SchemaName,$TableName,$columns
-    if( $SchemaName -eq 'dbo' )
+    if ($PSCmdlet.ParameterSetName -eq "DF")
     {
-        $name = '{0}_{1}_{2}' -f $PSCmdlet.ParameterSetName,$TableName,$columns
+        $op = New-Object 'Rivet.ConstraintName' $SchemaName, $TableName, $ColumnName, Default
+        $name = $op.Name
     }
+
+    if ($PSCmdlet.ParameterSetName -eq "PK")
+    {
+        $op = New-Object 'Rivet.ConstraintName' $SchemaName, $TableName, $ColumnName, PrimaryKey
+        $name = $op.Name
+    }
+    
+    if ($PSCmdlet.ParameterSetName -eq "IX")
+    {
+        $op = New-Object 'Rivet.ConstraintName' $SchemaName, $TableName, $ColumnName, Index
+        $name = $op.Name
+    }
+    if ($PSCmdlet.ParameterSetName -eq "UQ")
+    {
+        $op = New-Object 'Rivet.ConstraintName' $SchemaName, $TableName, $ColumnName, Unique
+        $name = $op.Name
+    }
+
     return $name
 }
-
-Set-Alias -Name 'New-DefaultConstraintName' -Value 'New-ConstraintName'

@@ -40,7 +40,7 @@ namespace Rivet.Test
 
 			var cons = new ConstraintName(schemaName, tableName, columnName, c_type);
 			var expectedConstraintString = "DF_schemaName_tableName_column1_column2";
-			Assert.AreEqual(expectedConstraintString, cons.ReturnConstraintName());
+			Assert.AreEqual(expectedConstraintString, cons.ToString());
 		}
 
 		[Test]
@@ -54,7 +54,7 @@ namespace Rivet.Test
 
 			var cons = new ConstraintName(schemaName, tableName, columnName, c_type);
 			var expectedConstraintString = "DF_schemaName_tableName_column1";
-			Assert.AreEqual(expectedConstraintString, cons.ReturnConstraintName());
+			Assert.AreEqual(expectedConstraintString, cons.ToString());
 		}
 
 
@@ -69,7 +69,7 @@ namespace Rivet.Test
 
 			var cons = new ConstraintName(schemaName, tableName, columnName, c_type);
 			var expectedConstraintString = "DF_tableName_column1_column2";
-			Assert.AreEqual(expectedConstraintString, cons.ReturnConstraintName());
+			Assert.AreEqual(expectedConstraintString, cons.ToString());
 		}
 
 		[Test]
@@ -83,7 +83,7 @@ namespace Rivet.Test
 
 			var cons = new ConstraintName(schemaName, tableName, columnName, c_type);
 			var expectedConstraintString = "PK_schemaName_tableName_column1_column2";
-			Assert.AreEqual(expectedConstraintString, cons.ReturnConstraintName());
+			Assert.AreEqual(expectedConstraintString, cons.ToString());
 		}
 
 		[Test]
@@ -95,9 +95,9 @@ namespace Rivet.Test
 			var targetTable = "targetTable";
 
 
-			var cons = new ForeignConstraintName(sourceSchema, sourceTable, targetSchema, targetTable);
+			var cons = new ForeignKeyConstraintName(sourceSchema, sourceTable, targetSchema, targetTable);
 			var expectedConstraintString = "FK_sourceSchema_sourceTable_targetSchema_targetTable";
-			Assert.AreEqual(expectedConstraintString, cons.ReturnConstraintName());
+			Assert.AreEqual(expectedConstraintString, cons.ToString());
 		}
 
 		[Test]
@@ -111,7 +111,7 @@ namespace Rivet.Test
 
 			var cons = new ConstraintName(schemaName, tableName, columnName, c_type);
 			var expectedConstraintString = "IX_schemaName_tableName_column1_column2";
-			Assert.AreEqual(expectedConstraintString, cons.ReturnConstraintName());
+			Assert.AreEqual(expectedConstraintString, cons.ToString());
 		}
 
 		[Test]
@@ -125,7 +125,7 @@ namespace Rivet.Test
 
 			var cons = new ConstraintName(schemaName, tableName, columnName, c_type);
 			var expectedConstraintString = "UQ_schemaName_tableName_column1_column2";
-			Assert.AreEqual(expectedConstraintString, cons.ReturnConstraintName());
+			Assert.AreEqual(expectedConstraintString, cons.ToString());
 		}
 
 

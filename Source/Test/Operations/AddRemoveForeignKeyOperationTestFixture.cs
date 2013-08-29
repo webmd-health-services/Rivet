@@ -84,7 +84,7 @@ namespace Rivet.Test.Operations
 
 			var op = new RemoveForeignKeyOperation(schemaName, tableName, referencesSchemaName, referencesTableName);
 			System.Console.WriteLine(op.ToQuery());
-			var expectedQuery = "alter table tableName drop constraint FK_schemaName_tableName_rschemaName_rtableName";
+			var expectedQuery = "alter table [schemaName].[tableName] drop constraint FK_schemaName_tableName_rschemaName_rtableName";
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}
 

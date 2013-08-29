@@ -39,12 +39,7 @@ function Remove-DefaultConstraint
 
     Set-StrictMode -Version Latest
 
-    ## Construct DefaultConstraint name
-
-    $DefaultConstraintname = New-ConstraintName -ColumnName $ColumnName -TableName $TableName -SchemaName $SchemaName -Default
-
-    Write-Host (' {0}.{1} -{2}' -f $SchemaName,$TableName,$DefaultConstraintname)
-
     $op = New-Object 'Rivet.Operations.RemoveDefaultConstraintOperation' $SchemaName, $TableName, $ColumnName
+    Write-Host (' {0}.{1} -{2}' -f $SchemaName,$TableName,$op.ConstraintName.Name)
     Invoke-MigrationOperation -Operation $op
 }

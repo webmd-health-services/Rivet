@@ -38,12 +38,7 @@ function Remove-Index
 
     Set-StrictMode -Version Latest
 
-    ## Construct Index name
-
-    $indexname = New-ConstraintName -ColumnName $ColumnName -TableName $TableName -SchemaName $SchemaName -Index
-
-    Write-Host (' {0}.{1} -{2}' -f $SchemaName,$TableName,$indexname)
-
     $op = New-Object 'Rivet.Operations.RemoveIndexOperation' $SchemaName, $TableName, $ColumnName
+    Write-Host (' {0}.{1} -{2}' -f $SchemaName,$TableName,$op.ConstraintName.Name)
     Invoke-MigrationOperation -Operation $op
 }

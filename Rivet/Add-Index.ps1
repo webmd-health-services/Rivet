@@ -67,16 +67,11 @@ function Add-Index
 
     Set-StrictMode -Version Latest
 
-    ## Construct Index name
-
-    $indexname = New-ConstraintName -ColumnName $ColumnName -TableName $TableName -SchemaName $SchemaName -Index
-
     ## Construct Comma Separated List of Columns
 
     $ColumnClause = $ColumnName -join ','
 
-    Write-Host (' {0}.{1} +{2} ({3})' -f $SchemaName,$TableName,$indexname,$ColumnClause)
-
     $op = New-Object 'Rivet.Operations.AddIndexOperation' $SchemaName, $TableName, $ColumnName, $Unique, $Clustered, $Option, $Where, $On, $FileStreamOn
+    Write-Host (' {0}.{1} +{2} ({3})' -f $SchemaName,$TableName,$op.ConstraintName.Name,$ColumnClause)
     Invoke-MigrationOperation -Operation $op
 }

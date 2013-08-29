@@ -61,16 +61,11 @@ function Add-UniqueConstraint
 
     Set-StrictMode -Version Latest
 
-    ## Construct Index name
-
-    $constraintname = New-ConstraintName -ColumnName $ColumnName -TableName $TableName -SchemaName $SchemaName -Unique
-
     ## Construct Comma Separated List of Columns
 
     $ColumnClause = $ColumnName -join ','
-    
-    Write-Host (' {0}.{1} +{2} ({3})' -f $SchemaName,$TableName,$constraintname,$ColumnClause)
 
     $op = New-Object 'Rivet.Operations.AddUniqueConstraintOperation' $SchemaName, $TableName, $ColumnName, $Clustered, $FillFactor, $Option, $On
+    Write-Host (' {0}.{1} +{2} ({3})' -f $SchemaName,$TableName,$op.ConstraintName.Name,$ColumnClause)
     Invoke-MigrationOperation -Operation $op
 }

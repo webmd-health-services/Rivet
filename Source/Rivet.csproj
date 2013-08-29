@@ -39,7 +39,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ForeignConstraintName.cs" />
+    <Compile Include="ForeignKeyConstraintName.cs" />
     <Compile Include="Column.cs" />
     <Compile Include="DataType.cs" />
     <Compile Include="Identity.cs" />

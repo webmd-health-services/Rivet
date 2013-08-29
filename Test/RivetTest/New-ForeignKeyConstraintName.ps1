@@ -31,12 +31,7 @@ function New-ForeignKeyConstraintName
         
     )
 
-    $name = 'FK_{0}_{1}_{2}_{3}' -f $SourceSchema, $SourceTable, $TargetSchema, $TargetTable
-
-    if( $SourceSchema -eq 'dbo' -and $TargetSchema -eq 'dbo')
-    {
-        $name = 'FK_{0}_{1}' -f $SourceTable, $TargetTable
-    }
-    return $name
+    $op = New-Object 'Rivet.ForeignKeyConstraintName' $SourceSchema, $SourceTable, $TargetSchema, $TargetTable
+    return $op.Name
 }
 

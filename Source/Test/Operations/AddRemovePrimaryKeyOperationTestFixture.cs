@@ -83,7 +83,7 @@ namespace Rivet.Test.Operations
 			string[] columnName = new string[] { "column1", "column2" };
 
 			var op = new RemovePrimaryKeyOperation(schemaName, tableName, columnName);
-			var expectedQuery = "alter table tableName drop constraint PK_schemaName_tableName_column1_column2";
+			var expectedQuery = "alter table [schemaName].[tableName] drop constraint PK_schemaName_tableName_column1_column2";
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}
 	}

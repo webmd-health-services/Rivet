@@ -7,7 +7,7 @@ namespace Rivet.Operations
 		public AddDefaultConstraintOperation(string schemaName, string tableName, string expression, string columnName,
 		                                     bool withValues)
 		{
-			Cons = new ConstraintName(schemaName, tableName, new[]{columnName}, ConstraintType.Default);
+			ConstraintName = new ConstraintName(schemaName, tableName, new[]{columnName}, ConstraintType.Default);
 			SchemaName = schemaName;
 			TableName = tableName;
 			Expression = expression;
@@ -15,7 +15,7 @@ namespace Rivet.Operations
 			WithValues = withValues;
 		}
 
-		public ConstraintName Cons { get; private set; }
+		public ConstraintName ConstraintName { get; private set; }
 		public string SchemaName { get; private set; }
 		public string TableName { get; private set; }
 		public string Expression { get; private set; }
@@ -32,9 +32,9 @@ namespace Rivet.Operations
 			}
 
 			return string.Format(@"
-					alter table {0}.{1}
+					alter table [{0}].[{1}]
 					add constraint {2} default {3} for {4} {5}",
-					SchemaName, TableName, Cons.ReturnConstraintName(), Expression, ColumnName, WithValuesClause);
+					SchemaName, TableName, ConstraintName.ToString(), Expression, ColumnName, WithValuesClause);
 		}
 	}
 }

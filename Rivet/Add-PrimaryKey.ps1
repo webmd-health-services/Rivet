@@ -49,11 +49,9 @@ function Add-PrimaryKey
 
     Set-StrictMode -Version Latest
 
-    $name = New-ConstraintName -TableName $TableName -SchemaName $SchemaName -ColumnName $ColumnName -PrimaryKey
     $columns = $ColumnName -join ','
 
-    Write-Host (' {0}.{1} +{2} ({3})' -f $SchemaName,$TableName,$name,$columns)
-    
     $op = New-Object 'Rivet.Operations.AddPrimaryKeyOperation' $SchemaName, $TableName, $ColumnName, $NonClustered, $Option
+    Write-Host (' {0}.{1} +{2} ({3})' -f $SchemaName,$TableName,$op.ConstraintName.Name,$columns)
     Invoke-MigrationOperation -Operation $op
 }

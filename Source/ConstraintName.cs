@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Rivet
 {
@@ -19,17 +20,18 @@ namespace Rivet
 			TableName = tableName;
 			ColumnName = new List<string>(columnName ?? new string[0]);
 			Type = type;
+			Name = ToString();
 		}
 
 		public string SchemaName { get; private set; }
 		public string TableName { get; private set; }
 		public List<string> ColumnName { get; private set; }
 		public ConstraintType Type { get; private set; }
+		public string Name { get; private set; }
 
-		public string ReturnConstraintName()
+		public new string ToString()
 		{
-			string keyname = "DF";
-
+			string keyname;
 			switch(Type)
 			{
 				case ConstraintType.Default:
@@ -55,7 +57,7 @@ namespace Rivet
 			
 			var columnClause = string.Join("_", ColumnName.ToArray());
 			var name = string.Format("{0}_{1}_{2}_{3}", keyname, SchemaName, TableName, columnClause);
-			if (string.Equals(SchemaName, "dbo"))
+			if (string.Equals(SchemaName, "dbo", StringComparison.InvariantCultureIgnoreCase))
 			{
 				name = string.Format("{0}_{1}_{2}", keyname, TableName, columnClause);
 			}

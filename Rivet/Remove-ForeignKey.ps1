@@ -42,10 +42,7 @@ function Remove-ForeignKey
 
     Set-StrictMode -Version Latest
 
-    $name = New-ForeignKeyConstraintName -SourceSchema $SchemaName -SourceTable $TableName -TargetSchema $ReferencesSchema -TargetTable $References
-
-    Write-Host (' {0}.{1} -{2}' -f $SchemaName,$TableName,$name)
-    
     $op = New-Object 'Rivet.Operations.RemoveForeignKeyOperation' $SchemaName, $TableName, $ReferencesSchema, $References
+    Write-Host (' {0}.{1} -{2}' -f $SchemaName,$TableName,$op.ForeignKeyConstraintName.Name)
     Invoke-MigrationOperation -Operation $op
 }

@@ -8,7 +8,7 @@ namespace Rivet.Operations
 		public AddIndexOperation(string schemaName, string tableName, string [] columnName, bool unique, bool clustered,
 		                         string[] options, string where, string on, string fileStreamOn)
 		{
-			Cons = new ConstraintName(schemaName, tableName, columnName, ConstraintType.Index);
+			ConstraintName = new ConstraintName(schemaName, tableName, columnName, ConstraintType.Index);
 			SchemaName = schemaName;
 			TableName = tableName;
 			ColumnName = new List<string>(columnName ?? new string[0]);
@@ -20,7 +20,7 @@ namespace Rivet.Operations
 			FileStreamOn = fileStreamOn;
 		}
 
-		public ConstraintName Cons { get; private set; }
+		public ConstraintName ConstraintName { get; private set; }
 		public string SchemaName { get; private set; }
 		public string TableName { get; private set; }
 		public List<string> ColumnName { get; private set; }
@@ -72,8 +72,8 @@ namespace Rivet.Operations
 
 			var ColumnClause = string.Join(",", ColumnName.ToArray());
 
-			var query = string.Format(@"create {0}{1} index {2} on {3}.{4} ({5}) {6} {7} {8} {9}", 
-						UniqueClause, ClusteredClause, Cons.ReturnConstraintName(), SchemaName, TableName, ColumnClause, OptionsClause, WhereClause, OnClause, FileStreamClause);
+			var query = string.Format(@"create {0}{1} index {2} on [{3}].[{4}] ({5}) {6} {7} {8} {9}", 
+						UniqueClause, ClusteredClause, ConstraintName.ToString(), SchemaName, TableName, ColumnClause, OptionsClause, WhereClause, OnClause, FileStreamClause);
 
 			return query;
 		}

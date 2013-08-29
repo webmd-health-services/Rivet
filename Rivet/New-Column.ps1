@@ -641,7 +641,8 @@ function New-Column
         $dfConstraintClause = ''
         if( $this.DefaultExpression )
         {
-            $dfConstraintName = New-DefaultConstraintName -SchemaName $SchemaName -TableName $TableName -ColumnName $this.Name 
+            $op = New-Object 'Rivet.ConstraintName' $SchemaName, $TableName, $this.Name, Default
+            $dfConstraintName = $op.Name
             $dfConstraintClause = 'constraint {0} default {1}' -f $dfConstraintName,$this.DefaultExpression
         }
 

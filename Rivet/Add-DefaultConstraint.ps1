@@ -54,10 +54,7 @@ function Add-DefaultConstraint
 
     Set-StrictMode -Version Latest
 
-    $DefaultConstraintName = New-ConstraintName -ColumnName $ColumnName -TableName $TableName -SchemaName $SchemaName -Default
-    
-    Write-Host (' {0}.{1} +{2} {3} {4}' -f $SchemaName, $TableName, $DefaultConstraintName, $ColumnName, $Expression)
-
     $op = New-Object 'Rivet.Operations.AddDefaultConstraintOperation' $SchemaName, $TableName, $Expression, $ColumnName, $WithValues
+    Write-Host (' {0}.{1} +{2} {3} {4}' -f $SchemaName, $TableName, $op.ConstraintName.Name, $ColumnName, $Expression)
     Invoke-MigrationOperation -Operation $op
 }

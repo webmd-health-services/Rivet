@@ -8,7 +8,7 @@ namespace Rivet.Operations
 		                              string referencesTableName, string[] referencesColumnName, string onDelete,
 		                              string onUpdate, bool notForReplication)
 		{
-			Cons = new ForeignConstraintName(schemaName, tableName, referencesSchemaName, referencesTableName);
+			ForeignKeyConstraintName = new ForeignKeyConstraintName(schemaName, tableName, referencesSchemaName, referencesTableName);
 			SchemaName = schemaName;
 			TableName = tableName;
 			ColumnName = (string[])columnName.Clone();
@@ -20,7 +20,7 @@ namespace Rivet.Operations
 			NotForReplication = notForReplication;
 		}
 
-		public ForeignConstraintName Cons { get; private set; }
+		public ForeignKeyConstraintName ForeignKeyConstraintName { get; private set; }
 		public string SchemaName { get; private set; }
 		public string TableName { get; private set; }
 		public string[] ColumnName { get; private set; }
@@ -55,7 +55,7 @@ namespace Rivet.Operations
 			}
 
 			return string.Format("alter table [{0}].[{1}] add constraint {2} foreign key ({3}) references {4}.{5} ({6}) {7} {8} {9}", 
-				SchemaName, TableName, Cons.ReturnConstraintName(), source_columns, ReferencesSchemaName, ReferencesTableName, 
+				SchemaName, TableName, ForeignKeyConstraintName.ToString(), source_columns, ReferencesSchemaName, ReferencesTableName, 
 				ref_columns, OnDeleteClause, OnUpdateClause, NotForReplicationClause);
 		}
 	}

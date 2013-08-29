@@ -73,15 +73,12 @@ function Add-ForeignKey
     )
 
     Set-StrictMode -Version Latest
-
-    $name = New-ForeignKeyConstraintName -SourceSchema $SchemaName -SourceTable $TableName -TargetSchema $ReferencesSchema -TargetTable $References
     
     $source_columns = $ColumnName -join ','
     $ref_columns = $ReferencedColumn -join ','
-
-    Write-Host (' {0}.{1} +{2} ({3}) => {4}.{5} ({6})' -f $SchemaName,$TableName,$name,$source_columns,$ReferencesSchema,$References,$ref_columns)
     
     $op = New-Object 'Rivet.Operations.AddForeignKeyOperation' $SchemaName, $TableName, $ColumnName, $ReferencesSchema, $references, $ReferencedColumn, $OnDelete, $OnUpdate, $NotForReplication
+    Write-Host (' {0}.{1} +{2} ({3}) => {4}.{5} ({6})' -f $SchemaName,$TableName,$op.ForeignKeyConstraintName.Name,$source_columns,$ReferencesSchema,$References,$ref_columns)
     Invoke-MigrationOperation -Operation $op
 }
 
