@@ -22,10 +22,6 @@ function Remove-UserDefinedFunction
     
     Removes the `rivet.MyFunc` user-defined function.
     
-    .EXAMPLE
-    Remove-UserDefinedFunction -Name MyFunc -IfExists
-    
-    Deletes the `dbo.MyFunc` user-defined function only if it exists.
     #>
     [CmdletBinding()]
     param(
@@ -37,22 +33,11 @@ function Remove-UserDefinedFunction
         [Parameter()]
         [string]
         # The schema of the user-defined function.  Default is `dbo`.
-        $Schema = 'dbo',
-        
-        [Switch]
-        # Only deletes the user-defined function if it exists.
-        $IfExists
+        $Schema = 'dbo'
+
     )
     
     $query = 'DROP FUNCTION [{0}].[{1}]' -f $Schema,$Name
-    
-    if( $IfExists )
-    {
-        $query = @'
-        IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[{0}].[{1}]') AND type in (N'FN', N'IF', N'TF', N'FS', N'FT'))
-            {2}
-'@ -f $Schema,$Name,$query
-    }
     
     $op = New-Object 'Rivet.Operations.RawQueryOperation' $query
     Invoke-MigrationOperation -Operation $op

@@ -34,6 +34,5 @@ function Set-View
     )
     
     $scriptPath = Resolve-ObjectScriptPath -View -Name $Name -Schema $Schema
-    Remove-View -Name $Name -Schema $Schema -IfExists
     Invoke-SqlScript -Path $ScriptPath
 }

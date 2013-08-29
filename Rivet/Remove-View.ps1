@@ -22,10 +22,6 @@ function Remove-View
     
     Removes the `rivet.MyView` view.
     
-    .EXAMPLE
-    Remove-View -Name MyView -IfExists
-    
-    Deletes the `dbo.MyView` view only if it exists.
     #>
     [CmdletBinding()]
     param(
@@ -37,22 +33,11 @@ function Remove-View
         [Parameter()]
         [string]
         # The schema of the view.  Default is `dbo`.
-        $Schema = 'dbo',
+        $Schema = 'dbo'
         
-        [Switch]
-        # Only deletes the view if it exists.
-        $IfExists
     )
     
     $query = 'DROP VIEW [{0}].[{1}]' -f $Schema,$Name
-    
-    if( $IfExists )
-    {
-        $query = @'
-        IF  EXISTS (SELECT * FROM sys.views WHERE object_id = OBJECT_ID(N'[{0}].[{1}]') )
-            {2}
-'@ -f $Schema,$Name,$query
-    }
     
     $op = New-Object 'Rivet.Operations.RawQueryOperation' $query
     Invoke-MigrationOperation -Operation $op

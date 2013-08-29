@@ -22,10 +22,6 @@ function Remove-StoredProcedure
     
     Removes the `rivet.MySproc` stored procedure.
     
-    .EXAMPLE
-    Remove-StoredProcedure -Name MySproc -IfExists
-    
-    Deletes the `dbo.MySproc` stored procedure only if it exists.
     #>
     [CmdletBinding()]
     param(
@@ -37,23 +33,12 @@ function Remove-StoredProcedure
         [Parameter()]
         [string]
         # The schema of the stored procedure.  Default is `dbo`.
-        $Schema = 'dbo',
+        $Schema = 'dbo'
         
-        [Switch]
-        # Only deletes the stored procedure if it exists.
-        $IfExists
     )
     
     $query = 'DROP PROCEDURE [{0}].[{1}]' -f $Schema,$Name
-    
-    if( $IfExists )
-    {
-        $query = @'
-        IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[{0}].[{1}]') AND type in (N'P', N'PC'))
-            {2}
-'@ -f $Schema,$Name,$query
-    }
-    
+
     $op = New-Object 'Rivet.Operations.RawQueryOperation' $query
     Invoke-MigrationOperation -Operation $op
 }
