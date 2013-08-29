@@ -33,47 +33,47 @@ namespace Rivet.Operations
 
 		public override string ToQuery()
 		{
-			var ClusteredClause = "";
+			var clusteredClause = "";
 			if (Clustered)
 			{
-				ClusteredClause = "clustered";
+				clusteredClause = "clustered";
 			}
 
-			var FillFactorClause = "";
-			var OptionClause = "";		// (1)
+			var fillFactorClause = "";
+			var optionClause = "";		// (1)
 
 			if (Options != null && FillFactor == 0) //Options, but no FillFactor (2)
 			{
-				OptionClause = string.Join(", ", Options);
-				OptionClause = string.Format("with ({0})", OptionClause);
+				optionClause = string.Join(", ", Options);
+				optionClause = string.Format("with ({0})", optionClause);
 			}
 
 			if (Options == null && FillFactor > 0) //No Options, but with FillFactor (3)
 			{
-				FillFactorClause = string.Format("fillfactor = {0}", FillFactor.ToString());
-				OptionClause = string.Format("with ({0})", FillFactorClause);
+				fillFactorClause = string.Format("fillfactor = {0}", FillFactor.ToString());
+				optionClause = string.Format("with ({0})", fillFactorClause);
 			}
 
 			if (Options != null && FillFactor > 0) //Options and FillFactor (4)
 			{
-				FillFactorClause = string.Format("fillfactor = {0}", FillFactor.ToString());
-				List<string> OptionsList = new List<string>(Options);
-				OptionsList.Add(FillFactorClause);
-				Options = OptionsList.ToArray();
-				OptionClause = string.Join(", ", Options);
-				OptionClause = string.Format("with ({0})", OptionClause);
+				fillFactorClause = string.Format("fillfactor = {0}", FillFactor.ToString());
+				List<string> optionsList = new List<string>(Options);
+				optionsList.Add(fillFactorClause);
+				Options = optionsList.ToArray();
+				optionClause = string.Join(", ", Options);
+				optionClause = string.Format("with ({0})", optionClause);
 			}
 
-			var FileGroupClause = "";
+			var fileGroupClause = "";
 			if (!string.IsNullOrEmpty(FileGroup))
 			{
-				FileGroupClause = string.Format("on {0}", FileGroup);
+				fileGroupClause = string.Format("on {0}", FileGroup);
 			}
 
-			var ColumnClause = string.Join(",", ColumnName);
+			var columnClause = string.Join(",", ColumnName);
 
 			return string.Format("alter table [{0}].[{1}] add constraint {2} unique {3}({4}) {5} {6}", 
-				SchemaName, TableName, ConstraintName.ToString(), ClusteredClause, ColumnClause, OptionClause, FileGroupClause);
+				SchemaName, TableName, ConstraintName.ToString(), clusteredClause, columnClause, optionClause, fileGroupClause);
 
 		}
 	}

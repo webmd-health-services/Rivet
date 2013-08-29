@@ -33,30 +33,30 @@ namespace Rivet.Operations
 
 		public override string ToQuery()
 		{
-			var source_columns = string.Join(",", ColumnName);
-			var ref_columns = string.Join(",", ReferencesColumnName);
+			var sourceColumns = string.Join(",", ColumnName);
+			var refColumns = string.Join(",", ReferencesColumnName);
 
-			var OnDeleteClause = "";
+			var onDeleteClause = "";
 			if (!string.IsNullOrEmpty(OnDelete))
 			{
-				OnDeleteClause = string.Format("on delete {0}", OnDelete);
+				onDeleteClause = string.Format("on delete {0}", OnDelete);
 			}
 
-			var OnUpdateClause = "";
+			var onUpdateClause = "";
 			if (!string.IsNullOrEmpty(OnUpdate))
 			{
-				OnUpdateClause = string.Format("on update {0}", OnUpdate);
+				onUpdateClause = string.Format("on update {0}", OnUpdate);
 			}
 
-			var NotForReplicationClause = "";
+			var notForReplicationClause = "";
 			if (NotForReplication)
 			{
-				NotForReplicationClause = "not for replication";
+				notForReplicationClause = "not for replication";
 			}
 
 			return string.Format("alter table [{0}].[{1}] add constraint {2} foreign key ({3}) references {4}.{5} ({6}) {7} {8} {9}", 
-				SchemaName, TableName, ForeignKeyConstraintName.ToString(), source_columns, ReferencesSchemaName, ReferencesTableName, 
-				ref_columns, OnDeleteClause, OnUpdateClause, NotForReplicationClause);
+				SchemaName, TableName, ForeignKeyConstraintName.ToString(), sourceColumns, ReferencesSchemaName, ReferencesTableName, 
+				refColumns, onDeleteClause, onUpdateClause, notForReplicationClause);
 		}
 	}
 }

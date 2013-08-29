@@ -15,8 +15,7 @@ namespace Rivet.Operations
 
 		public override string ToQuery()
 		{
-			string query = string.Format("drop table [{0}].[{1}]", SchemaName, TableName);
-			return query;
+			return string.Format("drop table [{0}].[{1}]", SchemaName, TableName);
 		}
 	}
 }

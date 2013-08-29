@@ -31,23 +31,23 @@ namespace Rivet.Operations
 
 		public override string ToQuery()
 		{
-			var ClusteredClause = "clustered";
+			var clusteredClause = "clustered";
 			if (NonClustered)
 			{
-				ClusteredClause = "nonclustered";
+				clusteredClause = "nonclustered";
 			}
 
-			var OptionClause = "";
+			var optionClause = "";
 			if (!(Options == null || Options.Length == 0))
 			{
-				OptionClause = string.Join(", ", Options);
-				OptionClause = string.Format(" with ( {0} )", OptionClause);
+				optionClause = string.Join(", ", Options);
+				optionClause = string.Format(" with ( {0} )", optionClause);
 			}
 
-			var ColumnClause = string.Join(",", ColumnName);
+			var columnClause = string.Join(",", ColumnName);
 
 			return string.Format("alter table [{0}].[{1}] add constraint {2} primary key {3} ({4}){5}", 
-				SchemaName, TableName, ConstraintName.ToString(), ClusteredClause, ColumnClause, OptionClause);
+				SchemaName, TableName, ConstraintName.ToString(), clusteredClause, columnClause, optionClause);
 		}
 	}
 }

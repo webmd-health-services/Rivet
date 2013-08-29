@@ -33,47 +33,47 @@ namespace Rivet.Operations
 
 		public override string ToQuery()
 		{
-			var UniqueClause = "";
+			var uniqueClause = "";
 			if (Unique)
 			{
-				UniqueClause = "unique ";
+				uniqueClause = "unique ";
 			}
 
-			var ClusteredClause = "";
+			var clusteredClause = "";
 			if (Clustered)
 			{
-				ClusteredClause = "clustered";
+				clusteredClause = "clustered";
 			}
 
-			var OptionsClause = "";
+			var optionsClause = "";
 			if (Options.Count > 0)
 			{
-				OptionsClause = string.Join(", ", Options.ToArray());
-				OptionsClause = string.Format("with ( {0} )", OptionsClause);
+				optionsClause = string.Join(", ", Options.ToArray());
+				optionsClause = string.Format("with ( {0} )", optionsClause);
 			}
 
-			var WhereClause = "";
+			var whereClause = "";
 			if (!string.IsNullOrEmpty(Where))
 			{
-				WhereClause = string.Format("where ( {0} )", Where);
+				whereClause = string.Format("where ( {0} )", Where);
 			}
 
-			var OnClause = "";
+			var onClause = "";
 			if (!string.IsNullOrEmpty(On))
 			{
-				OnClause = string.Format("on {0}", On);
+				onClause = string.Format("on {0}", On);
 			}
 
-			var FileStreamClause = "";
+			var fileStreamClause = "";
 			if (!string.IsNullOrEmpty(FileStreamOn))
 			{
-				FileStreamClause = string.Format("filestream_on {0}", FileStreamOn);
+				fileStreamClause = string.Format("filestream_on {0}", FileStreamOn);
 			}
 
-			var ColumnClause = string.Join(",", ColumnName.ToArray());
+			var columnClause = string.Join(",", ColumnName.ToArray());
 
 			var query = string.Format(@"create {0}{1} index {2} on [{3}].[{4}] ({5}) {6} {7} {8} {9}", 
-						UniqueClause, ClusteredClause, ConstraintName.ToString(), SchemaName, TableName, ColumnClause, OptionsClause, WhereClause, OnClause, FileStreamClause);
+						uniqueClause, clusteredClause, ConstraintName.ToString(), SchemaName, TableName, columnClause, optionsClause, whereClause, onClause, fileStreamClause);
 
 			return query;
 		}
