@@ -25,16 +25,16 @@ namespace Rivet.Operations
 
 		public override string ToQuery()
 		{
-			var WithValuesClause = "";
+			var withValuesClause = "";
 			if (WithValues)
 			{
-				WithValuesClause = "with values";
+				withValuesClause = "with values";
 			}
 
 			return string.Format(@"
 					alter table [{0}].[{1}]
 					add constraint {2} default {3} for {4} {5}",
-					SchemaName, TableName, ConstraintName.ToString(), Expression, ColumnName, WithValuesClause);
+					SchemaName, TableName, ConstraintName.ToString(), Expression, ColumnName, withValuesClause);
 		}
 	}
 }
