@@ -15,7 +15,7 @@
 
 		public override string ToQuery()
 		{
-			return string.Format(@"create procedure [{0}].[{1}] as {2}", SchemaName, Name, Definition);
+			return string.Format(@"create procedure [{0}].[{1}] {2}", SchemaName, Name, Definition);
 		}
 	}
 }

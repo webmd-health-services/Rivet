@@ -14,5 +14,5 @@ function Test-ShouldCreateNewStoredProcedure
 {
     Invoke-Rivet -Push 'CreateNewStoredProcedure'
 
-    Assert-StoredProcedure -Name 'TestStoredProcedure' -Definition 'SELECT FirstName, LastName FROM dbo.Person;' -SchemaName 'dbo'
+    Assert-StoredProcedure -Name 'TestStoredProcedure' -Definition 'as SELECT FirstName, LastName FROM dbo.Person;' -SchemaName 'dbo'
 }

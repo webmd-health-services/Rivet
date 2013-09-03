@@ -30,7 +30,7 @@ function Assert-StoredProcedure
     
     $od = Get-ObjectDefinition $sp.object_id
 
-    $expectedDefinition = "create procedure [{0}].[{1}] as {2}" -f $SchemaName, $Name, $Definition
+    $expectedDefinition = "create procedure [{0}].[{1}] {2}" -f $SchemaName, $Name, $Definition
     Assert-Equal $expectedDefinition $od.'Object Definition'
 
 }
