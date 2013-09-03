@@ -7,7 +7,7 @@ namespace Rivet.Test.Operations
 	public sealed class RemoveUserDefinedFunctionOperationTestFixture
 	{
 		const string SchemaName = "schemaName";
-		const string ProcedureName = "procedureName";
+		const string FunctionName = "functionName";
 
 		[SetUp]
 		public void SetUp()
@@ -18,16 +18,16 @@ namespace Rivet.Test.Operations
 		[Test]
 		public void ShouldSetPropertiesForRemoveUserDefinedFunction()
 		{
-			var op = new RemoveUserDefinedFunctionOperation(SchemaName, ProcedureName);
+			var op = new RemoveUserDefinedFunctionOperation(SchemaName, FunctionName);
 			Assert.AreEqual(SchemaName, op.SchemaName);
-			Assert.AreEqual(ProcedureName, op.ProcedureName);
+			Assert.AreEqual(FunctionName, op.FunctionName);
 		}
 
 		[Test]
 		public void ShouldWriteQueryForRemoveUserDefinedFunction()
 		{
-			var op = new RemoveUserDefinedFunctionOperation(SchemaName, ProcedureName);
-			const string expectedQuery = "drop function [schemaName].[procedureName]";
+			var op = new RemoveUserDefinedFunctionOperation(SchemaName, FunctionName);
+			const string expectedQuery = "drop function [schemaName].[functionName]";
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}
 	}
