@@ -8,7 +8,7 @@ namespace Rivet.Test.Operations
 	{
 		const string SchemaName = "schemaName";
 		const string ProcedureName = "procedureName";
-		const string Definition = "definition";
+		const string Definition = "as definition";
 
 		[SetUp]
 		public void SetUp()
