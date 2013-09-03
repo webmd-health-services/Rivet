@@ -17,7 +17,7 @@ namespace Rivet.Test.Operations
 		}
 
 		[Test]
-		public void ShouldSetPropertiesForNewStoredProcedure()
+		public void ShouldSetPropertiesForNewUserDefinedFunction()
 		{
 			var op = new NewUserDefinedFunctionOperation(SchemaName, FunctionName, Definition);
 			Assert.AreEqual(SchemaName, op.SchemaName);
@@ -26,7 +26,7 @@ namespace Rivet.Test.Operations
 		}
 
 		[Test]
-		public void ShouldWriteQueryForNewStoredProcedure()
+		public void ShouldWriteQueryForNewUserDefinedFunction()
 		{
 			var op = new NewUserDefinedFunctionOperation(SchemaName, FunctionName, Definition);
 			const string expectedQuery = "create function [schemaName].[functionName] as definition";
