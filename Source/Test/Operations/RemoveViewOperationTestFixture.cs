@@ -7,7 +7,7 @@ namespace Rivet.Test.Operations
 	public sealed class RemoveViewOperationTestFixture
 	{
 		const string SchemaName = "schemaName";
-		const string ProcedureName = "procedureName";
+		const string ViewName = "viewName";
 
 		[SetUp]
 		public void SetUp()
@@ -16,18 +16,18 @@ namespace Rivet.Test.Operations
 		}
 
 		[Test]
-		public void ShouldSetPropertiesForRemoveStoredProcedure()
+		public void ShouldSetPropertiesForRemoveViewOperation()
 		{
-			var op = new RemoveViewOperation(SchemaName, ProcedureName);
+			var op = new RemoveViewOperation(SchemaName, ViewName);
 			Assert.AreEqual(SchemaName, op.SchemaName);
-			Assert.AreEqual(ProcedureName, op.ProcedureName);
+			Assert.AreEqual(ViewName, op.ViewName);
 		}
 
 		[Test]
-		public void ShouldWriteQueryForRemoveStoredProcedure()
+		public void ShouldWriteQueryForRemoveViewOperation()
 		{
-			var op = new RemoveViewOperation(SchemaName, ProcedureName);
-			const string expectedQuery = "drop view [schemaName].[procedureName]";
+			var op = new RemoveViewOperation(SchemaName, ViewName);
+			const string expectedQuery = "drop view [schemaName].[viewName]";
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}
 
