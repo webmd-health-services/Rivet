@@ -37,8 +37,6 @@ function Remove-UserDefinedFunction
 
     )
     
-    $query = 'DROP FUNCTION [{0}].[{1}]' -f $Schema,$Name
-    
-    $op = New-Object 'Rivet.Operations.RawQueryOperation' $query
+    $op = New-Object 'Rivet.Operations.RemoveUserDefinedFunctionOperation' $Schema, $Name
     Invoke-MigrationOperation -Operation $op
 }

@@ -54,6 +54,9 @@
     <Compile Include="Operations\AddTableOperation.cs" />
     <Compile Include="Operations\AddUniqueConstraintOperation.cs" />
     <Compile Include="ConstraintName.cs" />
+    <Compile Include="Operations\RemoveStoredProcedureOperation.cs" />
+    <Compile Include="Operations\RemoveUserDefinedFunctionOperation.cs" />
+    <Compile Include="Operations\RemoveViewOperation.cs" />
     <Compile Include="Operations\RemoveColumnOperation.cs" />
     <Compile Include="Operations\RemoveDescriptionOperation.cs" />
     <Compile Include="Operations\RemoveSchemaOperation.cs" />

@@ -37,8 +37,6 @@ function Remove-View
         
     )
     
-    $query = 'DROP VIEW [{0}].[{1}]' -f $Schema,$Name
-    
-    $op = New-Object 'Rivet.Operations.RawQueryOperation' $query
+    $op = New-Object 'Rivet.Operations.RemoveViewOperation' $Schema, $Name
     Invoke-MigrationOperation -Operation $op
 }
