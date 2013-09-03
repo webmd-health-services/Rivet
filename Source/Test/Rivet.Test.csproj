@@ -70,6 +70,7 @@
     <Compile Include="Operations\AddRemovePrimaryKeyOperationTestFixture.cs" />
     <Compile Include="Operations\AddRemoveUniqueConstraintTestFixture.cs" />
     <Compile Include="Operations\AddRemoveForeignKeyOperationTestFixture.cs" />
+    <Compile Include="Operations\NewViewOperationTestFixture.cs" />
     <Compile Include="Operations\NewUserDefinedFunctionOperationTestFixture.cs" />
     <Compile Include="Operations\NewStoredProcedureOperationTestFixture.cs" />
     <Compile Include="Operations\RemoveViewOperationTestFixture.cs" />
