@@ -69,7 +69,7 @@ function Add-Table
 
     Write-Host (' +{0}.{1}' -f $SchemaName,$Name)
 
-    $op = New-Object 'Rivet.Operations.AddTableOperation' $SchemaName, $Name, $columns, $FileTableBool, $FileGroup, $TextImageFileGroup, $FileStreamFileGroup, $Option, $Description
+    $op = New-Object 'Rivet.Operations.AddTableOperation' $SchemaName, $Name, $columns, $FileTable, $FileGroup, $TextImageFileGroup, $FileStreamFileGroup, $Option, $Description
     Invoke-MigrationOperation -Operation $op
 
     $addDescriptionArgs = @{
