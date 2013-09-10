@@ -5,7 +5,7 @@ namespace Rivet.Operations
 	public sealed class AddTableOperation : Operation
 	{
 		public AddTableOperation(string schemaName, string tableName, Column[] columns, bool fileTable, string fileGroup,
-		                         string textImageFileGroup, bool fileStreamFileGroup, string[] options, string description)
+		                         string textImageFileGroup, string fileStreamFileGroup, string[] options, string description)
 		{
 			SchemaName = schemaName;
 			TableName = tableName;
@@ -24,7 +24,7 @@ namespace Rivet.Operations
 		public bool FileTable { get; private set; }
 		public string FileGroup { get; private set; }
 		public string TextImageFileGroup { get; private set; }
-		public bool FileStreamFileGroup { get; private set; }
+		public string FileStreamFileGroup { get; private set; }
 		public List<string> Options { get; private set; }
 		public string Description { get; private set; }
 
@@ -59,7 +59,7 @@ namespace Rivet.Operations
 			}
 
 			var fileStreamFileGroupClause = "";
-			if (FileStreamFileGroup)
+			if (!string.IsNullOrEmpty(FileStreamFileGroup))
 			{
 				fileStreamFileGroupClause = string.Format("filestream_on {0}", FileStreamFileGroup);
 			}

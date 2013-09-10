@@ -24,7 +24,7 @@ namespace Rivet.Test.Operations
 			bool fileTable = true;
 			var fileGroup = "fileGroup";
 			var textImageFileGroup = "textImageFileGroup";
-			bool fileStremFileGroup = true;
+			var fileStremFileGroup = "fileGroup";
 			string[] options = new string[] { "option1", "option2" };
 			var description = "description";
 
@@ -37,7 +37,7 @@ namespace Rivet.Test.Operations
 			Assert.That(op.FileTable, Is.EqualTo(true));
 			Assert.That(op.FileGroup, Is.EqualTo(fileGroup));
 			Assert.That(op.TextImageFileGroup, Is.EqualTo(textImageFileGroup));
-			Assert.That(op.FileStreamFileGroup, Is.EqualTo(true));
+			Assert.That(op.FileStreamFileGroup, Is.EqualTo(fileStremFileGroup));
 			Assert.That(op.Options.Contains("option1"));
 			Assert.That(op.Options.Contains("option2"));
 			Assert.That(op.Options.Count, Is.EqualTo(2));
@@ -56,7 +56,7 @@ namespace Rivet.Test.Operations
 			bool fileTable = true;
 			var fileGroup = "fileGroup";
 			var textImageFileGroup = "textImageFileGroup";
-			bool fileStremFileGroup = true;
+			var fileStremFileGroup = "fileGroup";
 			string[] options = new string[] { "option1", "option2" };
 			var description = "description";
 
@@ -65,7 +65,7 @@ namespace Rivet.Test.Operations
 			create table [schemaName].[tableName] as FileTable
 						on fileGroup
 						textimage_on textImageFileGroup
-						filestream_on True
+						filestream_on fileGroup
 						with ( option1, option2 )";
 
 			Assert.AreEqual(op.ToQuery(), expectedQuery);
@@ -83,7 +83,7 @@ namespace Rivet.Test.Operations
 			bool fileTable = false;
 			var fileGroup = "fileGroup";
 			var textImageFileGroup = "textImageFileGroup";
-			bool fileStremFileGroup = true;
+			var fileStremFileGroup = "fileGroup";
 			string[] options = new string[] { "option1", "option2" };
 			var description = "description";
 
@@ -93,7 +93,7 @@ namespace Rivet.Test.Operations
 [int column] int identity )
 						on fileGroup
 						textimage_on textImageFileGroup
-						filestream_on True
+						filestream_on fileGroup
 						with ( option1, option2 )";
 
 			Assert.AreEqual(op.ToQuery(), expectedQuery);
@@ -111,7 +111,7 @@ namespace Rivet.Test.Operations
 			bool fileTable = true;
 			var fileGroup = "";
 			var textImageFileGroup = "textImageFileGroup";
-			bool fileStremFileGroup = true;
+			var fileStremFileGroup = "fileGroup";
 			string[] options = new string[] { "option1", "option2" };
 			var description = "description";
 
@@ -120,7 +120,7 @@ namespace Rivet.Test.Operations
 			create table [schemaName].[tableName] as FileTable
 						
 						textimage_on textImageFileGroup
-						filestream_on True
+						filestream_on fileGroup
 						with ( option1, option2 )";
 
 			Assert.AreEqual(op.ToQuery(), expectedQuery);
@@ -138,7 +138,7 @@ namespace Rivet.Test.Operations
 			bool fileTable = true;
 			var fileGroup = "";
 			var textImageFileGroup = "";
-			bool fileStremFileGroup = true;
+			var fileStremFileGroup = "fileGroup";
 			string[] options = new string[] { "option1", "option2" };
 			var description = "description";
 
@@ -147,7 +147,7 @@ namespace Rivet.Test.Operations
 			create table [schemaName].[tableName] as FileTable
 						
 						
-						filestream_on True
+						filestream_on fileGroup
 						with ( option1, option2 )";
 
 			Assert.AreEqual(op.ToQuery(), expectedQuery);
@@ -165,7 +165,7 @@ namespace Rivet.Test.Operations
 			bool fileTable = true;
 			var fileGroup = "";
 			var textImageFileGroup = "";
-			bool fileStremFileGroup = false;
+			var fileStremFileGroup = "";
 			string[] options = new string[] { "option1", "option2" };
 			var description = "description";
 
@@ -192,7 +192,7 @@ namespace Rivet.Test.Operations
 			bool fileTable = true;
 			var fileGroup = "";
 			var textImageFileGroup = "";
-			bool fileStremFileGroup = false;
+			var fileStremFileGroup = "";
 			string[] options = new string[] { };
 			var description = "description";
 
