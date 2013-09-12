@@ -31,6 +31,6 @@ function Write-RivetError
     
     $callStackLines = $callStackLines -join "`n "
         
-    Write-Error ("{0}: {1}`n{2}" -f $Message,$firstException.Message,$callStackLines)
+    Write-Error ("[{0}].[{1}] {2}: {3}`n{4}" -f $Connection.DataSource,$Connection.Database,$Message,$firstException.Message,$callStackLines)
 
 }
