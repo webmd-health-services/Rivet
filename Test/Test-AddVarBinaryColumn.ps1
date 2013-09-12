@@ -80,13 +80,13 @@ function Pop-Migration
     Assert-Column -Name 'id' -DataType 'VarBinary' -TableName 'Foobar' -NotNull
 }
 
-function Test-ShouldCreateVarBinaryColumnWithCustomLength
+function Test-ShouldCreateVarBinaryColumnWithCustomSize
 {
     @'
 function Push-Migration
 {
     Add-Table -Name 'Foobar' -Column {
-        VarBinary 'id' -NotNull -Length 50
+        VarBinary 'id' -NotNull -Size 50
     }
 }
 
@@ -95,9 +95,9 @@ function Pop-Migration
     
 }
 
-'@ | New-Migration -Name 'ShouldCreateVarBinaryColumnWithCustomLength'
+'@ | New-Migration -Name 'ShouldCreateVarBinaryColumnWithCustomSize'
 
-    Invoke-Rivet -Push 'ShouldCreateVarBinaryColumnWithCustomLength'
+    Invoke-Rivet -Push 'ShouldCreateVarBinaryColumnWithCustomSize'
     
     Assert-Table 'Foobar'
     Assert-Column -Name 'id' -DataType 'VarBinary' -TableName 'Foobar' -NotNull -Size 50 

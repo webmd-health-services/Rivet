@@ -56,11 +56,11 @@ function Initialize-Database
         else
         {
             Add-Table -Name $RivetMigrationsTableName -SchemaName $RivetSchemaName -Column {
-                New-Column 'ID' -BigInt -NotNull
-                New-Column 'Name' -VarChar 50 -Unicode -NotNull
-                New-Column 'Who' -VarChar 50 -Unicode -NotNull
-                New-Column 'ComputerName' -VarChar 50 -Unicode -NotNull
-                New-Column 'AtUtc' -Datetime2 -NotNull
+                BigInt ID -NotNull 
+                NVarChar 'Name' -Size 50 -NotNull
+                NVarChar 'Who' -Size 50  -NotNull
+                NVarChar 'ComputerName' -Size 50 -NotNull
+                DateTime2 'AtUtc' -NotNull
             }
 
             $query = @'

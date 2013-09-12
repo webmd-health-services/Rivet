@@ -1,7 +1,7 @@
 function Push-Migration()
 {
     Add-Table -Name 'PrimaryKey' {
-        New-Column 'id' -Int -NotNull
+        Int 'id' -NotNull
     }
 
     

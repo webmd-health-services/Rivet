@@ -2,8 +2,8 @@
 function Push-Migration()
 {
     Add-Table 'AddTableWithOption' -Description 'Testing Add-Table migration' -Column {
-        New-Column 'varchar' -VarChar -NotNull -Default "'default'" -Description 'varchar(max) constraint DF_AddTable_varchar default default'
-        New-Column 'id' -BigInt -Identity
+        VarChar 'varchar' -NotNull -Default "'default'" -Description 'varchar(max) constraint DF_AddTable_varchar default default'
+        BigInt 'id' -Identity
     } -Option 'data_compression = page'
 }
 

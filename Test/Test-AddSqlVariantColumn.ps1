@@ -10,29 +10,6 @@ function Stop-Test
     Remove-Module RivetTest
 }
 
-function Test-ShouldCreateSqlVariantColumnNonDataTypeSpecific
-{
-    @'
-function Push-Migration
-{
-    Add-Table -Name 'Foobar' -Column {
-        New-Column 'id' -SqlVariant
-    } -Option 'data_compression = none'
-}
-
-function Pop-Migration
-{
-    
-}
-
-'@ | New-Migration -Name 'CreateSqlVariantColumnNonDataTypeSpecific'
-
-    Invoke-Rivet -Push 'CreateSqlVariantColumnNonDataTypeSpecific'
-    
-    Assert-Table 'Foobar'
-    Assert-Column -Name 'id' -DataType 'sql_variant' -TableName 'Foobar'
-}
-
 function Test-ShouldCreateSqlVariantColumn
 {
     @'

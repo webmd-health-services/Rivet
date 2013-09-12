@@ -4,7 +4,7 @@ function Push-Migration()
     Add-Column 'description' -VarChar -TableName 'RedoMigration'
 
     Add-Table 'SecondTable' {
-        New-Column 'id' -Int -Identity
+        Int 'id' -Identity
     }
 }
 

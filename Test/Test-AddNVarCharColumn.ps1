@@ -79,13 +79,13 @@ function Pop-Migration
     Assert-Column -Name 'id' -DataType 'NVarChar' -TableName 'Foobar' -NotNull
 }
 
-function Test-ShouldCreateNVarCharColumnWithLengthCollation
+function Test-ShouldCreateNVarCharColumnWithSizeCollation
 {
     @'
 function Push-Migration
 {
     Add-Table -Name 'Foobar' -Column {
-        NVarChar 'id' -NotNull -Length 50 -Collation "Chinese_Taiwan_Stroke_CI_AS"
+        NVarChar 'id' -NotNull -Size 50 -Collation "Chinese_Taiwan_Stroke_CI_AS"
     }
 }
 
@@ -94,9 +94,9 @@ function Pop-Migration
     
 }
 
-'@ | New-Migration -Name 'ShouldCreateNVarCharColumnWithLengthCollation'
+'@ | New-Migration -Name 'ShouldCreateNVarCharColumnWithSizeCollation'
 
-    Invoke-Rivet -Push 'ShouldCreateNVarCharColumnWithLengthCollation'
+    Invoke-Rivet -Push 'ShouldCreateNVarCharColumnWithSizeCollation'
     
     Assert-Table 'Foobar'
     Assert-Column -Name 'id' -DataType 'NVarChar' -TableName 'Foobar' -NotNull -Size 50 -Collation "Chinese_Taiwan_Stroke_CI_AS"

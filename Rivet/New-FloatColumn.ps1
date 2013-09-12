@@ -21,7 +21,7 @@
             # Store nulls as Sparse.
             $Sparse,
 
-            [Parameter(Mandatory=$true)]
+            [Parameter()]
             [Int]
             # Maximum total number of Numeric digits that will be stored
             $Precision,
@@ -45,7 +45,10 @@
 
         $dataSize = $null
 
-        $dataSize = New-Object Rivet.PrecisionScale $Precision
+        if ($Precision -gt 0)
+        {
+            $dataSize = New-Object Rivet.PrecisionScale $Precision
+        }
         
         switch ($PSCmdlet.ParameterSetName)
         {

@@ -10,29 +10,6 @@ function Stop-Test
     Remove-Module RivetTest
 }
 
-function Test-ShouldCreateNumericColumnNonDataTypeSpecific
-{
-    @'
-function Push-Migration
-{
-    Add-Table -Name 'Foobar' -Column {
-        New-Column 'id' -Numeric -Identity -Precision 5
-    } -Option 'data_compression = none'
-}
-
-function Pop-Migration
-{
-    
-}
-
-'@ | New-Migration -Name 'CreateNumericColumnNonDataTypeSpecific'
-
-    Invoke-Rivet -Push 'CreateNumericColumnNonDataTypeSpecific'
-    
-    Assert-Table 'Foobar'
-    Assert-Column -Name 'id' -DataType 'Numeric' -TableName 'Foobar' -NotNull -Precision 5
-}
-
 function Test-ShouldCreateNumericWithNullable
 {
     @'

@@ -18,53 +18,40 @@ N'
 '@
 
     Add-Table AddColumnNoDefaultsAllNull {
-        New-Column 'id' -Int -Identity 
-        New-Column 'varchar' -VarChar 50
-        New-Column 'varcharmax' -VarChar
-        New-Column 'char' -Char 50
-        New-Column 'nvarchar' -VarChar 50 -Unicode
-        New-Column 'nvarcharmax' -VarChar -Unicode
-        New-Column 'nchar' -Char 50 -Unicode
-        New-Column 'binary' -Binary 50
-        New-Column 'varbinary' -VarBinary 50
-        New-Column 'varbinarymax' -VarBinary
-        if( $PSVersionTable.PSVersion -eq ([Version]'2.0') )
-        {
-            New-Column bigint 'BigInt'
-            New-Column int 'Int' 
-            New-Column smallint 'SmallInt' 
-            New-Column tinyint 'TinyInt' 
-            New-Column numeric 'numeric(1)' 
-            New-Column decimal 'decimal(4)'
-        }
-        else
-        {
-            New-Column bigint -BigInt 
-            New-Column int -Int 
-            New-Column smallint -SmallInt 
-            New-Column tinyint -TinyInt 
-            New-Column numeric -Numeric 1 
-            New-Column decimal -Decimal 4 
-        }
-        New-Column 'numericwithscale' -Numeric 5 5
-        New-Column 'decimalwithscale' -Decimal 5 5
-        New-Column 'bit' -Bit
-        New-Column 'money' -Money
-        New-Column 'smallmoney' -SmallMoney
-        New-Column 'float' -Float
-        New-Column 'floatwithprecision' -float 5
-        New-Column 'real' -Real
-        New-Column 'date' -Date
-        New-Column 'datetime' 'datetime'
-        New-Column 'datetime2' -Datetime2
-        New-Column 'datetimeoffset' -DateTimeOffset
-        New-Column 'smalldatetime' 'smalldatetime'
-        New-Column 'time' -Time
-        New-Column 'xml' -Xml 'EmptyXsd'
-        New-Column 'sql_variant' -SqlVariant
-        New-Column 'uniqueidentifier' -UniqueIdentifier
-        New-Column 'hierarchyid' -HierarchyID
-        New-Column 'timestamp' -RowVersion
+        Int 'id' -Identity 
+        VarChar 'varchar' -Size 50
+        VarChar 'varcharmax'
+        Char 'char' -Size 50
+        NVarChar 'nvarchar' -Size 50
+        NVarChar 'nvarcharmax'
+        NChar 'nchar' -Size 50
+        Binary 'binary' -Size 50
+        VarBinary 'varbinary' -Size 50
+        VarBinary 'varbinarymax'
+        BigInt bigint 
+        Int int 
+        SmallInt smallint 
+        TinyInt tinyint 
+        Numeric numeric -Precision 1 
+        Decimal decimal -Precision 4 
+        Numeric 'numericwithscale' -Precision 5 -Scale 5
+        Decimal 'decimalwithscale' -Precision 5 -Scale 5
+        Bit 'bit' 
+        Money 'money' 
+        SmallMoney 'smallmoney' 
+        Float 'float' 
+        Float 'floatwithprecision' -Precision 5
+        Real 'real' 
+        Date 'date' 
+        Datetime2 'datetime2' 
+        DateTimeOffset 'datetimeoffset' 
+        SmallDateTime 'smalldatetime' 
+        Time 'time' 
+        Xml 'xml' -XmlSchemaCollection 'EmptyXsd'
+        SqlVariant 'sql_variant' 
+        UniqueIdentifier 'uniqueidentifier' 
+        HierarchyID 'hierarchyid' 
+        RowVersion 'timestamp' 
     }
 }
 
@@ -95,7 +82,6 @@ function Pop-Migration()
     Remove-Column 'floatwithprecision' @tableParam
     Remove-Column 'real' @tableParam
     Remove-Column 'date' @tableParam
-    Remove-Column 'datetime' @tableParam
     Remove-Column 'datetime2' @tableParam
     Remove-Column 'datetimeoffset' @tableParam
     Remove-Column 'smalldatetime' @tableParam

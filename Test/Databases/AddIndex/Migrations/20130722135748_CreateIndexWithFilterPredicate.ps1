@@ -2,8 +2,8 @@ function Push-Migration()
 {
 
     Add-Table -Name 'AddIndex' {
-        New-Column 'IndexMe' -Int -NotNull
-        New-Column 'EndDate' -Int -NotNull
+        Int 'IndexMe' -NotNull
+        Int 'EndDate' -NotNull
     }
 
     #Add an Index to 'IndexMe'

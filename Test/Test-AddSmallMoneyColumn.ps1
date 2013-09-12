@@ -10,29 +10,6 @@ function Stop-Test
     Remove-Module RivetTest
 }
 
-function Test-ShouldCreateSmallMoneyColumnNonDataTypeSpecific
-{
-    @'
-function Push-Migration
-{
-    Add-Table -Name 'Foobar' -Column {
-        New-Column 'id' -SmallMoney
-    } -Option 'data_compression = none'
-}
-
-function Pop-Migration
-{
-    
-}
-
-'@ | New-Migration -Name 'CreateSmallMoneyColumnNonDataTypeSpecific'
-
-    Invoke-Rivet -Push 'CreateSmallMoneyColumnNonDataTypeSpecific'
-    
-    Assert-Table 'Foobar'
-    Assert-Column -Name 'id' -DataType 'SmallMoney' -TableName 'Foobar'
-}
-
 function Test-ShouldCreateSmallMoneyColumn
 {
     @'

@@ -1,11 +1,11 @@
 function Push-Migration()
 {
     Add-Table -Name 'Source' -SchemaName 'rivet' {
-        New-Column 'source_id' -Int -NotNull
+        Int 'source_id' -NotNull
     }
 
     Add-Table -Name 'Reference' -SchemaName 'rivet' {
-        New-Column 'reference_id' -Int -NotNull
+        Int 'reference_id' -NotNull
     }
 
     Add-PrimaryKey -TableName 'Reference' -ColumnName 'reference_id' -SchemaName 'rivet'

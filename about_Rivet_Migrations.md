@@ -21,12 +21,12 @@ The following functions are available for managing tables:
  * Add-Table
  * Remove-Table 
     
-The `Add-Column`'s  `Column` parameter is a script block that should return columns as column objects, e.g.,
+The `Add-(DataType)Column`'s  `Column` parameter is a script block that should return columns as column objects, e.g.,
 
     Add-Table Customer {
-        New-Column 'ID' -Int -Identity
-        New-Column 'Name' -Varchar -Unicode -NotNull
-        New-Column 'ZipCode' -Int -NotNull
+        Int 'ID' -Identity
+        NVarChar 'Name' -NotNull
+        Int 'ZipCode' -NotNull
     }
 
 ## Columns

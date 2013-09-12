@@ -10,29 +10,6 @@ function Stop-Test
     Remove-Module RivetTest
 }
 
-function Test-ShouldCreateSmallIntColumnNonDataTypeSpecific
-{
-    @'
-function Push-Migration
-{
-    Add-Table -Name 'Foobar' -Column {
-        New-Column 'id' -SmallInt -Identity
-    } -Option 'data_compression = none'
-}
-
-function Pop-Migration
-{
-    
-}
-
-'@ | New-Migration -Name 'CreateSmallIntColumnNonDataTypeSpecific'
-
-    Invoke-Rivet -Push 'CreateSmallIntColumnNonDataTypeSpecific'
-    
-    Assert-Table 'Foobar'
-    Assert-Column -Name 'id' -DataType 'SmallInt' -TableName 'Foobar' -NotNull
-}
-
 function Test-ShouldCreateSmallIntWithNullable
 {
     @'

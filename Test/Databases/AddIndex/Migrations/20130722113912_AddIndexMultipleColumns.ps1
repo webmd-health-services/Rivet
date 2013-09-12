@@ -2,9 +2,9 @@
 function Push-Migration()
 {
     Add-Table -Name 'AddIndex' {
-        New-Column 'IndexMe' -Int -NotNull
-        New-Column 'IndexMe2' -Char 255 -NotNull
-        New-Column 'DonotIndex' -Int -NotNull
+        Int 'IndexMe' -NotNull
+        Char 'IndexMe2' -Size 255 -NotNull
+        Int 'DonotIndex' -NotNull
     }
 
     #Add an Index to 'IndexMe'

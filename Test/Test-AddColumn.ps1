@@ -42,7 +42,6 @@ function Test-ShouldAddNullableColumnsNoDefaults
     Assert-Column -Name 'floatwithprecision' 'float' -Precision 53 -Description 'float(53) null' @commonArgs
     Assert-Column -Name 'real' 'real' -Description 'real null' @commonArgs
     Assert-Column -Name 'date' 'date' -Description 'date null' @commonArgs
-    Assert-Column -Name 'datetime' 'datetime' -Description 'datetime null' @commonArgs
     Assert-Column -Name 'datetime2' 'datetime2' -Description 'datetime2 null' @commonArgs
     Assert-Column -Name 'datetimeoffset' 'datetimeoffset' -Description 'datetimeoffset null' @commonArgs
     Assert-Column -Name 'smalldatetime' 'smalldatetime' -Description 'smalldatetime null' @commonArgs
@@ -86,7 +85,6 @@ function Test-ShouldAddNotNullableColumnsWithDefaults
     Assert-Column -Name 'floatwithprecision' 'float' -Precision 53 -Default '9.99' -Description 'float(53) not null' @commonArgs
     Assert-Column -Name 'real' 'real' -Default '10.10' -Description 'real not null' @commonArgs
     Assert-Column -Name 'date' 'date' -Default 'getdate()' -Description 'date not null' @commonArgs
-    Assert-Column -Name 'datetime' 'datetime' -Default 'getdate()' -Description 'datetime not null' @commonArgs
     Assert-Column -Name 'datetime2' 'datetime2' -Default 'getdate()' -Description 'datetime2 not null' @commonArgs
     Assert-Column -Name 'datetimeoffset' 'datetimeoffset' -Default 'getdate()' -Description 'datetimeoffset not null' @commonArgs
     Assert-Column -Name 'smalldatetime' 'smalldatetime' -Default 'getdate()' -Description 'smalldatetime not null' @commonArgs
@@ -192,7 +190,6 @@ function Test-ShouldAddSparseColumns
     Assert-Column -Name 'floatwithprecision' 'float' -Precision 53 -Sparse -Description 'float(53) sparse' @commonArgs
     Assert-Column -Name 'real' 'real' -Sparse -Description 'real sparse' @commonArgs
     Assert-Column -Name 'date' 'date' -Sparse -Description 'date sparse' @commonArgs
-    Assert-Column -Name 'datetime' 'datetime' -Sparse -Description 'datetime sparse' @commonArgs
     Assert-Column -Name 'datetime2' 'datetime2' -Sparse -Description 'datetime2 sparse' @commonArgs
     Assert-Column -Name 'datetimeoffset' 'datetimeoffset' -Sparse -Description 'datetimeoffset sparse' @commonArgs
     Assert-Column -Name 'smalldatetime' 'smalldatetime' -Sparse -Description 'smalldatetime sparse' @commonArgs

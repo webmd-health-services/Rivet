@@ -63,13 +63,12 @@ N'
     Add-Column floatwithprecision -Float 53 -Description 'float(53) null' @commonArgs
     Add-Column real -Real -Description 'real null' @commonArgs
     Add-Column date -Date -Description 'date null' @commonArgs
-    Add-Column datetime 'datetime' -Description 'datetime null' @commonArgs
     Add-Column datetime2 -Datetime2 -Description 'datetime2 null' @commonArgs
     Add-Column datetimeoffset -DateTimeOffset -Description 'datetimeoffset null' @commonArgs
-    Add-Column smalldatetime 'smalldatetime' -Description 'smalldatetime null' @commonArgs
+    Add-Column smalldatetime -smalldatetime -Description 'smalldatetime null' @commonArgs
     Add-Column time -Time -Description 'time null' @commonArgs
     Add-Column uniqueidentifier -UniqueIdentifier -Description 'uniqueidentifier null' @commonArgs
-    Add-Column xml -Xml 'EmptyXsd' -Description 'xml null' @commonArgs
+    Add-Column xml -Xml -XmlSchemaCollection 'EmptyXsd' -Description 'xml null' @commonArgs
     Add-Column sql_variant -SqlVariant -Description 'sql_variant null' @commonArgs
     Add-Column hierarchyid -HierarchyID -Description 'hierarchyid null' @commonArgs
     Add-Column timestamp -RowVersion -Description 'timestamp' @commonArgs
@@ -105,7 +104,6 @@ function Pop-Migration()
     Remove-Column floatwithprecision @commonArgs
     Remove-Column real @commonArgs
     Remove-Column date @commonArgs
-    Remove-Column datetime @commonArgs
     Remove-Column datetime2 @commonArgs
     Remove-Column datetimeoffset @commonArgs
     Remove-Column smalldatetime @commonArgs
