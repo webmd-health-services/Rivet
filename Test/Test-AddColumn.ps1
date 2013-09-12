@@ -1,0 +1,226 @@
+
+function Setup
+{
+    Import-Module -Name (Join-Path $TestDir 'RivetTest') -ArgumentList 'AddColumn' 
+    Start-RivetTest
+}
+
+function TearDown
+{
+    Stop-RivetTest
+    Remove-Module RivetTest
+}
+
+function Test-ShouldAddNullableColumnsNoDefaults
+{
+    Invoke-Rivet -Push 'AddColumnNoDefaultsAllNull'
+
+    Assert-True (Test-Table -Name 'AddColumnNoDefaultsAllNull')
+
+    $commonArgs = @{ TableName = 'AddColumnNoDefaultsAllNull' }
+    Assert-Column -Name 'varchar' 'varchar' -Size 20 -Description 'varchar(20) null' @commonArgs
+    Assert-Column -Name 'varcharmax' 'varchar' -Max -Description 'varchar(max) null' @commonArgs
+    Assert-Column -Name 'char' 'char' -Size 10 -Description 'char(10) null' @commonArgs
+    Assert-Column -Name 'nvarchar' 'nvarchar' -Size 30 -Description 'nvarchar(30) null' @commonArgs
+    Assert-Column -Name 'nvarcharmax' 'nvarchar' -Max -Description 'nvarchar(max) null' @commonArgs
+    Assert-Column -Name 'nchar' 'nchar' -Size 35 -Description 'nchar(35) null' @commonArgs
+    Assert-Column -Name 'binary' 'binary' -Size 40 -Description 'binary(40) null' @commonArgs
+    Assert-Column -Name 'varbinary' 'varbinary' -Size 45 -Description 'varbinary(45) null' @commonArgs
+    Assert-Column -Name 'varbinarymax' 'varbinary' -Max -Description 'varbinary(max) null' @commonArgs
+    Assert-Column -Name 'bigint' 'bigint' -Description 'bigint null' @commonArgs
+    Assert-Column -Name 'int' 'int' -Description 'int null' @commonArgs
+    Assert-Column -Name 'smallint' 'smallint' -Description 'smallint null' @commonArgs
+    Assert-Column -Name 'tinyint' 'tinyint' -Description 'tinyint null' @commonArgs
+    Assert-Column -Name 'numeric' 'numeric' -Precision 1 -Description 'numeric(1) null' @commonArgs
+    Assert-Column -Name 'numericwithscale' 'numeric' -Precision 2 -Scale 2 -Description 'numeric(2,2) null' @commonArgs
+    Assert-Column -Name 'decimal' 'decimal' -Precision 4 -Description 'decimal(4) null' @commonArgs
+    Assert-Column -Name 'decimalwithscale' 'decimal' -Precision 5 -Scale 5 -Description 'decimal(5,5) null' @commonArgs
+    Assert-Column -Name 'bit' 'bit' -Description 'bit null' @commonArgs
+    Assert-Column -Name 'money' 'money' -Description 'money null' @commonArgs
+    Assert-Column -Name 'smallmoney' 'smallmoney' -Description 'smallmoney null' @commonArgs
+    Assert-Column -Name 'float' 'float' -Description 'float null' @commonArgs
+    Assert-Column -Name 'floatwithprecision' 'float' -Precision 53 -Description 'float(53) null' @commonArgs
+    Assert-Column -Name 'real' 'real' -Description 'real null' @commonArgs
+    Assert-Column -Name 'date' 'date' -Description 'date null' @commonArgs
+    Assert-Column -Name 'datetime2' 'datetime2' -Description 'datetime2 null' @commonArgs
+    Assert-Column -Name 'datetimeoffset' 'datetimeoffset' -Description 'datetimeoffset null' @commonArgs
+    Assert-Column -Name 'smalldatetime' 'smalldatetime' -Description 'smalldatetime null' @commonArgs
+    Assert-Column -Name 'time' 'time' -Description 'time null' @commonArgs
+    Assert-Column -Name 'xml' 'xml' -Description 'xml null' @commonArgs
+    Assert-Column -Name 'sql_variant' 'sql_variant' -Description 'sql_variant null' @commonArgs
+    Assert-Column -Name 'uniqueidentifier' 'uniqueidentifier' -Description 'uniqueidentifier null' @commonArgs
+    Assert-Column -Name 'hierarchyid' 'hierarchyid' -Description 'hierarchyid null' @commonArgs
+
+    Assert-Column -Name 'timestamp' 'timestamp' -NotNull -Description 'timestamp' @commonArgs
+}
+
+function Test-ShouldAddNotNullableColumnsWithDefaults
+{
+    Invoke-Rivet -Push 'AddColumnDefaultsNotNull'
+
+    Assert-True (Test-Table -Name 'AddColumnDefaultsNotNull')
+
+    $commonArgs = @{ TableName = 'AddColumnDefaultsNotNull'; NotNull = $true; }
+    Assert-Column -Name 'varchar' 'varchar' -Size 20 -Default "'varchar'" -Description 'varchar(20) not null' @commonArgs
+    Assert-Column -Name 'varcharmax' 'varchar' -Max -Default "'varcharmax'" -Description 'varchar(max) not null' @commonArgs
+    Assert-Column -Name 'char' 'char' -Size 10 -Default "'char'" -Description 'char(10) not null' @commonArgs
+    Assert-Column -Name 'nvarchar' 'nvarchar' -Size 30 -Default "'nvarchar'" -Description 'nvarchar(30) not null' @commonArgs
+    Assert-Column -Name 'nvarcharmax' 'nvarchar' -Max -Default "'nvarcharmax'" -Description 'nvarchar(max) not null' @commonArgs
+    Assert-Column -Name 'nchar' 'nchar' -Size 35 -Default "'nchar'" -Description 'nchar(35) not null' @commonArgs
+    Assert-Column -Name 'binary' 'binary' -Size 40 -Default 1 -Description 'binary(40) not null' @commonArgs
+    Assert-Column -Name 'varbinary' 'varbinary' -Size 45 -Default 2 -Description 'varbinary(45) not null' @commonArgs
+    Assert-Column -Name 'varbinarymax' 'varbinary' -Max -Default 3 -Description 'varbinary(max) not null' @commonArgs
+    Assert-Column -Name 'bigint' 'bigint' -Default ([int64]::MaxValue) -Description 'bigint not null' @commonArgs
+    Assert-Column -Name 'int' 'int' -Default ([int]::MaxValue) -Description 'int not null' @commonArgs
+    Assert-Column -Name 'smallint' 'smallint' -Default ([int16]::MaxValue) -Description 'smallint not null' @commonArgs
+    Assert-Column -Name 'tinyint' 'tinyint' -Default ([byte]::MaxValue) -Description 'tinyint not null' @commonArgs
+    Assert-Column -Name 'numeric' 'numeric' -Precision 1 -Default '1.11' -Description 'numeric(1) not null' @commonArgs
+    Assert-Column -Name 'numericwithscale' 'numeric' -Precision 2 -Scale 2 -Default '2.22' -Description 'numeric(2,2) not null' @commonArgs
+    Assert-Column -Name 'decimal' 'decimal' -Precision 4 -Default '3.33' -Description 'decimal(4) not null' @commonArgs
+    Assert-Column -Name 'decimalwithscale' 'decimal' -Precision 5 -Scale 5 -Default '4.44' -Description 'decimal(5,5) not null' @commonArgs
+    Assert-Column -Name 'bit' 'bit' -Default '1' -Description 'bit not null' @commonArgs
+    Assert-Column -Name 'money' 'money' -Default '6.66' -Description 'money not null' @commonArgs
+    Assert-Column -Name 'smallmoney' 'smallmoney' -Default '7.77' -Description 'smallmoney not null' @commonArgs
+    Assert-Column -Name 'float' 'float' -Default '8.88' -Description 'float not null' @commonArgs
+    Assert-Column -Name 'floatwithprecision' 'float' -Precision 53 -Default '9.99' -Description 'float(53) not null' @commonArgs
+    Assert-Column -Name 'real' 'real' -Default '10.10' -Description 'real not null' @commonArgs
+    Assert-Column -Name 'date' 'date' -Default 'getdate()' -Description 'date not null' @commonArgs
+    Assert-Column -Name 'datetime2' 'datetime2' -Default 'getdate()' -Description 'datetime2 not null' @commonArgs
+    Assert-Column -Name 'datetimeoffset' 'datetimeoffset' -Default 'getdate()' -Description 'datetimeoffset not null' @commonArgs
+    Assert-Column -Name 'smalldatetime' 'smalldatetime' -Default 'getdate()' -Description 'smalldatetime not null' @commonArgs
+    Assert-Column -Name 'time' 'time' -Default 'getdate()' -Description 'time not null' @commonArgs
+    Assert-Column -Name 'xml' 'xml' -Default "'<empty />'" -Description 'xml not null' @commonArgs
+    Assert-Column -Name 'sql_variant' 'sql_variant' -Default "'sql_variant'" -Description 'sql_variant not null' @commonArgs
+    Assert-Column -Name 'uniqueidentifier' 'uniqueidentifier' -Default 'newid()' -Description 'uniqueidentifier not null' @commonArgs
+    Assert-Column -Name 'hierarchyid' 'hierarchyid' -Default '0x11' -Description 'hierarchyid not null' @commonArgs
+}
+
+function Test-ShouldCreateIdentities
+{
+    Invoke-Rivet -Push 'AddColumnIdentityTables'
+
+    Assert-Table 'BigIntIdentity'
+    Assert-Column -Name 'bigintidentity' 'bigint' -Seed 1 -Increment 2 -NotNull -TableName 'BigIntIdentity'
+
+    Assert-Table 'IntIdentity'
+    Assert-Column -Name 'intidentity' 'int' -Seed 3 -Increment 5 -NotNull -TableName 'IntIdentity'
+
+    Assert-Table 'SmallIntIdentity'
+    Assert-Column -Name 'smallintidentity' 'smallint' -Seed 7 -Increment 11 -NotNull -TableName 'SmallIntIdentity'
+
+    Assert-Table 'TinyIntIdentity'
+    Assert-Column -Name 'tinyintidentity' 'tinyint' -Seed 13 -Increment 17 -NotNull -TableName 'TinyIntIdentity'
+
+    Assert-Table 'NumericIdentity'
+    Assert-Column -Name 'numericidentity' 'numeric' -Size 5 -Seed 23 -Increment 29 -NotNull -TableName 'NumericIdentity'
+
+    Assert-Table 'DecimalIdentity'
+    Assert-Column -Name 'decimalidentity' 'decimal' -Size 5 -Seed 37 -Increment 41 -NotNull -TableName 'DecimalIdentity'
+}
+
+function Test-ShouldCreateRowGuidCol
+{
+    Invoke-Rivet -Push 'AddColumnRowGuidCol'
+
+    Assert-Table 'WithRowGuidCol'
+
+    Assert-Column -Name 'uniqueidentiferasrowguidcol' 'uniqueidentifier' -RowGuidCol -TableName 'WithRowGuidCol'
+}
+
+function Test-ShouldSupportXmlDocument
+{
+    Invoke-Rivet -Push 'AddColumnXmlDocument'
+
+    Assert-Table 'WithXmlDocument'
+
+    Assert-Column -Name 'xmlasdocument' 'xml' -Document -TableName 'WithXmlDocument'
+}
+
+# This test won't work unless file streams are setup.  Don't know how to do that so ignoring this test for now.
+function Ignore-ShouldSupportFileStream
+{
+    Invoke-Rivet -Push 'AddColumnVarBinaryFileStream'
+
+    Assert-Table 'WithVarBinaryFileStream'
+
+    Assert-Column -Name 'filestreamvarbinary' 'varbinary' -Max -FileStream -TableName 'WithVarBinaryFileStream'
+}
+
+function Test-ShouldSupportCollation
+{
+    Invoke-Rivet -Push 'AddColumnCollation'
+
+    Assert-Table 'WithCustomCollation'
+
+    Assert-Column -Name 'char' 'char' -Collation 'Japanese_BIN' -TableName 'WithCustomCollation'    
+    Assert-Column -Name 'nchar' 'nchar' -Collation 'Korean_Wansung_BIN' -TableName 'WithCustomCollation'    
+    Assert-Column -Name 'varchar' 'varchar' -Collation 'Chinese_Taiwan_Stroke_BIN' -TableName 'WithCustomCollation'    
+    Assert-Column -Name 'nvarchar' 'nvarchar' -Collation 'Thai_BIN' -TableName 'WithCustomCollation'    
+}
+
+
+function Test-ShouldAddSparseColumns
+{
+    Invoke-Rivet -Push 'AddColumnSparse'
+
+    Assert-Table -Name 'WithSparseColumns'
+
+    $commonArgs = @{ TableName = 'WithSparseColumns' }
+    Assert-Column -Name 'varchar' 'varchar' -Size 20 -Sparse -Description 'varchar(20) sparse' @commonArgs
+    Assert-Column -Name 'varcharmax' 'varchar' -Max -Sparse -Description 'varchar(max) sparse' @commonArgs
+    Assert-Column -Name 'char' 'char' -Size 10 -Sparse -Description 'char(10) sparse' @commonArgs
+    Assert-Column -Name 'nvarchar' 'nvarchar' -Size 30 -Sparse -Description 'nvarchar(30) sparse' @commonArgs
+    Assert-Column -Name 'nvarcharmax' 'nvarchar' -Max -Sparse -Description 'nvarchar(max) sparse' @commonArgs
+    Assert-Column -Name 'nchar' 'nchar' -Size 35 -Sparse -Description 'nchar(35) sparse' @commonArgs
+    Assert-Column -Name 'binary' 'binary' -Size 40 -Sparse -Description 'binary(40) sparse' @commonArgs
+    Assert-Column -Name 'varbinary' 'varbinary' -Size 45 -Sparse -Description 'varbinary(45) sparse' @commonArgs
+    Assert-Column -Name 'varbinarymax' 'varbinary' -Max -Sparse -Description 'varbinary(max) sparse' @commonArgs
+    Assert-Column -Name 'bigint' 'bigint' -Sparse -Description 'bigint sparse' @commonArgs
+    Assert-Column -Name 'int' 'int' -Sparse -Description 'int sparse' @commonArgs
+    Assert-Column -Name 'smallint' 'smallint' -Sparse -Description 'smallint sparse' @commonArgs
+    Assert-Column -Name 'tinyint' 'tinyint' -Sparse -Description 'tinyint sparse' @commonArgs
+    Assert-Column -Name 'numeric' 'numeric' -Precision 1 -Sparse -Description 'numeric(1) sparse' @commonArgs
+    Assert-Column -Name 'numericwithscale' 'numeric' -Precision 2 -Scale 2 -Sparse -Description 'numeric(2,2) sparse' @commonArgs
+    Assert-Column -Name 'decimal' 'decimal' -Precision 4 -Sparse -Description 'decimal(4) sparse' @commonArgs
+    Assert-Column -Name 'decimalwithscale' 'decimal' -Precision 5 -Scale 5 -Sparse -Description 'decimal(5,5) sparse' @commonArgs
+    Assert-Column -Name 'bit' 'bit' -Sparse -Description 'bit sparse' @commonArgs
+    Assert-Column -Name 'money' 'money' -Sparse -Description 'money sparse' @commonArgs
+    Assert-Column -Name 'smallmoney' 'smallmoney' -Sparse -Description 'smallmoney sparse' @commonArgs
+    Assert-Column -Name 'float' 'float' -Sparse -Description 'float sparse' @commonArgs
+    Assert-Column -Name 'floatwithprecision' 'float' -Precision 53 -Sparse -Description 'float(53) sparse' @commonArgs
+    Assert-Column -Name 'real' 'real' -Sparse -Description 'real sparse' @commonArgs
+    Assert-Column -Name 'date' 'date' -Sparse -Description 'date sparse' @commonArgs
+    Assert-Column -Name 'datetime2' 'datetime2' -Sparse -Description 'datetime2 sparse' @commonArgs
+    Assert-Column -Name 'datetimeoffset' 'datetimeoffset' -Sparse -Description 'datetimeoffset sparse' @commonArgs
+    Assert-Column -Name 'smalldatetime' 'smalldatetime' -Sparse -Description 'smalldatetime sparse' @commonArgs
+    Assert-Column -Name 'time' 'time' -Sparse -Description 'time sparse' @commonArgs
+    Assert-Column -Name 'xml' 'xml' -Sparse -Description 'xml sparse' @commonArgs
+    Assert-Column -Name 'sql_variant' 'sql_variant' -Sparse -Description 'sql_variant sparse' @commonArgs
+    Assert-Column -Name 'uniqueidentifier' 'uniqueidentifier' -Sparse -Description 'uniqueidentifier sparse' @commonArgs
+    Assert-Column -Name 'hierarchyid' 'hierarchyid' -Sparse -Description 'hierarchyid sparse' @commonArgs
+}
+
+
+function Test-ShouldCreateIdentitiesNotForReplication
+{
+    Invoke-Rivet -Push 'AddColumnNotForReplication'
+
+    Assert-Table 'BigIntIdentity'
+    Assert-Column -Name 'bigintidentity' 'bigint' -Seed 1 -Increment 2 -NotNull -NotForReplication  -TableName 'BigIntIdentity'
+
+    Assert-Table 'IntIdentity'
+    Assert-Column -Name 'intidentity' 'int' -Seed 3 -Increment 5 -NotNull -NotForReplication  -TableName 'IntIdentity'
+
+    Assert-Table 'SmallIntIdentity'
+    Assert-Column -Name 'smallintidentity' 'smallint' -Seed 7 -Increment 11 -NotNull -NotForReplication  -TableName 'SmallIntIdentity'
+
+    Assert-Table 'TinyIntIdentity'
+    Assert-Column -Name 'tinyintidentity' 'tinyint' -Seed 13 -Increment 17 -NotNull -NotForReplication  -TableName 'TinyIntIdentity'
+
+    Assert-Table 'NumericIdentity'
+    Assert-Column -Name 'numericidentity' 'numeric' -Size 5 -Seed 23 -Increment 29 -NotNull -NotForReplication  -TableName 'NumericIdentity'
+
+    Assert-Table 'DecimalIdentity'
+    Assert-Column -Name 'decimalidentity' 'decimal' -Size 5 -Seed 37 -Increment 41 -NotNull -NotForReplication  -TableName 'DecimalIdentity'
+}
+

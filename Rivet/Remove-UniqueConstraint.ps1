@@ -1,0 +1,46 @@
+
+function Remove-UniqueConstraint
+{
+    <#
+    .SYNOPSIS
+    Removes the Unique Constraint from the database
+
+    .DESCRIPTION
+    Removes the Unique Constraint from the database.
+
+    .LINK
+    Remove-UniqueConstraint
+
+    .EXAMPLE
+    Remove-UniqueConstraint -TableName Cars -Column Year
+
+    Drops a Unique Constraint of column 'Year' in the table 'Cars'
+
+    #>
+
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]
+        # The name of the target table.
+        $TableName,
+
+        [Parameter()]
+        [string]
+        # The schema name of the target table.  Defaults to `dbo`.
+        $SchemaName = 'dbo',
+
+        [Parameter(Mandatory=$true)]
+        [string[]]
+        # The column(s) on which the UniqueConstraint is based
+        $ColumnName  
+    )
+
+    Set-StrictMode -Version Latest
+
+    $ColumnClause = $ColumnName -join ','
+
+    $op = New-Object 'Rivet.Operations.RemoveUniqueConstraintOperation' $SchemaName, $TableName, $ColumnName
+    Write-Host (' {0}.{1} -{2} ({3})' -f $SchemaName,$TableName,$op.ConstraintName.Name,$ColumnClause)
+    Invoke-MigrationOperation -Operation $op
+}
