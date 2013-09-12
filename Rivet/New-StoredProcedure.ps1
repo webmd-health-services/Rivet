@@ -1,5 +1,17 @@
 function New-StoredProcedure
 {
+    <#
+    .SYNOPSIS
+    Creates a new stored procedure.
+
+    .DESCRIPTION
+    Creates a new stored procedure.
+
+    .EXAMPLE
+    New-StoredProcedure -SchemaName 'rivet' 'ReadMigrations' 'AS select * from rivet.Migrations'
+
+    Creates a stored procedure to read the migrations from Rivet's Migrations table.  Note that in real life, you probably should leave my table alone.
+    #>
     [CmdletBinding()]
     param(
         [Parameter(Mandatory=$true,Position=0)]
