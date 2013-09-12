@@ -1,5 +1,17 @@
- function New-ViewOperation
-{
+ function New-View
+ {
+    <#
+    .SYNOPSIS
+    Creates a new view.
+
+    .DESCRIPTION
+    Creates a new view.
+
+    .EXAMPLE
+    New-View -SchemaName 'rivet' 'ReadMigrations' 'AS select * from rivet.Migrations'
+
+    Creates a view to read all the migrations from Rivet's Migrations table.  Don't do this in real life.
+    #>
     [CmdletBinding()]
     param(
         [Parameter(Mandatory=$true,Position=0)]
