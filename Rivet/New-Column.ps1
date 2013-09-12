@@ -17,6 +17,12 @@ function New-Column
     #>
     [CmdletBinding()]
     param(
+
+        [Parameter(Mandatory=$true,Position=0,ParameterSetName='ExplicitDataType')]
+        [string]
+        # The Name of the new column.
+        $Name,
+
         [Parameter(Mandatory=$true,Position=1,ParameterSetName='ExplicitDataType')]
         [string]
         # The datatype of the new column.
@@ -72,5 +78,4 @@ function New-Column
             throw ('Unknown parameter set ''{0}'': @{{ {1} }}' -f $PSCmdlet.ParameterSetName,$params)
         }
     }
-    elseif( $PSBoundParameters.ContainsKey('NotNull') )
 }

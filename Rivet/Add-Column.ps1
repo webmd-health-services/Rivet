@@ -357,26 +357,32 @@ function Add-Column
         Where-Object { $_ -notmatch 'TableName|SchemaName|WithValues' } |
         Where-Object { $_ -notlike $DataType } |
         ForEach-Object { $newColumnArgs.$_ = $PSBoundParameters.$_ }
-
-    if ($PSCmdlet.ParameterSetName -notmatch "identity")
-    { 
-        $PSCmdlet.ParameterSetName -match '^As(.*)$'
+    
+    if ($PSCmdlet.ParameterSetName -like "ExplicitDataType")
+    {
+        $column = & "New-Column" @newColumnArgs
     }
     else
     {
-        $PSCmdlet.ParameterSetName -match '^As(.*)Identity$'
-    }
+        if ($PSCmdlet.ParameterSetName -notmatch "identity")
+        { 
+            $PSCmdlet.ParameterSetName -match '^As(.*)$'
+        }
+        else
+        {
+            $PSCmdlet.ParameterSetName -match '^As(.*)Identity$'
+        }
 
-    if ($newColumnArgs.ContainsKey("Unicode"))
-    {
-        $newColumnArgs.Remove("Unicode")
-        $column = & "New-N$($matches[1])Column" @newColumnArgs
+        if ($newColumnArgs.ContainsKey("Unicode"))
+        {
+            $newColumnArgs.Remove("Unicode")
+            $column = & "New-N$($matches[1])Column" @newColumnArgs
+        }
+        else
+        {
+            $column = & "New-$($matches[1])Column" @newColumnArgs
+        }
     }
-    else
-    {
-        $column = & "New-$($matches[1])Column" @newColumnArgs
-    }
-
     Write-Host (' {0}.{1} +{2}' -f $SchemaName,$TableName,$column.GetColumnDefinition($TableName,$SchemaName,$WithValues))
 
     $op = New-Object 'Rivet.Operations.AddColumnOperation' $SchemaName,$TableName,$column,$WithValues

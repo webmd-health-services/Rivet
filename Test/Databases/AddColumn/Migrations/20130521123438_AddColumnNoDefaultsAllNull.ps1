@@ -63,6 +63,7 @@ N'
     Add-Column floatwithprecision -Float 53 -Description 'float(53) null' @commonArgs
     Add-Column real -Real -Description 'real null' @commonArgs
     Add-Column date -Date -Description 'date null' @commonArgs
+    Add-Column datetime -Datatype datetime -Description 'date null' @commonArgs
     Add-Column datetime2 -Datetime2 -Description 'datetime2 null' @commonArgs
     Add-Column datetimeoffset -DateTimeOffset -Description 'datetimeoffset null' @commonArgs
     Add-Column smalldatetime -smalldatetime -Description 'smalldatetime null' @commonArgs
