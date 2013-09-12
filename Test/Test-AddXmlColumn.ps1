@@ -32,7 +32,7 @@ N'
 '@
 
     Add-Table -Name 'WithXmlContent' -Column {
-        New-Column 'One' -VarChar -NotNull
+        VarChar 'One' -NotNull
         Xml 'Two' -XmlSchemaCollection 'EmptyXsd'
     }
 }
@@ -72,7 +72,7 @@ N'
 '@
 
     Add-Table -Name 'WithXmlDocument' -Column {
-        New-Column 'One' -VarChar -NotNull
+        VarChar 'One' -NotNull
         Xml 'Two' -Document -XmlSchemaCollection 'EmptyXsd'
     }
 }

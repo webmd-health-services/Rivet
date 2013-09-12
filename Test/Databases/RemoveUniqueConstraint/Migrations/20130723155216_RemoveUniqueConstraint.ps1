@@ -1,7 +1,7 @@
 function Push-Migration()
 {
     Add-Table -Name 'RemoveUniqueConstraint' {
-        New-Column 'RemoveMyUniqueConstraint' -Int -NotNull
+        Int 'RemoveMyUniqueConstraint' -NotNull
     }
 
     #Add an Index to 'IndexMe'

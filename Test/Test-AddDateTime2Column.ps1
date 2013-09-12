@@ -10,29 +10,6 @@ function Stop-Test
     Remove-Module RivetTest
 }
 
-function Test-ShouldCreateDateTime2ColumnNonDataTypeSpecific
-{
-    @'
-function Push-Migration
-{
-    Add-Table -Name 'Foobar' -Column {
-        New-Column 'id' -DateTime2
-    } -Option 'data_compression = none'
-}
-
-function Pop-Migration
-{
-    
-}
-
-'@ | New-Migration -Name 'CreateDateTime2ColumnNonDataTypeSpecific'
-
-    Invoke-Rivet -Push 'CreateDateTime2ColumnNonDataTypeSpecific'
-    
-    Assert-Table 'Foobar'
-    Assert-Column -Name 'id' -DataType 'DateTime2' -TableName 'Foobar'
-}
-
 function Test-ShouldCreateDateTime2Column
 {
     @'

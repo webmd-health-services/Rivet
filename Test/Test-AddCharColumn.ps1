@@ -79,13 +79,13 @@ function Pop-Migration
     Assert-Column -Name 'id' -DataType 'Char' -TableName 'Foobar' -NotNull
 }
 
-function Test-ShouldCreateCharColumnWithCustomLengthCollation
+function Test-ShouldCreateCharColumnWithCustomSizeCollation
 {
     @'
 function Push-Migration
 {
     Add-Table -Name 'Foobar' -Column {
-        Char 'id' -NotNull -Length 50 -Collation "Chinese_Taiwan_Stroke_CI_AS"
+        Char 'id' -NotNull -Size 50 -Collation "Chinese_Taiwan_Stroke_CI_AS"
     }
 }
 
@@ -94,9 +94,9 @@ function Pop-Migration
     
 }
 
-'@ | New-Migration -Name 'ShouldCreateCharColumnWithCustomLengthCollation'
+'@ | New-Migration -Name 'ShouldCreateCharColumnWithCustomSizeCollation'
 
-    Invoke-Rivet -Push 'ShouldCreateCharColumnWithCustomLengthCollation'
+    Invoke-Rivet -Push 'ShouldCreateCharColumnWithCustomSizeCollation'
     
     Assert-Table 'Foobar'
     Assert-Column -Name 'id' -DataType 'Char' -TableName 'Foobar' -NotNull -Size 50 -Collation "Chinese_Taiwan_Stroke_CI_AS"

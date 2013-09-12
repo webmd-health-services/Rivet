@@ -10,29 +10,6 @@ function Stop-Test
     Remove-Module RivetTest
 }
 
-function Test-ShouldCreateUniqueIdentifierColumnNonDataTypeSpecific
-{
-    @'
-function Push-Migration
-{
-    Add-Table -Name 'Foobar' -Column {
-        New-Column 'id' -UniqueIdentifier
-    } -Option 'data_compression = none'
-}
-
-function Pop-Migration
-{
-    
-}
-
-'@ | New-Migration -Name 'CreateUniqueIdentifierColumnNonDataTypeSpecific'
-
-    Invoke-Rivet -Push 'CreateUniqueIdentifierColumnNonDataTypeSpecific'
-    
-    Assert-Table 'Foobar'
-    Assert-Column -Name 'id' -DataType 'UniqueIdentifier' -TableName 'Foobar'
-}
-
 function Test-ShouldCreateUniqueIdentifierColumn
 {
     @'

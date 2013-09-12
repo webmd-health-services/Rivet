@@ -13,8 +13,8 @@
 
             [Parameter()]
             [Int]
-            # Defines the length
-            $Length,
+            # Defines the Size
+            $Size,
 
             [Parameter()]
             [Switch]
@@ -48,21 +48,21 @@
             return
         }
 
-        if ($FileStream -and ($Length -ne 0))
+        if ($FileStream -and ($Size -ne 0))
         {
             throw ('Column {0}: FileStream requires VarBinary(max)' -f $Name)
             return
         }
         
-        $lengthtype = $null
+        $Sizetype = $null
 
-        if ($Length -ne 0)
+        if ($Size -ne 0)
         {
-            $lengthtype = New-Object Rivet.CharacterLength $Length
+            $Sizetype = New-Object Rivet.CharacterLength $Size
         }
         else 
         {
-            $lengthtype = New-Object Rivet.CharacterLength @()   
+            $Sizetype = New-Object Rivet.CharacterLength @()   
         }
 
         switch ($PSCmdlet.ParameterSetName)
@@ -74,12 +74,12 @@
                 {
                     $nullable = 'Sparse'
                 }
-                [Rivet.Column]::VarBinary($Name, $lengthtype, $FileStream, $nullable, $Default, $Description)
+                [Rivet.Column]::VarBinary($Name, $Sizetype, $FileStream, $nullable, $Default, $Description)
             }
             
             'NotNull'
             {
-                [Rivet.Column]::VarBinary($Name,$lengthtype, $FileStream, 'NotNull', $Default, $Description)
+                [Rivet.Column]::VarBinary($Name,$Sizetype, $FileStream, 'NotNull', $Default, $Description)
             }
         }
     }

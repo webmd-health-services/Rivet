@@ -10,28 +10,6 @@ function Stop-Test
     Remove-Module RivetTest
 }
 
-function Test-ShouldCreateDecimalColumnNonDataTypeSpecific
-{
-    @'
-function Push-Migration
-{
-    Add-Table -Name 'Foobar' -Column {
-        New-Column 'id' -Decimal -Identity -Precision 5
-    } -Option 'data_compression = none'
-}
-
-function Pop-Migration
-{
-    
-}
-
-'@ | New-Migration -Name 'CreateDecimalColumnNonDataTypeSpecific'
-
-    Invoke-Rivet -Push 'CreateDecimalColumnNonDataTypeSpecific'
-    
-    Assert-Table 'Foobar'
-    Assert-Column -Name 'id' -DataType 'Decimal' -TableName 'Foobar' -NotNull -Precision 5
-}
 
 function Test-ShouldCreateDecimalWithNullable
 {

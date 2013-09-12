@@ -44,8 +44,7 @@ Your migration is ready to go!  Here are all the built-in migrations you can use
     Add-Column [-Name] <String> [-DataType] <String> [-Sparse] [-NotNull] [-Default <Object>] [-Description <String>] -TableName <String> [-SchemaName <String>] 
     Add-Description [-Description] <String> [-SchemaName <String>] -TableName <String> [-ColumnName <String>]
     Add-Table [-Name] <String> [-Column] { 
-            New-Column <Same Parameters as Add-Column> 
-            [ ; New-Column <Same Parameters as Add-Column> ... ] 
+            
         } [-SchemaName <string>] [-FileGroup <String>] [-TextImageFileGroup <String>] [-FileStreamFileGroup <String>] [-Option <String[]>]
     Add-Table [-Name] <String> -FileTable  [-SchemaName <string>] [-FileGroup <String>] [-TextImageFileGroup <String>] [-FileStreamFileGroup <String>] [-Option <String[]>]
     Remove-Column -Name <string> -TableName <string> [-SchemaName <string>]

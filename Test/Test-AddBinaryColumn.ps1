@@ -79,13 +79,13 @@ function Pop-Migration
     Assert-Column -Name 'id' -DataType 'Binary' -TableName 'Foobar' -NotNull
 }
 
-function Test-ShouldCreateBinaryColumnWithCustomLength
+function Test-ShouldCreateBinaryColumnWithCustomSize
 {
     @'
 function Push-Migration
 {
     Add-Table -Name 'Foobar' -Column {
-        Binary 'id' -NotNull -Length 50 
+        Binary 'id' -NotNull -Size 50 
     }
 }
 
@@ -94,9 +94,9 @@ function Pop-Migration
     
 }
 
-'@ | New-Migration -Name 'ShouldCreateBinaryColumnWithCustomLengthCollation'
+'@ | New-Migration -Name 'ShouldCreateBinaryColumnWithCustomSizeCollation'
 
-    Invoke-Rivet -Push 'ShouldCreateBinaryColumnWithCustomLengthCollation'
+    Invoke-Rivet -Push 'ShouldCreateBinaryColumnWithCustomSizeCollation'
     
     Assert-Table 'Foobar'
     Assert-Column -Name 'id' -DataType 'Binary' -TableName 'Foobar' -NotNull -Size 50 

@@ -2,9 +2,9 @@ function Push-Migration()
 {
 
     Add-Table -Name 'PrimaryKey' {
-        New-Column 'id' -Int -NotNull
-        New-Column 'uuid' -UniqueIdentifier -NotNull
-        New-Column 'date' -DateTimeOffset -NotNull
+        Int 'id' -NotNull
+        UniqueIdentifier 'uuid' -NotNull
+        DateTimeOffset 'date' -NotNull
     }
 
     Add-PrimaryKey -TableName 'PrimaryKey' -ColumnName 'id','uuid','date'

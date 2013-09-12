@@ -10,29 +10,6 @@ function Stop-Test
     Remove-Module RivetTest
 }
 
-function Test-ShouldCreateDateTimeOffsetColumnNonDataTypeSpecific
-{
-    @'
-function Push-Migration
-{
-    Add-Table -Name 'Foobar' -Column {
-        New-Column 'id' -DateTimeOffset
-    } -Option 'data_compression = none'
-}
-
-function Pop-Migration
-{
-    
-}
-
-'@ | New-Migration -Name 'CreateDateTimeOffsetColumnNonDataTypeSpecific'
-
-    Invoke-Rivet -Push 'CreateDateTimeOffsetColumnNonDataTypeSpecific'
-    
-    Assert-Table 'Foobar'
-    Assert-Column -Name 'id' -DataType 'DateTimeOffset' -TableName 'Foobar'
-}
-
 function Test-ShouldCreateDateTimeOffsetColumn
 {
     @'

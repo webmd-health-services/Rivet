@@ -2,7 +2,7 @@
 function Push-Migration()
 {
     Add-Table 'RedoMigration' {
-        New-Column 'id' -Int -Identity
+        Int 'id' -Identity
     }
 }
 

@@ -9,15 +9,15 @@ function Add-Table
     The column's for the table should be created and returned in a script block, which is passed as the value of the `Column` parameter.  For example,
 
         Add-Table 'Suits' {
-            New-Column 'id' -Int -Identity
-            New-Column 'pieces -TinyInt -NotNull
-            New-Column 'color' -VarChar -NotNull
+            Int 'id' -Identity
+            TinyInt 'pieces -NotNull
+            VarChar 'color' -NotNull
         }
 
     Add-Table supports plugins.  At the end of the Add-Table migration, Invoke-MigrationEvent is invoked which will look for a script "Complete-AddTable.ps1" in the Plugins directory as defined by rivet.json.  For more information, see about_Rivet_Plugins
     
     .EXAMPLE
-    Add-Table -Name 'Ties' -Column { New-Column 'color' -VarChar -NotNull }
+    Add-Table -Name 'Ties' -Column { VarChar 'color' -NotNull }
 
     Creates a `Ties` table with a single column for each tie's color.  Pretty!
     #>
@@ -34,7 +34,7 @@ function Add-Table
 
         [Parameter(Mandatory=$true,Position=1,ParameterSetName='AsNormalTable')]
         [ScriptBlock]
-        # A script block that returns the table's columns using the `New-Column` function.
+        # A script block that returns the table's columns.
         $Column,
 
         [Parameter(Mandatory=$true,ParameterSetName='AsFileTable')]

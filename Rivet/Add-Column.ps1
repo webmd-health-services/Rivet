@@ -127,6 +127,11 @@ function Add-Column
         # Creates a datetimeoffset column.
         $DateTimeOffset,
 
+        [Parameter(Mandatory=$true,ParameterSetName='AsSmallDateTime')]
+        [Switch]
+        # Creates a datetimeoffset column.
+        $SmallDateTime,
+
         [Parameter(Mandatory=$true,ParameterSetName='AsTime')]
         [Switch]
         # Creates a date column.
@@ -225,17 +230,17 @@ function Add-Column
         # Creates a column to store XML documents.  You must also specify the XmlSchemaCollection.
         $Document,
 
-        [Parameter(Mandatory=$true,Position=2,ParameterSetName='AsXml')]
+        [Parameter(Mandatory=$true, Position=2, ParameterSetName='AsXml')]
         [string]
         # The XML schema collection for the XML column.  Required when storing an XML document.
         $XmlSchemaCollection,
 
-        [Parameter(Mandatory=$true,ParameterSetName='AsSql_Variant')]
+        [Parameter(Mandatory=$true,ParameterSetName='AsSqlVariant')]
         [Switch]
         # Creates a sqlvariant column.
         $SqlVariant,
 
-        [Parameter(Mandatory=$true,ParameterSetName='AsTimestamp')]
+        [Parameter(Mandatory=$true,ParameterSetName='AsRowVersion')]
         [Switch]
         [Alias('TimeStamp')]
         # Creates a rowversion/timestamp column.
@@ -269,10 +274,11 @@ function Add-Column
         [Parameter(ParameterSetName='AsDate')]
         [Parameter(ParameterSetName='AsDateTime2')]
         [Parameter(ParameterSetName='AsDateTimeOffset')]
+        [Parameter(ParameterSetName='AsSmallDateTime')]
         [Parameter(ParameterSetName='AsTime')]
         [Parameter(ParameterSetName='AsUniqueIdentifier')]
         [Parameter(ParameterSetName='AsXml')]
-        [Parameter(ParameterSetName='AsSql_Variant')]
+        [Parameter(ParameterSetName='AsSqlVariant')]
         [Parameter(ParameterSetName='AsTimestamp')]
         [Parameter(ParameterSetName='AsHierarchyID')]
         [Parameter(ParameterSetName='ExplicitDataType')]
@@ -298,10 +304,11 @@ function Add-Column
         [Parameter(ParameterSetName='AsDate')]
         [Parameter(ParameterSetName='AsDateTime2')]
         [Parameter(ParameterSetName='AsDateTimeOffset')]
+        [Parameter(ParameterSetName='AsSmallDateTime')]
         [Parameter(ParameterSetName='AsTime')]
         [Parameter(ParameterSetName='AsUniqueIdentifier')]
         [Parameter(ParameterSetName='AsXml')]
-        [Parameter(ParameterSetName='AsSql_Variant')]
+        [Parameter(ParameterSetName='AsSqlVariant')]
         [Parameter(ParameterSetName='AsTimestamp')]
         [Parameter(ParameterSetName='AsHierarchyID')]
         [Parameter(ParameterSetName='ExplicitDataType')]
@@ -332,12 +339,43 @@ function Add-Column
         $SchemaName = 'dbo'
     )
 
-    $newColumnArgs = @{} 
+    
+    $newColumnArgs = @{}
+    
+    if ($PSCmdlet.ParameterSetName -notmatch "identity")
+    { 
+        $PSCmdlet.ParameterSetName -match '^As(.*)$'
+        $Datatype = $matches[1]
+    }
+    else
+    {
+        $PSCmdlet.ParameterSetName -match '^As(.*)Identity$'
+        $Datatype = $matches[1]
+    }
+    
     $PSBoundParameters.Keys | 
         Where-Object { $_ -notmatch 'TableName|SchemaName|WithValues' } |
+        Where-Object { $_ -notlike $DataType } |
         ForEach-Object { $newColumnArgs.$_ = $PSBoundParameters.$_ }
 
-    $column = New-Column @newColumnArgs
+    if ($PSCmdlet.ParameterSetName -notmatch "identity")
+    { 
+        $PSCmdlet.ParameterSetName -match '^As(.*)$'
+    }
+    else
+    {
+        $PSCmdlet.ParameterSetName -match '^As(.*)Identity$'
+    }
+
+    if ($newColumnArgs.ContainsKey("Unicode"))
+    {
+        $newColumnArgs.Remove("Unicode")
+        $column = & "New-N$($matches[1])Column" @newColumnArgs
+    }
+    else
+    {
+        $column = & "New-$($matches[1])Column" @newColumnArgs
+    }
 
     Write-Host (' {0}.{1} +{2}' -f $SchemaName,$TableName,$column.GetColumnDefinition($TableName,$SchemaName,$WithValues))
 

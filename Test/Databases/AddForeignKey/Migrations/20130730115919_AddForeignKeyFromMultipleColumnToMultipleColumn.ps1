@@ -1,13 +1,13 @@
 function Push-Migration()
 {
     Add-Table -Name 'Source' {
-        New-Column 's_id_1' -Int -NotNull
-        New-Column 's_id_2' -Int -NotNull
+        Int 's_id_1' -NotNull
+        Int 's_id_2' -NotNull
     }
 
     Add-Table -Name 'Reference' {
-        New-Column 'r_id_1' -Int -NotNull
-        New-Column 'r_id_2' -Int -NotNull
+        Int 'r_id_1' -NotNull
+        Int 'r_id_2' -NotNull
     }
 
     Add-PrimaryKey -TableName 'Reference' -ColumnName 'r_id_1','r_id_2'

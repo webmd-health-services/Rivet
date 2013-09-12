@@ -50,10 +50,9 @@ N'
     Add-Column floatwithprecision -Float 53 -Sparse -Description 'float(53) sparse' @commonArgs
     Add-Column real -Real -Sparse -Description 'real sparse' @commonArgs
     Add-Column date -Date -Sparse -Description 'date sparse' @commonArgs
-    Add-Column datetime 'datetime' -Sparse -Description 'datetime sparse' @commonArgs
     Add-Column datetime2 -Datetime2 -Sparse -Description 'datetime2 sparse' @commonArgs
     Add-Column datetimeoffset -DateTimeOffset -Sparse -Description 'datetimeoffset sparse' @commonArgs
-    Add-Column smalldatetime 'smalldatetime' -Sparse -Description 'smalldatetime sparse' @commonArgs
+    Add-Column smalldatetime -smalldatetime -Sparse -Description 'smalldatetime sparse' @commonArgs
     Add-Column time -Time -Sparse -Description 'time sparse' @commonArgs
     Add-Column uniqueidentifier -UniqueIdentifier -Sparse -Description 'uniqueidentifier sparse' @commonArgs
     Add-Column xml -Xml -XmlSchemaCollection 'EmptyXsd' -Sparse -Description 'xml sparse' @commonArgs

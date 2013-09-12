@@ -70,7 +70,7 @@ function Test-ShouldPushMigrationsForMultipleDBs
         function Push-Migration 
         {
             Add-Table Table1 {
-                New-Column 'id' -Int -Identity
+                Int 'id' -Identity
             }
         }
 

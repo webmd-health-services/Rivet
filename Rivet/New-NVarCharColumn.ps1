@@ -13,8 +13,8 @@
 
             [Parameter()]
             [Int]
-            # Defines the string length of the fixed-length string data.  Default is 30
-            $Length = 30,
+            # Defines the string Size of the fixed-Size string data.  Default is 30
+            $Size,
 
             [Parameter()]
             [string]
@@ -48,9 +48,16 @@
             return
         }
         
-        $lengthtype = $null
+         $Sizetype = $null
 
-        $lengthtype = New-Object Rivet.CharacterLength $Length
+        if ($Size -ne 0)
+        {
+            $Sizetype = New-Object Rivet.CharacterLength $Size
+        }
+        else 
+        {
+            $Sizetype = New-Object Rivet.CharacterLength @()   
+        }
 
         switch ($PSCmdlet.ParameterSetName)
         {
@@ -61,12 +68,12 @@
                 {
                     $nullable = 'Sparse'
                 }
-                [Rivet.Column]::NVarChar($Name, $lengthtype, $Collation, $nullable, $Default, $Description)
+                [Rivet.Column]::NVarChar($Name, $Sizetype, $Collation, $nullable, $Default, $Description)
             }
             
             'NotNull'
             {
-                [Rivet.Column]::NVarChar($Name,$lengthtype, $Collation, 'NotNull', $Default, $Description)
+                [Rivet.Column]::NVarChar($Name,$Sizetype, $Collation, 'NotNull', $Default, $Description)
             }
         }
     }

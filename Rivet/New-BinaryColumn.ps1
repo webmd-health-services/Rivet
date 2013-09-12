@@ -13,8 +13,8 @@
 
             [Parameter()]
             [Int]
-            # Defines the length
-            $Length = 30,
+            # Defines the Size
+            $Size = 30,
 
             [Parameter(Mandatory=$true,ParameterSetName='NotNull')]
             [Switch]
@@ -43,9 +43,9 @@
             return
         }
         
-        $lengthtype = $null
+        $Sizetype = $null
 
-        $lengthtype = New-Object Rivet.CharacterLength $Length
+        $Sizetype = New-Object Rivet.CharacterLength $Size
 
         switch ($PSCmdlet.ParameterSetName)
         {
@@ -56,12 +56,12 @@
                 {
                     $nullable = 'Sparse'
                 }
-                [Rivet.Column]::Binary($Name, $lengthtype, $nullable, $Default, $Description)
+                [Rivet.Column]::Binary($Name, $Sizetype, $nullable, $Default, $Description)
             }
             
             'NotNull'
             {
-                [Rivet.Column]::Binary($Name,$lengthtype, 'NotNull', $Default, $Description)
+                [Rivet.Column]::Binary($Name,$Sizetype, 'NotNull', $Default, $Description)
             }
         }
     }

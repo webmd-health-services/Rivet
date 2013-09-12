@@ -50,10 +50,9 @@ N'
     Add-Column floatwithprecision -Float 53 -NotNull -Default '9.99' -Description 'float(53) not null' @commonArgs
     Add-Column real -Real -NotNull -Default '10.10' -Description 'real not null' @commonArgs
     Add-Column date -Date -NotNull -Default 'getdate()' -Description 'date not null' @commonArgs
-    Add-Column datetime 'datetime' -NotNull -Default 'getdate()' -Description 'datetime not null' @commonArgs
     Add-Column datetime2 -Datetime2 -NotNull -Default 'getdate()' -Description 'datetime2 not null' @commonArgs
     Add-Column datetimeoffset -DateTimeOffset -NotNull -Default 'getdate()' -Description 'datetimeoffset not null' @commonArgs
-    Add-Column smalldatetime 'smalldatetime' -NotNull -Default 'getdate()' -Description 'smalldatetime not null' @commonArgs
+    Add-Column smalldatetime -smalldatetime -NotNull -Default 'getdate()' -Description 'smalldatetime not null' @commonArgs
     Add-Column time -Time -NotNull -Default 'getdate()' -Description 'time not null' @commonArgs
     Add-Column uniqueidentifier -UniqueIdentifier -NotNull -Default 'newid()' -Description 'uniqueidentifier not null' @commonArgs
     Add-Column xml -Xml -XmlSchemaCollection 'EmptyXsd' -NotNull -Default "'<empty />'" -Description 'xml not null' @commonArgs

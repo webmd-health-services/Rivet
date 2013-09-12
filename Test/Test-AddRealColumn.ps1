@@ -10,29 +10,6 @@ function Stop-Test
     Remove-Module RivetTest
 }
 
-function Test-ShouldCreateRealColumnNonDataTypeSpecific
-{
-    @'
-function Push-Migration
-{
-    Add-Table -Name 'Foobar' -Column {
-        New-Column 'id' -Real
-    } -Option 'data_compression = none'
-}
-
-function Pop-Migration
-{
-    
-}
-
-'@ | New-Migration -Name 'CreateRealColumnNonDataTypeSpecific'
-
-    Invoke-Rivet -Push 'CreateRealColumnNonDataTypeSpecific'
-    
-    Assert-Table 'Foobar'
-    Assert-Column -Name 'id' -DataType 'Real' -TableName 'Foobar'
-}
-
 function Test-ShouldCreateRealColumn
 {
     @'

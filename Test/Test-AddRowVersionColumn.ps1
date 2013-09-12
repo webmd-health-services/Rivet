@@ -10,29 +10,6 @@ function Stop-Test
     Remove-Module RivetTest
 }
 
-function Test-ShouldCreateRowVersionColumnNonDataTypeSpecific
-{
-    @'
-function Push-Migration
-{
-    Add-Table -Name 'Foobar' -Column {
-        New-Column 'id' -RowVersion 
-    } 
-}
-
-function Pop-Migration
-{
-    
-}
-
-'@ | New-Migration -Name 'CreateRowVersionColumnNonDataTypeSpecific'
-
-    Invoke-Rivet -Push 'CreateRowVersionColumnNonDataTypeSpecific'
-    
-    Assert-Table 'Foobar'
-    Assert-Column -Name 'id' -DataType 'timestamp' -TableName 'Foobar' -NotNull
-}
-
 function Test-ShouldCreateRowVersionColumn
 {
     @'

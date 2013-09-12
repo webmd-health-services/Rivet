@@ -10,29 +10,6 @@ function Stop-Test
     Remove-Module RivetTest
 }
 
-function Test-ShouldCreateHierarchyIDColumnNonDataTypeSpecific
-{
-    @'
-function Push-Migration
-{
-    Add-Table -Name 'Foobar' -Column {
-        New-Column 'id' -HierarchyID
-    } -Option 'data_compression = none'
-}
-
-function Pop-Migration
-{
-    
-}
-
-'@ | New-Migration -Name 'CreateHierarchyIDColumnNonDataTypeSpecific'
-
-    Invoke-Rivet -Push 'CreateHierarchyIDColumnNonDataTypeSpecific'
-    
-    Assert-Table 'Foobar'
-    Assert-Column -Name 'id' -DataType 'HierarchyID' -TableName 'Foobar'
-}
-
 function Test-ShouldCreateHierarchyIDColumn
 {
     @'
