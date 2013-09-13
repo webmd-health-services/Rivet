@@ -7,6 +7,8 @@ Rivet is a database migration tool for PowerShell.  Finally!
 
 This script is the entry point for Rivet.  It is used to create a new migration, and apply/revert migrations against a database.
 
+Called without any arguments, Rivet will shows this help topic.
+
 .LINK
 about_Rivet
 
@@ -56,7 +58,8 @@ rivet.ps1 -Push -Environment Production
 
 Demonstrates how to migrate databases in a different environment.  The `Production` environment should be specified in the `rivet.json` configuration file.
 #>
-[CmdletBinding()]
+#Requires -Version 3
+[CmdletBinding(DefaultParameterSetName='ShowHelp')]
 param(
     [Parameter(Mandatory=$true,ParameterSetName='New')]
     [Switch]
@@ -97,19 +100,30 @@ param(
     # The database(s) to migrate. Optional.  Will operate on all databases otherwise.
     $Database,
 
-    [Parameter()]
+    [Parameter(ParameterSetName='New')]
+    [Parameter(ParameterSetName='Push')]
+    [Parameter(ParameterSetName='Pop')]
+    [Parameter(ParameterSetName='Redo')]
     [string]
     # The environment you're working in.  Controls which settings Rivet loads from the `rivet.json` configuration file.
     $Environment,
 
-    [Parameter()]
+    [Parameter(ParameterSetName='New')]
+    [Parameter(ParameterSetName='Push')]
+    [Parameter(ParameterSetName='Pop')]
+    [Parameter(ParameterSetName='Redo')]
     [string]
     # The path to the Rivet configuration file.  Default behavior is to look in the current directory for a `rivet.json` file.  See `about_Rivet_Configuration` for more information.
     $ConfigFilePath
 )
 
 Set-StrictMode -Version Latest
-$PSScriptRoot = Split-Path -Parent -Path $MyInvocation.MyCommand.Definition
+
+if( $PSCmdlet.ParameterSetName -eq 'ShowHelp' )
+{
+    Get-Help $PSCommandPath
+    return
+}
 
 & (Join-Path -Path $PSScriptRoot -ChildPath Import-Rivet.ps1 -Resolve)
 
