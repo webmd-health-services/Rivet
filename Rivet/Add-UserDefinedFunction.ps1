@@ -1,4 +1,4 @@
- function New-UserDefinedFunction
+ function Add-UserDefinedFunction
 {
     <#
     .SYNOPSIS
@@ -8,7 +8,7 @@
     Creates a new user-defined function.
 
     .EXAMPLE
-    New-UserDefinedFunction -SchemaName 'rivet' 'One' 'returns tinyint begin return 1 end'
+    Add-UserDefinedFunction -SchemaName 'rivet' 'One' 'returns tinyint begin return 1 end'
 
     Creates a user-defined function that returns the number 1.
     #>    [CmdletBinding()]
