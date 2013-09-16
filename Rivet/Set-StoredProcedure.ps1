@@ -33,6 +33,7 @@ function Set-StoredProcedure
         $Schema = 'dbo'
     )
     
+    Write-Warning ('The `Set-StoredProcedure` operation is deprecated. Please use `Add-StoredProcedure` instead.')
     $scriptPath = Resolve-ObjectScriptPath -StoredProcedure -Name $Name -Schema $Schema
     Invoke-SqlScript -Path $ScriptPath
 }

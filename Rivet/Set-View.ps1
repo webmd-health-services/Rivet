@@ -33,6 +33,7 @@ function Set-View
         $Schema = 'dbo'
     )
     
+    Write-Warning ('The `Set-View` operation is deprecated. Please use `Add-View` instead.')
     $scriptPath = Resolve-ObjectScriptPath -View -Name $Name -Schema $Schema
     Invoke-SqlScript -Path $ScriptPath
 }
