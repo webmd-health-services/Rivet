@@ -1,4 +1,4 @@
-function New-StoredProcedure
+function Add-StoredProcedure
 {
     <#
     .SYNOPSIS
@@ -8,7 +8,7 @@ function New-StoredProcedure
     Creates a new stored procedure.
 
     .EXAMPLE
-    New-StoredProcedure -SchemaName 'rivet' 'ReadMigrations' 'AS select * from rivet.Migrations'
+    Add-StoredProcedure -SchemaName 'rivet' 'ReadMigrations' 'AS select * from rivet.Migrations'
 
     Creates a stored procedure to read the migrations from Rivet's Migrations table.  Note that in real life, you probably should leave my table alone.
     #>
