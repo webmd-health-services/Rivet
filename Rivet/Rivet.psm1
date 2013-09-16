@@ -68,9 +68,6 @@ $publicFunctions = @(
                         'Remove-UniqueConstraint',
                         'Remove-UserDefinedFunction',
                         'Remove-View',
-                        'Set-StoredProcedure',
-                        'Set-UserDefinedFunction',
-                        'Set-View',
                         'Update-Description'
                       )
 

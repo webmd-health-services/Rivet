@@ -33,6 +33,7 @@ function Set-UserDefinedFunction
         $Schema = 'dbo'
     )
     
+    Write-Warning ('The `Set-UserDefinedFunction` operation is deprecated. Please use `Add-UserDefinedFunction` instead.')
     $scriptPath = Resolve-ObjectScriptPath -UserDefinedFunction -Name $Name -Schema $Schema
     Invoke-SqlScript -Path $ScriptPath
 }
