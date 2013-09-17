@@ -17,6 +17,14 @@ function Test-DatabaseObject
         [Parameter(Mandatory=$true,ParameterSetName='V')]
         [Switch]
         $View,
+
+        [Parameter(Mandatory=$true,ParameterSetName='TA')]
+        [Switch]
+        $AssemblyTrigger,
+
+        [Parameter(Mandatory=$true,ParameterSetName='TR')]
+        [Switch]
+        $SQLTrigger,
         
         [Parameter(Mandatory=$true,Position=1)]
         [string]
