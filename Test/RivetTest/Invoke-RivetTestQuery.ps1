@@ -15,7 +15,11 @@ function Invoke-RivetTestQuery
         
         [Parameter(ParameterSetName='AsScalar')]
         [Switch]
-        $AsScalar
+        $AsScalar,
+
+        [Parameter()]
+        # The timeout to use, in seconds.
+        $Timeout
     )
     
     Set-StrictMode -Version Latest
@@ -28,7 +32,12 @@ function Invoke-RivetTestQuery
     try
     {
         $cmd = New-Object Data.SqlClient.SqlCommand ($Query,$Connection)
-        if( $pscmdlet.ParameterSetName -eq 'AsScalar' )
+        if( $PSBoundParameters.ContainsKey( 'Timeout' ) )
+        {
+            $cmd.CommandTimeout = $Timeout
+        }
+
+        if( $PSCmdlet.ParameterSetName -eq 'AsScalar' )
         {
             return $cmd.ExecuteScalar()
         }

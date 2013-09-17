@@ -16,6 +16,6 @@ function New-Database
     end
 '@ -f $Name
 
-    Invoke-RivetTestQuery -Query $query -Master
+    Invoke-RivetTestQuery -Query $query -Master -Timeout 60
 
 }
