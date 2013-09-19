@@ -31,7 +31,7 @@ function Add-Row
         [Parameter()]
         [string]
         # The schema name of the table.  Default is `dbo`.
-        $SchemaName,
+        $SchemaName = 'dbo',
         
         [Parameter(Mandatory=$true,Position=1,ValueFromPipeline=$true)]
         [Hashtable[]]
@@ -40,6 +40,6 @@ function Add-Row
     )
 
     $op = New-Object 'Rivet.Operations.AddRowOperation' $SchemaName, $TableName, $Column
-    Write-Host(' +[{0}].[{1}]' -f $SchemaName,$TableName)
+    Write-Host(' +row(s)[{0}].[{1}]' -f $SchemaName,$TableName)
     Invoke-MigrationOperation -operation $op 
 }

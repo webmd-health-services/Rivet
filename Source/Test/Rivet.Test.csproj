@@ -72,6 +72,7 @@
     <Compile Include="Operations\AddRemoveForeignKeyOperationTestFixture.cs" />
     <Compile Include="Operations\AddTriggerOperationTestFixture.cs" />
     <Compile Include="Operations\AddRowOperationTestFixture.cs" />
+    <Compile Include="Operations\RemoveRowOperationTestFixture.cs" />
     <Compile Include="Operations\RemoveTriggerOperationTestFixture.cs" />
     <Compile Include="Operations\NewViewOperationTestFixture.cs" />
     <Compile Include="Operations\NewUserDefinedFunctionOperationTestFixture.cs" />
