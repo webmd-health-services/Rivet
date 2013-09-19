@@ -74,7 +74,8 @@ $publicFunctions = @(
                         'Remove-UserDefinedFunction',
                         'Remove-Trigger',
                         'Remove-View',
-                        'Update-Description'
+                        'Update-Description',
+                        'Update-Row'
                       )
 
 Export-ModuleMember -Function $publicFunctions
