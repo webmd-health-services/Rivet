@@ -24,13 +24,11 @@ namespace Rivet.Operations
 		{
 			var query = "";
 			var insertclause = string.Format("insert into [{0}].[{1}]", SchemaName, TableName);
-			var columnClause = "";
-			var valueClause = "";
 
 			foreach (var row in Column)
 			{
 				var columnList = row.Keys.Cast<string>().ToList();
-				columnClause = String.Join(", ", columnList.ToArray());
+				var columnClause = String.Join(", ", columnList.ToArray());
 				columnClause = String.Format("({0})", columnClause);
 
 				var valueList = new List<string>();
@@ -46,7 +44,7 @@ namespace Rivet.Operations
 						valueList.Add(temp);
 					}
 				}
-				valueClause = String.Join(", ", valueList.ToArray());
+				var valueClause = String.Join(", ", valueList.ToArray());
 				valueClause = String.Format("({0})", valueClause);
 
 				query = String.Format("{0}{1} {2} values {3}; ", query, insertclause, columnClause, valueClause);

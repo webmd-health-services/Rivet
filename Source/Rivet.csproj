@@ -56,6 +56,7 @@
     <Compile Include="ConstraintName.cs" />
     <Compile Include="Operations\AddTriggerOperation.cs" />
     <Compile Include="Operations\AddRowOperation.cs" />
+    <Compile Include="Operations\UpdateRowOperation.cs" />
     <Compile Include="Operations\RemoveRowOperation.cs" />
     <Compile Include="Operations\RemoveTriggerOperation.cs" />
     <Compile Include="Operations\NewViewOperation.cs" />
