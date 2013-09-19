@@ -3,7 +3,8 @@ function Setup
     Import-Module -Name (Join-Path $TestDir 'RivetTest') -ArgumentList 'AddAdminColumnPlugin'
     $tempPluginsPath = New-TempDir -Prefix 'AddAdminColumnPlugin'
     New-Item -Path (Join-Path -Path $tempPluginsPath -ChildPath '\Plugins\') -ItemType directory
-    Copy-Item .\Plugins\Complete-AddTable.ps1  $tempPluginsPath\Plugins\
+    $pluginPath = Join-Path -Path $TestDir -ChildPath '..\Plugins\Complete-AddTable.ps1' -Resolve
+    Copy-Item -Path $pluginPath -Destination $tempPluginsPath\Plugins\
     Start-RivetTest -PluginPath $tempPluginsPath
 }
 
