@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using System;
+using NUnit.Framework;
 using Rivet.Operations;
 using System.Collections;
 
@@ -10,14 +11,14 @@ namespace Rivet.Test.Operations
 		private const string SchemaName = "schemaName";
 		private const string TableName = "tableName";
 
-		private static Hashtable NewYork = new Hashtable()
+		private static readonly Hashtable NewYork = new Hashtable
 		{
 			{"City", "New York"},
 			{"State", "New York"},
 			{"Population", 8336697}
 		};
 
-		private static Hashtable LosAngeles = new Hashtable()
+		private static readonly Hashtable LosAngeles = new Hashtable
 		{
 			{"City", "Los Angeles"},
 			{"State", "California"},
@@ -38,6 +39,7 @@ namespace Rivet.Test.Operations
 			var op = new AddRowOperation(SchemaName, TableName, ArrayofHashtables);
 			Assert.AreEqual(SchemaName, op.SchemaName);
 			Assert.AreEqual(TableName, op.TableName);
+			Assert.AreEqual(2, op.Count());
 			Assert.AreEqual(NewYork["City"], op.Column[0]["City"]);
 			Assert.AreEqual(LosAngeles["City"], op.Column[1]["City"]);
 			Assert.AreEqual(NewYork["State"], op.Column[0]["State"]);
@@ -50,8 +52,7 @@ namespace Rivet.Test.Operations
 		public void ShouldWriteQueryForAddRow()
 		{
 			var op = new AddRowOperation(SchemaName, TableName, ArrayofHashtables);
-			var expectedQuery =
-				"insert into [schemaName].[tableName] (City, State, Population) values ('New York', 'New York', 8336697); insert into [schemaName].[tableName] (City, State, Population) values ('Los Angeles', 'California', 3857799); ";
+			var expectedQuery = string.Format("insert into [schemaName].[tableName] (City, State, Population) values ('New York', 'New York', 8336697);{0}insert into [schemaName].[tableName] (City, State, Population) values ('Los Angeles', 'California', 3857799);{0}", Environment.NewLine);
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}
 	}

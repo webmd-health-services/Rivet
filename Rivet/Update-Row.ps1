@@ -55,6 +55,6 @@ function Update-Row
         $op = New-Object 'Rivet.Operations.UpdateRowOperation' $SchemaName, $TableName, $Column
     }
 
-    Write-Host(' ~row(s)[{0}].[{1}]' -f $SchemaName,$TableName)
-    Invoke-MigrationOperation -operation $op 
+    $rowsUpdated = Invoke-MigrationOperation –Operation $op -NonQuery
+    Write-Host (" [{0}].[{1}] ={2} row(s)" -f $SchemaName, $TableName, $rowsUpdated)
 }

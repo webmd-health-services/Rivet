@@ -26,7 +26,7 @@ namespace Rivet.Test.Operations
 			var op = new UpdateColumnOperation(SchemaName, TableName, VarChar);
 			Assert.That(op.TableName, Is.EqualTo(TableName));
 			Assert.That(op.SchemaName, Is.EqualTo(SchemaName));
-			Assert.AreEqual(VarChar, op.ChangeInfo);
+			Assert.AreEqual(VarChar, op.Column);
 		}
 
 		[Test]
@@ -34,7 +34,7 @@ namespace Rivet.Test.Operations
 		{
 
 			var op = new UpdateColumnOperation(SchemaName, TableName, Int);
-			const string expectedQuery = "alter table [schemaName].[tableName] alter column intColumn Int not null";
+			const string expectedQuery = "alter table [schemaName].[tableName] alter column [intColumn] int not null";
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}
 
@@ -43,7 +43,7 @@ namespace Rivet.Test.Operations
 		{
 
 			var op = new UpdateColumnOperation(SchemaName, TableName, VarChar);
-			const string expectedQuery = "alter table [schemaName].[tableName] alter column varcharColumn VarChar (max) collate Chinese_Taiwan_Stroke_CS_AS sparse";
+			const string expectedQuery = "alter table [schemaName].[tableName] alter column [varcharColumn] varchar(max) collate Chinese_Taiwan_Stroke_CS_AS sparse";
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}
 
@@ -51,7 +51,8 @@ namespace Rivet.Test.Operations
 		public void ShouldWriteQueryforUpdateColumnWithDateTimeOffset()
 		{
 			var op = new UpdateColumnOperation(SchemaName, TableName, DateTimeOffset);
-			const string expectedQuery = "alter table [schemaName].[tableName] alter column datetimeoffsetColumn DateTimeOffset (34,7) not null";
+			Trace.WriteLine(op.ToQuery());
+			const string expectedQuery = "alter table [schemaName].[tableName] alter column [datetimeoffsetColumn] datetimeoffset(34,7) not null";
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}
 	}

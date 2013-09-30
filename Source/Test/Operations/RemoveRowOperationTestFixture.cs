@@ -49,7 +49,7 @@ namespace Rivet.Test.Operations
 			var op = new RemoveRowOperation(SchemaName, TableName, false);
 			const string expectedQuery = "delete from [schemaName].[tableName]";
 			Assert.AreEqual(expectedQuery, op.ToQuery());
-			Assert.IsFalse(op.TruncateStatus());
+			Assert.IsFalse(op.Truncate);
 		}
 
 		[Test]
@@ -58,7 +58,7 @@ namespace Rivet.Test.Operations
 			var op = new RemoveRowOperation(SchemaName, TableName, true);
 			const string expectedQuery = "truncate table  [schemaName].[tableName]";
 			Assert.AreEqual(expectedQuery, op.ToQuery());
-			Assert.IsTrue(op.TruncateStatus());
+			Assert.IsTrue(op.Truncate);
 		}
 	}
 }

@@ -53,6 +53,7 @@
         if ($Truncate)
         {
             $op = New-Object 'Rivet.Operations.RemoveRowOperation' $SchemaName, $TableName, $true
+            $rowCount = Invoke-Query -Query ('select count(*) from [{0}].[{1}]' -f $SchemaName,$TableName) -AsScalar
         }
         else
         {
@@ -60,6 +61,12 @@
         }
     }
 
-    Write-Host(' -row(s)[{0}].[{1}]' -f $SchemaName,$TableName)
-    Invoke-MigrationOperation -operation $op 
+    $rowsRemoved = Invoke-MigrationOperation -operation $op -NonQuery
+
+    if ($Truncate -and $PSCmdlet.ParameterSetName -eq 'AllRows')
+    {
+        $rowsRemoved = $rowCount
+    }
+
+    Write-Host (" [{0}].[{1}] -{2} row(s)" -f $SchemaName,$TableName, $rowsRemoved)
 }

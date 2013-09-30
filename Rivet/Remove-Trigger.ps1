@@ -25,10 +25,11 @@ function Remove-Trigger
         [Parameter()]
         [string]
         # The schema of the trigger.
-        $SchemaName
+        $SchemaName = "dbo"
     )
 
     $op = New-Object 'Rivet.Operations.RemoveTriggerOperation' $SchemaName, $Name
+    Write-Host (' -[{0}].[{1}]' -f $SchemaName,$Name)
     Invoke-MigrationOperation -Operation $op
         
 }

@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace Rivet.Operations
 {
@@ -19,11 +20,16 @@ namespace Rivet.Operations
 		public string TableName { get; private set; }
 		public Hashtable[] Column { get; private set; }
 
+		public int Count()
+		{
+			return Column.Length;
+		}
 
 		public override string ToQuery()
 		{
-			var query = "";
-			var insertclause = string.Format("insert into [{0}].[{1}]", SchemaName, TableName);
+			var insertclause = new StringBuilder();
+			var query = new StringBuilder();
+			insertclause.AppendFormat("insert into [{0}].[{1}]", SchemaName, TableName);
 
 			foreach (var row in Column)
 			{
@@ -47,10 +53,11 @@ namespace Rivet.Operations
 				var valueClause = String.Join(", ", valueList.ToArray());
 				valueClause = String.Format("({0})", valueClause);
 
-				query = String.Format("{0}{1} {2} values {3}; ", query, insertclause, columnClause, valueClause);
+				query.AppendFormat("{0} {1} values {2};", insertclause, columnClause, valueClause);
+				query.AppendLine();
 			}
 
-			return query;
+			return query.ToString();
 		}
 	}
 
