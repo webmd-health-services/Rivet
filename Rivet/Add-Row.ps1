@@ -39,7 +39,10 @@ function Add-Row
         $Column
     )
 
-    $op = New-Object 'Rivet.Operations.AddRowOperation' $SchemaName, $TableName, $Column
-    Write-Host(' +row(s)[{0}].[{1}]' -f $SchemaName,$TableName)
-    Invoke-MigrationOperation -operation $op 
+    process
+    {
+        $op = New-Object 'Rivet.Operations.AddRowOperation' $SchemaName, $TableName, $Column
+        $rowsAdded = Invoke-MigrationOperation -operation $op -NonQuery
+        Write-Host (" [{0}].[{1}] +{2} row(s)" -f $SchemaName,$TableName, $rowsAdded)
+    }
 }

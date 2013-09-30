@@ -94,3 +94,45 @@ function Pop-Migration
     Assert-Equal "8336697" $rows[0].Population 
     Assert-Equal "3857799" $rows[1].Population 
 }
+
+function Test-ShouldAddMultipleRowsByPipe
+{
+    @'
+function Push-Migration
+{
+    Add-Table -Name 'Cities' -Column {
+        VarChar 'City' -NotNull
+        VarChar 'State' -NotNull
+        Int 'Population' -NotNull
+    } -Option 'data_compression = none'
+
+    @( @{City = 'New York'; State = 'New York'; Population = 8336697}, @{City = 'Los Angeles'; State = 'California'; Population = 3857799} ) | Add-Row -SchemaName 'dbo' -TableName 'Cities'
+}
+
+function Pop-Migration
+{
+    
+}
+
+'@ | New-Migration -Name 'AddMultipleRowByPipe'
+
+    Invoke-Rivet -Push 'AddMultipleRowByPipe'
+
+    Assert-Table 'Cities'
+    Assert-Column -TableName 'Cities' -Name 'City' -DataType 'VarChar' -NotNull
+    Assert-Column -TableName 'Cities' -Name 'State' -DataType 'VarChar' -NotNull
+    Assert-Column -TableName 'Cities' -Name 'Population' -DataType 'Int' -NotNull
+
+    $rows = @(Get-Row -SchemaName 'dbo' -TableName 'Cities')
+
+    Assert-Equal 2 $rows.count
+
+    Assert-Equal "New York" $rows[0].City 
+    Assert-Equal "Los Angeles" $rows[1].City 
+
+    Assert-Equal "New York" $rows[0].State 
+    Assert-Equal "California" $rows[1].State 
+
+    Assert-Equal "8336697" $rows[0].Population 
+    Assert-Equal "3857799" $rows[1].Population 
+}
