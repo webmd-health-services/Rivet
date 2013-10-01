@@ -39,7 +39,12 @@ function Assert-Index
 
         [Switch]
         # Test that the specified index is removed
-        $TestNoIndex
+        $TestNoIndex,
+
+        [Parameter()]
+        [bool[]]
+        # Test that the specified index is descending
+        $TestDescending
 
     )
 
@@ -47,7 +52,7 @@ function Assert-Index
 
     $id = Get-Index -TableName $TableName
     Assert-True ($id -isnot 'Object[]')
-    $id_columns = Get-IndexColumns -TableName $TableName
+    $id_columns = @(Get-IndexColumns -TableName $TableName)
 
     if ($TestNoIndex)
     {
@@ -107,6 +112,21 @@ function Assert-Index
         else
         {
             Assert-Equal '' $id.filter_definition
+        }
+
+        if ($TestDescending)
+        {
+            for ($i = 0; $i -lt $id_columns.Length; $i++)
+            { 
+                Assert-Equal $TestDescending[$i] $id_columns[$i].is_descending_key
+            }
+        }
+        else
+        {
+            for ($i = 0; $i -lt $id_columns.Length; $i++)
+            { 
+                Assert-Equal $false $id_columns[$i].is_descending_key
+            }
         }
     }
     
