@@ -1,21 +1,23 @@
 ﻿namespace Rivet.Operations
 {
-	public sealed class NewStoredProcedureOperation : Operation
+	public sealed class UpdateStoredProcedureOperation : Operation
 	{
-		public NewStoredProcedureOperation(string schemaName, string name, string definition)
+		public UpdateStoredProcedureOperation(string schemaName, string name, string definition)
 		{
 			SchemaName = schemaName;
 			Name = name;
 			Definition = definition;
 		}
 
+
 		public string SchemaName { get; private set; }
 		public string Name { get; private set; }
 		public string Definition { get; private set; }
 
+
 		public override string ToQuery()
 		{
-			return string.Format(@"create procedure [{0}].[{1}] {2}", SchemaName, Name, Definition);
+			return string.Format(@"alter procedure [{0}].[{1}] {2}", SchemaName, Name, Definition);
 		}
 	}
 }

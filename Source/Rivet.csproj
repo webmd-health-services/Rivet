@@ -63,7 +63,7 @@
     <Compile Include="Operations\RemoveTriggerOperation.cs" />
     <Compile Include="Operations\NewViewOperation.cs" />
     <Compile Include="Operations\NewUserDefinedFunctionOperation.cs" />
-    <Compile Include="Operations\NewStoredProcedureOperation.cs" />
+    <Compile Include="Operations\AddStoredProcedureOperation.cs" />
     <Compile Include="Operations\RemoveStoredProcedureOperation.cs" />
     <Compile Include="Operations\RemoveUserDefinedFunctionOperation.cs" />
     <Compile Include="Operations\RemoveViewOperation.cs" />
