@@ -111,3 +111,65 @@ function Test-ShouldCreateIndexOnCustomFileStream
     Assert-True (0 -lt $Error.Count)
     Assert-Like $Error[1].Exception.Message '*FILESTREAM_ON cannot be specified*'
 }
+
+function Test-ShouldCreateIndexWithDescending
+{
+@'
+function Push-Migration()
+{
+
+    Add-Table -Name 'AddIndex' {
+        Int 'IndexMe' -NotNull
+    }
+
+    #Add an Index to 'IndexMe'
+    Add-Index -TableName 'AddIndex' -ColumnName 'IndexMe' -Descending @($true)
+
+}
+
+function Pop-Migration()
+{
+
+
+}
+
+
+'@ | New-Migration -Name 'CreateIndexWithDescending'
+
+    Invoke-Rivet -Push 'CreateIndexWithDescending'
+
+    ##Assert Index
+    Assert-Index -TableName 'AddIndex' -ColumnName 'IndexMe' -TestDescending @($true)
+
+}
+
+function Test-ShouldCreateIndexWithMultipleDescending
+{
+@'
+function Push-Migration()
+{
+
+    Add-Table -Name 'AddIndex' {
+        Int 'IndexMe' -NotNull
+        Int 'Ascending' -NotNull
+        Int 'IndexMe2' -NotNull
+    }
+
+    Add-Index -TableName 'AddIndex' -ColumnName "IndexMe","Ascending","IndexMe2" -Descending @($true, $false, $true)
+}
+
+function Pop-Migration()
+{
+
+
+}
+
+
+'@ | New-Migration -Name 'CreateIndexWithMultipleDescending'
+
+    Invoke-Rivet -Push 'CreateIndexWithMultipleDescending'
+
+    ##Assert Index
+    Assert-Index -TableName 'AddIndex' -ColumnName "IndexMe","Ascending","IndexMe2" -TestDescending @($true, $false, $true)
+
+}
