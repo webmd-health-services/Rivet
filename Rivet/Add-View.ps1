@@ -19,7 +19,7 @@
         # The name of the view.
         $Name,
         
-        [Parameter(Mandatory=$true)]
+        [Parameter()]
         [string]
         # The schema name of the view.  Defaults to `dbo`.
         $SchemaName = 'dbo',

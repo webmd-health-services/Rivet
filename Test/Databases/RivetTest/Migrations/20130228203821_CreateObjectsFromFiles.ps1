@@ -1,9 +1,9 @@
 
 function Push-Migration()
 {
-    Set-StoredProcedure -Name RivetTestSproc
-    Set-UserDefinedFunction -Name RivetTestFunction
-    Set-View -Name Migrators
+    Add-StoredProcedure -Name RivetTestSproc -Definition 'as SELECT FirstName, LastName FROM dbo.Person;'
+    Add-UserDefinedFunction -Name RivetTestFunction -Definition '(@Number decimal(4,1)) returns decimal(12,3) as begin return(@Number * @Number) end'
+    Add-View -Name Migrators -Definition "AS SELECT DISTINCT Name FROM rivet.Migrations"
 }
 
 function Pop-Migration()
