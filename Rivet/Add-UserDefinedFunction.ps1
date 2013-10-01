@@ -18,7 +18,7 @@
         # The name of the stored procedure.
         $Name,
         
-        [Parameter(Mandatory=$true)]
+        [Parameter()]
         [string]
         # The schema name of the stored procedure.  Defaults to `dbo`.
         $SchemaName = 'dbo',
