@@ -1,16 +1,16 @@
-function Add-StoredProcedure
+function Update-StoredProcedure
 {
     <#
     .SYNOPSIS
-    Creates a new stored procedure.
+    Updates an existing stored procedure.
 
     .DESCRIPTION
-    Creates a new stored procedure.
+    Updates an existing stored procedure.
 
     .EXAMPLE
-    Add-StoredProcedure -SchemaName 'rivet' 'ReadMigrations' 'AS select * from rivet.Migrations'
+    Update-StoredProcedure -SchemaName 'rivet' 'ReadMigrations' 'AS select * from rivet.Migrations'
 
-    Creates a stored procedure to read the migrations from Rivet's Migrations table.  Note that in real life, you probably should leave my table alone.
+    Updates a stored procedure to read the migrations from Rivet's Migrations table.  Note that in real life, you probably should leave my table alone.
     #>
     [CmdletBinding()]
     param(
@@ -30,7 +30,7 @@ function Add-StoredProcedure
         $Definition
     )
         
-    $op = New-Object 'Rivet.Operations.AddStoredProcedureOperation' $SchemaName, $Name, $Definition
-    Write-Host(' +[{0}].[{1}]' -f $SchemaName,$Name)
+    $op = New-Object 'Rivet.Operations.UpdateStoredProcedureOperation' $SchemaName, $Name, $Definition
+    Write-Host(' =[{0}].[{1}]' -f $SchemaName,$Name)
     Invoke-MigrationOperation -operation $op
 }

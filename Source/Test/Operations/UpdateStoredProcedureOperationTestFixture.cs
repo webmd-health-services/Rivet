@@ -4,7 +4,7 @@ using Rivet.Operations;
 namespace Rivet.Test.Operations
 {
 	[TestFixture]
-	public sealed class NewStoredProcedureOperationTestFixture
+	public sealed class UpdateStoredProcedureOperationTestFixture
 	{
 		const string SchemaName = "schemaName";
 		const string ProcedureName = "procedureName";
@@ -17,19 +17,19 @@ namespace Rivet.Test.Operations
 		}
 
 		[Test]
-		public void ShouldSetPropertiesForNewStoredProcedure()
+		public void ShouldSetPropertiesForUpdateStoredProcedure()
 		{
-			var op = new NewStoredProcedureOperation(SchemaName, ProcedureName, Definition);
+			var op = new UpdateStoredProcedureOperation(SchemaName, ProcedureName, Definition);
 			Assert.AreEqual(SchemaName, op.SchemaName);
 			Assert.AreEqual(ProcedureName, op.Name);
 			Assert.AreEqual(Definition, op.Definition);
 		}
 
 		[Test]
-		public void ShouldWriteQueryForNewStoredProcedure()
+		public void ShouldWriteQueryForUpdateStoredProcedure()
 		{
-			var op = new NewStoredProcedureOperation(SchemaName, ProcedureName, Definition);
-			const string expectedQuery = "create procedure [schemaName].[procedureName] as definition";
+			var op = new UpdateStoredProcedureOperation(SchemaName, ProcedureName, Definition);
+			const string expectedQuery = "alter procedure [schemaName].[procedureName] as definition";
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}
 
