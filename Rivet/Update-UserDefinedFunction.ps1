@@ -1,17 +1,19 @@
- function Add-UserDefinedFunction
+ function Update-UserDefinedFunction
 {
     <#
     .SYNOPSIS
-    Creates a new user-defined function.
+    Updates an existing user-defined function.
 
     .DESCRIPTION
-    Creates a new user-defined function.
+    Updates an existing user-defined function.
 
     .EXAMPLE
-    Add-UserDefinedFunction -SchemaName 'rivet' 'One' 'returns tinyint begin return 1 end'
+    Update-UserDefinedFunction -SchemaName 'rivet' 'One' 'returns tinyint begin return 1 end'
 
-    Creates a user-defined function that returns the number 1.
-    #>    [CmdletBinding()]
+    Updates a user-defined function to return the number 1.
+    #>    
+
+    [CmdletBinding()]
     param(
         [Parameter(Mandatory=$true,Position=0)]
         [string]
@@ -29,7 +31,7 @@
         $Definition
     )
     
-    $op = New-Object Rivet.Operations.AddUserDefinedFunctionOperation $SchemaName,$Name,$Definition
-    Write-Host(' +[{0}].[{1}]' -f $SchemaName,$Name)
+    $op = New-Object Rivet.Operations.UpdateUserDefinedFunctionOperation $SchemaName,$Name,$Definition
+    Write-Host(' =[{0}].[{1}]' -f $SchemaName,$Name)
     Invoke-MigrationOperation -Operation $op
 }

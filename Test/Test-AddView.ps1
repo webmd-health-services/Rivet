@@ -10,7 +10,7 @@ function TearDown
     Remove-Module RivetTest
 }
 
-function Test-ShouldCreateNewUserDefinedFunction
+function Test-ShouldAddView
 {
     Invoke-Rivet -Push 'AddNewView'
     
