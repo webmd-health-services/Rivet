@@ -74,6 +74,7 @@ $publicFunctions = @(
                         'Remove-UserDefinedFunction',
                         'Remove-Trigger',
                         'Remove-View',
+                        'Rename-Table',
                         'Update-Description',
                         'Update-Row'
                       )
