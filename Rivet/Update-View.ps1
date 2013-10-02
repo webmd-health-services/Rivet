@@ -1,16 +1,16 @@
- function Add-View
+ function Update-View
  {
     <#
     .SYNOPSIS
-    Creates a new view.
+    Updates an existing view.
 
     .DESCRIPTION
-    Creates a new view.
+    Updates an existing view.
 
     .EXAMPLE
-    Add-View -SchemaName 'rivet' 'ReadMigrations' 'AS select * from rivet.Migrations'
+    Update-View -SchemaName 'rivet' 'ReadMigrations' 'AS select * from rivet.Migrations'
 
-    Creates a view to read all the migrations from Rivet's Migrations table.  Don't do this in real life.
+    Updates a view to read all the migrations from Rivet's Migrations table.  Don't do this in real life.
     #>
     [CmdletBinding()]
     param(
@@ -30,7 +30,7 @@
         $Definition
     )
     
-    $op = New-Object Rivet.Operations.AddViewOperation $SchemaName,$Name,$Definition
-    Write-Host(' +[{0}].[{1}]' -f $SchemaName,$Name)
+    $op = New-Object Rivet.Operations.UpdateViewOperation $SchemaName,$Name,$Definition
+    Write-Host(' =[{0}].[{1}]' -f $SchemaName,$Name)
     Invoke-MigrationOperation -Operation $op
 }

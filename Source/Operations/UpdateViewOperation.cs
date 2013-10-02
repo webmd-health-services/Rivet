@@ -1,8 +1,8 @@
 ﻿namespace Rivet.Operations
 {
-	public sealed class NewUserDefinedFunctionOperation : Operation
+	public sealed class UpdateViewOperation : Operation
 	{
-		public NewUserDefinedFunctionOperation(string schemaName, string name, string definition)
+		public UpdateViewOperation(string schemaName, string name, string definition)
 		{
 			SchemaName = schemaName;
 			Name = name;
@@ -15,7 +15,7 @@
 
 		public override string ToQuery()
 		{
-			return string.Format(@"create function [{0}].[{1}] {2}", SchemaName, Name, Definition);
+			return string.Format(@"alter view [{0}].[{1}] {2}", SchemaName, Name, Definition);
 		}
 	}
 }
