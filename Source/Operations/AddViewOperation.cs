@@ -1,8 +1,8 @@
 ﻿namespace Rivet.Operations
 {
-	public sealed class NewViewOperation : Operation
+	public sealed class AddViewOperation : Operation
 	{
-		public NewViewOperation(string schemaName, string name, string definition)
+		public AddViewOperation(string schemaName, string name, string definition)
 		{
 			SchemaName = schemaName;
 			Name = name;

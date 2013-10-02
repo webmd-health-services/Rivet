@@ -4,7 +4,7 @@ using Rivet.Operations;
 namespace Rivet.Test.Operations
 {
 	[TestFixture]
-	public sealed class NewViewTestFixture
+	public sealed class AddViewTestFixture
 	{
 		const string SchemaName = "schemaName";
 		const string ViewName = "viewName";
@@ -17,18 +17,18 @@ namespace Rivet.Test.Operations
 		}
 
 		[Test]
-		public void ShouldSetPropertiesForNewView()
+		public void ShouldSetPropertiesForAddViewOperation()
 		{
-			var op = new NewViewOperation(SchemaName, ViewName, Definition);
+			var op = new AddViewOperation(SchemaName, ViewName, Definition);
 			Assert.AreEqual(SchemaName, op.SchemaName);
 			Assert.AreEqual(ViewName, op.Name);
 			Assert.AreEqual(Definition, op.Definition);
 		}
 
 		[Test]
-		public void ShouldWriteQueryForNewView()
+		public void ShouldWriteQueryForAddViewOperation()
 		{
-			var op = new NewViewOperation(SchemaName, ViewName, Definition);
+			var op = new AddViewOperation(SchemaName, ViewName, Definition);
 			const string expectedQuery = "create view [schemaName].[viewName] as definition";
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}

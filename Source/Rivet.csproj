@@ -56,6 +56,7 @@
     <Compile Include="ConstraintName.cs" />
     <Compile Include="Operations\AddTriggerOperation.cs" />
     <Compile Include="Operations\AddRowOperation.cs" />
+    <Compile Include="Operations\UpdateViewOperation.cs" />
     <Compile Include="Operations\UpdateUserDefinedFunctionOperation.cs" />
     <Compile Include="Operations\UpdateTriggerOperation.cs" />
     <Compile Include="Operations\UpdateStoredProcedureOperation.cs" />
@@ -63,7 +64,7 @@
     <Compile Include="Operations\UpdateRowOperation.cs" />
     <Compile Include="Operations\RemoveRowOperation.cs" />
     <Compile Include="Operations\RemoveTriggerOperation.cs" />
-    <Compile Include="Operations\NewViewOperation.cs" />
+    <Compile Include="Operations\AddViewOperation.cs" />
     <Compile Include="Operations\AddUserDefinedFunctionOperation.cs" />
     <Compile Include="Operations\AddStoredProcedureOperation.cs" />
     <Compile Include="Operations\RemoveStoredProcedureOperation.cs" />
