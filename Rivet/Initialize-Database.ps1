@@ -75,7 +75,7 @@ function Initialize-Database
     {
         $Connection.Transaction.Rollback()
             
-        Write-RivetError -Message ('Failed to initialize database so it can be migrated.') -Exception $_.Exception -CallStack (Get-PSCallStack)
+         Write-RivetError -Message ('Migration {0} failed' -f $migrationInfo.FullName) -CategoryInfo $_.CategoryInfo.Category -ErrorID $_.FullyQualifiedErrorID -Exception $_.Exception -CallStack ($_.ScriptStackTrace)
     }
 
 }

@@ -164,7 +164,7 @@ function Update-Database
             # TODO: Create custom exception for migration query errors so that we can report here when unknown things happen.
             if( $_.Exception -isnot [ApplicationException] )
             {
-                Write-RivetError -Message ('Migration {0} failed' -f $migrationInfo.FullName) -Exception $_.Exception -CallStack (Get-PSCallStack)
+                Write-RivetError -Message ('Migration {0} failed' -f $migrationInfo.FullName) -CategoryInfo $_.CategoryInfo.Category -ErrorID $_.FullyQualifiedErrorID -Exception $_.Exception -CallStack ($_.ScriptStackTrace)
             }            
         }
         finally

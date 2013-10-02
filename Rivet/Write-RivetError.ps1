@@ -13,9 +13,19 @@ function Write-RivetError
         $Exception,
         
         [Parameter(Mandatory=$true)]
-        [Management.Automation.CallStackFrame[]]
+        [string]
         # The call stack to report.
-        $CallStack
+        $CallStack,
+
+        [Parameter(Mandatory=$true)]
+        [string]
+        # The Category Info
+        $CategoryInfo,
+
+        [Parameter(Mandatory=$true)]
+        [string]
+        # The Fully Qualified Error ID
+        $ErrorID
     )
     
     $firstException = $_.Exception
@@ -23,14 +33,19 @@ function Write-RivetError
     {
         $firstException = $firstException.InnerException
     }
-    
-    $callStackLines = $CallStack |
-                    Select-Object -ExpandProperty InvocationInfo |
-                    Where-Object { $_.ScriptName } |
-                    ForEach-Object { "{0}:{1}: {2}" -f $_.ScriptName,$_.ScriptLineNumber,$_.Line.Trim()  }
-    
-    $callStackLines = $callStackLines -join "`n "
         
-    Write-Error ("[{0}].[{1}] {2}: {3}`n{4}" -f $Connection.DataSource,$Connection.Database,$Message,$firstException.Message,$callStackLines)
+    Write-Error (@"
+`v
+MESSAGE:
+========
+[{0}].[{1}] {2}: {3}
+`v
+STACKTRACE:
+===========
+{4}
+`v
+ERROR-INFO:
+===========
+"@ -f $Connection.DataSource,$Connection.Database,$Message,$firstException.Message,$CallStack) -ErrorID $ErrorID -Category $CategoryInfo
 
 }
