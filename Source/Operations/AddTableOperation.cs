@@ -30,7 +30,7 @@ namespace Rivet.Operations
 
 		public override string ToQuery()
 		{
-			var columnDefinitionClause = "";
+			string columnDefinitionClause;
 			if (FileTable)
 			{
 				columnDefinitionClause = "as FileTable";
