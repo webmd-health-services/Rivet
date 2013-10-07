@@ -69,43 +69,5 @@ namespace Rivet
 
 			return name;
 		}
-
-		public string ToNoSchemaString()
-		{
-			string keyname;
-			switch (Type)
-			{
-				case ConstraintType.Default:
-					keyname = "DF";
-					break;
-
-				case ConstraintType.PrimaryKey:
-					keyname = "PK";
-					break;
-
-				case ConstraintType.Check:
-					keyname = "CK";
-					break;
-
-				case ConstraintType.Index:
-					keyname = "IX";
-					break;
-
-				case ConstraintType.Unique:
-					keyname = "UQ";
-					break;
-
-				default:
-					keyname = "DF";
-					break;
-			}
-
-			var columnClause = string.Join("_", ColumnName.ToArray());
-			var name = string.Format("{0}_{1}_{2}", keyname, TableName, columnClause);
-
-			return name;
-		}
-
 	}
-
 }
