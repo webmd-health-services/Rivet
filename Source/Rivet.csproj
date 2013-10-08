@@ -46,7 +46,7 @@
     <Compile Include="Migration.cs" />
     <Compile Include="Operations\AddColumnOperation.cs" />
     <Compile Include="Operations\AddDefaultConstraintOperation.cs" />
-    <Compile Include="Operations\AddDescriptionOperation.cs" />
+    <Compile Include="Operations\AddExtendedPropertyOperation.cs" />
     <Compile Include="Operations\AddForeignKeyOperation.cs" />
     <Compile Include="Operations\AddIndexOperation.cs" />
     <Compile Include="Operations\AddPrimaryKeyOperation.cs" />
