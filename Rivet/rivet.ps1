@@ -59,7 +59,7 @@ rivet.ps1 -Push -Environment Production
 Demonstrates how to migrate databases in a different environment.  The `Production` environment should be specified in the `rivet.json` configuration file.
 #>
 #Requires -Version 3
-[CmdletBinding(DefaultParameterSetName='ShowHelp')]
+[CmdletBinding(DefaultParameterSetName='ShowHelp', SupportsShouldProcess=$True)]
 param(
     [Parameter(Mandatory=$true,ParameterSetName='New')]
     [Switch]
@@ -115,6 +115,7 @@ param(
     [string]
     # The path to the Rivet configuration file.  Default behavior is to look in the current directory for a `rivet.json` file.  See `about_Rivet_Configuration` for more information.
     $ConfigFilePath
+
 )
 
 Set-StrictMode -Version Latest
@@ -127,6 +128,6 @@ if( $PSCmdlet.ParameterSetName -eq 'ShowHelp' )
 
 & (Join-Path -Path $PSScriptRoot -ChildPath Import-Rivet.ps1 -Resolve)
 
-Invoke-Rivet @PSBoundParameters
+Invoke-Rivet @PSBoundParameters 
 
 exit $error.Count
