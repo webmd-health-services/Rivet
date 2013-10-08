@@ -56,6 +56,8 @@
     <Compile Include="ConstraintName.cs" />
     <Compile Include="Operations\AddTriggerOperation.cs" />
     <Compile Include="Operations\AddRowOperation.cs" />
+    <Compile Include="Operations\AddSynonymOperation.cs" />
+    <Compile Include="Operations\RemoveSynonymOperation.cs" />
     <Compile Include="Operations\RenameOperation.cs" />
     <Compile Include="Operations\UpdateViewOperation.cs" />
     <Compile Include="Operations\UpdateUserDefinedFunctionOperation.cs" />
