@@ -22,7 +22,7 @@ namespace Rivet.Test.Operations
 			/** ADD DESCRIPTION OPERATION **/
 
 			//For Table
-			var op = new AddDescriptionOperation(schemaName, tableName, description);
+			var op = new AddExtendedPropertyOperation(schemaName, tableName, description);
 			Assert.That(op.SchemaName, Is.EqualTo(schemaName));
 			Assert.That(op.TableName, Is.EqualTo(tableName));
 			Assert.That(op.Description, Is.EqualTo(description));
@@ -37,7 +37,7 @@ namespace Rivet.Test.Operations
 			Assert.That(op.ToQuery(), Is.EqualTo(expectedQuery));
 
 			//For Column
-			op = new AddDescriptionOperation(schemaName, tableName, columnName, description);
+			op = new AddExtendedPropertyOperation(schemaName, tableName, columnName, description);
 			Assert.That(op.SchemaName, Is.EqualTo(schemaName));
 			Assert.That(op.TableName, Is.EqualTo(tableName));
 			Assert.That(op.Description, Is.EqualTo(description));
