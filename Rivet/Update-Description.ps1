@@ -58,14 +58,11 @@ function Update-Description
         Write-Host (' {0}.{1}{2} =MS_Description: {3}' -f $SchemaName,$TableName,$columnMsg,$Description)
     }
 
-    if ($PSCmdlet.ParameterSetName -ne 'ForColumn' )
+    $optionalArgs = @{ }
+    if( $ColumnName )
     {
-        $op = New-Object 'Rivet.Operations.UpdateDescriptionOperation' $SchemaName, $TableName, $Description
+        $optionalArgs.ColumnName = $ColumnName
     }
-    else
-    {
-        $op = New-Object 'Rivet.Operations.UpdateDescriptionOperation' $SchemaName, $TableName, $ColumnName, $Description
-    }
-    
-    Invoke-MigrationOperation -Operation $op 
+    Update-ExtendedProperty -Name 'MS_Description' -Value $Description -SchemaName $SchemaName -TableName $TableName @optionalArgs
+
 }
