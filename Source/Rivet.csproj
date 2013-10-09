@@ -84,7 +84,7 @@
     <Compile Include="Operations\RemovePrimaryKeyOperation.cs" />
     <Compile Include="Operations\RemoveTableOperation.cs" />
     <Compile Include="Operations\RemoveUniqueConstraintOperation.cs" />
-    <Compile Include="Operations\UpdateDescriptionOperation.cs" />
+    <Compile Include="Operations\UpdateExtendedPropertyOperation.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Precision.cs" />
   </ItemGroup>
