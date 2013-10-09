@@ -5,9 +5,9 @@ using System.Text;
 
 namespace Rivet.Operations
 {
-	public sealed class UpdateDescriptionOperation : Operation
+	public sealed class UpdateExtendedPropertyOperation : Operation
 	{
-		public UpdateDescriptionOperation(string schemaName, string tableName, string description)
+		public UpdateExtendedPropertyOperation(string schemaName, string tableName, string description)
 		{
 			ForTable = true;
 			SchemaName = schemaName;
@@ -15,7 +15,7 @@ namespace Rivet.Operations
 			Description = description;
 		}
 
-		public UpdateDescriptionOperation(string schemaName, string tableName, string columnName, string description)
+		public UpdateExtendedPropertyOperation(string schemaName, string tableName, string columnName, string description)
 		{
 			ForColumn = true;
 			SchemaName = schemaName;
