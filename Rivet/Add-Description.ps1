@@ -63,14 +63,11 @@ function Add-Description
         Write-Host (' {0}.{1}{2} +MS_Description: {3}' -f $SchemaName,$TableName,$columnMsg,$Description)
     }
 
-    if( $PSCmdlet.ParameterSetName -ne 'ForColumn')
+    $optionalArgs = @{ }
+    if( $ColumnName )
     {
-        $op = New-Object 'Rivet.Operations.AddDescriptionOperation' $SchemaName, $TableName, $Description
-    }
-    else
-    {
-        $op = New-Object 'Rivet.Operations.AddDescriptionOperation' $SchemaName, $TableName, $ColumnName, $Description
+        $optionalArgs.ColumnName = $ColumnName
     }
 
-    Invoke-MigrationOperation -Operation $op   
+    Add-ExtendedProperty -Name 'MS_Description' -Value $Description -SchemaName $SchemaName -TableName $TableName @optionalArgs
 }
