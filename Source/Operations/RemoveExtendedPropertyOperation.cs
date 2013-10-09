@@ -2,9 +2,9 @@
 
 namespace Rivet.Operations
 {
-	public sealed class RemoveDescriptionOperation : Operation
+	public sealed class RemoveExtendedPropertyOperation : Operation
 	{
-		public RemoveDescriptionOperation(string schemaName, string tableName, string columnName)
+		public RemoveExtendedPropertyOperation(string schemaName, string tableName, string columnName)
 		{
 			ForColumn = true;
 			SchemaName = schemaName;
@@ -12,7 +12,7 @@ namespace Rivet.Operations
 			ColumnName = columnName;
 		}
 
-		public RemoveDescriptionOperation(string schemaName, string tableName)
+		public RemoveExtendedPropertyOperation(string schemaName, string tableName)
 		{
 			ForTable = true;
 			SchemaName = schemaName;
