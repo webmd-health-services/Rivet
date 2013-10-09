@@ -53,14 +53,12 @@ function Remove-Description
         Write-Host (' {0}.{1}{2} -MS_Description' -f $SchemaName,$TableName,$columnMsg)
     }
 
-    if( $PSCmdlet.ParameterSetName -ne 'ForColumn' )
+    $optionalArgs = @{ }
+    if( $ColumnName )
     {
-        $op = New-Object 'Rivet.Operations.RemoveDescriptionOperation' $SchemaName, $TableName
-    }
-    else
-    {
-        $op = New-Object 'Rivet.Operations.RemoveDescriptionOperation' $SchemaName, $TableName, $ColumnName
+        $optionalArgs.ColumnName = $ColumnName
     }
     
-    Invoke-MigrationOperation -Operation $op
+    Remove-ExtendedProperty -Name 'MS_Description' -SchemaName $SchemaName -TableName $TableName @optionalArgs
+
 }
