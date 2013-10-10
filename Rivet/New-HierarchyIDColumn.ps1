@@ -1,60 +1,60 @@
- function New-HierarchyIDColumn
+function New-HierarchyIDColumn
+{
+    <#
+    .SYNOPSIS
+    Creates a column object representing an HierarchyID datatype.
+    #>
+    [CmdletBinding(DefaultParameterSetName='Nullable')]
+    param(
+        [Parameter(Mandatory=$true,Position=0)]
+        [string]
+        # The column's name.
+        $Name,
+
+        [Parameter(Mandatory=$true,ParameterSetName='NotNull')]
+        [Switch]
+        # Don't allow `NULL` values in this column.
+        $NotNull,
+
+        [Parameter(ParameterSetName='Nullable')]
+        [Switch]
+        # Store nulls as Sparse.
+        $Sparse,
+
+        [Parameter()]
+        [string]
+        # A SQL Server expression for the column's default value 
+        $Default,
+            
+        [Parameter()]
+        [string]
+        # A description of the column.
+        $Description
+    )
+
+    if ($NotNull -and $Sparse)
     {
-        <#
-        .SYNOPSIS
-        Creates a column object representing an HierarchyID datatype.
-        #>
-        [CmdletBinding(DefaultParameterSetName='Nullable')]
-        param(
-            [Parameter(Mandatory=$true,Position=0)]
-            [string]
-            # The column's name.
-            $Name,
-
-            [Parameter(Mandatory=$true,ParameterSetName='NotNull')]
-            [Switch]
-            # Don't allow `NULL` values in this column.
-            $NotNull,
-
-            [Parameter(ParameterSetName='Nullable')]
-            [Switch]
-            # Store nulls as Sparse.
-            $Sparse,
-
-            [Parameter()]
-            [string]
-            # A SQL Server expression for the column's default value 
-            $Default,
-            
-            [Parameter()]
-            [string]
-            # A description of the column.
-            $Description
-        )
-
-        if ($NotNull -and $Sparse)
-        {
-            throw ('Column {0}: A column cannot be NOT NULL and SPARSE.  Please choose one, but not both' -f $Name)
-            return
-        }
+        throw ('Column {0}: A column cannot be NOT NULL and SPARSE.  Please choose one, but not both' -f $Name)
+        return
+    }
         
-        switch ($PSCmdlet.ParameterSetName)
+    switch ($PSCmdlet.ParameterSetName)
+    {
+        'Nullable'
         {
-            'Nullable'
+            $nullable = 'Null'
+            if( $Sparse )
             {
-                $nullable = 'Null'
-                if( $Sparse )
-                {
-                    $nullable = 'Sparse'
-                }
-                [Rivet.Column]::HierarchyID($Name, $nullable, $Default, $Description)
+                $nullable = 'Sparse'
             }
+            [Rivet.Column]::HierarchyID($Name, $nullable, $Default, $Description)
+        }
             
-            'NotNull'
-            {
-                [Rivet.Column]::HierarchyID($Name,'NotNull', $Default, $Description)
-            }
+        'NotNull'
+        {
+            [Rivet.Column]::HierarchyID($Name,'NotNull', $Default, $Description)
         }
     }
+}
     
-    Set-Alias -Name 'HierarchyID' -Value 'New-HierarchyIDColumn'
+Set-Alias -Name 'HierarchyID' -Value 'New-HierarchyIDColumn'
