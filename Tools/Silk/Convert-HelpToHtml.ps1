@@ -184,7 +184,7 @@ filter Convert-HelpToHtml
         }
         else
         {
-            Write-Warning ("Command {0}: Unable to find type name in {1}.  Return value full type name should end with a period." -f $_.Name,$returnValues)
+            Write-Warning ("Command {0}: Unable to find type name in {1}.  Return value full type name should end with a period." -f $_.Name,$commandHelp.returnValues)
         }
         $returnValues = $returnValues | Convert-MarkdownToHtml
         $returnValues = @"
