@@ -24,7 +24,7 @@ function Add-Schema
         $Owner
     )
 
-    Write-Host ("+{0} {1}" -f $Name, $Owner)
+    Write-Host (" +{0} {1}" -f $Name, $Owner)
     $op = New-Object 'Rivet.Operations.AddSchemaOperation' $Name, $Owner
     Invoke-MigrationOperation -Operation $op
 }
