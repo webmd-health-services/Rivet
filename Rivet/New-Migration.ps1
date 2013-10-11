@@ -23,68 +23,43 @@ function New-Migration
     $id = (Get-Date).ToString('yyyyMMddHHmmss')
     $filename = '{0}_{1}.ps1' -f $id,$Name
 
+    $importRivetPath = Join-Path -Path $PSScriptRoot -ChildPath 'Import-Rivet.ps1' -Resolve
+
     $migrationPath = Join-Path $Path $filename
-    New-Item -Path $migrationPath -Force -ItemType File
+    $migrationPath = [IO.Path]::GetFullPath( $migrationPath )
+    $null = New-Item -Path $migrationPath -Force -ItemType File
 
-        @"
+    $template = @"
 <#
-Your migration is ready to go!  Here are all the built-in migrations you can use:
+Your migration is ready to go!  For the best development experience, please 
+write your migration in the PowerShell 3 ISE.  Run the following at a 
+PowerShell prompt:
 
-    Add-Column [-Name] <String> <-BigInt|-Int|-SmallInt|-TinyInt|-Date|-Time|-Money|-SmallMoney|-Bit|-SqlVariant|-RowVersion|-HierarchyID> [-Sparse] [-NotNull] [-Default <Object>] [-Description <String>] -TableName <String> [-SchemaName <String>]
-    Add-Column [-Name] <String> <-VarChar|-Char> [[-Size] <Int64>] [-Unicode] [-Collation <String>] [-Sparse] [-NotNull] [-Default <Object>] [-Description <String>] -TableName <String> [-SchemaName <String>]
-    Add-Column [-Name] <String> <-Binary|-VarBinary> [-Size] <Int64> [-Sparse] [-NotNull] [-Default <Object>] [-Description <String>] -TableName <String> [-SchemaName <String>]
-    Add-Column [-Name] <String> <-BigInt|-Int|-SmallInt|-TinyInt> -Identity [[-Seed] <Int32>] [[-Increment] <Int32>] [-NotForReplication] [-Description <String>] -TableName <String> [-SchemaName <String>] 
-    Add-Column [-Name] <String> <-Numeric|-Decimal> [-Precision] <Int32> -Identity [[-Seed] <Int32>] [[-Increment] <Int32>] [-NotForReplication] [-Description <String>] -TableName <String>  [-SchemaName <String>]
-    Add-Column [-Name] <String> <-Numeric|-Decimal> [-Precision] <Int32> [[-Scale] <Int32>] [-Sparse] [-NotNull] [-Default <Object>] [-Description <String>] -TableName <String> [-SchemaName <String>]
-    Add-Column [-Name] <String> -Float [[-Precision] <Int32>] [-Sparse] [-NotNull] [-Default <Object>] [-Description <String>] -TableName <String> [-SchemaName <String>] 
-    Add-Column [-Name] <String> -Datetime2 [[-Precision] <Int32>] [-Sparse] [-NotNull] [-Default <Object>] [-Description <String>] -TableName <String> [-SchemaName <String>] 
-    Add-Column [-Name] <String> -DateTimeOffset [[-Precision] <Int32>] [[-Scale] <Int32>] [-Sparse] [-NotNull] [-Default <Object>] [-Description <String>] -TableName <String> [-SchemaName <String>]
-    Add-Column [-Name] <String> -UniqueIdentifier [-RowGuidCol] [-Sparse] [-NotNull] [-Default <Object>] [-Description <String>] -TableName <String> [-SchemaName <String>] 
-    Add-Column [-Name] <String> -Xml [-Document] [-XmlSchemaCollection <String>] [-Sparse] [-NotNull] [-Default <Object>] [-Description <String>] -TableName <String> [-SchemaName <String>]
-    Add-Column [-Name] <String> [-DataType] <String> [-Sparse] [-NotNull] [-Default <Object>] [-Description <String>] -TableName <String> [-SchemaName <String>] 
-    Add-Description [-Description] <String> [-SchemaName <String>] -TableName <String> [-ColumnName <String>]
-    Add-Table [-Name] <String> [-Column] { 
-            
-        } [-SchemaName <string>] [-FileGroup <String>] [-TextImageFileGroup <String>] [-FileStreamFileGroup <String>] [-Option <String[]>]
-    Add-Table [-Name] <String> -FileTable  [-SchemaName <string>] [-FileGroup <String>] [-TextImageFileGroup <String>] [-FileStreamFileGroup <String>] [-Option <String[]>]
-    Remove-Column -Name <string> -TableName <string> [-SchemaName <string>]
-    Remove-Description [-SchemaName <String>] -TableName <String> [-ColumnName <String>]
-    Remove-StoredProcedure -Name <string> [-Schema <string>]
-    Remove-UserDefinedFunction -Name <string> [-Schema <string>]
-    Remove-View -Name <string> [-Schema <string>]
-    Set-StoredProcedure -Name <string> [-Schema <string>]
-    Set-UserDefinedFunction -Name <string> [-Schema <string>]
-    Set-View -Name <string> [-Schema <string>]
-    Update-Description [-Description] <String> [-SchemaName <String>] -TableName <String> [-ColumnName <String>]
+    PS> ise "{0}"
     
-To execute raw SQL:
+or right-click the migration in Windows Explorer and choose "Edit".
 
-    Invoke-Query [-Query] <String>
+The PowerShell ISE gives you intellisense, auto-complete, and other features
+you may be used to from the Visual Studio IDE. Use this command in the ISE to
+import Rivet and get intellisense/auto-complete:
 
-You can use a PowerShell here string for longer queries and so you don't have to escape quotes:
+    PSISE> {1}
 
-    Invoke-Query -Query @'
-       -- SQL goes here    
-'@  # '@ must be the first two characters on the line to close the string.
- 
-To execute a raw SQL script *file*:
-
-    Invoke-SqlScript -Path <string>
-
-To get the path to a script, use the `$DBScriptRoot` variable, which is set to the current databases scripts root directory:
-
-    $scriptPath = Join-Path $DBScriptRoot Miscellaneous\CreateMyCustomObject.sql
-    Invoke-SqlScript -Path $scriptPath
-    
+The ISE has a "Show Command" add-on which will let you build your migration 
+with a GUI.  Once you've got Rivet imported, choose View > Show Command Add-on.
+When the Show Command Add-on appears, choose 'Rivet' from the module.  Click on
+a migration operation to build it with the Show Command GUI.
 #>
+function Push-Migration
+{{
+}}
 
-function Push-Migration()
-{
-}
+function Pop-Migration
+{{
+}}
+"@ -f $migrationPath,$importRivetPath 
 
-function Pop-Migration()
-{
-}
-"@ | Set-Content -Path $migrationPath
+    $template | Set-Content -Path $migrationPath
 
+    Write-Host ('ise "{0}"' -f $migrationPath)
 }
