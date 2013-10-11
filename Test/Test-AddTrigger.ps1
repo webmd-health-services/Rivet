@@ -15,12 +15,11 @@ function Test-ShouldAddTrigger
     @'
 function Push-Migration
 {
-    Add-Table -Name 'Person' -Description 'Testing Add-StoredProcedure' -Column {
-        VarChar 'FirstName' -NotNull -Default "'default'" -Description 'varchar(max) constraint DF_AddTable_varchar default default'
-        VarChar 'LastName' -NotNull -Default "'default'" -Description 'varchar(max) constraint DF_AddTable_varchar default default'
-    } -Option 'data_compression = none'
+    Add-Table 'Person' {
+        Int 'ID' -Identity
+    }
 
-    Add-Trigger -Name 'TestTrigger' -SchemaName 'dbo' -Definition "on dbo.Person after insert, update as raiserror ('Notify Customer Relations', 16, 10);"
+    Add-Trigger 'TestTrigger' -Definition "on dbo.Person after insert, update as return"
 }
 
 function Pop-Migration
@@ -34,5 +33,59 @@ function Pop-Migration
 
     Assert-Table 'Person'
     Assert-True (Test-DatabaseObject -SQLTrigger -Name "TestTrigger")
+}
 
+function Test-ShouldAddTriggerInCustomSchema
+{
+    @'
+function Push-Migration
+{
+    Add-Schema 'Test-AddTrigger'
+    Add-Table -SchemaName 'Test-AddTrigger' 'Person' {
+        Int 'ID' -Identity
+    } 
+
+    Add-Trigger -SchemaName 'Test-AddTrigger' 'TestTrigger' -Definition "on [Test-AddTrigger].Person after insert, update as return"
+}
+
+function Pop-Migration
+{
+    
+}
+
+'@ | New-Migration -Name 'AddTrigger'
+
+    Invoke-Rivet -Push 'AddTrigger'
+
+    Assert-Table 'Person' -SchemaName 'Test-AddTrigger'
+    Assert-True (Test-DatabaseObject -SQLTrigger -Name "TestTrigger" -SchemaName 'Test-AddTrigger')
+}
+
+function Test-ShouldEscapeTriggerName
+{
+    @'
+function Push-Migration
+{
+    Add-Schema 'Add-Trigger'
+    Add-Table 'AddTriggerTest' -SchemaName 'Add-Trigger' {
+        Int ID -Identity
+    }
+
+    Add-Trigger -Name 'Test-Trigger' -SchemaName 'Add-Trigger' -Definition "on [Add-Trigger].AddTriggerTest after insert, update as return"
+}
+
+function Pop-Migration
+{
+    Remove-Trigger -Name 'Test-Trigger' -SchemaName 'Add-Trigger'
+    Remove-Table 'AddTriggerTest'
+    Remove-Schema 'Add-Trigger'
+}
+
+'@ | New-Migration -Name 'AddTrigger'
+
+    Invoke-Rivet -Push 'AddTrigger'
+
+    Assert-Table 'AddTriggerTest' -SchemaName 'Add-Trigger'
+    Assert-True (Test-DatabaseObject -SQLTrigger -Name "Test-Trigger" -SchemaName 'Add-Trigger')
+    
 }
