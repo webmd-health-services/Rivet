@@ -8,7 +8,7 @@
     
     CommandsToSkip: [ 'Invoke-Rivet' ],
     
-    Scripts: [ 'Rivet\\rivet.ps1', 'Rivet\\Import-Rivet.ps1' ],
+    Scripts: [ 'Rivet\\rivet.ps1', 'Rivet\\Import-Rivet.ps1', 'Rivet\\Get-Migration.ps1' ],
     
     TitleSeparator: "::",
     
