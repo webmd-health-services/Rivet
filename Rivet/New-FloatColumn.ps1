@@ -2,7 +2,7 @@ function New-FloatColumn
 {
     <#
     .SYNOPSIS
-    Creates a column object representing an Float datatype.
+    Creates a column object representing a `float` datatype.
 
     .DESCRIPTION
     Use this function in the `Column` script block for `Add-Table`:
