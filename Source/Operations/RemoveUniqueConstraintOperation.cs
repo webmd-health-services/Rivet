@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Rivet.Operations
+﻿namespace Rivet.Operations
 {
 	public sealed class RemoveUniqueConstraintOperation : Operation
 	{

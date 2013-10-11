@@ -74,3 +74,26 @@ function Test-ShouldCreateTableWithOptions
         Assert-Table 'AddTableWithOption' -Description 'Testing Add-Table migration' -DataCompression 2
     }
 }
+
+function Test-ShouldEscapeNames
+{
+    @'
+function Push-Migration
+{
+    Add-Schema 'Add-Table'
+    Add-Table 'Add-Table-Test' -SchemaName 'Add-Table'  {
+        Int ID -Identity
+    }
+}
+
+function Pop-Migration
+{
+    Remove-Table 'Add-Table-Test' -SchemaName 'Add-Table'
+}
+
+'@ | New-Migration -Name 'AddTrigger'
+
+    Invoke-Rivet -Push 'AddTrigger'
+
+    Assert-Table 'Add-Table-Test' -SchemaName 'Add-Table'
+}

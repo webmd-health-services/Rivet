@@ -21,16 +21,15 @@ namespace Rivet
 			TableName = tableName;
 			ColumnName = new List<string>(columnName ?? new string[0]);
 			Type = type;
-			Name = ToString();
 		}
 
 		public string SchemaName { get; private set; }
 		public string TableName { get; private set; }
 		public List<string> ColumnName { get; private set; }
 		public ConstraintType Type { get; private set; }
-		public string Name { get; private set; }
+		public string Name { get { return ToString(); } }
 
-		public new string ToString()
+		public override string ToString()
 		{
 			string keyname;
 			switch(Type)
