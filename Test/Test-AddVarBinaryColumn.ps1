@@ -16,7 +16,7 @@ function Test-ShouldCreateVarBinaryColumn
 function Push-Migration
 {
     Add-Table -Name 'Foobar' -Column {
-        VarBinary 'id'
+        VarBinary 'id' -Max
     } -Option 'data_compression = none'
 }
 
@@ -30,7 +30,7 @@ function Pop-Migration
     Invoke-Rivet -Push 'CreateVarBinaryColumn'
     
     Assert-Table 'Foobar'
-    Assert-Column -Name 'id' -DataType 'VarBinary' -TableName 'Foobar'
+    Assert-Column -Name 'id' -DataType 'VarBinary' -TableName 'Foobar' -Max
 }
 
 # This test won't work unless file streams are setup.  Don't know how to do that so ignoring this test for now.
@@ -40,7 +40,7 @@ function Ignore-ShouldCreateVarBinaryColumnWithFileStream
 function Push-Migration
 {
     Add-Table -Name 'Foobar' -Column {
-        VarBinary 'id' -FileStream "default"
+        VarBinary 'id' -Max -FileStream "default"
     } -FileStreamFileGroup "default"
 }
 
@@ -54,7 +54,7 @@ function Pop-Migration
     Invoke-Rivet -Push 'CreateVarBinaryColumnWithFileStream'
     
     Assert-Table 'Foobar'
-    Assert-Column -Name 'id' -DataType 'VarBinary' -TableName 'Foobar'
+    Assert-Column -Name 'id' -DataType 'VarBinary' -TableName 'Foobar' -Max
 }
 
 function Test-ShouldCreateVarBinaryColumnWithNotNull
@@ -63,7 +63,7 @@ function Test-ShouldCreateVarBinaryColumnWithNotNull
 function Push-Migration
 {
     Add-Table -Name 'Foobar' -Column {
-        VarBinary 'id' -NotNull
+        VarBinary 'id' -Max -NotNull
     }
 }
 
@@ -77,7 +77,7 @@ function Pop-Migration
     Invoke-Rivet -Push 'CreateVarBinaryColumnWithNotNull'
     
     Assert-Table 'Foobar'
-    Assert-Column -Name 'id' -DataType 'VarBinary' -TableName 'Foobar' -NotNull
+    Assert-Column -Name 'id' -DataType 'VarBinary' -TableName 'Foobar' -NotNull -Max
 }
 
 function Test-ShouldCreateVarBinaryColumnWithCustomSize
@@ -86,7 +86,7 @@ function Test-ShouldCreateVarBinaryColumnWithCustomSize
 function Push-Migration
 {
     Add-Table -Name 'Foobar' -Column {
-        VarBinary 'id' -NotNull -Size 50
+        VarBinary 'id' 50 -NotNull
     }
 }
 

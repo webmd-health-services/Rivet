@@ -37,10 +37,10 @@ function New-NCharColumn
         # The column's name.
         $Name,
 
-        [Parameter()]
+        [Parameter(Mandatory=$true,Position=1)]
         [Int]
         # Defines the string Size of the fixed-Size string data.  Default is 30
-        $Size = 30,
+        $Size,
 
         [Parameter()]
         [string]
@@ -68,33 +68,21 @@ function New-NCharColumn
         $Description
     )
 
-    if ($NotNull -and $Sparse)
-    {
-        throw ('Column {0}: A column cannot be NOT NULL and SPARSE.  Please choose one, but not both' -f $Name)
-        return
-    }
-        
     $Sizetype = $null
 
     $Sizetype = New-Object Rivet.CharacterLength $Size
 
-    switch ($PSCmdlet.ParameterSetName)
+    $nullable = 'Null'
+
+    if( $PSCmdlet.ParameterSetName -eq 'NotNull' )
     {
-        'Nullable'
-        {
-            $nullable = 'Null'
-            if( $Sparse )
-            {
-                $nullable = 'Sparse'
-            }
-            [Rivet.Column]::NChar($Name, $Sizetype, $Collation, $nullable, $Default, $Description)
-        }
-            
-        'NotNull'
-        {
-            [Rivet.Column]::NChar($Name,$Sizetype, $Collation, 'NotNull', $Default, $Description)
-        }
+        $nullable = 'NotNull'
     }
+    elseif( $Sparse )
+    {
+        $nullable = 'Sparse'
+    }
+    [Rivet.Column]::NChar($Name, $Sizetype, $Collation, $nullable, $Default, $Description)
 }
     
 Set-Alias -Name 'NChar' -Value 'New-NCharColumn'
