@@ -3,6 +3,47 @@ function New-TinyIntColumn
     <#
     .SYNOPSIS
     Creates a column object representing an TinyInt datatype.
+
+    .DESCRIPTION
+    Use this function in the `Column` script block for `Add-Table`:
+
+        Add-Table 'WithTintyInt' {
+            TinyInt 'ColumnName'
+        }
+
+    ## ALIASES
+
+     * TinyInt
+
+    .EXAMPLE
+    Add-Table 'Items' { TinyInt 'Quantity' }
+
+    Demonstrates how to create an optional `tinyint` column called `Quantity`.
+
+    .EXAMPLE
+    Add-Table 'Items' { TinyInt 'Quantity' -Identity 1 1 }
+
+    Demonstrates how to create a required `tinyint` column called `Quantity`, which is used as the table's identity.  The identity values will start at 1, and increment by 1.
+
+    .EXAMPLE
+    Add-Table 'Items' { TinyInt 'Quantity' -NotNull }
+
+    Demonstrates how to create a required `tinyint` column called `Quantity`.
+
+    .EXAMPLE
+    Add-Table 'Items' { TinyInt 'Quantity' -Sparse }
+
+    Demonstrates how to create a sparse, optional `tinyint` column called `Quantity`.
+
+    .EXAMPLE
+    Add-Table 'Items' { TinyInt 'Quantity' -NotNull -Default '0' }
+
+    Demonstrates how to create a required `tinyint` column called `Quantity` with a default value of `0`.
+
+    .EXAMPLE
+    Add-Table 'Items' { TinyInt 'Quantity' -NotNull -Description 'The number of items currently on hand.' }
+
+    Demonstrates how to create a required `tinyint` column with a description.
     #>
     [CmdletBinding(DefaultParameterSetName='Nullable')]
     param(

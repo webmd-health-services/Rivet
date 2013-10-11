@@ -3,6 +3,37 @@ function New-DateColumn
     <#
     .SYNOPSIS
     Creates a column object representing an Date datatype.
+
+    .DESCRIPTION
+    Use this function in the `Column` script block for `Add-Table`:
+
+        Add-Table 'Members' {
+            Date 'Birthday'
+        }
+
+    ## ALIASES
+
+     * Date
+
+    .EXAMPLE
+    Add-Table 'Members' { New-DateColumn 'Birthday' -NotNull }
+
+    Demonstrates how to create a required `date` column.
+
+    .EXAMPLE
+    Add-Table 'Members' { Date 'Birthday' -Sparse }
+
+    Demonstrate show to create a nullable, sparse `date` column when adding a new table.
+
+    .EXAMPLE
+    Add-Table 'Members' { Date 'Birthday' -NotNull -Default 'get`date`()' }
+    
+    Demonstrates how to create a `date` column with a default value, in this case the current `date`.  (You alwyas use UTC `date`s, right?)  Probably not a great example, setting someone's birthday to the current `date`. Reasons are left as an exercise for the reader.
+
+    .EXAMPLE
+    Add-Table 'Members' { Date 'Birthday' -Description 'The members birthday.' }
+
+    Demonstrates how to create an optional `date` column with a description.
     #>
     [CmdletBinding(DefaultParameterSetName='Nullable')]
     param(

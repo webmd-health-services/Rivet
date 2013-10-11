@@ -3,6 +3,42 @@ function New-MoneyColumn
     <#
     .SYNOPSIS
     Creates a column object representing an Money datatype.
+
+    .DESCRIPTION
+    Use this function in the `Column` script block for `Add-Table`:
+
+        Add-Table 'Items' {
+            Money 'Price'
+        }
+
+    ## ALIASES
+
+     * Money
+
+    .EXAMPLE
+    Add-Table 'Items' { Money 'Price' }
+
+    Demonstrates how to create an optional `money` column called `Price`.
+
+    .EXAMPLE
+    Add-Table 'Items' { Money 'Price' -NotNull }
+
+    Demonstrates how to create a required `money` column called `Price`.
+
+    .EXAMPLE
+    Add-Table 'Items' { Money 'Price' -Sparse }
+
+    Demonstrates how to create a sparse, optional `money` column called `Price`.
+
+    .EXAMPLE
+    Add-Table 'Items' { Money 'Price' -NotNull -Default '0.00' }
+
+    Demonstrates how to create a required `money` column called `Price` with a default value of `$0.00`.
+
+    .EXAMPLE
+    Add-Table 'Items' { Money 'Price' -NotNull -Description 'The price of the item.' }
+
+    Demonstrates how to create a required `money` column with a description.
     #>
     [CmdletBinding(DefaultParameterSetName='Nullable')]
     param(

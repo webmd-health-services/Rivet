@@ -3,6 +3,42 @@ function New-BitColumn
     <#
     .SYNOPSIS
     Creates a column object representing an Bit datatype.
+
+    .DESCRIPTION
+    Use this function in the `Column` script block for `Add-Table`:
+
+        Add-Table 'Items' {
+            Bit 'IsAvailable'
+        }
+
+    ## ALIASES
+
+     * Bit
+
+    .EXAMPLE
+    Add-Table 'Items' { Bit 'IsAvailable' }
+
+    Demonstrates how to create an optional `bit` column called `IsAvailable`.
+
+    .EXAMPLE
+    Add-Table 'Items' { Bit 'IsAvailable' -NotNull }
+
+    Demonstrates how to create a required `bit` column called `IsAvailable`.
+
+    .EXAMPLE
+    Add-Table 'Items' { Bit 'IsAvailable' -Sparse }
+
+    Demonstrates how to create a sparse, optional `bit` column called `IsAvailable`.
+
+    .EXAMPLE
+    Add-Table 'Items' { Bit 'IsAvailable' -NotNull -Default '1' }
+
+    Demonstrates how to create a required `bit` column called `IsAvailable` with a default value of `1`.
+
+    .EXAMPLE
+    Add-Table 'Items' { Bit 'IsAvailable' -NotNull -Description 'The price of the item.' }
+
+    Demonstrates how to create a required `bit` column with a description.
     #>
     [CmdletBinding(DefaultParameterSetName='Nullable')]
     param(

@@ -3,6 +3,49 @@ function New-DecimalColumn
     <#
     .SYNOPSIS
     Creates a column object representing an Decimal datatype.
+
+    .DESCRIPTION
+    Use this function in the `Column` script block for `Add-Table`:
+
+        Add-Table 'Items' {
+            Decimal 'Price'
+        }
+
+    ## ALIASES
+
+     * Decimal
+     * Numeric
+     * New-NumericColumn
+
+    .EXAMPLE
+    Add-Table 'Items' { Decimal 'Price' -Precision 5 -Scale 2 }
+
+    Demonstrates how to create an optional `decimal` column called `Price`, with a five-digit precision (prices less than $999.99) and a scale of 2 (2 digits after the `decimal`).
+
+    .EXAMPLE
+    Add-Table 'Items' { Decimal 'Price' -Identity 1 1 }
+
+    Demonstrates how to create a required `decimal` column called `Price`, which is used as the table's identity.  The identity values will start at 1, and increment by 1. Uses SQL Server's default precision/scale.
+
+    .EXAMPLE
+    Add-Table 'Items' { Decimal 'Price' -NotNull }
+
+    Demonstrates how to create a required `decimal` column called `Price`. Uses SQL Server's default precision/scale.
+
+    .EXAMPLE
+    Add-Table 'Items' { Decimal 'Price' -Sparse }
+
+    Demonstrates how to create a sparse, optional `decimal` column called `Price`. Uses SQL Server's default precision/scale.
+
+    .EXAMPLE
+    Add-Table 'Items' { Decimal 'Price' -NotNull -Default '0' }
+
+    Demonstrates how to create a required `decimal` column called `Price` with a default value of `0`. Uses SQL Server's default precision/scale.
+
+    .EXAMPLE
+    Add-Table 'Items' { Decimal 'Price' -NotNull -Description 'The price of the item.' }
+
+    Demonstrates how to create a required `decimal` column with a description. Uses SQL Server's default precision/scale.
     #>
     [CmdletBinding(DefaultParameterSetName='Nullable')]
     param(

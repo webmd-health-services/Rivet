@@ -3,6 +3,42 @@ function New-SqlVariantColumn
     <#
     .SYNOPSIS
     Creates a column object representing an SqlVariant datatype.
+
+    .DESCRIPTION
+    Use this function in the `Column` script block for `Add-Table`:
+
+        Add-Table 'WithSqlVariant' {
+            SqlVariant 'ColumnName'
+        }
+
+    ## ALIASES
+
+     * SqlVariant
+
+    .EXAMPLE
+    Add-Table 'WithSqlVar' { SqlVariant 'WhoKnows' }
+
+    Demonstrates how to create an optional `sql_variant` column called `WhoKnows`.
+
+    .EXAMPLE
+    Add-Table 'WithSqlVar' { SqlVariant 'WhoKnows' -NotNull }
+
+    Demonstrates how to create a required `sql_variant` column called `WhoKnows`.
+
+    .EXAMPLE
+    Add-Table 'WithSqlVar' { SqlVariant 'WhoKnows' -Sparse }
+
+    Demonstrates how to create a sparse, optional `sql_variant` column called `WhoKnows`.
+
+    .EXAMPLE
+    Add-Table 'WithSqlVar' { SqlVariant 'WhoKnows' -NotNull -Default '1' }
+
+    Demonstrates how to create a required `sql_variant` column called `WhoKnows` with a default value of `1`.
+
+    .EXAMPLE
+    Add-Table 'WithSqlVar' { SqlVariant 'WhoKnows' -NotNull -Description 'The contents of this column are left as an exercise for the reader.' }
+
+    Demonstrates how to create a required `sql_variant` column with a description.
     #>
     [CmdletBinding(DefaultParameterSetName='Nullable')]
     param(

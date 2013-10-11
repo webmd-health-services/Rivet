@@ -3,6 +3,42 @@ function New-UniqueIdentifierColumn
     <#
     .SYNOPSIS
     Creates a column object representing an UniqueIdentifier datatype.
+
+    .DESCRIPTION
+    Use this function in the `Column` script block for `Add-Table`:
+
+        Add-Table 'WithUUID' {
+            UniqueIdentifier 'ColumnName'
+        }
+
+    ## ALIASES
+
+     * UniqueIdentifier
+
+    .EXAMPLE
+    Add-Table Locations { UniqueIdentifier 'LocationID' }
+
+    Demonstrates how to create a table with an optional `uniqueidentifier` column.
+
+    .EXAMPLE
+    Add-Table Locations { UniqueIdentifier 'LocationID' -RowGuidCol }
+
+    Demonstrates how to create a table with an optional `uniqueidentifier`, which is used as the RowGuid identifier for SQL Server replication.
+
+    .EXAMPLE
+    Add-Table Locations { UniqueIdentifier 'LocationID' -NotNull }
+
+    Demonstrates how to create a table with an required `uniqueidentifier` column.
+
+    .EXAMPLE
+    Add-Table Locations { UniqueIdentifier 'LocationID' -Default 'newid()' }
+
+    Demonstrates how to create a table with an optional `uniqueidentifier` column with a default value.
+
+    .EXAMPLE
+    Add-Table Locations { UniqueIdentifier 'LocationID' -Description 'The unique identifier for this location.' }
+
+    Demonstrates how to create a table with an optional `uniqueidentifier` column with a default value.
     #>
     [CmdletBinding(DefaultParameterSetName='Nullable')]
     param(

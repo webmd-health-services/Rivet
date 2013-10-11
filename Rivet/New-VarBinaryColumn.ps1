@@ -3,6 +3,37 @@ function New-VarBinaryColumn
     <#
     .SYNOPSIS
     Creates a column object representing an VarBinary datatype.
+
+    .DESCRIPTION
+    Use this function in the `Column` script block for `Add-Table`:
+
+        Add-Table 'Images' {
+            VarBinary 'Bits' 8000
+        }
+
+    ## ALIASES
+
+     * VarBinary
+
+    .EXAMPLE
+    Add-Table 'Images' { VarBinary 'Bytes' 8000 } 
+
+    Demonstrates how to create an optional `varbinary` column with a maximum length of 8000 bytes.
+
+    .EXAMPLE
+    Add-Table 'Images' { VarBinary 'Bytes' 8000 -NotNull }
+
+    Demonstrates how to create a required `varbinary` column with maximum length of 8000 bytes.
+
+    .EXAMPLE
+    Add-Table 'Images' { VarBinary 'Bytes' -Max }
+
+    Demonstrates how to create an optional `varbinary` column with the maximum length (2^31 -1 bytes).
+
+    .EXAMPLE
+    Add-Table 'Images' { VarBinary 'Bytes' -Max -FileStream }
+
+    Demonstrates now to create an optional `varbinary` column with the maximum length, and stores the data in a filestream data container.
     #>
     [CmdletBinding(DefaultParameterSetName='Nullable')]
     param(
@@ -11,14 +42,14 @@ function New-VarBinaryColumn
         # The column's name.
         $Name,
 
-        [Parameter()]
+        [Parameter(Position=1)]
         [Int]
         # Defines the Size
         $Size,
 
         [Parameter()]
         [Switch]
-        # Stores the varbinary(max) data in a filestream data container on the file system.  Requires VarBinary(max)
+        # Stores the varbinary(max) data in a filestream data container on the file system.  Requires VarBinary(max).
         $FileStream,
 
         [Parameter(Mandatory=$true,ParameterSetName='NotNull')]

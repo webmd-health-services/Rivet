@@ -3,6 +3,47 @@ function New-IntColumn
     <#
     .SYNOPSIS
     Creates a column object representing an Int datatype.
+
+    .DESCRIPTION
+    Use this function in the `Column` script block for `Add-Table`:
+
+        Add-Table 'Items' {
+            Int 'Quantity'
+        }
+
+    ## ALIASES
+
+     * Int
+
+    .EXAMPLE
+    Add-Table 'Items' { Int 'Quantity' }
+
+    Demonstrates how to create an optional `int` column called `Quantity`.
+
+    .EXAMPLE
+    Add-Table 'Items' { Int 'Quantity' -Identity 1 1 }
+
+    Demonstrates how to create a required `int` column called `Quantity`, which is used as the table's identity.  The identity values will start at 1, and increment by 1.
+
+    .EXAMPLE
+    Add-Table 'Items' { Int 'Quantity' -NotNull }
+
+    Demonstrates how to create a required `int` column called `Quantity`.
+
+    .EXAMPLE
+    Add-Table 'Items' { Int 'Quantity' -Sparse }
+
+    Demonstrates how to create a sparse, optional `int` column called `Quantity`.
+
+    .EXAMPLE
+    Add-Table 'Items' { Int 'Quantity' -NotNull -Default '0' }
+
+    Demonstrates how to create a required `int` column called `Quantity` with a default value of `0`.
+
+    .EXAMPLE
+    Add-Table 'Items' { Int 'Quantity' -NotNull -Description 'The number of items currently on hand.' }
+
+    Demonstrates how to create a required `int` column with a description.
     #>
     [CmdletBinding(DefaultParameterSetName='Nullable')]
     param(

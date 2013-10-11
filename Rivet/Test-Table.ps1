@@ -8,7 +8,7 @@ function Test-Table
     .DESCRIPTION
     Returns `$true` if a table exists.  `$false` otherwise.
 
-    .OUTPUT
+    .OUTPUTS
     System.Boolean.
 
     .EXAMPLE

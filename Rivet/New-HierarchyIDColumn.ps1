@@ -3,6 +3,37 @@ function New-HierarchyIDColumn
     <#
     .SYNOPSIS
     Creates a column object representing an HierarchyID datatype.
+
+    .DESCRIPTION
+    Use this function in the `Column` script block for `Add-Table`:
+
+        Add-Table 'FamilyTree' {
+            HierarchyID 'Father'
+        }
+
+    ## ALIASES
+
+     * HierarchyID
+
+    .EXAMPLE
+    Add-Table 'FamilyTree' { HierarchyID 'Father' }
+
+    Demonstrates how to create an optional `hierarchyid` column called `Father`.
+
+    .EXAMPLE
+    Add-Table 'FamilyTree' { HierarchyID 'Father' -NotNull }
+
+    Demonstrates how to create a required `hierarchyid` column called `Father`.
+
+    .EXAMPLE
+    Add-Table 'FamilyTree' { HierarchyID 'Father' -Sparse }
+
+    Demonstrates how to create a sparse, optional `hierarchyid` column called `Father`.
+
+    .EXAMPLE
+    Add-Table 'FamilyTree' { HierarchyID 'Father' -NotNull -Description "The hierarchy ID of this person's father." }
+
+    Demonstrates how to create a required `hierarchyid` column with a description.
     #>
     [CmdletBinding(DefaultParameterSetName='Nullable')]
     param(
