@@ -16,7 +16,7 @@ function Test-ShouldCreateNVarCharColumn
 function Push-Migration
 {
     Add-Table -Name 'Foobar' -Column {
-        NVarChar 'id'
+        NVarChar 'id' -Max
     } -Option 'data_compression = none'
 }
 
@@ -30,7 +30,7 @@ function Pop-Migration
     Invoke-Rivet -Push 'CreateNVarCharColumn'
     
     Assert-Table 'Foobar'
-    Assert-Column -Name 'id' -DataType 'NVarChar' -TableName 'Foobar'
+    Assert-Column -Name 'id' -DataType 'NVarChar' -TableName 'Foobar' -Max
 }
 
 function Test-ShouldCreateNVarCharColumnWithSparse
@@ -39,7 +39,7 @@ function Test-ShouldCreateNVarCharColumnWithSparse
 function Push-Migration
 {
     Add-Table -Name 'Foobar' -Column {
-        NVarChar 'id' -Sparse
+        NVarChar 'id' 50 -Sparse
     }
 }
 
@@ -53,7 +53,7 @@ function Pop-Migration
     Invoke-Rivet -Push 'CreateNVarCharColumnWithSparse'
     
     Assert-Table 'Foobar'
-    Assert-Column -Name 'id' -DataType 'NVarChar' -TableName 'Foobar' -Sparse
+    Assert-Column -Name 'id' -DataType 'NVarChar' -TableName 'Foobar' -Sparse -Size 50
 }
 
 function Test-ShouldCreateNVarCharColumnWithNotNull
@@ -62,7 +62,7 @@ function Test-ShouldCreateNVarCharColumnWithNotNull
 function Push-Migration
 {
     Add-Table -Name 'Foobar' -Column {
-        NVarChar 'id' -NotNull
+        NVarChar 'id' -Max -NotNull
     }
 }
 
@@ -76,7 +76,7 @@ function Pop-Migration
     Invoke-Rivet -Push 'CreateNVarCharColumnWithNotNull'
     
     Assert-Table 'Foobar'
-    Assert-Column -Name 'id' -DataType 'NVarChar' -TableName 'Foobar' -NotNull
+    Assert-Column -Name 'id' -DataType 'NVarChar' -TableName 'Foobar' -NotNull -Max
 }
 
 function Test-ShouldCreateNVarCharColumnWithSizeCollation

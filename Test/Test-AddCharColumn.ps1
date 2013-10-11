@@ -16,7 +16,7 @@ function Test-ShouldCreateCharColumn
 function Push-Migration
 {
     Add-Table -Name 'Foobar' -Column {
-        Char 'id'
+        Char 'id' 10
     } -Option 'data_compression = none'
 }
 
@@ -30,7 +30,7 @@ function Pop-Migration
     Invoke-Rivet -Push 'CreateCharColumn'
     
     Assert-Table 'Foobar'
-    Assert-Column -Name 'id' -DataType 'Char' -TableName 'Foobar'
+    Assert-Column -Name 'id' -DataType 'Char' -TableName 'Foobar' -Size 10
 }
 
 function Test-ShouldCreateCharColumnWithSparse
@@ -39,7 +39,7 @@ function Test-ShouldCreateCharColumnWithSparse
 function Push-Migration
 {
     Add-Table -Name 'Foobar' -Column {
-        Char 'id' -Sparse
+        Char 'id' 10 -Sparse
     }
 }
 
@@ -53,7 +53,7 @@ function Pop-Migration
     Invoke-Rivet -Push 'CreateCharColumnWithSparse'
     
     Assert-Table 'Foobar'
-    Assert-Column -Name 'id' -DataType 'Char' -TableName 'Foobar' -Sparse
+    Assert-Column -Name 'id' -DataType 'Char' -TableName 'Foobar' -Sparse -Size 10
 }
 
 function Test-ShouldCreateCharColumnWithNotNull
@@ -62,7 +62,7 @@ function Test-ShouldCreateCharColumnWithNotNull
 function Push-Migration
 {
     Add-Table -Name 'Foobar' -Column {
-        Char 'id' -NotNull
+        Char 'id' 10 -NotNull
     }
 }
 
@@ -76,7 +76,7 @@ function Pop-Migration
     Invoke-Rivet -Push 'CreateCharColumnWithNotNull'
     
     Assert-Table 'Foobar'
-    Assert-Column -Name 'id' -DataType 'Char' -TableName 'Foobar' -NotNull
+    Assert-Column -Name 'id' -DataType 'Char' -TableName 'Foobar' -NotNull -Size 10
 }
 
 function Test-ShouldCreateCharColumnWithCustomSizeCollation

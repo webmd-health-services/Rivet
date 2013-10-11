@@ -16,7 +16,7 @@ function Test-ShouldCreateNCharColumn
 function Push-Migration
 {
     Add-Table -Name 'Foobar' -Column {
-        NChar 'id'
+        NChar 'id' 30
     } -Option 'data_compression = none'
 }
 
@@ -39,7 +39,7 @@ function Test-ShouldCreateNCharColumnWithSparse
 function Push-Migration
 {
     Add-Table -Name 'Foobar' -Column {
-        NChar 'id' -Sparse
+        NChar 'id' 30 -Sparse
     }
 }
 
@@ -62,7 +62,7 @@ function Test-ShouldCreateNCharColumnWithNotNull
 function Push-Migration
 {
     Add-Table -Name 'Foobar' -Column {
-        NChar 'id' -NotNull
+        NChar 'id' 30 -NotNull
     }
 }
 

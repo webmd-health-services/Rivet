@@ -35,29 +35,39 @@ function New-VarBinaryColumn
 
     Demonstrates now to create an optional `varbinary` column with the maximum length, and stores the data in a filestream data container.
     #>
-    [CmdletBinding(DefaultParameterSetName='Nullable')]
+    [CmdletBinding(DefaultParameterSetName='NullSize')]
     param(
         [Parameter(Mandatory=$true,Position=0)]
         [string]
         # The column's name.
         $Name,
 
-        [Parameter(Position=1)]
+        [Parameter(Mandatory=$true,Position=1,ParameterSetName='NullSize')]
+        [Parameter(Mandatory=$true,Position=1,ParameterSetName='NotNullSize')]
         [Int]
-        # Defines the Size
+        # The maximum number of bytes the column will hold.
         $Size,
 
-        [Parameter()]
+        [Parameter(Mandatory=$true,ParameterSetName='NullMax')]
+        [Parameter(Mandatory=$true,ParameterSetName='NotNullMax')]
+        [Switch]
+        # Creates a `varbinary(max)` column.
+        $Max,
+
+        [Parameter(ParameterSetName='NullMax')]
+        [Parameter(ParameterSetName='NotNullMax')]
         [Switch]
         # Stores the varbinary(max) data in a filestream data container on the file system.  Requires VarBinary(max).
         $FileStream,
 
-        [Parameter(Mandatory=$true,ParameterSetName='NotNull')]
+        [Parameter(Mandatory=$true,ParameterSetName='NotNullSize')]
+        [Parameter(Mandatory=$true,ParameterSetName='NotNullMax')]
         [Switch]
         # Don't allow `NULL` values in this column.
         $NotNull,
 
-        [Parameter(ParameterSetName='Nullable')]
+        [Parameter(ParameterSetName='NullSize')]
+        [Parameter(ParameterSetName='NullMax')]
         [Switch]
         # Store nulls as Sparse.
         $Sparse,
@@ -73,46 +83,28 @@ function New-VarBinaryColumn
         $Description
     )
 
-    if ($NotNull -and $Sparse)
-    {
-        throw ('Column {0}: A column cannot be NOT NULL and SPARSE.  Please choose one, but not both' -f $Name)
-        return
-    }
+    $sizeType = $null
 
-    if ($FileStream -and ($Size -ne 0))
+    if( $PSCmdlet.ParameterSetName -like '*Size' )
     {
-        throw ('Column {0}: FileStream requires VarBinary(max)' -f $Name)
-        return
-    }
-        
-    $Sizetype = $null
-
-    if ($Size -ne 0)
-    {
-        $Sizetype = New-Object Rivet.CharacterLength $Size
+        $sizeType = New-Object Rivet.CharacterLength $Size
     }
     else 
     {
-        $Sizetype = New-Object Rivet.CharacterLength @()   
+        $sizeType = New-Object Rivet.CharacterLength @()   
     }
 
-    switch ($PSCmdlet.ParameterSetName)
+    $nullable = 'Null'
+    if( $PSCmdlet.ParameterSetName -like 'NotNull*' )
     {
-        'Nullable'
-        {
-            $nullable = 'Null'
-            if( $Sparse )
-            {
-                $nullable = 'Sparse'
-            }
-            [Rivet.Column]::VarBinary($Name, $Sizetype, $FileStream, $nullable, $Default, $Description)
-        }
-            
-        'NotNull'
-        {
-            [Rivet.Column]::VarBinary($Name,$Sizetype, $FileStream, 'NotNull', $Default, $Description)
-        }
+        $nullable = 'NotNull'
     }
+    elseif( $Sparse )
+    {
+        $nullable = 'Sparse'
+    }
+
+    [Rivet.Column]::VarBinary($Name, $sizeType, $FileStream, $nullable, $Default, $Description)
 }
     
 Set-Alias -Name 'VarBinary' -Value 'New-VarBinaryColumn'

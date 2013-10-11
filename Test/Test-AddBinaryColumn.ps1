@@ -16,7 +16,7 @@ function Test-ShouldCreateBinaryColumn
 function Push-Migration
 {
     Add-Table -Name 'Foobar' -Column {
-        Binary 'id'
+        Binary 'id'  500
     } -Option 'data_compression = none'
 }
 
@@ -30,7 +30,7 @@ function Pop-Migration
     Invoke-Rivet -Push 'CreateBinaryColumn'
     
     Assert-Table 'Foobar'
-    Assert-Column -Name 'id' -DataType 'Binary' -TableName 'Foobar'
+    Assert-Column -Name 'id' -DataType 'Binary' -TableName 'Foobar' -Size 500
 }
 
 function Test-ShouldCreateBinaryColumnWithSparse
@@ -39,7 +39,7 @@ function Test-ShouldCreateBinaryColumnWithSparse
 function Push-Migration
 {
     Add-Table -Name 'Foobar' -Column {
-        Binary 'id' -Sparse
+        Binary 'id' 500 -Sparse
     }
 }
 
@@ -53,7 +53,7 @@ function Pop-Migration
     Invoke-Rivet -Push 'CreateBinaryColumnWithSparse'
     
     Assert-Table 'Foobar'
-    Assert-Column -Name 'id' -DataType 'Binary' -TableName 'Foobar' -Sparse
+    Assert-Column -Name 'id' -DataType 'Binary' -TableName 'Foobar' -Sparse -Size 500
 }
 
 function Test-ShouldCreateBinaryColumnWithNotNull
@@ -62,7 +62,7 @@ function Test-ShouldCreateBinaryColumnWithNotNull
 function Push-Migration
 {
     Add-Table -Name 'Foobar' -Column {
-        Binary 'id' -NotNull
+        Binary 'id' 500 -NotNull
     }
 }
 
@@ -76,7 +76,7 @@ function Pop-Migration
     Invoke-Rivet -Push 'CreateBinaryColumnWithNotNull'
     
     Assert-Table 'Foobar'
-    Assert-Column -Name 'id' -DataType 'Binary' -TableName 'Foobar' -NotNull
+    Assert-Column -Name 'id' -DataType 'Binary' -TableName 'Foobar' -NotNull -Size 500
 }
 
 function Test-ShouldCreateBinaryColumnWithCustomSize

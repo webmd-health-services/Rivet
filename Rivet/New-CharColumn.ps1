@@ -37,10 +37,11 @@ function New-CharColumn
         # The column's name.
         $Name,
 
-        [Parameter(Position=1)]
+        [Parameter(Mandatory=$true,Position=1)]
+        [Alias('Length')]
         [Int]
-        # Defines the string Size of the fixed-Size string data.
-        $Size = 30,
+        # The length of the column, i.e. the number of characters.
+        $Size,
 
         [Parameter()]
         [string]
@@ -68,33 +69,21 @@ function New-CharColumn
         $Description
     )
 
-    if ($NotNull -and $Sparse)
-    {
-        throw ('Column {0}: A column cannot be NOT NULL and SPARSE.  Please choose one, but not both' -f $Name)
-        return
-    }
-        
     $Sizetype = $null
 
     $Sizetype = New-Object Rivet.CharacterLength $Size
 
-    switch ($PSCmdlet.ParameterSetName)
+    $nullable = 'Null'
+    if( $PSCmdlet.ParameterSetName -eq 'NotNull' )
     {
-        'Nullable'
-        {
-            $nullable = 'Null'
-            if( $Sparse )
-            {
-                $nullable = 'Sparse'
-            }
-            [Rivet.Column]::Char($Name, $Sizetype, $Collation, $nullable, $Default, $Description)
-        }
-            
-        'NotNull'
-        {
-            [Rivet.Column]::Char($Name,$Sizetype, $Collation, 'NotNull', $Default, $Description)
-        }
+        $nullable = 'NotNull'
     }
+    elseif( $Sparse )
+    {
+        $nullable = 'Sparse'
+    }
+
+    [Rivet.Column]::Char($Name, $Sizetype, $Collation, $nullable, $Default, $Description)
 }
     
 Set-Alias -Name 'Char' -Value 'New-CharColumn'

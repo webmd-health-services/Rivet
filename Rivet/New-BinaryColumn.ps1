@@ -42,10 +42,10 @@ function New-BinaryColumn
         # The column's name.
         $Name,
 
-        [Parameter(Position=1)]
+        [Parameter(Mandatory=$true,Position=1)]
         [Int]
-        # Defines the Size
-        $Size = 30,
+        # The number of bytes the column will hold.
+        $Size,
 
         [Parameter(Mandatory=$true,ParameterSetName='NotNull')]
         [Switch]
@@ -68,33 +68,19 @@ function New-BinaryColumn
         $Description
     )
 
-    if ($NotNull -and $Sparse)
-    {
-        throw ('Column {0}: A column cannot be NOT NULL and SPARSE.  Please choose one, but not both' -f $Name)
-        return
-    }
-        
-    $Sizetype = $null
+    $sizetype = New-Object Rivet.CharacterLength $Size
 
-    $Sizetype = New-Object Rivet.CharacterLength $Size
-
-    switch ($PSCmdlet.ParameterSetName)
+    $nullable = 'Null'
+    if( $PSCmdlet.ParameterSetName -eq 'NotNull' )
     {
-        'Nullable'
-        {
-            $nullable = 'Null'
-            if( $Sparse )
-            {
-                $nullable = 'Sparse'
-            }
-            [Rivet.Column]::Binary($Name, $Sizetype, $nullable, $Default, $Description)
-        }
-            
-        'NotNull'
-        {
-            [Rivet.Column]::Binary($Name,$Sizetype, 'NotNull', $Default, $Description)
-        }
+        $nullable = 'NotNull'
     }
+    elseif( $Sparse )
+    {
+        $nullable = 'Sparse'
+    }
+
+    [Rivet.Column]::Binary($Name, $sizetype, $nullable, $Default, $Description)
 }
     
 Set-Alias -Name 'Binary' -Value 'New-BinaryColumn'

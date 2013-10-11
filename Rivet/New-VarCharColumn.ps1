@@ -35,29 +35,38 @@ function New-VarCharColumn
 
     Demonstrates now to create an optional `varchar` column with a custom `Latin1_General_BIN` collation.
     #>
-    [CmdletBinding(DefaultParameterSetName='Nullable')]
+    [CmdletBinding(DefaultParameterSetName='NullSize')]
     param(
         [Parameter(Mandatory=$true,Position=0)]
         [string]
         # The column's name.
         $Name,
 
-        [Parameter(Position=1)]
+        [Parameter(Mandatory=$true,Position=1,ParameterSetName='NullSize')]
+        [Parameter(Mandatory=$true,Position=1,ParameterSetName='NotNullSize')]
         [Int]
-        # Defines the string Size of the variable-Size string data.
+        # The maximum length of the column, i.e. the number of characters.
         $Size,
+
+        [Parameter(Mandatory=$true,ParameterSetName='NullMax')]
+        [Parameter(Mandatory=$true,ParameterSetName='NotNullMax')]
+        [Switch]
+        # Create a `varchar(max)` column.
+        $Max,
 
         [Parameter()]
         [string]
         # Controls the code page that is used to store the data
         $Collation,
 
-        [Parameter(Mandatory=$true,ParameterSetName='NotNull')]
+        [Parameter(Mandatory=$true,ParameterSetName='NotNullSize')]
+        [Parameter(Mandatory=$true,ParameterSetName='NotNullMax')]
         [Switch]
         # Don't allow `NULL` values in this column.
         $NotNull,
 
-        [Parameter(ParameterSetName='Nullable')]
+        [Parameter(ParameterSetName='NullSize')]
+        [Parameter(ParameterSetName='NullMax')]
         [Switch]
         # Store nulls as Sparse.
         $Sparse,
@@ -73,40 +82,28 @@ function New-VarCharColumn
         $Description
     )
 
-    if ($NotNull -and $Sparse)
-    {
-        throw ('Column {0}: A column cannot be NOT NULL and SPARSE.  Please choose one, but not both' -f $Name)
-        return
-    }
-        
-    $Sizetype = $null
+    $sizeType = $null
 
-    if ($Size -ne 0)
+    if( $PSCmdlet.ParameterSetName -like '*Size' )
     {
-        $Sizetype = New-Object Rivet.CharacterLength $Size
+        $sizeType = New-Object Rivet.CharacterLength $Size
     }
     else 
     {
-        $Sizetype = New-Object Rivet.CharacterLength @()   
+        $sizeType = New-Object Rivet.CharacterLength @()   
     }
 
-    switch ($PSCmdlet.ParameterSetName)
+    $nullable = 'Null'
+    if( $PSCmdlet.ParameterSetName -like 'NotNull*' )
     {
-        'Nullable'
-        {
-            $nullable = 'Null'
-            if( $Sparse )
-            {
-                $nullable = 'Sparse'
-            }
-            [Rivet.Column]::VarChar($Name, $Sizetype, $Collation, $nullable, $Default, $Description)
-        }
-            
-        'NotNull'
-        {
-            [Rivet.Column]::VarChar($Name, $Sizetype, $Collation, 'NotNull', $Default, $Description)
-        }
+        $nullable = 'NotNull'
     }
+    elseif( $Sparse )
+    {
+        $nullable = 'Sparse'
+    }
+
+    [Rivet.Column]::VarChar($Name, $sizeType, $Collation, $nullable, $Default, $Description)
 }
     
 Set-Alias -Name 'VarChar' -Value 'New-VarCharColumn'
