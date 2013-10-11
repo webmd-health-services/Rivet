@@ -1,3 +1,4 @@
+
 function Start-Test
 {
     Import-Module -Name (Join-Path $TestDir 'RivetTest') -ArgumentList 'AddBigIntColumn' 

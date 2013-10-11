@@ -50,54 +50,7 @@ function Invoke-SqlScript
         $Path = Join-Path $DBMigrationsRoot $Path
     }
     
-    $currentQuery = New-Object Text.StringBuilder
-    $inComment = $false
-    $commentCouldBeStarting = $false
-    $commentCouldBeEnding = $false
-    $prevChar = $null
-    $currentChar = $null
-    $commentDepth = 0
-    $currentLine = New-Object Text.StringBuilder
-    
-    Invoke-Command {  Get-Content -Path $Path ; "`nGO`n"  } | # We add `nGO`n to ensure we send the last query to the pipeline. 
-        ForEach-Object { $_.ToCharArray() ; "`n" } | # We add `n because Get-Content strips it. 
-        ForEach-Object {
-            $prevChar = $currentChar
-            $currentChar = $_
-            
-            if( $inComment -and $prevChar -eq '*' -and $currentChar -eq '/' )
-            {
-                $commentDepth--
-                $inComment = ($commentDepth -gt 0)
-            }
-
-            if( $prevChar -eq '/' -and $currentChar -eq '*' )
-            {
-                $inComment = $true
-                $commentDepth++
-            }
-
-            [void] $currentLine.Append( $currentChar )
-            
-            if( $currentChar -eq "`n" )
-            {
-                $trimmedLine = $currentLine.ToString().Trim() 
-                if( -not $inComment -and $trimmedLine -match "^GO\b" )
-                {
-                    if( $currentQuery.Length -gt 0 )
-                    {
-                        $currentQuery.ToString()
-                        $currentQuery.Length = 0
-                    }
-                }
-                else
-                {
-                    $null = $currentQuery.Append( $currentLine )
-                }
-                $currentLine.Length = 0
-            }
-            
-        } |
+    Get-Content -Path $Path -Raw |
         Invoke-Query -CommandTimeout $CommandTimeout @invokeQueryArgs
-    
+
 }

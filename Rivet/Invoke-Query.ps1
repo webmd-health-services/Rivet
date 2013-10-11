@@ -6,9 +6,9 @@ filter Invoke-Query
     Executes a SQL query against the database.
     
     .DESCRIPTION
-    All migrations eventually come down to this method.  It takes raw SQL and executes it against the database.
+    All migrations eventually come down to this method.  It takes raw SQL and executes it against the database.  Queries are split on `GO` statements, and each query is sent individually to the database.
     
-    You can pipe parameter-less queries to this method, too!
+    You can pipe queries to this method, too!
     
     .EXAMPLE
     Invoke-Query -Query 'create table rivet.Migrations( )'
@@ -61,6 +61,65 @@ filter Invoke-Query
         $invokeMigrationParams.CommandTimeout = $CommandTimeout
     }
 
-    $operation = New-Object 'Rivet.Operations.RawQueryOperation' $Query
-    Invoke-MigrationOperation -Operation $operation @invokeMigrationParams
+    $currentQuery = New-Object Text.StringBuilder
+    $inComment = $false
+    $commentCouldBeStarting = $false
+    $commentCouldBeEnding = $false
+    $prevChar = $null
+    $currentChar = $null
+    $commentDepth = 0
+    $currentLine = New-Object Text.StringBuilder
+    
+    Invoke-Command { 
+            $Query.ToCharArray()
+            "`nGO`n".ToCharArray() # We add `nGO`n to ensure we send the last query to the pipeline. 
+        } | 
+        ForEach-Object {
+            $prevChar = $currentChar
+            $currentChar = $_
+            
+            if( $inComment -and $prevChar -eq '*' -and $currentChar -eq '/' )
+            {
+                $commentDepth--
+                $inComment = ($commentDepth -gt 0)
+            }
+
+            if( $prevChar -eq '/' -and $currentChar -eq '*' )
+            {
+                $inComment = $true
+                $commentDepth++
+            }
+
+            if( $currentChar -eq "`r" )
+            {
+                return
+            }
+            
+            [void] $currentLine.Append( $currentChar )
+
+            if( $currentChar -eq "`n" )
+            {
+                $trimmedLine = $currentLine.ToString().Trim() 
+                if( -not $inComment -and $trimmedLine -match "^GO\b" )
+                {
+                    if( $currentQuery.Length -gt 0 )
+                    {
+                        $currentQuery.ToString()
+                        $currentQuery.Length = 0
+                    }
+                }
+                else
+                {
+                    $null = $currentQuery.Append( $currentLine )
+                }
+                $currentLine.Length = 0
+            }
+            
+        } |
+        Where-Object { $_.Trim() } |
+        ForEach-Object {
+            $operation = New-Object 'Rivet.Operations.RawQueryOperation' $_
+            Invoke-MigrationOperation -Operation $operation @invokeMigrationParams
+        }
+
 }
