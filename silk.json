@@ -4,7 +4,7 @@
     
     Title: "Rivet :: Write SQL Server Database Migrations with PowerShell",
 
-    AssemblyNames: [ ],
+    AssemblyNames: [ '.\\Rivet\\bin\\Rivet.dll' ],
     
     CommandsToSkip: [ 'Invoke-Rivet' ],
     

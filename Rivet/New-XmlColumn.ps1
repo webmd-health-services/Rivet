@@ -3,6 +3,34 @@ function New-XmlColumn
     <#
     .SYNOPSIS
     Creates a column object representing an Xml datatype.
+
+    .DESCRIPTION
+    Use this function in the `Column` script block for `Add-Table`:
+
+        Add-Table -Name 'WebConfigs' -Column {
+            Xml 'WebConfig' -XmlSchemaCollection 'webconfigschema'
+        }
+
+    Remember you have to have already created the XML schema before creating a column that uses it.
+
+    ## ALIASES
+
+     * Xml
+
+    .EXAMPLE
+    Add-Table 'WebConfigs' { Xml 'WebConfig' -XmlSchemaCollection 'webconfigschema' } 
+
+    Demonstrates how to create an optional `xml` column which uses the `webconfigschema` schema collection.
+
+    .EXAMPLE
+    Add-Table 'WebConfigs' { Xml 'WebConfig' -XmlSchemaCollection 'webconfigschema' -NotNull }
+
+    Demonstrates how to create a required `xml` column.
+
+    .EXAMPLE
+    Add-Table 'WebConfigs' { Xml 'WebConfig' -XmlSchemaCollection 'webconfigschema'' -Document }
+
+    Demonstrates how to create an `xml` column that holds an entire XML document.
     #>
     [CmdletBinding(DefaultParameterSetName='Nullable')]
     param(
@@ -10,6 +38,16 @@ function New-XmlColumn
         [string]
         # The column's name.
         $Name,
+
+        [Parameter(Mandatory=$true,Position=1)]
+        [string]
+        # Name of an XML schema collection
+        $XmlSchemaCollection,
+
+        [Parameter()]
+        [Switch]
+        # Specifies that this is a well-formed XML document instead of an XML fragment.
+        $Document,
 
         [Parameter(Mandatory=$true,ParameterSetName='NotNull')]
         [Switch]
@@ -20,16 +58,6 @@ function New-XmlColumn
         [Switch]
         # Store nulls as Sparse.
         $Sparse,
-
-        [Parameter()]
-        [switch]
-        # Specifies that this is a well-formed XML document instead of XML fragment
-        $Document,
-
-        [Parameter(Mandatory=$true)]
-        [string]
-        # Name of an XML schema collection
-        $XmlSchemaCollection,
 
         [Parameter()]
         [string]
@@ -48,12 +76,6 @@ function New-XmlColumn
         return
     }
 
-    if ($Document -and -not $XmlSchemaCollection)
-    {
-        throw ('Column {0}: A XmlSchemaCollection name needs to be specified for well-formed XML documents.' -f $Name)
-        return
-    }
-        
     switch ($PSCmdlet.ParameterSetName)
     {
         'Nullable'

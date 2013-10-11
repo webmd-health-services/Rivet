@@ -3,6 +3,42 @@ function New-DateTimeOffsetColumn
     <#
     .SYNOPSIS
     Creates a column object representing an DateTimeOffset datatype.
+
+    .DESCRIPTION
+    Use this function in the `Column` script block for `Add-Table`:
+
+        Add-Table 'Orders' {
+            DateTimeOffset 'OrderedAt'
+        }
+
+    ## ALIASES
+
+     * DateTimeOffset
+
+    .EXAMPLE
+    Add-Table 'Orers' { DateTimeOffset 'OrderedAt' }
+
+    Demonstrates how to create an optional `datetimeoffset` column.
+
+    .EXAMPLE
+    Add-Table 'Orders' { DateTimeOffset 'OrderedAt' 5 -NotNull }
+
+    Demonstrates how to create a required `datetimeoffset` column with a digits of fractional seconds precision.
+
+    .EXAMPLE
+    Add-Table 'Orders' { DateTimeOffset 'OrderedAt' -Sparse }
+
+    Demonstrate show to create a nullable, sparse `datetimeoffset` column when adding a new table.
+
+    .EXAMPLE
+    Add-Table 'Orders' { DateTimeOffset 'OrderedAt' -NotNull -Default 'getutcdate()' }
+
+    Demonstrates how to create a `datetimeoffset` column with a default value.  You only use UTC dates, right?
+
+    .EXAMPLE
+    Add-Table 'Orders' { DateTimeOffset 'OrderedAt' -NotNull -Description 'The time the record was created.' }
+
+    Demonstrates how to create a `datetimeoffset` column with a description.
     #>
     [CmdletBinding(DefaultParameterSetName='Nullable')]
     param(
@@ -10,6 +46,11 @@ function New-DateTimeOffsetColumn
         [string]
         # The column's name.
         $Name,
+
+        [Parameter(Position=1)]
+        [Int]
+        # The number of decimal digits that will be stored to the right of the decimal point
+        $Scale = 5,
 
         [Parameter(Mandatory=$true,ParameterSetName='NotNull')]
         [Switch]
@@ -20,11 +61,6 @@ function New-DateTimeOffsetColumn
         [Switch]
         # Store nulls as Sparse.
         $Sparse,
-
-        [Parameter()]
-        [Int]
-        # The number of decimal digits that will be stored to the right of the decimal point
-        $Scale = 0,
 
         [Parameter()]
         [string]

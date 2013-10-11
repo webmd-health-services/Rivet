@@ -3,6 +3,37 @@ function New-VarCharColumn
     <#
     .SYNOPSIS
     Creates a column object representing an VarChar datatype.
+
+    .DESCRIPTION
+    Use this function in the `Column` script block for `Add-Table`:
+
+        Add-Table -Name 'WithVarCharColumn' -Column {
+            VarChar 'ColumnName' 50
+        }
+
+    ## ALIASES
+
+     * VarChar
+
+    .EXAMPLE
+    Add-Table 'Albums' { VarChar 'Name' 100 } 
+
+    Demonstrates how to create an optional `varchar` column with a maximum length of 100 bytes.
+
+    .EXAMPLE
+    Add-Table 'Albums' { VarChar 'Name' 100 -NotNull }
+
+    Demonstrates how to create a required `varchar` column with maximum length of 100 bytes.
+
+    .EXAMPLE
+    Add-Table 'Albums' { VarChar 'Name' -Max }
+
+    Demonstrates how to create an optional `varchar` column with the maximum length (about 2GB).
+
+    .EXAMPLE
+    Add-Table 'Albums' { VarChar 'Name' 100 -Collation 'Latin1_General_BIN' }
+
+    Demonstrates now to create an optional `varchar` column with a custom `Latin1_General_BIN` collation.
     #>
     [CmdletBinding(DefaultParameterSetName='Nullable')]
     param(
@@ -11,7 +42,7 @@ function New-VarCharColumn
         # The column's name.
         $Name,
 
-        [Parameter()]
+        [Parameter(Position=1)]
         [Int]
         # Defines the string Size of the variable-Size string data.
         $Size,

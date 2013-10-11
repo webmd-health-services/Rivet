@@ -3,6 +3,37 @@ function New-BinaryColumn
     <#
     .SYNOPSIS
     Creates a column object representing an Binary datatype.
+
+    .DESCRIPTION
+    Use this function in the `Column` script block for `Add-Table`:
+
+        Add-Table 'Images' {
+            Binary 'Bits' 256
+        }
+
+    ## ALIASES
+
+     * Binary
+
+    .EXAMPLE
+    Add-Table 'Images' { Binary 'Bytes' 256 } 
+
+    Demonstrates how to create an optional `binary` column with a maximum length of 256 bytes.
+
+    .EXAMPLE
+    Add-Table 'Images' { Binary 'Bytes' 256 -NotNull }
+
+    Demonstrates how to create a required `binary` column with maximum length of 256 bytes.
+
+    .EXAMPLE
+    Add-Table 'Images' { Binary 'Bytes' -Max }
+
+    Demonstrates how to create an optional `binary` column with the maximum length (2^31 -1 bytes).
+
+    .EXAMPLE
+    Add-Table 'Images' { Binary 'Bytes' -Max -FileStream }
+
+    Demonstrates now to create an optional `binary` column with the maximum length, and stores the data in a filestream data container.
     #>
     [CmdletBinding(DefaultParameterSetName='Nullable')]
     param(
@@ -11,7 +42,7 @@ function New-BinaryColumn
         # The column's name.
         $Name,
 
-        [Parameter()]
+        [Parameter(Position=1)]
         [Int]
         # Defines the Size
         $Size = 30,

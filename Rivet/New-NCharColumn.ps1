@@ -3,6 +3,32 @@ function New-NCharColumn
     <#
     .SYNOPSIS
     Creates a column object representing an NChar datatype.
+
+    .DESCRIPTION
+    Use this function in the `Column` script block for `Add-Table`:
+
+        Add-Table -State 'Addresses' -Column {
+            NChar 'State' 2
+        }
+
+    ## ALIASES
+
+     * NChar
+
+    .EXAMPLE
+    Add-Table 'Addresses' { NChar 'State' 2 } 
+
+    Demonstrates how to create an optional `nchar` column with a length of 2 bytes.
+
+    .EXAMPLE
+    Add-Table 'Addresses' { NChar 'State' 2 -NotNull }
+
+    Demonstrates how to create a required `nchar` column with length of 2 bytes.
+
+    .EXAMPLE
+    Add-Table 'Addresses' { NChar 'State' 2 -Collation 'Latin1_General_BIN' }
+
+    Demonstrates now to create an optional `nchar` column with a custom `Latin1_General_BIN` collation.
     #>
     [CmdletBinding(DefaultParameterSetName='Nullable')]
     param(

@@ -3,6 +3,32 @@ function New-CharColumn
     <#
     .SYNOPSIS
     Creates a column object representing an Char datatype.
+
+    .DESCRIPTION
+    Use this function in the `Column` script block for `Add-Table`:
+
+        Add-Table -State 'Addresses' -Column {
+            Char 'State' 2
+        }
+
+    ## ALIASES
+
+     * Char
+
+    .EXAMPLE
+    Add-Table 'Addresses' { Char 'State' 2 } 
+
+    Demonstrates how to create an optional `char` column with a length of 2 bytes.
+
+    .EXAMPLE
+    Add-Table 'Addresses' { Char 'State' 2 -NotNull }
+
+    Demonstrates how to create a required `char` column with length of 2 bytes.
+
+    .EXAMPLE
+    Add-Table 'Addresses' { Char 'State' 2 -Collation 'Latin1_General_BIN' }
+
+    Demonstrates now to create an optional `char` column with a custom `Latin1_General_BIN` collation.
     #>
     [CmdletBinding(DefaultParameterSetName='Nullable')]
     param(
@@ -11,9 +37,9 @@ function New-CharColumn
         # The column's name.
         $Name,
 
-        [Parameter()]
+        [Parameter(Position=1)]
         [Int]
-        # Defines the string Size of the fixed-Size string data.  Default is 30
+        # Defines the string Size of the fixed-Size string data.
         $Size = 30,
 
         [Parameter()]

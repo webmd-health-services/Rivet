@@ -3,6 +3,42 @@ function New-RowVersionColumn
     <#
     .SYNOPSIS
     Creates a column object representing an RowVersion datatype.
+
+    .DESCRIPTION
+    Use this function in the `Column` script block for `Add-Table`:
+
+        Add-Table 'WithUUID' {
+            RowVersion 'ColumnName'
+        }
+
+    ## ALIASES
+
+     * RowVersion
+
+    .EXAMPLE
+    Add-Table Changes { RowVersion 'Version' }
+
+    Demonstrates how to create a table with an optional `rowversion` column.
+
+    .EXAMPLE
+    Add-Table Locations { RowVersion 'LocationID' -RowGuidCol }
+
+    Demonstrates how to create a table with an optional `rowversion`, which is used as the RowGuid identifier for SQL Server replication.
+
+    .EXAMPLE
+    Add-Table Locations { RowVersion 'LocationID' -NotNull }
+
+    Demonstrates how to create a table with an required `rowversion` column.
+
+    .EXAMPLE
+    Add-Table Locations { RowVersion 'LocationID' -Default 'newid()' }
+
+    Demonstrates how to create a table with an optional `rowversion` column with a default value.
+
+    .EXAMPLE
+    Add-Table Locations { RowVersion 'LocationID' -Description 'The unique identifier for this location.' }
+
+    Demonstrates how to create a table with an optional `rowversion` column with a description.
     #>
     [CmdletBinding(DefaultParameterSetName='Nullable')]
     param(

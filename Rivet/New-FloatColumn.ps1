@@ -3,6 +3,42 @@ function New-FloatColumn
     <#
     .SYNOPSIS
     Creates a column object representing an Float datatype.
+
+    .DESCRIPTION
+    Use this function in the `Column` script block for `Add-Table`:
+
+        Add-Table 'Items' {
+            Float 'Price'
+        }
+
+    ## ALIASES
+
+     * Float
+
+    .EXAMPLE
+    Add-Table 'Items' { Float 'Price' -Precision 5  }
+
+    Demonstrates how to create an optional `float` column called `Price`, with a precision of 5.
+
+    .EXAMPLE
+    Add-Table 'Items' { Float 'Price' -NotNull }
+
+    Demonstrates how to create a required `float` column called `Price`. Uses SQL Server's default precision.
+
+    .EXAMPLE
+    Add-Table 'Items' { Float 'Price' -Sparse }
+
+    Demonstrates how to create a sparse, optional `float` column called `Price`. Uses SQL Server's default precision.
+
+    .EXAMPLE
+    Add-Table 'Items' { Float 'Price' -NotNull -Default '0.0' }
+
+    Demonstrates how to create a required `float` column called `Price` with a default value of `0`. Uses SQL Server's default precision.
+
+    .EXAMPLE
+    Add-Table 'Items' { Float 'Price' -NotNull -Description 'The price of the item.' }
+
+    Demonstrates how to create a required `float` column with a description. Uses SQL Server's default precision.
     #>
     [CmdletBinding(DefaultParameterSetName='Nullable')]
     param(

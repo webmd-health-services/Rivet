@@ -3,6 +3,42 @@ function New-RealColumn
     <#
     .SYNOPSIS
     Creates a column object representing an Real datatype.
+
+    .DESCRIPTION
+    Use this function in the `Column` script block for `Add-Table`:
+
+        Add-Table 'Items' {
+            Real 'Price'
+        }
+
+    ## ALIASES
+
+     * Real
+
+    .EXAMPLE
+    Add-Table 'Items' { Real 'Price' }
+
+    Demonstrates how to create an optional `real` column called `Price`.
+
+    .EXAMPLE
+    Add-Table 'Items' { Real 'Price' -NotNull }
+
+    Demonstrates how to create a required `real` column called `Price`.
+
+    .EXAMPLE
+    Add-Table 'Items' { Real 'Price' -Sparse }
+
+    Demonstrates how to create a sparse, optional `real` column called `Price`.
+
+    .EXAMPLE
+    Add-Table 'Items' { Real 'Price' -NotNull -Default '0.00' }
+
+    Demonstrates how to create a required `real` column called `Price` with a default value of `$0.00`.
+
+    .EXAMPLE
+    Add-Table 'Items' { Real 'Price' -NotNull -Description 'The price of the item.' }
+
+    Demonstrates how to create a required `real` column with a description.
     #>
     [CmdletBinding(DefaultParameterSetName='Nullable')]
     param(
