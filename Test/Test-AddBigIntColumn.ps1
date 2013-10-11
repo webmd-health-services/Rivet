@@ -170,3 +170,29 @@ function Pop-Migration
     Assert-Table 'Foobar'
     Assert-Column -Name 'ID' -DataType 'BigInt' -TableName 'Foobar' -Default 21 -Description 'Test'
 }
+
+function Test-ShouldEscapeNames
+{
+    @'
+function Push-Migration
+{
+    Add-Schema 'New-BigInt'
+    Add-Table 'Foo-Bar' -SchemaName 'New-BigInt' {
+        BigInt 'ID-ID' -Default 21
+    }
+}
+
+function Pop-Migration
+{
+    Remove-Table 'Foo-Bar'
+    Remove-Schema 'New-BigInt'
+}
+
+'@ | New-Migration -Name 'CreateBigIntWithCustomValueCustomDescription'
+
+    Invoke-Rivet -Push 'CreateBigIntWithCustomValueCustomDescription'
+
+    Assert-Table 'Foo-Bar' -SchemaName 'New-BigInt'
+    Assert-Column -Name 'ID-ID' -DataType 'BigInt' -TableName 'Foo-Bar' -SchemaName 'New-BigInt' -Default 21 
+    
+}

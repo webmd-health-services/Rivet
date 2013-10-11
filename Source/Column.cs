@@ -349,17 +349,13 @@
 			var defaultClause = "";
 			if (!string.IsNullOrEmpty(DefaultExpression))
 			{
-				var constraintName = string.Format("{0}_{1}", schemaName, tableName);
-				if (schemaName == "dbo")
-				{
-					constraintName = tableName;
-				}
+				var constraintName = new ConstraintName(schemaName, tableName, new[] {this.Name}, ConstraintType.Default);
 				var withValuesClause = "";
 				if (withValues)
 				{
 					withValuesClause = " with values";
 				}
-				defaultClause = string.Format(" constraint DF_{0}_{1} default {2}{3}", constraintName, Name, DefaultExpression, withValuesClause);
+				defaultClause = string.Format(" constraint [{0}] default {1}{2}", constraintName, DefaultExpression, withValuesClause);
 			}
 
 			var rowGuidColClause = "";
