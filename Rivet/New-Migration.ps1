@@ -27,7 +27,7 @@ function New-Migration
 
     $migrationPath = Join-Path $Path $filename
     $migrationPath = [IO.Path]::GetFullPath( $migrationPath )
-    $null = New-Item -Path $migrationPath -Force -ItemType File
+    New-Item -Path $migrationPath -Force -ItemType File
 
     $template = @"
 <#
