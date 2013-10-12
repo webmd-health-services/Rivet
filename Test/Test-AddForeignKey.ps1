@@ -164,3 +164,29 @@ function Pop-Migration()
     Assert-ForeignKey -TableName 'Source' -References 'Reference' -OnDelete 'CASCADE' -OnUpdate 'CASCADE' -NotForReplication
 
 }
+
+function Test-ShouldQuoteForeignKeyName
+{
+    @'
+function Push-Migration()
+{
+    Add-Table -Name 'Add-ForeignKey' {
+        Int 'source_id' -NotNull
+    }
+
+    Add-Table -Name 'Reference' {
+        Int 'reference_id' -NotNull
+    }
+
+    Add-PrimaryKey -TableName 'Reference' -ColumnName 'reference_id'
+    Add-ForeignKey -TableName 'Add-ForeignKey' -ColumnName 'source_id' -References 'Reference' -ReferencedColumn 'reference_id'
+}
+
+function Pop-Migration()
+{
+}
+'@ | New-Migration -Name 'AddForeignKeyFromSingleColumnToSingleColumn'
+    Invoke-Rivet -Push 'AddForeignKeyFromSingleColumnToSingleColumn'
+    Assert-ForeignKey -TableName 'Add-ForeignKey' -References 'Reference'
+}
+

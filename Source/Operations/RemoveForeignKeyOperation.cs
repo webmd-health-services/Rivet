@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Rivet.Operations
+﻿namespace Rivet.Operations
 {
 	public sealed class RemoveForeignKeyOperation : Operation
 	{
@@ -21,7 +19,7 @@ namespace Rivet.Operations
 
 		public override string ToQuery()
 		{
-			return string.Format("alter table [{0}].[{1}] drop constraint {2}", SchemaName, TableName, ForeignKeyConstraintName.ToString());
+			return string.Format("alter table [{0}].[{1}] drop constraint [{2}]", SchemaName, TableName, ForeignKeyConstraintName);
 		}
 	}
 }
