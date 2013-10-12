@@ -1,16 +1,11 @@
-function Setup
-{
-    Import-Module -Name (Join-Path $TestDir 'RivetTest') -ArgumentList 'AddIndex' 
-    Start-RivetTest
 
-    # yes, on PowerShell 2 these tests need a breather.  Not sure why.
-    if( $PSVersionTable.PsVersion -eq '2.0' )
-    {
-        Start-Sleep -Milliseconds 200
-    }
+function Start-Test
+{
+    Import-Module -Name (Join-Path $TestDir 'RivetTest') -ArgumentList 'RivetTest' 
+    Start-RivetTest
 }
 
-function TearDown
+function Stop-Test
 {
     Stop-RivetTest
     Remove-Module RivetTest
@@ -18,6 +13,24 @@ function TearDown
 
 function Test-ShouldAddIndexWithOneColumn
 {
+    @'
+function Push-Migration()
+{
+
+    Add-Table -Name 'AddIndex' {
+        Int 'IndexMe' -NotNull
+    }
+
+    #Add an Index to 'IndexMe'
+    Add-Index -TableName 'AddIndex' -ColumnName 'IndexMe'
+
+}
+
+function Pop-Migration()
+{
+}
+'@ | New-Migration -Name 'AddIndex'
+
     Invoke-Rivet -Push 'AddIndex'
 
     ##Assert Table and Column
@@ -31,6 +44,24 @@ function Test-ShouldAddIndexWithOneColumn
 
 function Test-ShouldAddIndexWithMultipleColumns
 {
+    @'
+function Push-Migration()
+{
+    Add-Table -Name 'AddIndex' {
+        Int 'IndexMe' -NotNull
+        Char 'IndexMe2' -Size 255 -NotNull
+        Int 'DonotIndex' -NotNull
+    }
+
+    #Add an Index to 'IndexMe'
+    Add-Index -TableName 'AddIndex' -ColumnName "IndexMe","IndexMe2"
+}
+
+function Pop-Migration()
+{
+}
+'@ | New-Migration -Name 'AddIndexMultipleColumns'
+
     Invoke-Rivet -Push 'AddIndexMultipleColumns'
 
     Assert-True (Test-Table 'AddIndex')
@@ -45,6 +76,22 @@ function Test-ShouldAddIndexWithMultipleColumns
 
 function Test-ShouldCreateClusteredIndex
 {
+    @'
+function Push-Migration()
+{
+    Add-Table -Name 'AddIndex' {
+        Int 'IndexMe' -NotNull
+    }
+
+    #Add an Index to 'IndexMe'
+    Add-Index -TableName 'AddIndex' -ColumnName 'IndexMe' -Clustered
+}
+
+function Pop-Migration()
+{
+}
+'@ | New-Migration -Name 'AddClusteredIndex'
+
     Invoke-Rivet -Push 'AddClusteredIndex'
 
     ##Assert Table and Column
@@ -57,6 +104,22 @@ function Test-ShouldCreateClusteredIndex
 
 function Test-ShouldCreateUniqueIndex
 {
+    @'
+function Push-Migration()
+{
+    Add-Table -Name 'AddIndex' {
+        Int 'IndexMe' -NotNull
+    }
+
+    #Add an Index to 'IndexMe'
+    Add-Index -TableName 'AddIndex' -ColumnName 'IndexMe' -Unique
+}
+
+function Pop-Migration()
+{
+}
+'@ | New-Migration -Name 'CreateUniqueIndex'
+
     Invoke-Rivet -Push 'CreateUniqueIndex'
 
     ##Assert Table and Column
@@ -70,6 +133,24 @@ function Test-ShouldCreateUniqueIndex
 
 function Test-ShouldCreateIndexWithOptions
 {
+    @'
+function Push-Migration()
+{
+
+    Add-Table -Name 'AddIndex' {
+        Int 'IndexMe' -NotNull
+    }
+
+    #Add an Index to 'IndexMe'
+    Add-Index -TableName 'AddIndex' -ColumnName 'IndexMe' -Unique -Option @('IGNORE_DUP_KEY = ON','ALLOW_ROW_LOCKS = OFF')
+
+}
+
+function Pop-Migration()
+{
+}
+'@ | New-Migration -Name 'CreateIndexWithOptions'
+
     Invoke-Rivet -Push 'CreateIndexWithOptions'
 
     ##Assert Table and Column
@@ -83,6 +164,25 @@ function Test-ShouldCreateIndexWithOptions
 
 function Test-ShouldCreateIndexWithFilterPredicate
 {
+    @'
+function Push-Migration()
+{
+
+    Add-Table -Name 'AddIndex' {
+        Int 'IndexMe' -NotNull
+        Int 'EndDate' -NotNull
+    }
+
+    #Add an Index to 'IndexMe'
+    Add-Index -TableName 'AddIndex' -ColumnName 'IndexMe' -Where 'EndDate IS NOT NULL'
+
+}
+
+function Pop-Migration()
+{
+}
+'@ | New-Migration -Name 'CreateIndexWithFilterPredicate'
+
     Invoke-Rivet -Push 'CreateIndexWithFilterPredicate'
 
     ##Assert Table and Column
@@ -96,6 +196,25 @@ function Test-ShouldCreateIndexWithFilterPredicate
 
 function Test-ShouldCreateIndexOnCustomFileGroup
 {
+    @'
+function Push-Migration()
+{
+
+    Add-Table -Name 'AddIndex' {
+        Int 'IndexMe' -NotNull
+        Int 'EndDate' -NotNull
+    }
+
+    #Add an Index to 'IndexMe'
+    Add-Index -TableName 'AddIndex' -ColumnName 'IndexMe' -On 'ThisShouldFail'
+
+}
+
+function Pop-Migration()
+{
+}
+'@ | New-Migration -Name 'CreateIndexOnCustomFileGroup'
+
     $Error.Clear()
     Invoke-Rivet -Push 'CreateIndexOnCustomFileGroup' -ErrorAction SilentlyContinue
     Assert-True (0 -lt $Error.Count)
@@ -106,6 +225,25 @@ function Test-ShouldCreateIndexOnCustomFileGroup
 
 function Test-ShouldCreateIndexOnCustomFileStream
 {
+    @'
+function Push-Migration()
+{
+
+    Add-Table -Name 'AddIndex' {
+        Int 'IndexMe' -NotNull
+        Int 'EndDate' -NotNull
+    }
+
+    #Add an Index to 'IndexMe'
+    Add-Index -TableName 'AddIndex' -ColumnName 'IndexMe' -FileStreamOn 'ThisShouldFail'
+
+}
+
+function Pop-Migration()
+{
+}
+'@ | New-Migration -Name 'CreateIndexOnCustomFileStream'
+
     $Error.Clear()
     Invoke-Rivet -Push 'CreateIndexOnCustomFileStream' -ErrorAction SilentlyContinue
     Assert-True (0 -lt $Error.Count)
