@@ -1,16 +1,11 @@
-function Setup
-{
-    Import-Module -Name (Join-Path $TestDir 'RivetTest') -ArgumentList 'RemoveDefaultConstraint' 
-    Start-RivetTest
 
-    # yes, on PowerShell 2 these tests need a breather.  Not sure why.
-    if( $PSVersionTable.PsVersion -eq '2.0' )
-    {
-        Start-Sleep -Milliseconds 200
-    }
+function Start-Test
+{
+    Import-Module -Name (Join-Path $TestDir 'RivetTest') -ArgumentList 'RivetTest' 
+    Start-RivetTest
 }
 
-function TearDown
+function Stop-Test
 {
     Stop-RivetTest
     Remove-Module RivetTest
@@ -18,6 +13,21 @@ function TearDown
 
 function Test-ShouldRemoveDefaultConstraint
 {
+    @'
+function Push-Migration()
+{
+    Add-Table -Name 'AddDefaultConstraint' {
+        Int 'DefaultConstraintMe' -NotNull
+    }
+
+    Add-DefaultConstraint -TableName 'AddDefaultConstraint' -ColumnName 'DefaultConstraintMe' -Expression 101
+    Remove-DefaultConstraint -TableName 'AddDefaultConstraint' -ColumnName 'DefaultConstraintMe'
+}
+
+function Pop-Migration()
+{
+}
+'@ | New-Migration -Name 'RemoveDefaultConstraint'
     Invoke-Rivet -Push 'RemoveDefaultConstraint'
     Assert-DefaultConstraint -TableName 'AddDefaultConstraint' -ColumnName 'DefaultConstraintMe' -TestNoDefault
 

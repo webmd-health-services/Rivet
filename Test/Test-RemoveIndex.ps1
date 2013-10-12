@@ -1,10 +1,11 @@
-function Setup
+
+function Start-Test
 {
-    Import-Module -Name (Join-Path $TestDir 'RivetTest') -ArgumentList 'RemoveIndex' 
+    Import-Module -Name (Join-Path $TestDir 'RivetTest') -ArgumentList 'RivetTest'
     Start-RivetTest
 }
 
-function TearDown
+function Stop-Test
 {
     Stop-RivetTest
     Remove-Module RivetTest
@@ -12,6 +13,25 @@ function TearDown
 
 function Test-ShouldRemoveIndex
 {
+    @'
+function Push-Migration()
+{
+    Add-Table -Name 'AddIndex' {
+        Int 'IndexMe' -NotNull
+    }
+
+    #Add an Index to 'IndexMe'
+    Add-Index -TableName 'AddIndex' -ColumnName 'IndexMe'
+
+    #Remove Index
+    Remove-Index -TableName 'AddIndex' -ColumnName 'IndexMe'
+}
+
+function Pop-Migration()
+{
+}
+'@ | New-Migration -Name 'RemoveIndex'
+
     Invoke-Rivet -Push 'RemoveIndex'
 
      ##Assert Table and Column
