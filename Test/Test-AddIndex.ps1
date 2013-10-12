@@ -286,7 +286,6 @@ function Test-ShouldCreateIndexWithMultipleDescending
 @'
 function Push-Migration()
 {
-
     Add-Table -Name 'AddIndex' {
         Int 'IndexMe' -NotNull
         Int 'Ascending' -NotNull
@@ -298,16 +297,33 @@ function Push-Migration()
 
 function Pop-Migration()
 {
-
-
 }
-
-
 '@ | New-Migration -Name 'CreateIndexWithMultipleDescending'
 
     Invoke-Rivet -Push 'CreateIndexWithMultipleDescending'
 
     ##Assert Index
     Assert-Index -TableName 'AddIndex' -ColumnName "IndexMe","Ascending","IndexMe2" -TestDescending @($true, $false, $true)
+}
 
+function Test-ShouldQuoteIndexName
+{
+    @'
+function Push-Migration()
+{
+    Add-Table -Name 'Add-Index' {
+        Int 'IndexMe' -NotNull
+    }
+
+    Add-Index -TableName 'Add-Index' -ColumnName 'IndexMe'
+}
+
+function Pop-Migration()
+{
+}
+'@ | New-Migration -Name 'AddIndex'
+
+    Invoke-Rivet -Push 'AddIndex'
+
+    Assert-Index -TableName 'Add-Index' -ColumnName 'IndexMe'
 }

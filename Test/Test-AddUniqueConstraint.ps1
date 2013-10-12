@@ -145,3 +145,23 @@ function Pop-Migration()
     Assert-True (0 -lt $Error.Count)
     Assert-Like $Error[1].Exception.Message '*Invalid filegroup*'
 }
+
+function Test-ShouldQuoteUniqueConstraintName
+{
+    @'
+function Push-Migration()
+{
+    Add-Table -Name 'Add-UniqueConstraint' {
+        Int 'UniqueConstraintMe' -NotNull
+    }
+
+    Add-UniqueConstraint -TableName 'Add-UniqueConstraint' -ColumnName 'UniqueConstraintMe'
+}
+
+function Pop-Migration()
+{
+}
+'@ | New-Migration -Name 'AddUniqueConstraintToOneColumn'
+    Invoke-Rivet -Push 'AddUniqueConstraintToOneColumn'
+    Assert-UniqueConstraint -TableName 'Add-UniqueConstraint' -ColumnName 'UniqueConstraintMe'
+}

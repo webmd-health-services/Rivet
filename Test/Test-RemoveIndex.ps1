@@ -42,3 +42,26 @@ function Pop-Migration()
     Assert-Index -TableName 'AddIndex' -ColumnName 'IndexMe' -TestNoIndex
 
 }
+
+function Test-ShouldQuoteIndexName
+{
+    @'
+function Push-Migration()
+{
+    Add-Table -Name 'Remove-Index' {
+        Int 'IndexMe' -NotNull
+    }
+
+    Add-Index -TableName 'Remove-Index' -ColumnName 'IndexMe'
+    Remove-Index -TableName 'Remove-Index' -ColumnName 'IndexMe'
+}
+
+function Pop-Migration()
+{
+}
+'@ | New-Migration -Name 'RemoveIndex'
+
+    Invoke-Rivet -Push 'RemoveIndex'
+    Assert-Index -TableName 'Remove-Index' -ColumnName 'IndexMe' -TestNoIndex
+
+}
