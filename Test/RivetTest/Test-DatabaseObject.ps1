@@ -25,6 +25,10 @@ function Test-DatabaseObject
         [Parameter(Mandatory=$true,ParameterSetName='TR')]
         [Switch]
         $SQLTrigger,
+
+        [Parameter(Mandatory=$true,ParameterSetName='F')]
+        [Switch]
+        $ForeignKey,
         
         [Parameter(Mandatory=$true,Position=1)]
         [string]
