@@ -115,8 +115,8 @@ namespace Rivet.Operations
 
 				columnClause = string.Join(",", ColumnName.ToArray());
 			}
-			var query = string.Format(@"create {0}{1} index {2} on [{3}].[{4}] ({5}) {6} {7} {8} {9}", 
-						uniqueClause, clusteredClause, ConstraintName.ToString(), SchemaName, TableName, columnClause, optionsClause, whereClause, onClause, fileStreamClause);
+			var query = string.Format(@"create {0}{1} index [{2}] on [{3}].[{4}] ({5}) {6} {7} {8} {9}", 
+						uniqueClause, clusteredClause, ConstraintName, SchemaName, TableName, columnClause, optionsClause, whereClause, onClause, fileStreamClause);
 
 			return query;
 		}

@@ -56,3 +56,27 @@ function Pop-Migration()
     Assert-DefaultConstraint -TableName 'AddDefaultConstraint' -ColumnName 'DefaultConstraintMe'
     Assert-Equal 0 $Error.Count
 }
+
+
+function Test-ShouldAddDefaultConstraintQuotesName
+{
+    @'
+function Push-Migration()
+{
+    Add-Table -Name 'Add-DefaultConstraint' {
+        Int 'DefaultConstraintMe' -NotNull
+    }
+
+    Add-DefaultConstraint -TableName 'Add-DefaultConstraint' -ColumnName 'DefaultConstraintMe' -Expression 101
+
+}
+
+function Pop-Migration()
+{
+}
+'@ | New-Migration -Name 'AddDefaultConstraint'
+
+    Invoke-Rivet -Push 'AddDefaultConstraint'
+    Assert-DefaultConstraint -TableName 'Add-DefaultConstraint' -ColumnName 'DefaultConstraintMe'
+
+}

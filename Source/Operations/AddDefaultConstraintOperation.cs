@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Rivet.Operations
+﻿namespace Rivet.Operations
 {
 	public sealed class AddDefaultConstraintOperation : Operation
 	{
@@ -31,10 +29,8 @@ namespace Rivet.Operations
 				withValuesClause = "with values";
 			}
 
-			return string.Format(@"
-					alter table [{0}].[{1}]
-					add constraint {2} default {3} for {4} {5}",
-					SchemaName, TableName, ConstraintName.ToString(), Expression, ColumnName, withValuesClause);
+			return string.Format("alter table [{0}].[{1}] add constraint [{2}] default {3} for {4} {5}",
+				SchemaName, TableName, ConstraintName, Expression, ColumnName, withValuesClause);
 		}
 	}
 }

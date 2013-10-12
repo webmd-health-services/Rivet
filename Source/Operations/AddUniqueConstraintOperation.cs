@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace Rivet.Operations
 {
@@ -72,7 +71,7 @@ namespace Rivet.Operations
 
 			var columnClause = string.Join(",", ColumnName);
 
-			return string.Format("alter table [{0}].[{1}] add constraint {2} unique {3}({4}) {5} {6}", 
+			return string.Format("alter table [{0}].[{1}] add constraint [{2}] unique {3}({4}) {5} {6}", 
 				SchemaName, TableName, ConstraintName.ToString(), clusteredClause, columnClause, optionClause, fileGroupClause);
 
 		}

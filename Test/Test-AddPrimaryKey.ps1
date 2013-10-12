@@ -127,3 +127,24 @@ function Pop-Migration()
     Assert-True (Test-Table 'PrimaryKey' -SchemaName 'rivet')
     Assert-PrimaryKey -TableName 'PrimaryKey' -ColumnName 'id' -SchemaName 'rivet'
 }
+
+function Test-ShouldQuotePrimaryKeyName
+{
+    @'
+function Push-Migration()
+{
+    Add-Table -Name 'Add-PrimaryKey' {
+        Int 'id' -NotNull
+    }
+
+    Add-PrimaryKey -TableName 'Add-PrimaryKey' -ColumnName 'id'
+}
+
+function Pop-Migration()
+{
+}
+
+'@ | New-Migration -Name 'AddTableWithPrimaryKey'
+    Invoke-Rivet -Push 'AddTableWithPrimaryKey'
+    Assert-PrimaryKey -TableName 'Add-PrimaryKey' -ColumnName 'id'
+}

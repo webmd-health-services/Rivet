@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Rivet.Operations
+﻿namespace Rivet.Operations
 {
 	public sealed class RemoveIndexOperation : Operation
 	{
@@ -19,7 +17,7 @@ namespace Rivet.Operations
 
 		public override string ToQuery()
 		{
-			return string.Format("drop index {0} on [{1}].[{2}]", ConstraintName.ToString(), SchemaName, TableName);
+			return string.Format("drop index [{0}] on [{1}].[{2}]", ConstraintName.ToString(), SchemaName, TableName);
 		}
 	}
 }

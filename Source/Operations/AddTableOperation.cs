@@ -42,8 +42,8 @@ namespace Rivet.Operations
 				{
 					columnDefinitionList.Add(column.GetColumnDefinition(TableName, SchemaName, false));
 				}
-				columnDefinitionClause = string.Join(", \r\n", columnDefinitionList.ToArray());
-				columnDefinitionClause = string.Format("( {0} )", columnDefinitionClause);
+				columnDefinitionClause = string.Join(",\n\t", columnDefinitionList.ToArray());
+				columnDefinitionClause = string.Format("(\n\t{0}\n)", columnDefinitionClause);
 			}
 
 			var fileGroupClause = "";

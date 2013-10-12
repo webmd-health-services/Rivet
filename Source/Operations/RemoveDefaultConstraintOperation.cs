@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Rivet.Operations
+﻿namespace Rivet.Operations
 {
 	public sealed class RemoveDefaultConstraintOperation : Operation
 	{
@@ -19,7 +17,7 @@ namespace Rivet.Operations
 
 		public override string ToQuery()
 		{
-			return string.Format("alter table [{0}].[{1}] drop constraint {2}", SchemaName, TableName, ConstraintName.ToString());
+			return string.Format("alter table [{0}].[{1}] drop constraint [{2}]", SchemaName, TableName, ConstraintName.ToString());
 		}
 	}
 }

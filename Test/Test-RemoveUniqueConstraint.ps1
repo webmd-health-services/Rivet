@@ -34,3 +34,25 @@ function Pop-Migration()
     Assert-UniqueConstraint -TableName 'RemoveUniqueConstraint' -ColumnName 'RemoveMyUniqueConstraint' -TestNoUnique
 
 }
+
+function Test-ShouldRemoveUniqueConstraint
+{
+    @'
+function Push-Migration()
+{
+    Add-Table -Name 'Remove-UniqueConstraint' {
+        Int 'RemoveMyUniqueConstraint' -NotNull
+    }
+
+    Add-UniqueConstraint -TableName 'Remove-UniqueConstraint' -ColumnName 'RemoveMyUniqueConstraint'
+    Remove-UniqueConstraint -TableName 'Remove-UniqueConstraint' -ColumnName 'RemoveMyUniqueConstraint'
+}
+
+function Pop-Migration()
+{
+}
+'@ | New-Migration -Name 'RemoveUniqueConstraint'
+    Invoke-Rivet -Push 'RemoveUniqueConstraint'
+    Assert-UniqueConstraint -TableName 'Remove-UniqueConstraint' -ColumnName 'RemoveMyUniqueConstraint' -TestNoUnique
+
+}
