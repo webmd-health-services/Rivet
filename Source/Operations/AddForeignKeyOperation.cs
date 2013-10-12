@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Rivet.Operations
+﻿namespace Rivet.Operations
 {
 	public sealed class AddForeignKeyOperation : Operation
 	{
@@ -54,8 +52,8 @@ namespace Rivet.Operations
 				notForReplicationClause = "not for replication";
 			}
 
-			return string.Format("alter table [{0}].[{1}] add constraint {2} foreign key ({3}) references {4}.{5} ({6}) {7} {8} {9}", 
-				SchemaName, TableName, ForeignKeyConstraintName.ToString(), sourceColumns, ReferencesSchemaName, ReferencesTableName, 
+			return string.Format("alter table [{0}].[{1}] add constraint [{2}] foreign key ({3}) references {4}.{5} ({6}) {7} {8} {9}", 
+				SchemaName, TableName, ForeignKeyConstraintName, sourceColumns, ReferencesSchemaName, ReferencesTableName, 
 				refColumns, onDeleteClause, onUpdateClause, notForReplicationClause);
 		}
 	}
