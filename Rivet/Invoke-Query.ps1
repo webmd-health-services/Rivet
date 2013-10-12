@@ -104,7 +104,7 @@ filter Invoke-Query
                 {
                     if( $currentQuery.Length -gt 0 )
                     {
-                        $currentQuery.ToString()
+                        $currentQuery.ToString().Trim()
                         $currentQuery.Length = 0
                     }
                 }
