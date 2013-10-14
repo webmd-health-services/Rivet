@@ -27,14 +27,14 @@ N'
                    }
 
     Add-Column -Name varchar -Varchar -Size 20 -NotNull -Default "'varchar'" -Description 'varchar(20) not null' @commonArgs
-    Add-Column varcharmax -Varchar -NotNull -Default "'varcharmax'" -Description 'varchar(max) not null' @commonArgs
+    Add-Column varcharmax -Varchar -Max -NotNull -Default "'varcharmax'" -Description 'varchar(max) not null' @commonArgs
     Add-Column char -Char 10 -NotNull -Default "'char'" -Description 'char(10) not null' @commonArgs
     Add-Column nchar -Char 35 -Unicode -NotNull -Default "'nchar'" -Description 'nchar(35) not null' @commonArgs
     Add-Column nvarchar -VarChar 30 -Unicode -NotNull -Default "'nvarchar'" -Description 'nvarchar(30) not null' @commonArgs
-    Add-Column nvarcharmax -VarChar -Unicode -NotNull -Default "'nvarcharmax'" -Description 'nvarchar(max) not null' @commonArgs
+    Add-Column nvarcharmax -VarChar -Max -Unicode -NotNull -Default "'nvarcharmax'" -Description 'nvarchar(max) not null' @commonArgs
     Add-Column binary -Binary 40 -NotNull -Default 1 -Description 'binary(40) not null' @commonArgs
     Add-Column varbinary -VarBinary 45 -NotNull -Default 2 -Description 'varbinary(45) not null' @commonArgs
-    Add-Column varbinarymax -VarBinary -NotNull -Default 3 -Description 'varbinary(max) not null' @commonArgs
+    Add-Column varbinarymax -VarBinary -Max -NotNull -Default 3 -Description 'varbinary(max) not null' @commonArgs
     Add-Column bigint -BigInt -NotNull -Default ([int64]::MaxValue) -Description 'bigint not null' @commonArgs
     Add-Column int -Int -NotNull -Default ([int]::MaxValue) -Description 'int not null' @commonArgs
     Add-Column smallint -SmallInt -NotNull -Default ([int16]::MaxValue) -Description 'smallint not null' @commonArgs

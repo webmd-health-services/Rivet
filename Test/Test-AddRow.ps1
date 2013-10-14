@@ -16,8 +16,8 @@ function Test-ShouldAddSingleRow
 function Push-Migration
 {
     Add-Table -Name 'Cities' -Column {
-        VarChar 'City' -NotNull
-        VarChar 'State' -NotNull
+        VarChar 'City' -Max -NotNull
+        VarChar 'State' -Max -NotNull
         Int 'Population' -NotNull
     } -Option 'data_compression = none'
 
@@ -57,8 +57,8 @@ function Test-ShouldAddMultipleRows
 function Push-Migration
 {
     Add-Table -Name 'Cities' -Column {
-        VarChar 'City' -NotNull
-        VarChar 'State' -NotNull
+        VarChar 'City' -Max -NotNull
+        VarChar 'State' -Max -NotNull
         Int 'Population' -NotNull
     } -Option 'data_compression = none'
 
@@ -101,8 +101,8 @@ function Test-ShouldAddMultipleRowsByPipe
 function Push-Migration
 {
     Add-Table -Name 'Cities' -Column {
-        VarChar 'City' -NotNull
-        VarChar 'State' -NotNull
+        VarChar 'City' -Max -NotNull
+        VarChar 'State' -Max -NotNull
         Int 'Population' -NotNull
     } -Option 'data_compression = none'
 

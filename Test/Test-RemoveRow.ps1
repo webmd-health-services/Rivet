@@ -16,8 +16,8 @@ function Test-ShouldRemoveSpecificRows
 function Push-Migration
 {
     Add-Table -Name 'Cities' -Column {
-        VarChar 'City' -NotNull
-        VarChar 'State' -NotNull
+        VarChar 'City' -Max -NotNull
+        VarChar 'State' -Max -NotNull
         Int 'Population' -NotNull
     } -Option 'data_compression = none'
 
@@ -71,8 +71,8 @@ function Test-ShouldRemoveAllRows
 function Push-Migration
 {
     Add-Table -Name 'Cities' -Column {
-        VarChar 'City' -NotNull
-        VarChar 'State' -NotNull
+        VarChar 'City' -Max -NotNull
+        VarChar 'State' -Max -NotNull
         Int 'Population' -NotNull
     } -Option 'data_compression = none'
 
@@ -119,8 +119,8 @@ function Test-ShouldRemoveAllRowsWithTruncate
 function Push-Migration
 {
     Add-Table -Name 'Cities' -Column {
-        VarChar 'City' -NotNull
-        VarChar 'State' -NotNull
+        VarChar 'City' -Max -NotNull
+        VarChar 'State' -Max -NotNull
         Int 'Population' -NotNull
     } -Option 'data_compression = none'
 
