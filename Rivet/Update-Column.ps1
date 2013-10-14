@@ -69,6 +69,13 @@ function Update-Column
         $Size,
 
         [Parameter(ParameterSetName='AsVarChar')]
+        [Parameter(ParameterSetName='AsNVarChar')]
+        [Parameter(ParameterSetName='AsVarBinary')]
+        [Switch]
+        # The size/length of the column.  Default is `max`.
+        $Max,
+
+        [Parameter(ParameterSetName='AsVarChar')]
         [Parameter(ParameterSetName='AsChar')]
         [Parameter(ParameterSetName='AsNVarChar')]
         [Parameter(ParameterSetName='AsNChar')]

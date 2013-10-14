@@ -50,6 +50,12 @@ function Add-Column
         $Size,
 
         [Parameter(ParameterSetName='AsVarChar')]
+        [Parameter(ParameterSetName='AsVarBinary')]
+        [Switch]
+        # The size/length of the column.  Default is `max`.
+        $Max,
+
+        [Parameter(ParameterSetName='AsVarChar')]
         [Parameter(ParameterSetName='AsChar')]
         [Switch]
         # Creates a char/varchar column to hold unicode values.

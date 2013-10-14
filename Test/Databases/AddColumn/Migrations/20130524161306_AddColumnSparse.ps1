@@ -27,14 +27,14 @@ N'
                    }
 
     Add-Column -Name varchar -Varchar -Size 20 -Sparse -Description 'varchar(20) sparse' @commonArgs
-    Add-Column -Name varcharmax -Varchar -Sparse -Description 'varchar(max) sparse' @commonArgs
+    Add-Column -Name varcharmax -Varchar -Max -Sparse -Description 'varchar(max) sparse' @commonArgs
     Add-Column char -Char 10 -Sparse -Description 'char(10) sparse' @commonArgs
     Add-Column nchar -Char 35 -Unicode -Sparse -Description 'nchar(35) sparse' @commonArgs
     Add-Column nvarchar -VarChar 30 -Unicode -Sparse -Description 'nvarchar(30) sparse' @commonArgs
-    Add-Column nvarcharmax -VarChar -Unicode -Sparse -Description 'nvarchar(max) sparse' @commonArgs
+    Add-Column nvarcharmax -VarChar -Max -Unicode -Sparse -Description 'nvarchar(max) sparse' @commonArgs
     Add-Column binary -Binary 40 -Sparse -Description 'binary(40) sparse' @commonArgs
     Add-Column varbinary -VarBinary 45 -Sparse -Description 'varbinary(45) sparse' @commonArgs
-    Add-Column varbinarymax -VarBinary -Sparse -Description 'varbinary(max) sparse' @commonArgs
+    Add-Column varbinarymax -VarBinary -Max -Sparse -Description 'varbinary(max) sparse' @commonArgs
     Add-Column bigint -BigInt -Sparse -Description 'bigint sparse' @commonArgs
     Add-Column int -Int -Sparse -Description 'int sparse' @commonArgs
     Add-Column smallint -SmallInt -Sparse -Description 'smallint sparse' @commonArgs

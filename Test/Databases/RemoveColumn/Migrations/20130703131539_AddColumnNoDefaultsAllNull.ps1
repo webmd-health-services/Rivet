@@ -20,14 +20,14 @@ N'
     Add-Table AddColumnNoDefaultsAllNull {
         Int 'id' -Identity 
         VarChar 'varchar' -Size 50
-        VarChar 'varcharmax'
+        VarChar 'varcharmax' -Max
         Char 'char' -Size 50
         NVarChar 'nvarchar' -Size 50
-        NVarChar 'nvarcharmax'
+        NVarChar 'nvarcharmax' -Max
         NChar 'nchar' -Size 50
         Binary 'binary' -Size 50
         VarBinary 'varbinary' -Size 50
-        VarBinary 'varbinarymax'
+        VarBinary 'varbinarymax' -Max
         BigInt bigint 
         Int int 
         SmallInt smallint 

@@ -10,8 +10,8 @@ function Push-Migration()
 
     Add-Column 'char' -Char 15 -Collation 'Japanese_BIN' -TableName 'WithCustomCollation'
     Add-Column 'nchar' -Char 15 -Unicode -Collation 'Korean_Wansung_BIN' -TableName 'WithCustomCollation'
-    Add-Column 'varchar' -VarChar -Collation 'Chinese_Taiwan_Stroke_BIN' -TableName 'WithCustomCollation'
-    Add-Column 'nvarchar' -VarChar -Unicode -Collation 'Thai_BIN' -TableName 'WithCustomCollation'
+    Add-Column 'varchar' -VarChar -Max -Collation 'Chinese_Taiwan_Stroke_BIN' -TableName 'WithCustomCollation'
+    Add-Column 'nvarchar' -VarChar -Max -Unicode -Collation 'Thai_BIN' -TableName 'WithCustomCollation'
 }
 
 function Pop-Migration()

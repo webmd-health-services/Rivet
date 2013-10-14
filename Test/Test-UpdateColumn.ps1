@@ -66,10 +66,10 @@ function Test-ShouldUpdateColumnFromNChartoNVarChar
 function Push-Migration
 {
     Add-Table -Name 'Foobar' -Column {
-        NChar 'id' 
+        NChar 'id' 30
     }
 
-    Update-Column -TableName 'Foobar' -Name 'id' -NVarChar -Collation "Chinese_Taiwan_Stroke_CI_AS" -NotNull
+    Update-Column -TableName 'Foobar' -Name 'id' -NVarChar -Max -Collation "Chinese_Taiwan_Stroke_CI_AS" -NotNull
 }
 
 function Pop-Migration
@@ -107,7 +107,7 @@ N'
 '@
 
     Add-Table -Name 'WithXmlContent' -Column {
-        VarChar 'One' -NotNull
+        VarChar 'One' -Max -NotNull
         Xml 'Two' -XmlSchemaCollection 'EmptyXsd'
     }
 

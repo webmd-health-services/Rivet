@@ -27,14 +27,14 @@ N'
                    }
 
     Add-Column -Name varchar -Varchar -Size 20 -Description 'varchar(20) null' @commonArgs
-    Add-Column -Name varcharmax -Varchar -Description 'varchar(max) null' @commonArgs
+    Add-Column -Name varcharmax -Varchar -Max -Description 'varchar(max) null' @commonArgs
     Add-Column char -Char 10 -Description 'char(10) null' @commonArgs
     Add-Column nchar -Char 35 -Unicode -Description 'nchar(35) null' @commonArgs
     Add-Column nvarchar -VarChar 30 -Unicode -Description 'nvarchar(30) null' @commonArgs
-    Add-Column nvarcharmax -VarChar -Unicode -Description 'nvarchar(max) null' @commonArgs
+    Add-Column nvarcharmax -VarChar -Max -Unicode -Description 'nvarchar(max) null' @commonArgs
     Add-Column binary -Binary 40 -Description 'binary(40) null' @commonArgs
     Add-Column varbinary -VarBinary 45 -Description 'varbinary(45) null' @commonArgs
-    Add-Column varbinarymax -VarBinary -Description 'varbinary(max) null' @commonArgs
+    Add-Column varbinarymax -VarBinary -Max -Description 'varbinary(max) null' @commonArgs
     if( $PSVersionTable.PSVersion -eq ([Version]'2.0') )
     {
         Add-Column bigint 'BigInt' -Description 'bigint null' @commonArgs
