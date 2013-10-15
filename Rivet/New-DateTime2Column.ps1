@@ -40,7 +40,7 @@ function New-DateTime2Column
 
     Demonstrates how to create a `datetime2` column with a description.
     #>
-    [CmdletBinding(DefaultParameterSetName='Nullable')]
+    [CmdletBinding(DefaultParameterSetName='Null')]
     param(
         [Parameter(Mandatory=$true,Position=0)]
         [string]
@@ -57,7 +57,7 @@ function New-DateTime2Column
         # Don't allow `NULL` values in this column.
         $NotNull,
 
-        [Parameter(ParameterSetName='Nullable')]
+        [Parameter(ParameterSetName='Null')]
         [Switch]
         # Store nulls as Sparse.
         $Sparse,
@@ -74,26 +74,18 @@ function New-DateTime2Column
     )
 
     $dataSize = $null
-
-    $dataSize = New-Object Rivet.PrecisionScale $Precision
-        
-    switch ($PSCmdlet.ParameterSetName)
+    if( $PSBoundParameters.ContainsKey( 'Precision' ) )
     {
-        'Nullable'
-        {
-            $nullable = 'Null'
-            if( $Sparse )
-            {
-                $nullable = 'Sparse'
-            }
-            [Rivet.Column]::DateTime2($Name, $dataSize, $nullable, $Default, $Description)
-        }
-            
-        'NotNull'
-        {
-            [Rivet.Column]::DateTime2($Name, $dataSize, 'NotNull', $Default, $Description)
-        }
+        $dataSize = New-Object Rivet.PrecisionScale $Precision
     }
+     
+    $nullable = $PSCmdlet.ParameterSetName
+    if( $nullable -eq 'Null' -and $Sparse )
+    {
+        $nullable = 'Sparse'
+    }
+
+    [Rivet.Column]::DateTime2($Name, $dataSize, $nullable, $Default, $Description)
 }
     
 Set-Alias -Name 'DateTime2' -Value 'New-DateTime2Column'

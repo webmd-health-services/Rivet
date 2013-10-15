@@ -16,7 +16,7 @@ function Test-ShouldCreateDateTime2Column
 function Push-Migration
 {
     Add-Table -Name 'Foobar' -Column {
-        DateTime2 'id' -Precision 6
+        DateTime2 'id'
     } -Option 'data_compression = none'
 }
 
@@ -30,7 +30,7 @@ function Pop-Migration
     Invoke-Rivet -Push 'CreateDateTime2Column'
     
     Assert-Table 'Foobar'
-    Assert-Column -Name 'id' -DataType 'DateTime2' -TableName 'Foobar' -Precision 26
+    Assert-Column -Name 'id' -DataType 'DateTime2' -TableName 'Foobar' -Scale 7
 }
 
 function Test-ShouldCreateDateTime2ColumnWithSparse
@@ -39,7 +39,7 @@ function Test-ShouldCreateDateTime2ColumnWithSparse
 function Push-Migration
 {
     Add-Table -Name 'Foobar' -Column {
-        DateTime2 'id' -Sparse -Precision 6
+        DateTime2 'id' 6 -Sparse 
     }
 }
 
@@ -53,7 +53,7 @@ function Pop-Migration
     Invoke-Rivet -Push 'CreateDateTime2ColumnWithSparse'
     
     Assert-Table 'Foobar'
-    Assert-Column -Name 'id' -DataType 'DateTime2' -TableName 'Foobar' -Sparse -Precision 26
+    Assert-Column -Name 'id' -DataType 'DateTime2' -TableName 'Foobar' -Sparse -Scale 6
 }
 
 function Test-ShouldCreateDateTime2ColumnWithNotNull
@@ -62,7 +62,7 @@ function Test-ShouldCreateDateTime2ColumnWithNotNull
 function Push-Migration
 {
     Add-Table -Name 'Foobar' -Column {
-        DateTime2 'id' -NotNull -Precision 6
+        DateTime2 'id' 6 -NotNull  
     }
 }
 
@@ -76,5 +76,5 @@ function Pop-Migration
     Invoke-Rivet -Push 'CreateDateTime2ColumnWithNotNull'
     
     Assert-Table 'Foobar'
-    Assert-Column -Name 'id' -DataType 'DateTime2' -TableName 'Foobar' -NotNull -Precision 26
+    Assert-Column -Name 'id' -DataType 'DateTime2' -TableName 'Foobar' -NotNull -Scale 6
 }

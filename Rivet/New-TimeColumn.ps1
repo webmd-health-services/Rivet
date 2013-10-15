@@ -35,7 +35,7 @@ function New-TimeColumn
 
     Demonstrates how to create a `time` column with a description.
     #>
-    [CmdletBinding(DefaultParameterSetName='Nullable')]
+    [CmdletBinding(DefaultParameterSetName='Null')]
     param(
         [Parameter(Mandatory=$true,Position=0)]
         [string]
@@ -44,15 +44,15 @@ function New-TimeColumn
 
         [Parameter(Position=1)]
         [Int]
-        # The number of decimal digits that will be stored to the right of the decimal point
-        $Scale = 0,
+        # The number of decimal digits that will be stored to the right of the decimal point.
+        $Precision,
 
         [Parameter(Mandatory=$true,ParameterSetName='NotNull')]
         [Switch]
         # Don't allow `NULL` values in this column.
         $NotNull,
 
-        [Parameter(ParameterSetName='Nullable')]
+        [Parameter(ParameterSetName='Null')]
         [Switch]
         # Store nulls as Sparse.
         $Sparse,
@@ -69,26 +69,18 @@ function New-TimeColumn
     )
 
     $dataSize = $null
-
-    $dataSize = New-Object Rivet.PrecisionScale $Scale
-        
-    switch ($PSCmdlet.ParameterSetName)
+    if( $PSBoundParameters.ContainsKey('Precision') )
     {
-        'Nullable'
-        {
-            $nullable = 'Null'
-            if( $Sparse )
-            {
-                $nullable = 'Sparse'
-            }
-            [Rivet.Column]::Time($Name, $dataSize, $nullable, $Default, $Description)
-        }
-            
-        'NotNull'
-        {
-            [Rivet.Column]::Time($Name,$dataSize, 'NotNull', $Default, $Description)
-        }
+        $dataSize = New-Object Rivet.PrecisionScale $Precision
     }
+    
+    $nullable = $PSCmdlet.ParameterSetName
+    if( $nullable -eq 'Null' -and $Sparse )
+    {
+        $nullable = 'Sparse'
+    }
+
+    [Rivet.Column]::Time($Name, $dataSize, $nullable, $Default, $Description)
 }
     
 Set-Alias -Name 'Time' -Value 'New-TimeColumn'
