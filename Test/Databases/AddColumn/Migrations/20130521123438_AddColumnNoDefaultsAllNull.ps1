@@ -41,7 +41,6 @@ N'
         Add-Column int 'Int' -Description 'int null' @commonArgs
         Add-Column smallint 'SmallInt' -Description 'smallint null' @commonArgs
         Add-Column tinyint 'TinyInt' -Description 'tinyint null' @commonArgs
-        Add-Column numeric 'numeric(1)' -Description 'numeric(1) null' @commonArgs
         Add-Column decimal 'decimal(4)' -Description 'decimal(4) null' @commonArgs
     }
     else
@@ -50,11 +49,9 @@ N'
         Add-Column int -Int -Description 'int null' @commonArgs
         Add-Column smallint -SmallInt -Description 'smallint null' @commonArgs
         Add-Column tinyint -TinyInt -Description 'tinyint null' @commonArgs
-        Add-Column numeric -Numeric 1 -Description 'numeric(1) null' @commonArgs
         Add-Column decimal -Decimal 4 -Description 'decimal(4) null' @commonArgs
     }
     
-    Add-Column numericwithscale -Numeric 2 2 -Description 'numeric(2,2) null' @commonArgs
     Add-Column decimalwithscale -Decimal 5 5 -Description 'decimal(5,5) null' @commonArgs
     Add-Column bit -Bit -Description 'bit null' @commonArgs
     Add-Column money -Money -Description 'money null' @commonArgs
@@ -94,8 +91,6 @@ function Pop-Migration()
     Remove-Column int @commonArgs
     Remove-Column smallint @commonArgs
     Remove-Column tinyint @commonArgs
-    Remove-Column numeric @commonArgs
-    Remove-Column numericwithscale @commonArgs
     Remove-Column decimal @commonArgs
     Remove-Column decimalwithscale @commonArgs
     Remove-Column bit @commonArgs

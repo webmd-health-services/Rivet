@@ -70,12 +70,6 @@ function New-XmlColumn
         $Description
     )
 
-    if ($NotNull -and $Sparse)
-    {
-        throw ('Column {0}: A column cannot be NOT NULL and SPARSE.  Please choose one, but not both' -f $Name)
-        return
-    }
-
     switch ($PSCmdlet.ParameterSetName)
     {
         'Nullable'

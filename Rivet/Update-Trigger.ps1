@@ -25,7 +25,7 @@ function Update-Trigger
         [Parameter()]
         [string]
         # The schema of the trigger.
-        $SchemaName,
+        $SchemaName = 'dbo',
         
         [Parameter(Mandatory=$true,Position=1)]
         [string]

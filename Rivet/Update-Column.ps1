@@ -103,14 +103,9 @@ function Update-Column
         # Creates an tinyint column.
         $TinyInt,
 
-        [Parameter(Mandatory=$true,ParameterSetName='AsNumeric')]
-        [Switch]
-        # Creates a numeric column.
-        $Numeric,
-
         [Parameter(Mandatory=$true,ParameterSetName='AsDecimal')]
         [Switch]
-        # Creates a numeric column.
+        # Creates a decimal column.
         $Decimal,
 
         [Parameter(Mandatory=$true,ParameterSetName='AsFloat')]
@@ -148,20 +143,19 @@ function Update-Column
         # Creates a date column.
         $Time,
 
-        [Parameter(Mandatory=$true,Position=3,ParameterSetName='AsNumeric')]
         [Parameter(Mandatory=$true,Position=3,ParameterSetName='AsDecimal')]
         [Parameter(Position=3,ParameterSetName='AsFloat')]
         [Parameter(Position=3,ParameterSetName='AsDateTime2')]
         [Parameter(Position=3,ParameterSetName='AsDateTimeOffset')]
         [int]
-        # The data type's precision.  Only valid for Numeric, Decimal, Float, DateTime2, and DateTimeOffset data tyes.
+        # The data type's precision.  Only valid for Decimal, Float, DateTime2, and DateTimeOffset data tyes.
         $Precision,
 
-        [Parameter(Position=4,ParameterSetName='AsNumeric')]
+
         [Parameter(Position=4,ParameterSetName='AsDecimal')]
         [Parameter(Position=4,ParameterSetName='AsDateTimeOffset')]
         [int]
-        # The data type's scale.  Only valid for Numeric, Decimal, and DateTimeOffset data tyes.
+        # The data type's scale.  Only valid for Decimal, and DateTimeOffset data tyes.
         $Scale,
 
         [Parameter(Mandatory=$true,ParameterSetName='AsMoney')]

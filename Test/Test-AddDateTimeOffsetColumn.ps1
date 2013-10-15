@@ -16,7 +16,7 @@ function Test-ShouldCreateDateTimeOffsetColumn
 function Push-Migration
 {
     Add-Table -Name 'Foobar' -Column {
-        DateTimeOffset 'id' -Scale 6
+        DateTimeOffset 'id' -Precision 6
     } -Option 'data_compression = none'
 }
 
@@ -39,7 +39,7 @@ function Test-ShouldCreateDateTimeOffsetColumnWithSparse
 function Push-Migration
 {
     Add-Table -Name 'Foobar' -Column {
-        DateTimeOffset 'id' -Sparse -Scale 6
+        DateTimeOffset 'id' -Sparse -Precision 6
     }
 }
 
@@ -62,7 +62,7 @@ function Test-ShouldCreateDateTimeOffsetColumnWithNotNull
 function Push-Migration
 {
     Add-Table -Name 'Foobar' -Column {
-        DateTimeOffset 'id' -NotNull -Scale 6
+        DateTimeOffset 'id' -NotNull -Precision 6
     }
 }
 
@@ -77,4 +77,27 @@ function Pop-Migration
     
     Assert-Table 'Foobar'
     Assert-Column -Name 'id' -DataType 'DateTimeOffset' -TableName 'Foobar' -NotNull -Scale 6
+}
+
+function Test-ShouldCreateDateTimeOffsetColumnWithNoPrecision
+{
+    @'
+function Push-Migration
+{
+    Add-Table -Name 'Foobar' -Column {
+        DateTimeOffset 'id' -NotNull
+    }
+}
+
+function Pop-Migration
+{
+    
+}
+
+'@ | New-Migration -Name 'ShouldCreateDateTimeOffsetColumnWithNoPrecision'
+
+    Invoke-Rivet -Push 'ShouldCreateDateTimeOffsetColumnWithNoPrecision'
+    
+    Assert-Table 'Foobar'
+    Assert-Column -Name 'id' -DataType 'DateTimeOffset' -TableName 'Foobar' -NotNull
 }

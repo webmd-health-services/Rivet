@@ -32,9 +32,7 @@ N'
         Int int 
         SmallInt smallint 
         TinyInt tinyint 
-        Numeric numeric -Precision 1 
         Decimal decimal -Precision 4 
-        Numeric 'numericwithscale' -Precision 5 -Scale 5
         Decimal 'decimalwithscale' -Precision 5 -Scale 5
         Bit 'bit' 
         Money 'money' 
@@ -71,8 +69,6 @@ function Pop-Migration()
     Remove-Column 'int' @tableParam
     Remove-Column 'smallint' @tableParam
     Remove-Column 'tinyint' @tableParam
-    Remove-Column 'numeric' @tableParam
-    Remove-Column 'numericwithscale' @tableParam
     Remove-Column 'decimal' @tableParam
     Remove-Column 'decimalwithscale' @tableParam
     Remove-Column 'bit' @tableParam

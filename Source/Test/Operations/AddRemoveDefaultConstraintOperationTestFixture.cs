@@ -39,9 +39,7 @@ namespace Rivet.Test.Operations
 			bool withValues = true;
 
 			var op = new AddDefaultConstraintOperation(schemaName, tableName, expression, columnName, withValues);
-			var expectedQuery = @"
-					alter table [schemaName].[tableName]
-					add constraint DF_schemaName_tableName_columnName default expression for columnName with values";
+			var expectedQuery = @"alter table [schemaName].[tableName] add constraint [DF_schemaName_tableName_columnName] default expression for columnName with values";
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}
 
@@ -55,9 +53,7 @@ namespace Rivet.Test.Operations
 			bool withValues = false;
 
 			var op = new AddDefaultConstraintOperation(schemaName, tableName, expression, columnName, withValues);
-			var expectedQuery = @"
-					alter table [dbo].[tableName]
-					add constraint DF_tableName_columnName default expression for columnName ";
+			var expectedQuery = @"alter table [dbo].[tableName] add constraint [DF_tableName_columnName] default expression for columnName ";
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}
 
@@ -82,7 +78,7 @@ namespace Rivet.Test.Operations
 			var columnName = "columnName";
 
 			var op = new RemoveDefaultConstraintOperation(schemaName, tableName, columnName);
-			var expectedQuery = "alter table [schemaName].[tableName] drop constraint DF_schemaName_tableName_columnName";
+			var expectedQuery = "alter table [schemaName].[tableName] drop constraint [DF_schemaName_tableName_columnName]";
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}
 

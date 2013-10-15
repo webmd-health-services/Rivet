@@ -42,8 +42,8 @@ namespace Rivet.Operations
 				{
 					columnDefinitionList.Add(column.GetColumnDefinition(TableName, SchemaName, false));
 				}
-				columnDefinitionClause = string.Join(",\n\t", columnDefinitionList.ToArray());
-				columnDefinitionClause = string.Format("(\n\t{0}\n)", columnDefinitionClause);
+				columnDefinitionClause = string.Join(", ", columnDefinitionList.ToArray());
+				columnDefinitionClause = string.Format("({0})", columnDefinitionClause);
 			}
 
 			var fileGroupClause = "";
@@ -71,13 +71,7 @@ namespace Rivet.Operations
 				optionsClause = string.Format("with ( {0} )", optionsClause);
 			}
 
-			var query = string.Format(@"
-			create table [{0}].[{1}] {2}
-						{3}
-						{4}
-						{5}
-						{6}", SchemaName, TableName, columnDefinitionClause, fileGroupClause, textImageFileGroupClause, fileStreamFileGroupClause, optionsClause);
-
+			var query = string.Format("create table [{0}].[{1}] {2} {3} {4} {5} {6}", SchemaName, TableName, columnDefinitionClause, fileGroupClause, textImageFileGroupClause, fileStreamFileGroupClause, optionsClause);
 			return query;
 		}
 	}

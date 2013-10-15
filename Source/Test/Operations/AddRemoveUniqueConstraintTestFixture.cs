@@ -74,7 +74,7 @@ namespace Rivet.Test.Operations
 			string fileGroup = "fileGroup";
 
 			var op = new AddUniqueConstraintOperation(schemaName, tableName, columnName, clustered, fillfactor, options, fileGroup);
-			var expectedQuery = "alter table [schemaName].[tableName] add constraint UQ_schemaName_tableName_column1_column2 unique clustered(column1,column2)  on fileGroup";
+			var expectedQuery = "alter table [schemaName].[tableName] add constraint [UQ_schemaName_tableName_column1_column2] unique clustered(column1,column2)  on fileGroup";
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}
 
@@ -90,7 +90,7 @@ namespace Rivet.Test.Operations
 			string fileGroup = "fileGroup";
 
 			var op = new AddUniqueConstraintOperation(schemaName, tableName, columnName, clustered, fillfactor, options, fileGroup);
-			var expectedQuery = "alter table [schemaName].[tableName] add constraint UQ_schemaName_tableName_column1_column2 unique clustered(column1,column2) with (option1, option2) on fileGroup";
+			var expectedQuery = "alter table [schemaName].[tableName] add constraint [UQ_schemaName_tableName_column1_column2] unique clustered(column1,column2) with (option1, option2) on fileGroup";
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}
 		
@@ -107,7 +107,7 @@ namespace Rivet.Test.Operations
 			string fileGroup = "fileGroup";
 
 			var op = new AddUniqueConstraintOperation(schemaName, tableName, columnName, clustered, fillfactor, options, fileGroup);
-			var expectedQuery = "alter table [schemaName].[tableName] add constraint UQ_schemaName_tableName_column1_column2 unique clustered(column1,column2) with (fillfactor = 80) on fileGroup";
+			var expectedQuery = "alter table [schemaName].[tableName] add constraint [UQ_schemaName_tableName_column1_column2] unique clustered(column1,column2) with (fillfactor = 80) on fileGroup";
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}
 
@@ -123,7 +123,7 @@ namespace Rivet.Test.Operations
 			string fileGroup = "fileGroup";
 
 			var op = new AddUniqueConstraintOperation(schemaName, tableName, columnName, clustered, fillfactor, options, fileGroup);
-			var expectedQuery = "alter table [schemaName].[tableName] add constraint UQ_schemaName_tableName_column1_column2 unique clustered(column1,column2) with (option1, options2, fillfactor = 80) on fileGroup";
+			var expectedQuery = "alter table [schemaName].[tableName] add constraint [UQ_schemaName_tableName_column1_column2] unique clustered(column1,column2) with (option1, options2, fillfactor = 80) on fileGroup";
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}
 
@@ -150,7 +150,7 @@ namespace Rivet.Test.Operations
 			string[] columnName = new string[] { "column1", "column2" };
 
 			var op = new RemoveUniqueConstraintOperation(schemaName, tableName, columnName);
-			var expectedQuery = "alter table [schemaName].[tableName] drop constraint UQ_schemaName_tableName_column1_column2";
+			var expectedQuery = "alter table [schemaName].[tableName] drop constraint [UQ_schemaName_tableName_column1_column2]";
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}
 

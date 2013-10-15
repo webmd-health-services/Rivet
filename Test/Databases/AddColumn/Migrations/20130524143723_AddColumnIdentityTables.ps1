@@ -18,10 +18,6 @@ function Push-Migration()
         name varchar(max) not null
     )
 
-    create table NumericIdentity (
-        name varchar(max) not null
-    )
-
     create table DecimalIdentity (
         name varchar(max) not null
     )
@@ -31,7 +27,6 @@ function Push-Migration()
     Add-Column 'intidentity' -Int -Identity 3 5 -TableName 'IntIdentity'
     Add-Column 'smallintidentity' -SmallInt -Identity 7 11 -TableName 'SmallIntIdentity'
     Add-Column 'tinyintidentity' -TinyInt -Identity 13 17  -TableName 'TinyIntIdentity'
-    Add-Column 'numericidentity' -Numeric 5 -Identity 23 29 -TableName 'NumericIdentity'
     Add-Column 'decimalidentity' -Decimal 5 -Identity 37 41 -TableName 'DecimalIdentity'
 }
 
@@ -42,6 +37,5 @@ function Pop-Migration()
         drop table IntIdentity
         drop table SmallIntIdentity
         drop table TinyIntIdentity
-        drop table NumericIdentity
         drop table DecimalIdentity
 '@}

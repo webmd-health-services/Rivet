@@ -46,11 +46,13 @@ function Test-ShouldPushMigrations
     $rows = Get-MigrationInfo
     Assert-NotNull $rows
     Assert-Equal $migrationScripts.Count $rows.Count
-    $rows | ForEach-Object { Assert-True ($_.AtUtc -lt $createdBefore) }
+    $rows | ForEach-Object { Assert-True ($_.AtUtc.AddMilliseconds(-500) -lt $createdBefore) }
 }
 
 function Test-ShouldPushMigrationsForMultipleDBs
 {
+    $createdAfter = (Get-Date).ToUniversalTime()
+
     $timestamp = '{0:yyyyMMddHHss}' -f (Get-Date)
     $db1Name = 'PushMigration{0}' -f $timestamp
     $db2Name = 'PushMigration{0}' -f $timestamp
@@ -104,8 +106,8 @@ function Test-ShouldPushMigrationsForMultipleDBs
     {
         Invoke-Rivet -Push -Database $db1Name,$db2Name -ConfigFilePath $configFilePath
         
-        Assert-Migration -Path $db1MigrationsDir -Connection $db1Conn
-        Assert-Migration -Path $db2MigrationsDir -Connection $db2Conn
+        Assert-Migration -Path $db1MigrationsDir -Connection $db1Conn 
+        Assert-Migration -Path $db2MigrationsDir -Connection $db2Conn 
     }
     finally
     {
@@ -120,6 +122,7 @@ function Test-ShouldPushMigrationsForMultipleDBs
 function Test-ShouldPushSpecificMigrationByName
 {
     $createdAfter = (Get-Date).ToUniversalTime()
+    #Start-Sleep -Seconds 1
     Get-MigrationScript | 
         Select-Object -First 1 |
         ForEach-Object {
@@ -165,7 +168,7 @@ function Test-ShouldNotReapplyASpecificMigration
             Invoke-Rivet -Push $name            
 
             $row = Assert-Migration -ID $id -Name $name -CreatedAfter $CreatedAfter -PassThru
-            Assert-True ($row.AtUtc -lt $createdBefore)
+            Assert-True ($row.AtUtc.AddMilliseconds(-500) -lt $createdBefore)
         }
         
     $count = Measure-Migration 
@@ -207,7 +210,7 @@ function Test-ShouldFailIfMigrationNameDoesNotExist
 
 function Get-SqlServerUtcDate
 {
-    Invoke-RivetTestQuery -Query 'select getutcdate()' -AsScalar 
+    Invoke-RivetTestQuery -Query 'select cast(getutcdate() as datetime2)' -AsScalar 
 }
 
 function Assert-Migration
@@ -260,9 +263,9 @@ function Assert-Migration
     Assert-Equal $name $migrationRow.Name
     Assert-Equal ('{0}\{1}' -f $env:USERDOMAIN,$env:USERNAME) $migrationRow.Who
     Assert-Equal $env:ComputerName $migrationRow.ComputerName
-    Assert-True ($migrationRow.AtUtc -gt $CreatedAfter)
+    Assert-True ($migrationRow.AtUtc.AddMilliseconds(500) -gt $CreatedAfter)
     $now = Get-SqlServerUtcDate
-    Assert-True ($migrationRow.AtUtc -le $now) ('{0} >= {1}' -f $migrationRow.AtUtc,$now)
+    Assert-True ($migrationRow.AtUtc.AddMilliseconds(-500) -lt $now) ('creation->migration: {0} migration->now: {1}' -f ($CreatedAfter - $migrationRow.AtUtc),($migrationRow.AtUTC - $now))
     
     if( $PassThru )
     {

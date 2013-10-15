@@ -50,7 +50,7 @@ function New-DateTimeOffsetColumn
         [Parameter(Position=1)]
         [Int]
         # The number of decimal digits that will be stored to the right of the decimal point
-        $Scale = 5,
+        $Precision,
 
         [Parameter(Mandatory=$true,ParameterSetName='NotNull')]
         [Switch]
@@ -73,15 +73,9 @@ function New-DateTimeOffsetColumn
         $Description
     )
 
-    if ($NotNull -and $Sparse)
-    {
-        throw ('Column {0}: A column cannot be NOT NULL and SPARSE.  Please choose one, but not both' -f $Name)
-        return
-    }
-
     $dataSize = $null
 
-    $dataSize = New-Object Rivet.PrecisionScale $Scale
+    $dataSize = New-Object Rivet.PrecisionScale $Precision
         
     switch ($PSCmdlet.ParameterSetName)
     {

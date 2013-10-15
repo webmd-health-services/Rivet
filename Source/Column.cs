@@ -222,16 +222,6 @@
 			return new Column(name, DataType.NChar, size, collation, nullable, defaultExpression, description);
 		}
 
-		public static Column Numeric(string name, PrecisionScale size, Nullable nullable, string defaultExpression, string description)
-		{
-			return new Column(name, DataType.Numeric, size, nullable, defaultExpression, description);
-		}
-
-		public static Column Numeric(string name, PrecisionScale size, Identity identity, string description)
-		{
-			return new Column(name, DataType.Numeric, size, identity, description);
-		}
-
 		public static Column NVarChar(string name, CharacterLength size, string collation, Nullable nullable, string defaultExpression, string description)
 		{
 			return new Column(name, DataType.NVarChar, size ?? new CharacterLength(), collation, nullable, defaultExpression, description);
@@ -307,6 +297,11 @@
 			return new Column(name, DataType.Xml, new XmlPrecisionScale(isDocument, xmlSchemaCollection), nullable, defaultExpression, description);
 		}
 		#endregion
+
+		public override string ToString()
+		{
+			return Name;
+		}
 
 		public virtual string GetColumnDefinition(string tableName, string schemaName, bool withValues)
 		{

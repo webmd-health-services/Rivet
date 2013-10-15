@@ -55,7 +55,7 @@ namespace Rivet.Test.Operations
 			bool notForReplication = true;
 
 			var op = new AddForeignKeyOperation(schemaName, tableName, columnName, referencesSchemaName, referencesTableName, referencesColumnName, onDelete, onUpdate, notForReplication);
-			var expectedQuery = "alter table [schemaName].[tableName] add constraint FK_schemaName_tableName_rschemaName_rtableName foreign key (column1,column2) references rschemaName.rtableName (rcolumn1,rcolumn2) on delete onDelete on update onUpdate not for replication";
+			var expectedQuery = "alter table [schemaName].[tableName] add constraint [FK_schemaName_tableName_rschemaName_rtableName] foreign key (column1,column2) references rschemaName.rtableName (rcolumn1,rcolumn2) on delete onDelete on update onUpdate not for replication";
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}
 
@@ -84,7 +84,7 @@ namespace Rivet.Test.Operations
 
 			var op = new RemoveForeignKeyOperation(schemaName, tableName, referencesSchemaName, referencesTableName);
 			System.Console.WriteLine(op.ToQuery());
-			var expectedQuery = "alter table [schemaName].[tableName] drop constraint FK_schemaName_tableName_rschemaName_rtableName";
+			var expectedQuery = "alter table [schemaName].[tableName] drop constraint [FK_schemaName_tableName_rschemaName_rtableName]";
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}
 
