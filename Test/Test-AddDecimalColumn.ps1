@@ -11,13 +11,36 @@ function Stop-Test
 }
 
 
+function Test-ShouldCreateDecimal
+{
+    @'
+function Push-Migration
+{
+    Add-Table Foobar {
+        Decimal ID 
+    }
+}
+
+function Pop-Migration
+{
+    
+}
+
+'@ | New-Migration -Name 'CreateDecimalWithNullable'
+
+    Invoke-Rivet -Push 'CreateDecimalWithNullable'
+
+    Assert-Table 'Foobar'
+    Assert-Column -Name 'ID' -DataType 'Decimal' -TableName 'Foobar' -Precision 18 -Scale 0
+}
+
 function Test-ShouldCreateDecimalWithNullable
 {
     @'
 function Push-Migration
 {
     Add-Table Foobar {
-        Decimal ID -Precision 5 -Scale 2
+        Decimal ID 5 2
     }
 }
 
@@ -40,7 +63,7 @@ function Test-ShouldCreateDecimalWithNotNull
 function Push-Migration
 {
     Add-Table Foobar {
-        Decimal ID -NotNull -Precision 5 -Scale 2
+        Decimal ID -NotNull 5 2
     }
 }
 
@@ -63,7 +86,7 @@ function Test-ShouldCreateDecimalWithSparse
 function Push-Migration
 {
     Add-Table Foobar {
-        Decimal ID -Sparse -Precision 5 -Scale 2
+        Decimal ID -Sparse 5 2
     }
 }
 
@@ -86,7 +109,7 @@ function Test-ShouldCreateDecimalWithIdentity
 function Push-Migration
 {
     Add-Table Foobar {
-        Decimal ID -Identity -Precision 5
+        Decimal ID 5 -Identity
     }
 }
 
@@ -100,7 +123,7 @@ function Pop-Migration
     Invoke-Rivet -Push 'CreateDecimalWithIdentity'
 
     Assert-Table 'Foobar'
-    Assert-Column -Name 'ID' -DataType 'Decimal' -TableName 'Foobar' -NotNull -Seed 1 -Increment 1 -Precision 5
+    Assert-Column -Name 'ID' -DataType 'Decimal' -TableName 'Foobar' -NotNull -Seed 1 -Increment 1 -Precision 5 -Scale 0
 }
 
 function Test-ShouldCreateDecimalWithIdentityNotForReplication
@@ -109,7 +132,7 @@ function Test-ShouldCreateDecimalWithIdentityNotForReplication
 function Push-Migration
 {
     Add-Table Foobar {
-        Decimal ID -Identity -NotForReplication -Precision 5
+        Decimal ID 5 -Identity -NotForReplication 
     }
 }
 
@@ -132,7 +155,7 @@ function Test-ShouldCreateDecimalWithIdentityCustomSeedCustomIncrement
 function Push-Migration
 {
     Add-Table Foobar {
-        Decimal ID -Identity -NotForReplication -Seed 4 -Increment 4 -Precision 5
+        Decimal ID 5 -Identity -NotForReplication -Seed 4 -Increment 4
     }
 }
 
