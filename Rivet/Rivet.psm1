@@ -38,6 +38,7 @@ $publicFunctions = @(
                         'New-CharColumn',
                         'New-Column',
                         'New-DateColumn',
+                        'New-DateTimeColumn',
                         'New-DateTime2Column',
                         'New-DateTimeOffsetColumn',
                         'New-DecimalColumn',
