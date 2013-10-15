@@ -146,15 +146,17 @@ function Invoke-MigrationEvent
             . $eventScript
             & ('Complete-{0}' -f $Name) -TableName $EventArg."TableName" -SchemaName $EventArg."SchemaName"
         }
-        catch #Catches Syntax Error
+        #catch #Catches Syntax Error
+        #{
+        #    $ex = $_.Exception
+        #    $syntaxErrorMsg = "`nSyntax Error: {0}`n{1}" -f $scriptName, $ex.Message
+        #    Write-Warning $syntaxErrorMsg
+        #    throw (New-Object ApplicationException $syntaxErrorMsg)
+        #}
+        finally
         {
-            $ex = $_.Exception
-            $syntaxErrorMsg = "`nSyntax Error: {0}`n{1}" -f $scriptName, $ex.Message
-            Write-Warning $syntaxErrorMsg
-            throw (New-Object ApplicationException $syntaxErrorMsg)
+            Remove-Item ('function:\Complete-{0}' -f $Name)
         }
-        
-        Remove-Item ('function:\Complete-{0}' -f $Name)
     }
    
 
