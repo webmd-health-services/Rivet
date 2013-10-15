@@ -189,9 +189,9 @@ function Pop-Migration
     Remove-Schema 'New-BigInt'
 }
 
-'@ | New-Migration -Name 'CreateBigIntWithCustomValueCustomDescription'
+'@ | New-Migration -Name 'ShouldEscapeNames'
 
-    Invoke-Rivet -Push 'CreateBigIntWithCustomValueCustomDescription'
+    Invoke-Rivet -Push 'ShouldEscapeNames'
 
     Assert-Table 'Foo-Bar' -SchemaName 'New-BigInt'
     Assert-Column -Name 'ID-ID' -DataType 'BigInt' -TableName 'Foo-Bar' -SchemaName 'New-BigInt' -Default 21 

@@ -384,59 +384,6 @@ namespace Rivet.Test
 		}
 		#endregion Char
 
-		#region Numeric
-
-		[Test]
-		public void ShouldCreateNumericColumn(
-			[Values("Numeric")]
-			string name,
-			[Values(Nullable.Null, Nullable.NotNull, Nullable.Sparse)]
-			Nullable nullable)
-		{
-			var c = Column.Numeric(name, null, nullable, "10.0", "numeric");
-			GivenColumn(c);
-			ThenColumnShouldBe(name, DataType.Numeric, nullable, "10.0", "numeric");
-		}
-
-		[Test]
-		public void ShouldCreateNumericIdentityColumn()
-		{
-			foreach (var identity in Identities)
-			{
-				GivenColumn(Column.Numeric("NumericIdentity", null, identity, "numeric identity"));
-				ThenColumnShouldBe("NumericIdentity", DataType.Numeric, identity, "numeric identity");
-			}
-		}
-
-		[Test]
-		public void ShouldCreateNumericWithPrecisionAndScale(
-			[Values(Nullable.Null, Nullable.NotNull, Nullable.Sparse)]
-			Nullable nullable)
-		{
-			foreach (var ps in Precisions)
-			{
-				var c = Column.Numeric("NumericWithPrecision", ps, nullable, "12.0", "numeric precision");
-				GivenColumn(c);
-				ThenColumnShouldBe("NumericWithPrecision", DataType.Numeric, ps, nullable, "12.0", "numeric precision");
-			}
-		}
-
-		[Test]
-		public void ShouldCreateNumericIdentityWithPrecisionAndScale()
-		{
-			foreach (var identity in Identities)
-			{
-				foreach (var ps in Precisions)
-				{
-					var c = Column.Numeric("NumericWithPrecision", ps, identity, "numeric identity precision");
-					GivenColumn(c);
-					ThenColumnShouldBe("NumericWithPrecision", DataType.Numeric, ps, identity, "numeric identity precision");
-				}
-			}
-		}
-
-		#endregion
-
 		#region NVarChar
 
 		[Test]
@@ -790,7 +737,7 @@ namespace Rivet.Test
 				withValuesClause = " with values";
 			}
 
-			return string.Format(" constraint DF_{0}_{1} default {2}{3}", constraintName, _column.Name, defaultExpression, withValuesClause);
+			return string.Format(" constraint [DF_{0}_{1}] default {2}{3}", constraintName, _column.Name, defaultExpression, withValuesClause);
 		}
 
 		#endregion Xml

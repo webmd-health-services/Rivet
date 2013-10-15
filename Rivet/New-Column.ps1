@@ -55,9 +55,6 @@ function New-Column
     New-NCharColumn
 
     .LINK
-    New-NumericColumn
-
-    .LINK
     New-NVarCharColumn
 
     .LINK

@@ -39,8 +39,6 @@ N'
     Add-Column int -Int -NotNull -Default ([int]::MaxValue) -Description 'int not null' @commonArgs
     Add-Column smallint -SmallInt -NotNull -Default ([int16]::MaxValue) -Description 'smallint not null' @commonArgs
     Add-Column tinyint -TinyInt -NotNull -Default ([byte]::MaxValue) -Description 'tinyint not null' @commonArgs
-    Add-Column numeric -Numeric 1 -NotNull -Default '1.11' -Description 'numeric(1) not null' @commonArgs
-    Add-Column numericwithscale -Numeric 2 2 -NotNull -Default '2.22' -Description 'numeric(2,2) not null' @commonArgs
     Add-Column decimal -Decimal 4 -NotNull -Default '3.33' -Description 'decimal(4) not null' @commonArgs
     Add-Column decimalwithscale -Decimal 5 5 -NotNull -Default '4.44' -Description 'decimal(5,5) not null' @commonArgs
     Add-Column bit -Bit -NotNull -Default '1' -Description 'bit not null' @commonArgs

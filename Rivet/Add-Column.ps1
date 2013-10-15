@@ -96,16 +96,10 @@ function Add-Column
         # Creates an tinyint column.
         $TinyInt,
 
-        [Parameter(Mandatory=$true,ParameterSetName='AsNumeric')]
-        [Parameter(Mandatory=$true,ParameterSetName='AsNumericIdentity')]
-        [Switch]
-        # Creates a numeric column.
-        $Numeric,
-
         [Parameter(Mandatory=$true,ParameterSetName='AsDecimal')]
         [Parameter(Mandatory=$true,ParameterSetName='AsDecimalIdentity')]
         [Switch]
-        # Creates a numeric column.
+        # Creates a decimal column.
         $Decimal,
 
         [Parameter(Mandatory=$true,ParameterSetName='AsFloat')]
@@ -143,22 +137,19 @@ function Add-Column
         # Creates a date column.
         $Time,
 
-        [Parameter(Mandatory=$true,Position=2,ParameterSetName='AsNumeric')]
-        [Parameter(Mandatory=$true,Position=2,ParameterSetName='AsNumericIdentity')]
         [Parameter(Mandatory=$true,Position=2,ParameterSetName='AsDecimal')]
         [Parameter(Mandatory=$true,Position=2,ParameterSetName='AsDecimalIdentity')]
         [Parameter(Position=2,ParameterSetName='AsFloat')]
         [Parameter(Position=2,ParameterSetName='AsDateTime2')]
         [Parameter(Position=2,ParameterSetName='AsDateTimeOffset')]
         [int]
-        # The data type's precision.  Only valid for Numeric, Decimal, Float, DateTime2, and DateTimeOffset data tyes.
+        # The data type's precision.  Only valid for Decimal, Float, DateTime2, and DateTimeOffset data tyes.
         $Precision,
 
-        [Parameter(Position=3,ParameterSetName='AsNumeric')]
         [Parameter(Position=3,ParameterSetName='AsDecimal')]
         [Parameter(Position=3,ParameterSetName='AsDateTimeOffset')]
         [int]
-        # The data type's scale.  Only valid for Numeric, Decimal, and DateTimeOffset data tyes.
+        # The data type's scale.  Only valid for Decimal, and DateTimeOffset data tyes.
         $Scale,
 
         [Parameter(Mandatory=$true,ParameterSetName='AsTinyIntIdentity')]
@@ -166,9 +157,8 @@ function Add-Column
         [Parameter(Mandatory=$true,ParameterSetName='AsIntIdentity')]
         [Parameter(Mandatory=$true,ParameterSetName='AsBigIntIdentity')]
         [Parameter(Mandatory=$true,ParameterSetName='AsDecimalIdentity')]
-        [Parameter(Mandatory=$true,ParameterSetName='AsNumericIdentity')]
         [Switch]
-        # Make this row an identity, with an auto-incrementing primary key. Only valid for TinyInt, SmallInt, Int, BigInt, Decimal, and Numeric data types.
+        # Make this row an identity, with an auto-incrementing primary key. Only valid for TinyInt, SmallInt, Int, BigInt, and Decimal data types.
         $Identity,
 
         [Parameter(Position=2,ParameterSetName='AsTinyIntIdentity')]
@@ -176,9 +166,8 @@ function Add-Column
         [Parameter(Position=2,ParameterSetName='AsIntIdentity')]
         [Parameter(Position=2,ParameterSetName='AsBigIntIdentity')]
         [Parameter(Position=4,ParameterSetName='AsDecimalIdentity')]
-        [Parameter(Position=4,ParameterSetName='AsNumericIdentity')]
         [int]
-        # The start value for the column's identity.  Default is `1`. Only valid for TinyInt, SmallInt, Int, BigInt, Decimal, and Numeric data types.
+        # The start value for the column's identity.  Default is `1`. Only valid for TinyInt, SmallInt, Int, BigInt, and Decimal data types.
         $Seed = 1,
 
         [Parameter(Position=3,ParameterSetName='AsTinyIntIdentity')]
@@ -186,9 +175,8 @@ function Add-Column
         [Parameter(Position=3,ParameterSetName='AsIntIdentity')]
         [Parameter(Position=3,ParameterSetName='AsBigIntIdentity')]
         [Parameter(Position=5,ParameterSetName='AsDecimalIdentity')]
-        [Parameter(Position=5,ParameterSetName='AsNumericIdentity')]
         [int]
-        # The increment value for the column's identity.  Default is `1`.  Only valid for TinyInt, SmallInt, Int, BigInt, Decimal, and Numeric data types.
+        # The increment value for the column's identity.  Default is `1`.  Only valid for TinyInt, SmallInt, Int, BigInt, and Decimal data types.
         $Increment = 1,
 
         [Parameter(ParameterSetName='AsTinyIntIdentity')]
@@ -196,9 +184,8 @@ function Add-Column
         [Parameter(ParameterSetName='AsIntIdentity')]
         [Parameter(ParameterSetName='AsBigIntIdentity')]
         [Parameter(ParameterSetName='AsDecimalIdentity')]
-        [Parameter(ParameterSetName='AsNumericIdentity')]
         [Switch]
-        # Don't replicate the identity column's value.  Only valid for TinyInt, SmallInt, Int, BigInt, Decimal, and Numeric data types.
+        # Don't replicate the identity column's value.  Only valid for TinyInt, SmallInt, Int, BigInt, and Decimal data types.
         $NotForReplication,
 
         [Parameter(Mandatory=$true,ParameterSetName='AsMoney')]
@@ -270,7 +257,6 @@ function Add-Column
         [Parameter(ParameterSetName='AsInt')]
         [Parameter(ParameterSetName='AsSmallint')]
         [Parameter(ParameterSetName='AsTinyint')]
-        [Parameter(ParameterSetName='AsNumeric')]
         [Parameter(ParameterSetName='AsDecimal')]
         [Parameter(ParameterSetName='AsBit')]
         [Parameter(ParameterSetName='AsMoney')]
@@ -300,7 +286,6 @@ function Add-Column
         [Parameter(ParameterSetName='AsInt')]
         [Parameter(ParameterSetName='AsSmallint')]
         [Parameter(ParameterSetName='AsTinyint')]
-        [Parameter(ParameterSetName='AsNumeric')]
         [Parameter(ParameterSetName='AsDecimal')]
         [Parameter(ParameterSetName='AsBit')]
         [Parameter(ParameterSetName='AsMoney')]

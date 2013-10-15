@@ -8,7 +8,6 @@
 		Decimal,
 		Int,
 		Money,
-		Numeric,
 		SmallInt,
 		SmallMoney,
 		TinyInt,

@@ -46,8 +46,8 @@ function Push-Migration
         Int ID
     }
 
-    Add-ExtendedProperty -Name 'Deploy' -Value 'TRUE' -TableName 'Foobar' -SchemaName 'dbo'
-    Update-ExtendedProperty -Name 'Deploy' -Value 'FALSE' -TableName 'Foobar' -SchemaName 'dbo'
+    Add-ExtendedProperty -Name 'Deploy' -Value 'TRUE' -TableName 'Foobar' 
+    Update-ExtendedProperty -Name 'Deploy' -Value 'FALSE' -TableName 'Foobar' 
 }
 
 function Pop-Migration
@@ -76,8 +76,8 @@ function Push-Migration
         Int ID
     }
 
-    Add-ExtendedProperty -Name 'Deploy' -Value 'TRUE' -TableName 'Foobar' -SchemaName 'dbo' -ColumnName 'ID'
-    Update-ExtendedProperty -Name 'Deploy' -Value 'FALSE' -TableName 'Foobar' -SchemaName 'dbo' -ColumnName 'ID'
+    Add-ExtendedProperty -Name 'Deploy' -Value 'TRUE' -TableName 'Foobar' -ColumnName 'ID'
+    Update-ExtendedProperty -Name 'Deploy' -Value 'FALSE' -TableName 'Foobar' -ColumnName 'ID'
 }
 
 function Pop-Migration

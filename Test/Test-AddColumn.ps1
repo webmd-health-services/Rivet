@@ -31,8 +31,6 @@ function Test-ShouldAddNullableColumnsNoDefaults
     Assert-Column -Name 'int' 'int' -Description 'int null' @commonArgs
     Assert-Column -Name 'smallint' 'smallint' -Description 'smallint null' @commonArgs
     Assert-Column -Name 'tinyint' 'tinyint' -Description 'tinyint null' @commonArgs
-    Assert-Column -Name 'numeric' 'numeric' -Precision 1 -Description 'numeric(1) null' @commonArgs
-    Assert-Column -Name 'numericwithscale' 'numeric' -Precision 2 -Scale 2 -Description 'numeric(2,2) null' @commonArgs
     Assert-Column -Name 'decimal' 'decimal' -Precision 4 -Description 'decimal(4) null' @commonArgs
     Assert-Column -Name 'decimalwithscale' 'decimal' -Precision 5 -Scale 5 -Description 'decimal(5,5) null' @commonArgs
     Assert-Column -Name 'bit' 'bit' -Description 'bit null' @commonArgs
@@ -74,8 +72,6 @@ function Test-ShouldAddNotNullableColumnsWithDefaults
     Assert-Column -Name 'int' 'int' -Default ([int]::MaxValue) -Description 'int not null' @commonArgs
     Assert-Column -Name 'smallint' 'smallint' -Default ([int16]::MaxValue) -Description 'smallint not null' @commonArgs
     Assert-Column -Name 'tinyint' 'tinyint' -Default ([byte]::MaxValue) -Description 'tinyint not null' @commonArgs
-    Assert-Column -Name 'numeric' 'numeric' -Precision 1 -Default '1.11' -Description 'numeric(1) not null' @commonArgs
-    Assert-Column -Name 'numericwithscale' 'numeric' -Precision 2 -Scale 2 -Default '2.22' -Description 'numeric(2,2) not null' @commonArgs
     Assert-Column -Name 'decimal' 'decimal' -Precision 4 -Default '3.33' -Description 'decimal(4) not null' @commonArgs
     Assert-Column -Name 'decimalwithscale' 'decimal' -Precision 5 -Scale 5 -Default '4.44' -Description 'decimal(5,5) not null' @commonArgs
     Assert-Column -Name 'bit' 'bit' -Default '1' -Description 'bit not null' @commonArgs
@@ -110,9 +106,6 @@ function Test-ShouldCreateIdentities
 
     Assert-Table 'TinyIntIdentity'
     Assert-Column -Name 'tinyintidentity' 'tinyint' -Seed 13 -Increment 17 -NotNull -TableName 'TinyIntIdentity'
-
-    Assert-Table 'NumericIdentity'
-    Assert-Column -Name 'numericidentity' 'numeric' -Size 5 -Seed 23 -Increment 29 -NotNull -TableName 'NumericIdentity'
 
     Assert-Table 'DecimalIdentity'
     Assert-Column -Name 'decimalidentity' 'decimal' -Size 5 -Seed 37 -Increment 41 -NotNull -TableName 'DecimalIdentity'
@@ -179,8 +172,6 @@ function Test-ShouldAddSparseColumns
     Assert-Column -Name 'int' 'int' -Sparse -Description 'int sparse' @commonArgs
     Assert-Column -Name 'smallint' 'smallint' -Sparse -Description 'smallint sparse' @commonArgs
     Assert-Column -Name 'tinyint' 'tinyint' -Sparse -Description 'tinyint sparse' @commonArgs
-    Assert-Column -Name 'numeric' 'numeric' -Precision 1 -Sparse -Description 'numeric(1) sparse' @commonArgs
-    Assert-Column -Name 'numericwithscale' 'numeric' -Precision 2 -Scale 2 -Sparse -Description 'numeric(2,2) sparse' @commonArgs
     Assert-Column -Name 'decimal' 'decimal' -Precision 4 -Sparse -Description 'decimal(4) sparse' @commonArgs
     Assert-Column -Name 'decimalwithscale' 'decimal' -Precision 5 -Scale 5 -Sparse -Description 'decimal(5,5) sparse' @commonArgs
     Assert-Column -Name 'bit' 'bit' -Sparse -Description 'bit sparse' @commonArgs
@@ -216,9 +207,6 @@ function Test-ShouldCreateIdentitiesNotForReplication
 
     Assert-Table 'TinyIntIdentity'
     Assert-Column -Name 'tinyintidentity' 'tinyint' -Seed 13 -Increment 17 -NotNull -NotForReplication  -TableName 'TinyIntIdentity'
-
-    Assert-Table 'NumericIdentity'
-    Assert-Column -Name 'numericidentity' 'numeric' -Size 5 -Seed 23 -Increment 29 -NotNull -NotForReplication  -TableName 'NumericIdentity'
 
     Assert-Table 'DecimalIdentity'
     Assert-Column -Name 'decimalidentity' 'decimal' -Size 5 -Seed 37 -Increment 41 -NotNull -NotForReplication  -TableName 'DecimalIdentity'

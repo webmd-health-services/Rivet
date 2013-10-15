@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using System.Diagnostics;
+using NUnit.Framework;
 using Rivet.Operations;
 
 namespace Rivet.Test.Operations
@@ -61,12 +62,7 @@ namespace Rivet.Test.Operations
 			var description = "description";
 
 			var op = new AddTableOperation(schemaName, tableName, columnlist, fileTable, fileGroup, textImageFileGroup, fileStremFileGroup, options, description);
-			var expectedQuery = @"
-			create table [schemaName].[tableName] as FileTable
-						on fileGroup
-						textimage_on textImageFileGroup
-						filestream_on fileGroup
-						with ( option1, option2 )";
+			var expectedQuery = @"create table [schemaName].[tableName] as FileTable on fileGroup textimage_on textImageFileGroup filestream_on fileGroup with ( option1, option2 )";
 
 			Assert.AreEqual(op.ToQuery(), expectedQuery);
 		}
@@ -88,15 +84,9 @@ namespace Rivet.Test.Operations
 			var description = "description";
 
 			var op = new AddTableOperation(schemaName, tableName, columnlist, fileTable, fileGroup, textImageFileGroup, fileStremFileGroup, options, description);
-			var expectedQuery = @"
-			create table [schemaName].[tableName] ( [name] varchar(50) not null constraint DF_schemaName_tableName_name default '', 
-[int column] int identity )
-						on fileGroup
-						textimage_on textImageFileGroup
-						filestream_on fileGroup
-						with ( option1, option2 )";
+			var expectedQuery = @"create table [schemaName].[tableName] ([name] varchar(50) not null constraint [DF_schemaName_tableName_name] default '', [int column] int identity) on fileGroup textimage_on textImageFileGroup filestream_on fileGroup with ( option1, option2 )";
 
-			Assert.AreEqual(op.ToQuery(), expectedQuery);
+			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}
 
 		[Test]
@@ -116,12 +106,7 @@ namespace Rivet.Test.Operations
 			var description = "description";
 
 			var op = new AddTableOperation(schemaName, tableName, columnlist, fileTable, fileGroup, textImageFileGroup, fileStremFileGroup, options, description);
-			var expectedQuery = @"
-			create table [schemaName].[tableName] as FileTable
-						
-						textimage_on textImageFileGroup
-						filestream_on fileGroup
-						with ( option1, option2 )";
+			var expectedQuery = @"create table [schemaName].[tableName] as FileTable  textimage_on textImageFileGroup filestream_on fileGroup with ( option1, option2 )";
 
 			Assert.AreEqual(op.ToQuery(), expectedQuery);
 		}
@@ -143,14 +128,8 @@ namespace Rivet.Test.Operations
 			var description = "description";
 
 			var op = new AddTableOperation(schemaName, tableName, columnlist, fileTable, fileGroup, textImageFileGroup, fileStremFileGroup, options, description);
-			var expectedQuery = @"
-			create table [schemaName].[tableName] as FileTable
-						
-						
-						filestream_on fileGroup
-						with ( option1, option2 )";
-
-			Assert.AreEqual(op.ToQuery(), expectedQuery);
+			var expectedQuery = @"create table [schemaName].[tableName] as FileTable   filestream_on fileGroup with ( option1, option2 )";
+			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}
 
 		[Test]
@@ -170,12 +149,7 @@ namespace Rivet.Test.Operations
 			var description = "description";
 
 			var op = new AddTableOperation(schemaName, tableName, columnlist, fileTable, fileGroup, textImageFileGroup, fileStremFileGroup, options, description);
-			var expectedQuery = @"
-			create table [schemaName].[tableName] as FileTable
-						
-						
-						
-						with ( option1, option2 )";
+			var expectedQuery = @"create table [schemaName].[tableName] as FileTable    with ( option1, option2 )";
 
 			Assert.AreEqual(op.ToQuery(), expectedQuery);
 		}
@@ -197,14 +171,8 @@ namespace Rivet.Test.Operations
 			var description = "description";
 
 			var op = new AddTableOperation(schemaName, tableName, columnlist, fileTable, fileGroup, textImageFileGroup, fileStremFileGroup, options, description);
-			var expectedQuery = @"
-			create table [schemaName].[tableName] as FileTable
-						
-						
-						
-						";
-
-			Assert.AreEqual(op.ToQuery(), expectedQuery);
+			var expectedQuery = @"create table [schemaName].[tableName] as FileTable    ";
+			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}
 
 		[Test]

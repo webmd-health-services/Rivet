@@ -54,12 +54,12 @@ function Update-ExtendedProperty
         # The value of the extended property.
         $Value,
 
-        [Parameter(Mandatory=$true,ParameterSetName='SCHEMA')]
-        [Parameter(Mandatory=$true,ParameterSetName='TABLE')]
-        [Parameter(Mandatory=$true,ParameterSetName='COLUMN')]
+        [Parameter(ParameterSetName='SCHEMA')]
+        [Parameter(ParameterSetName='TABLE')]
+        [Parameter(ParameterSetName='COLUMN')]
         [string]
         # The schema of the object.
-        $SchemaName,
+        $SchemaName = 'dbo',
         
         [Parameter(Mandatory=$true,ParameterSetName='TABLE')]
         [Parameter(Mandatory=$true,ParameterSetName='COLUMN')]

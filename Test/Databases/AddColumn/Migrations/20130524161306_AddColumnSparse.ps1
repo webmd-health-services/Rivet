@@ -39,8 +39,6 @@ N'
     Add-Column int -Int -Sparse -Description 'int sparse' @commonArgs
     Add-Column smallint -SmallInt -Sparse -Description 'smallint sparse' @commonArgs
     Add-Column tinyint -TinyInt -Sparse -Description 'tinyint sparse' @commonArgs
-    Add-Column numeric -Numeric 1 -Sparse -Description 'numeric(1) sparse' @commonArgs
-    Add-Column numericwithscale -Numeric 2 2 -Sparse -Description 'numeric(2,2) sparse' @commonArgs
     Add-Column decimal -Decimal 4 -Sparse -Description 'decimal(4) sparse' @commonArgs
     Add-Column decimalwithscale -Decimal 5 5 -Sparse -Description 'decimal(5,5) sparse' @commonArgs
     Add-Column bit -Bit -Sparse -Description 'bit sparse' @commonArgs
