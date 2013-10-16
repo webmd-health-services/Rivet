@@ -57,6 +57,7 @@
     <Compile Include="Operations\AddTriggerOperation.cs" />
     <Compile Include="Operations\AddRowOperation.cs" />
     <Compile Include="Operations\AddSynonymOperation.cs" />
+    <Compile Include="Operations\AddDataTypeOperation.cs" />
     <Compile Include="Operations\RemoveSynonymOperation.cs" />
     <Compile Include="Operations\RenameOperation.cs" />
     <Compile Include="Operations\UpdateViewOperation.cs" />
