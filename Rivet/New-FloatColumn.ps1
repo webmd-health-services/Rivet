@@ -40,27 +40,27 @@ function New-FloatColumn
 
     Demonstrates how to create a required `float` column with a description. Uses SQL Server's default precision.
     #>
-    [CmdletBinding(DefaultParameterSetName='Nullable')]
+    [CmdletBinding(DefaultParameterSetName='Null')]
     param(
         [Parameter(Mandatory=$true,Position=0)]
         [string]
         # The column's name.
         $Name,
 
+        [Parameter(Position=1)]
+        [Int]
+        # Maximum total number of Numeric digits that will be stored
+        $Precision,
+
         [Parameter(Mandatory=$true,ParameterSetName='NotNull')]
         [Switch]
         # Don't allow `NULL` values in this column.
         $NotNull,
 
-        [Parameter(ParameterSetName='Nullable')]
+        [Parameter(ParameterSetName='Null')]
         [Switch]
         # Store nulls as Sparse.
         $Sparse,
-
-        [Parameter()]
-        [Int]
-        # Maximum total number of Numeric digits that will be stored
-        $Precision,
 
         [Parameter()]
         [string]
@@ -79,24 +79,13 @@ function New-FloatColumn
     {
         $dataSize = New-Object Rivet.PrecisionScale $Precision
     }
-        
-    switch ($PSCmdlet.ParameterSetName)
+    
+    $nullable = $PSCmdlet.ParameterSetName
+    if( $nullable -eq 'Null' -and $Sparse )
     {
-        'Nullable'
-        {
-            $nullable = 'Null'
-            if( $Sparse )
-            {
-                $nullable = 'Sparse'
-            }
-            [Rivet.Column]::Float($Name, $dataSize, $nullable, $Default, $Description)
-        }
-            
-        'NotNull'
-        {
-            [Rivet.Column]::Float($Name, $dataSize, 'NotNull', $Default, $Description)
-        }
+        $nullable = 'Sparse'
     }
+    [Rivet.Column]::Float($Name, $dataSize, $nullable, $Default, $Description)
 }
     
 Set-Alias -Name 'Float' -Value 'New-FloatColumn'

@@ -330,18 +330,19 @@ function Add-Column
         $SchemaName = 'dbo'
     )
 
-    
     $newColumnArgs = @{}
     
-    if ($PSCmdlet.ParameterSetName -notmatch "identity")
+    if( $PSCmdlet.ParameterSetName -match '^As(.*)Identity$' )
     { 
-        $PSCmdlet.ParameterSetName -match '^As(.*)$'
         $Datatype = $matches[1]
     }
-    else
+    elseif( $PSCmdlet.ParameterSetName -match '^As(.*)$' )
     {
-        $PSCmdlet.ParameterSetName -match '^As(.*)Identity$'
         $Datatype = $matches[1]
+    }
+    elseif( $PSCmdlet.ParameterSetName -ne 'ExplicitDataType' )
+    {
+        throw ('Unknown Add-Column parameter set: {0}' -f $PSCmdlet.ParameterSetName)
     }
     
     $PSBoundParameters.Keys | 
@@ -355,23 +356,14 @@ function Add-Column
     }
     else
     {
-        if ($PSCmdlet.ParameterSetName -notmatch "identity")
-        { 
-            $PSCmdlet.ParameterSetName -match '^As(.*)$'
-        }
-        else
-        {
-            $PSCmdlet.ParameterSetName -match '^As(.*)Identity$'
-        }
-
         if ($newColumnArgs.ContainsKey("Unicode"))
         {
             $newColumnArgs.Remove("Unicode")
-            $column = & "New-N$($matches[1])Column" @newColumnArgs
+            $column = & "New-N$($Datatype)Column" @newColumnArgs
         }
         else
         {
-            $column = & "New-$($matches[1])Column" @newColumnArgs
+            $column = & "New-$($Datatype)Column" @newColumnArgs
         }
     }
     Write-Host (' {0}.{1} +{2}' -f $SchemaName,$TableName,$column.GetColumnDefinition($TableName,$SchemaName,$WithValues))

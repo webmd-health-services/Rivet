@@ -16,7 +16,7 @@ function Test-ShouldCreateFloatColumn
 function Push-Migration
 {
     Add-Table -Name 'Foobar' -Column {
-        Float 'id' -Precision 53
+        Float 'id' 
     } -Option 'data_compression = none'
 }
 
@@ -30,7 +30,7 @@ function Pop-Migration
     Invoke-Rivet -Push 'CreateFloatColumn'
     
     Assert-Table 'Foobar'
-    Assert-Column -Name 'id' -DataType 'Float' -TableName 'Foobar'
+    Assert-Column -Name 'id' -DataType 'Float' -TableName 'Foobar' -Precision 53
 }
 
 function Test-ShouldCreateFloatColumnWithSparse
@@ -39,7 +39,7 @@ function Test-ShouldCreateFloatColumnWithSparse
 function Push-Migration
 {
     Add-Table -Name 'Foobar' -Column {
-        Float 'id' -Sparse -Precision 53
+        Float 'id' 3 -Sparse 
     }
 }
 
@@ -53,7 +53,7 @@ function Pop-Migration
     Invoke-Rivet -Push 'CreateFloatColumnWithSparse'
     
     Assert-Table 'Foobar'
-    Assert-Column -Name 'id' -DataType 'Float' -TableName 'Foobar' -Sparse
+    Assert-Column -Name 'id' -DataType 'real' -TableName 'Foobar' -Sparse -Precision 24
 }
 
 function Test-ShouldCreateFloatColumnWithNotNull
@@ -62,7 +62,7 @@ function Test-ShouldCreateFloatColumnWithNotNull
 function Push-Migration
 {
     Add-Table -Name 'Foobar' -Column {
-        Float 'id' -NotNull -Precision 53
+        Float 'id' 33 -NotNull 
     }
 }
 
@@ -76,5 +76,5 @@ function Pop-Migration
     Invoke-Rivet -Push 'CreateFloatColumnWithNotNull'
     
     Assert-Table 'Foobar'
-    Assert-Column -Name 'id' -DataType 'Float' -TableName 'Foobar' -NotNull
+    Assert-Column -Name 'id' -DataType 'Float' -TableName 'Foobar' -NotNull -Precision 53
 }
