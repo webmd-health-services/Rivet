@@ -7,22 +7,24 @@ namespace Rivet.Operations
 	public sealed class UpdateRowOperation : Operation
 	{
 		// Update Specific Row
-		public UpdateRowOperation(string schemaName, string tableName, Hashtable column, string where)
+		public UpdateRowOperation(string schemaName, string tableName, Hashtable column, string where, bool useRawValues)
 		{
 			All = false;
 			SchemaName = schemaName;
 			TableName = tableName;
 			Column = column;
 			Where = where;
+			UseRawValues = useRawValues;
 		}
 
 		// Update All Rows
-		public UpdateRowOperation(string schemaName, string tableName, Hashtable column)
+		public UpdateRowOperation(string schemaName, string tableName, Hashtable column, bool useRawValues) 
 		{
 			All = true;
 			SchemaName = schemaName;
 			TableName = tableName;
 			Column = column;
+			UseRawValues = useRawValues;
 		}
 
 		public string SchemaName { get; private set; }
@@ -30,39 +32,40 @@ namespace Rivet.Operations
 		public Hashtable Column { get; private set; }
 		public string Where { get; private set; }
 		public bool All { get; private set; }
+		public bool UseRawValues { get; private set; }
 
 
 		public override string ToQuery()
 		{
-			var query = "";
 			var columnList = new List<string>();
 
-			foreach (DictionaryEntry kv in Column)
+			foreach (DictionaryEntry de in Column)
 			{
-				string element;
-				if (kv.Value is int)
+				var value = de.Value ?? "null";
+				var name = de.Key;
+				var element = String.Format("{0} = {1}", name,value);
+				if (!UseRawValues && de.Value != null )
 				{
-					element = String.Format("{0} = {1}", kv.Key, kv.Value);
-				}
-				else
-				{
-					element = String.Format("{0} = '{1}'", kv.Key, kv.Value);
+					if (value is string)
+					{
+						element = String.Format("{0} = '{1}'", name,value.ToString().Replace("'", "''"));
+					}
+					else if (value is DateTime || value is TimeSpan || value is char)
+					{
+						element = String.Format("{0} = '{1}'", name,value);
+					}
 				}
 				columnList.Add(element);
 			}
 			var columnClause = String.Join(", ", columnList.ToArray());
 
-			switch (All)
+			var whereClause = "";
+			if (! All)
 			{
-				case false: //Update Specific Rows
-					query = String.Format("update [{0}].[{1}] set {2} where {3};", SchemaName, TableName, columnClause, Where);
-					break;
-				case true: //Update All Rows
-					query = String.Format("update [{0}].[{1}] set {2};", SchemaName, TableName, columnClause);
-					break;
+				whereClause = String.Format(" where {0}", Where);
 			}
 
-			return query;
+			return String.Format("update [{0}].[{1}] set {2}{3}", SchemaName, TableName, columnClause, whereClause);
 		}
 	}
 }

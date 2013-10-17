@@ -10,6 +10,7 @@ namespace Rivet.Test.Operations
 		private const string SchemaName = "schemaName";
 		private const string TableName = "tableName";
 		private const string Where = "City = 'San Diego'";
+		private UpdateRowOperation op;
 
 		private static readonly Hashtable SanDiego = new Hashtable
 		{
@@ -25,7 +26,7 @@ namespace Rivet.Test.Operations
 		[Test]
 		public void ShouldSetPropertiesForUpdateSpecificRows()
 		{
-			var op = new UpdateRowOperation(SchemaName, TableName, SanDiego, Where);
+			GivenRows(Where);
 			Assert.AreEqual(SchemaName, op.SchemaName);
 			Assert.AreEqual(TableName, op.TableName);
 			Assert.AreEqual(SanDiego, op.Column);
@@ -36,7 +37,7 @@ namespace Rivet.Test.Operations
 		[Test]
 		public void ShouldSetPropertiesForUpdateAllRows()
 		{
-			var op = new UpdateRowOperation(SchemaName, TableName, SanDiego);
+			GivenRows();
 			Assert.AreEqual(SchemaName, op.SchemaName);
 			Assert.AreEqual(TableName, op.TableName);
 			Assert.AreEqual(SanDiego, op.Column);
@@ -46,17 +47,43 @@ namespace Rivet.Test.Operations
 		[Test]
 		public void ShouldWriteQueryForUpdateSpecificRows()
 		{
-			var op = new UpdateRowOperation(SchemaName, TableName, SanDiego, Where);
-			const string expectedQuery = "update [schemaName].[tableName] set Population = 1234567, State = 'Oregon' where City = 'San Diego';";
-			Assert.AreEqual(expectedQuery, op.ToQuery());
+			GivenRows("City = 'San Diego'");
+			ThenQueryIs("update [schemaName].[tableName] set Population = 1234567, State = 'Oregon' where City = 'San Diego'");
 		}
 
 		[Test]
 		public void ShouldWriteQueryForUpdateAllRows()
 		{
-			var op = new UpdateRowOperation(SchemaName, TableName, SanDiego);
-			const string expectedQuery = "update [schemaName].[tableName] set Population = 1234567, State = 'Oregon';";
-			Assert.AreEqual(expectedQuery, op.ToQuery());
+			GivenRows();
+			ThenQueryIs("update [schemaName].[tableName] set Population = 1234567, State = 'Oregon'");
 		}
+
+		[Test]
+		public void ShouldNotEscapeColumns()
+		{
+			GivenRawRows();
+			ThenQueryIs("update [schemaName].[tableName] set Population = 1234567, State = Oregon");
+		}
+
+		private void GivenRows()
+		{
+			op = new UpdateRowOperation(SchemaName, TableName, SanDiego, false);
+		}
+
+		private void GivenRows(string where)
+		{
+			op = new UpdateRowOperation(SchemaName, TableName, SanDiego, where, false);
+		}
+
+		private void GivenRawRows()
+		{
+			op = new UpdateRowOperation(SchemaName, TableName, SanDiego, true);
+		}
+
+		private void ThenQueryIs(string query)
+		{
+			Assert.AreEqual(query, op.ToQuery());
+		}
+
 	}
 }
