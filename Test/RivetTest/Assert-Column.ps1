@@ -10,7 +10,6 @@ function Assert-Column
         [string]
         $DataType,
 
-        [string]
         $Description,
 
         [Switch]
