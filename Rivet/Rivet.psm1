@@ -97,4 +97,4 @@ $publicFunctions = @(
                         'Update-View'
                       )
 
-Export-ModuleMember -Function $publicFunctions
+Export-ModuleMember -Function $publicFunctions -Alias *
