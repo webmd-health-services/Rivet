@@ -61,7 +61,12 @@ function Invoke-RivetTestQuery
                         {
                             $name = 'Column{0}' -f $i
                         }
-                        $row[$name] = $cmdReader.GetValue($i)
+                        $value = $cmdReader.GetValue($i)
+                        if( $cmdReader.IsDBNull($i) )
+                        {
+                            $value = $null
+                        }
+                        $row[$name] = $value
                     }
                     New-Object PsObject -Property $row
                 }

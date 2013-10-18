@@ -43,6 +43,7 @@ namespace Rivet.Operations
 				query.AppendLine();
 			}
 
+
 			foreach (var row in Column)
 			{
 				var columnList = row.Keys.Cast<string>().ToList();
@@ -52,12 +53,20 @@ namespace Rivet.Operations
 				var valueList = new List<string>();
 				foreach (DictionaryEntry de in row)
 				{
-					if (de.Value is string )
+					if (de.Value == null)
+					{
+						valueList.Add("null");
+					}
+					else if (de.Value is Boolean)
+					{
+						valueList.Add(((bool)de.Value) ? "1" : "0");
+					}
+					else if (de.Value is string || de.Value is char)
 					{
 						var temp = String.Format("'{0}'", de.Value.ToString().Replace("'", "''"));
 						valueList.Add(temp);
 					}
-					else if (de.Value is DateTime || de.Value is TimeSpan || de.Value is char)
+					else if (de.Value is DateTime || de.Value is TimeSpan )
 					{
 						var temp = String.Format("'{0}'", de.Value);
 						valueList.Add(temp);
