@@ -31,6 +31,6 @@
     )
     
     $op = New-Object Rivet.Operations.UpdateViewOperation $SchemaName,$Name,$Definition
-    Write-Host(' =[{0}].[{1}]' -f $SchemaName,$Name)
+    Write-Host(' ={0}.{1}' -f $SchemaName,$Name)
     Invoke-MigrationOperation -Operation $op
 }

@@ -33,7 +33,7 @@ function Add-Trigger
     )
 
     $op = New-Object 'Rivet.Operations.AddTriggerOperation' $SchemaName, $Name, $Definition
-    Write-Host(' +[{0}].[{1}]' -f $SchemaName,$Name)
+    Write-Host(' +{0}.{1}' -f $SchemaName,$Name)
     Invoke-MigrationOperation -operation $op
         
 }

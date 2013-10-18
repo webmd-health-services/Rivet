@@ -29,7 +29,7 @@ function Remove-Trigger
     )
 
     $op = New-Object 'Rivet.Operations.RemoveTriggerOperation' $SchemaName, $Name
-    Write-Host (' -[{0}].[{1}]' -f $SchemaName,$Name)
+    Write-Host (' -{0}.{1}' -f $SchemaName,$Name)
     Invoke-MigrationOperation -Operation $op
         
 }
