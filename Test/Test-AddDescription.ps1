@@ -1,11 +1,11 @@
 
-function Setup
+function Start-Test
 {
-    Import-Module -Name (Join-Path $TestDir 'RivetTest') -ArgumentList 'MS_Description' 
+    Import-Module -Name (Join-Path $TestDir 'RivetTest') -ArgumentList 'RivetTest' 
     Start-RivetTest
 }
 
-function TearDown
+function Stop-Test
 {
     Stop-RivetTest
     Remove-Module RivetTest
@@ -13,6 +13,24 @@ function TearDown
 
 function Test-ShouldAddTableAndColumnDescription
 {
+    @'
+function Push-Migration()
+{
+    Invoke-Query @"
+    create table [MS_Description] (
+        add_description varchar(max)
+    )
+"@
+
+    Add-Description -Description 'new description' -TableName 'MS_Description'
+    Add-Description -Description 'new description' -TableName 'MS_Description' -ColumnName 'add_description'
+}
+
+function Pop-Migration()
+{
+    Invoke-Query 'drop table [MS_Description]'
+}
+'@ | New-Migration -Name 'AddDescription'
     Invoke-Rivet -Push 'AddDescription'
 
     Assert-Table -Name 'MS_Description' -Description 'new description' 
