@@ -13,6 +13,7 @@ dir $PSScriptRoot *-*.ps1 |
 
 $publicFunctions = @(
                         'Add-Column',
+                        'Add-DataType',
                         'Add-DefaultConstraint',
                         'Add-Description',
                         'Add-ExtendedProperty',

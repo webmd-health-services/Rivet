@@ -25,13 +25,23 @@ function Write-RivetError
         [Parameter(Mandatory=$true)]
         [string]
         # The Fully Qualified Error ID
-        $ErrorID
+        $ErrorID,
+
+        [Parameter()]
+        [string]
+        # Query, if any
+        $Query
     )
     
     $firstException = $_.Exception
     while( $firstException.InnerException )
     {
         $firstException = $firstException.InnerException
+    }
+    
+    if (-not $Query)
+    {
+        $Query = "None"
     }
         
     Write-Error (@"
@@ -44,8 +54,12 @@ STACKTRACE:
 ===========
 {4}
 `v
+QUERY:
+======
+{5}
+`v
 ERROR-INFO:
 ===========
-"@ -f $Connection.DataSource,$Connection.Database,$Message,$firstException.Message,$CallStack) -ErrorID $ErrorID -Category $CategoryInfo
+"@ -f $Connection.DataSource,$Connection.Database,$Message,$firstException.Message,$CallStack, $Query) -ErrorID $ErrorID -Category $CategoryInfo 
 
 }
