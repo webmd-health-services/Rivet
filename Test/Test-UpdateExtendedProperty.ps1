@@ -96,3 +96,60 @@ function Pop-Migration
     Assert-Equal 'OBJECT_OR_COLUMN' $expinfo[0].class_desc
 
 }
+
+
+function Test-ShouldAllowNullPropertyValue
+{
+    @'
+function Push-Migration
+{
+    Add-Table Foobar {
+        Int ID
+    }
+
+    Add-ExtendedProperty 'Deploy' 'Goodbye!' -TableName 'Foobar' -ColumnName 'ID'
+    Update-ExtendedProperty 'Deploy' $null -TableName 'Foobar' -ColumnName 'ID'
+}
+
+function Pop-Migration
+{
+    
+}
+
+'@ | New-Migration -Name 'AddExtendedPropertyToColumn'
+
+    Invoke-Rivet -Push 'AddExtendedPropertyToColumn'
+
+    $expinfo = Get-ExtendedProperties
+
+    Assert-Null $expInfo[0].value
+}
+
+
+function Test-ShouldAllowEmptyPropertyValue
+{
+    @'
+function Push-Migration
+{
+    Add-Table Foobar {
+        Int ID
+    }
+
+    Add-ExtendedProperty 'Deploy' 'Goodbye!' -TableName 'Foobar' -ColumnName 'ID'
+    Update-ExtendedProperty 'Deploy' '' -TableName 'Foobar' -ColumnName 'ID'
+}
+
+function Pop-Migration
+{
+    
+}
+
+'@ | New-Migration -Name 'AddExtendedPropertyToColumn'
+
+    Invoke-Rivet -Push 'AddExtendedPropertyToColumn'
+
+    $expinfo = Get-ExtendedProperties
+
+    Assert-Equal '' $expInfo[0].value
+
+}
