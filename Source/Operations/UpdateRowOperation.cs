@@ -41,21 +41,33 @@ namespace Rivet.Operations
 
 			foreach (DictionaryEntry de in Column)
 			{
-				var value = de.Value ?? "null";
+				var value = de.Value;
 				var name = de.Key;
-				var element = String.Format("{0} = {1}", name,value);
-				if (!UseRawValues && de.Value != null )
+				if (value == null)
 				{
-					if (value is string)
-					{
-						element = String.Format("{0} = '{1}'", name,value.ToString().Replace("'", "''"));
-					}
-					else if (value is DateTime || value is TimeSpan || value is char)
-					{
-						element = String.Format("{0} = '{1}'", name,value);
-					}
+					value = "null";
 				}
-				columnList.Add(element);
+				else if (value is Boolean)
+				{
+					value = ((bool)value) ? "1" : "0";
+				}
+				else if (UseRawValues)
+				{
+					value = value.ToString();
+				}
+				else if (value is DateTime || value is TimeSpan)
+				{
+					value = string.Format("'{0}'", value);
+				}
+				else if (value is string || value is char)
+				{
+					value = string.Format("'{0}'", value.ToString().Replace("'", "''"));
+				}
+				else
+				{
+					value = value.ToString();
+				}
+				columnList.Add(String.Format("{0} = {1}", name, value));
 			}
 			var columnClause = String.Join(", ", columnList.ToArray());
 

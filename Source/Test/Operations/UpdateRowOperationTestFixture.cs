@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using System;
+using NUnit.Framework;
 using Rivet.Operations;
 using System.Collections;
 
@@ -26,7 +27,7 @@ namespace Rivet.Test.Operations
 		[Test]
 		public void ShouldSetPropertiesForUpdateSpecificRows()
 		{
-			GivenRows(Where);
+			GivenConditionalRowsToUpdate(SanDiego, Where);
 			Assert.AreEqual(SchemaName, op.SchemaName);
 			Assert.AreEqual(TableName, op.TableName);
 			Assert.AreEqual(SanDiego, op.Column);
@@ -37,7 +38,7 @@ namespace Rivet.Test.Operations
 		[Test]
 		public void ShouldSetPropertiesForUpdateAllRows()
 		{
-			GivenRows();
+			GivenRowsToUpdate(SanDiego);
 			Assert.AreEqual(SchemaName, op.SchemaName);
 			Assert.AreEqual(TableName, op.TableName);
 			Assert.AreEqual(SanDiego, op.Column);
@@ -47,42 +48,94 @@ namespace Rivet.Test.Operations
 		[Test]
 		public void ShouldWriteQueryForUpdateSpecificRows()
 		{
-			GivenRows("City = 'San Diego'");
-			ThenQueryIs("update [schemaName].[tableName] set Population = 1234567, State = 'Oregon' where City = 'San Diego'");
+			GivenConditionalRowsToUpdate(SanDiego, Where);
+			ThenQueryValuesAndWhereClauseAre("Population = 1234567, State = 'Oregon'", "City = 'San Diego'");
 		}
 
 		[Test]
 		public void ShouldWriteQueryForUpdateAllRows()
 		{
-			GivenRows();
-			ThenQueryIs("update [schemaName].[tableName] set Population = 1234567, State = 'Oregon'");
+			GivenRowsToUpdate(SanDiego);
+			ThenQueryValuesAre("Population = 1234567, State = 'Oregon'");
 		}
 
 		[Test]
 		public void ShouldNotEscapeColumns()
 		{
-			GivenRawRows();
-			ThenQueryIs("update [schemaName].[tableName] set Population = 1234567, State = Oregon");
+			GivenRawRows(SanDiego);
+			ThenQueryValuesAre("Population = 1234567, State = Oregon");
 		}
 
-		private void GivenRows()
+		[Test]
+		public void ShouldFormatNumberValue()
 		{
-			op = new UpdateRowOperation(SchemaName, TableName, SanDiego, false);
+			var value = 1;
+			GivenRowsToUpdate(new Hashtable { { "name", value } });
+			ThenQueryValuesAre(string.Format("name = {0}", value));
 		}
 
-		private void GivenRows(string where)
+		[Test]
+		public void ShouldFormatDateTimeValue()
 		{
-			op = new UpdateRowOperation(SchemaName, TableName, SanDiego, where, false);
+			var value = new DateTime(2013, 10, 18, 10, 06, 00);
+			GivenRowsToUpdate(new Hashtable { { "name", value } });
+			ThenQueryValuesAre(string.Format("name = '{0}'", value));
 		}
 
-		private void GivenRawRows()
+		[Test]
+		public void ShouldFormatTimeSpanValue()
 		{
-			op = new UpdateRowOperation(SchemaName, TableName, SanDiego, true);
+			var value = new TimeSpan(10, 7, 00);
+			GivenRowsToUpdate(new Hashtable { { "name", value } });
+			ThenQueryValuesAre(string.Format("name = '{0}'", value));
 		}
 
-		private void ThenQueryIs(string query)
+		[Test]
+		public void ShouldFormatBooleanValue()
 		{
-			Assert.AreEqual(query, op.ToQuery());
+			var value = true;
+			GivenRowsToUpdate(new Hashtable { { "name", value } });
+			ThenQueryValuesAre("name = 1");
+		}
+
+		[Test]
+		public void ShouldFormatStringValue()
+		{
+			GivenRowsToUpdate(new Hashtable { { "name", "McDonald's" } });
+			ThenQueryValuesAre("name = 'McDonald''s'");
+		}
+
+		[Test]
+		public void ShouldFormatNullValue()
+		{
+			GivenRowsToUpdate(new Hashtable { { "name", null } });
+			ThenQueryValuesAre("name = null");
+		}
+
+		private void GivenRowsToUpdate(Hashtable rows)
+		{
+			op = new UpdateRowOperation(SchemaName, TableName, rows, false);
+		}
+
+		private void GivenConditionalRowsToUpdate(Hashtable rows, string @where)
+		{
+			op = new UpdateRowOperation(SchemaName, TableName, rows, where, false);
+		}
+
+		private void GivenRawRows(Hashtable rows)
+		{
+			op = new UpdateRowOperation(SchemaName, TableName, rows, true);
+		}
+
+		private void ThenQueryValuesAre(string setClause)
+		{
+			var expectedQuery = string.Format("update [schemaName].[tableName] set {0}", setClause);
+			Assert.AreEqual(expectedQuery, op.ToQuery());
+		}
+
+		private void ThenQueryValuesAndWhereClauseAre(string setClause, string whereClause)
+		{
+			ThenQueryValuesAre(setClause + " where " + whereClause);
 		}
 
 	}

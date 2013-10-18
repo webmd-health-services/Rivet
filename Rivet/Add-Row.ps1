@@ -36,13 +36,18 @@ function Add-Row
         [Parameter(Mandatory=$true,Position=1,ValueFromPipeline=$true)]
         [Hashtable[]]
         # A hashtable of name/value pairs that map to column names/values that will inserted.
-        $Column
+        $Column,
+
+        [Switch]
+        # Allow inserting identies.
+        $IdentityInsert
     )
 
     process
     {
-        $op = New-Object 'Rivet.Operations.AddRowOperation' $SchemaName, $TableName, $Column
+        $op = New-Object 'Rivet.Operations.AddRowOperation' $SchemaName, $TableName, $Column, $IdentityInsert
+        Write-Host (" {0}.{1} +" -f $SchemaName,$TableName) -NoNewline
         $rowsAdded = Invoke-MigrationOperation -operation $op -NonQuery
-        Write-Host (" [{0}].[{1}] +{2} row(s)" -f $SchemaName,$TableName, $rowsAdded)
+        Write-Host ("{0} row(s)" -f $rowsAdded)
     }
 }
