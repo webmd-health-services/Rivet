@@ -13,23 +13,22 @@ function Remove-Column
     Removes the `CreatedAt` column from the `IronManSuits` table.
     #>
     param(
-        [Parameter(Mandatory=$true,Position=0)]
-        [string]
-        # The name of the column to add.
-        $Name,
-
         # The name of the table where the column should be removed.
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory=$true,Position=0)]
         [string]
         $TableName,
 
-        [Alias('TableSchema')]
         [string]
         # The schema of the table where the column should be added.  Default is `dbo`.
-        $SchemaName = 'dbo'
+        $SchemaName = 'dbo',
+
+        [Parameter(Mandatory=$true,Position=1)]
+        [string]
+        # The name of the column to add.
+        $Name
     )
 
-    Write-Host (' {0}.{1} -{2}' -f $SchemaName,$TableName,$Name)
+    Write-Host (' {0}.{1} -[{2}]' -f $SchemaName,$TableName,$Name)
     
     $op = New-Object 'Rivet.Operations.RemoveColumnOperation' $SchemaName,$TableName,$Name
     Invoke-MigrationOperation -Operation $op
