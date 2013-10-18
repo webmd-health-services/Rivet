@@ -61,6 +61,7 @@
         }
     }
 
+    Write-Host (" {0}.{1} -" -f $SchemaName,$TableName) -NoNewline
     $rowsRemoved = Invoke-MigrationOperation -operation $op -NonQuery
 
     if ($Truncate -and $PSCmdlet.ParameterSetName -eq 'AllRows')
@@ -68,5 +69,5 @@
         $rowsRemoved = $rowCount
     }
 
-    Write-Host (" [{0}].[{1}] -{2} row(s)" -f $SchemaName,$TableName, $rowsRemoved)
+    Write-Host ("{0} row(s)" -f $rowsRemoved)
 }

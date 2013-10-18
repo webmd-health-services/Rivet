@@ -30,6 +30,6 @@
     )
     
     $op = New-Object Rivet.Operations.AddUserDefinedFunctionOperation $SchemaName,$Name,$Definition
-    Write-Host(' +[{0}].[{1}]' -f $SchemaName,$Name)
+    Write-Host(' +{0}.{1}' -f $SchemaName,$Name)
     Invoke-MigrationOperation -Operation $op
 }
