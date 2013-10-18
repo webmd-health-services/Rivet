@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Rivet.Operations
 {
@@ -42,36 +43,36 @@ namespace Rivet.Operations
 				{
 					columnDefinitionList.Add(column.GetColumnDefinition(TableName, SchemaName, false));
 				}
-				columnDefinitionClause = string.Join(", ", columnDefinitionList.ToArray());
-				columnDefinitionClause = string.Format("({0})", columnDefinitionClause);
+				columnDefinitionClause = string.Join(String.Format(",{0}    ", Environment.NewLine), columnDefinitionList.ToArray());
+				columnDefinitionClause = string.Format("({0}    {1}{0})", Environment.NewLine, columnDefinitionClause);
 			}
 
 			var fileGroupClause = "";
 			if (!string.IsNullOrEmpty(FileGroup))
 			{
-				fileGroupClause = string.Format("on {0}", FileGroup);
+				fileGroupClause = string.Format("{0}on {1}", Environment.NewLine, FileGroup);
 			}
 
 			var textImageFileGroupClause = "";
 			if (!string.IsNullOrEmpty(TextImageFileGroup))
 			{
-				textImageFileGroupClause = string.Format("textimage_on {0}", TextImageFileGroup);
+				textImageFileGroupClause = string.Format("{0}textimage_on {1}", Environment.NewLine, TextImageFileGroup);
 			}
 
 			var fileStreamFileGroupClause = "";
 			if (!string.IsNullOrEmpty(FileStreamFileGroup))
 			{
-				fileStreamFileGroupClause = string.Format("filestream_on {0}", FileStreamFileGroup);
+				fileStreamFileGroupClause = string.Format("{0}filestream_on {1}", Environment.NewLine, FileStreamFileGroup);
 			}
 
 			var optionsClause = "";
 			if (Options.Count > 0)
 			{
 				optionsClause = string.Join(", ", Options.ToArray());
-				optionsClause = string.Format("with ( {0} )", optionsClause);
+				optionsClause = string.Format("{0}with ( {1} )", Environment.NewLine, optionsClause);
 			}
 
-			var query = string.Format("create table [{0}].[{1}] {2} {3} {4} {5} {6}", SchemaName, TableName, columnDefinitionClause, fileGroupClause, textImageFileGroupClause, fileStreamFileGroupClause, optionsClause);
+			var query = string.Format("create table [{0}].[{1}] {2}{3}{4}{5}{6}", SchemaName, TableName, columnDefinitionClause, fileGroupClause, textImageFileGroupClause, fileStreamFileGroupClause, optionsClause);
 			return query;
 		}
 	}
