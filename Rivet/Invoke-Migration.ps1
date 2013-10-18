@@ -88,7 +88,7 @@ function Invoke-Migration
     catch
     {
         $errorMsg = 'Query failed: {0}' -f $query
-        Write-RivetError -Message ('Migration {0} failed' -f $migrationInfo.FullName) -CategoryInfo $_.CategoryInfo.Category -ErrorID $_.FullyQualifiedErrorID -Exception $_.Exception -CallStack ($_.ScriptStackTrace)
+        Write-RivetError -Message ('Migration {0} failed' -f $migrationInfo.FullName) -CategoryInfo $_.CategoryInfo.Category -ErrorID $_.FullyQualifiedErrorID -Exception $_.Exception -CallStack ($_.ScriptStackTrace) -Query $errorMsg
         throw (New-Object ApplicationException 'Migration failed.',$_.Exception)
     }
     finally
