@@ -229,24 +229,23 @@ function Update-Column
     )
 
     $newColumnArgs = @{}
-    $PSCmdlet.ParameterSetName -match '^As(.*)$'
-    $Datatype = $matches[1]
-
+    $newColumnFunctionName = 'New-Column'
+    if( $PSCmdlet.ParameterSetName -match '^As(.*)$' )
+    {
+        $DataType = $matches[1]
+        $newColumnFunctionName = 'New-{0}Column' -f $DataType
+    }
+    elseif( $PSCmdlet.ParameterSetName -ne 'ExplicitDataType' )
+    {
+        throw ('Unknown Add-Column parameter set: {0}' -f $PSCmdlet.ParameterSetName)
+    }
+    
     $PSBoundParameters.Keys | 
         Where-Object { $_ -notmatch 'TableName|SchemaName|WithValues' } |
         Where-Object { $_ -notlike $DataType } |
         ForEach-Object { $newColumnArgs.$_ = $PSBoundParameters.$_ }
 
-    if ($PSCmdlet.ParameterSetName -like "ExplicitDataType")
-    {
-        $column = & "New-Column" @newColumnArgs
-    }
-    else
-    {
-        $PSCmdlet.ParameterSetName -match '^As(.*)$'
-        $column = & "New-$($matches[1])Column" @newColumnArgs
-    }
-    
+    $column = & $newColumnFunctionName @newColumnArgs
 
     $op = New-Object 'Rivet.Operations.UpdateColumnOperation' $SchemaName, $TableName, $column
     Write-Host(' {0}.{1} {2} ={3}' -f $SchemaName,$TableName, $column.Name, $column.GetColumnDefinition($TableName, $SchemaName, $false))
