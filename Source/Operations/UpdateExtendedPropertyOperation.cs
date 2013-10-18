@@ -5,33 +5,28 @@ namespace Rivet.Operations
 	public sealed class UpdateExtendedPropertyOperation : Operation
 	{
 		// Schema
-		public UpdateExtendedPropertyOperation(string schemaName, string name, string value)
+		public UpdateExtendedPropertyOperation(string schemaName, string name, object value)
 		{
 			ForSchema = true;
 			SchemaName = schemaName;
 			Name = name;
-			Value = value;
+			Value = (value == null) ? null : value.ToString();
 		}
 
 		// Table
-		public UpdateExtendedPropertyOperation(string schemaName, string tableName, string name, string value)
+		public UpdateExtendedPropertyOperation(string schemaName, string tableName, string name, object value)
+			: this(schemaName, name, value)
 		{
 			ForTable = true;
-			SchemaName = schemaName;
 			TableName = tableName;
-			Name = name;
-			Value = value;
 		}
 
 		// Column
-		public UpdateExtendedPropertyOperation(string schemaName, string tableName, string columnName, string name, string value)
+		public UpdateExtendedPropertyOperation(string schemaName, string tableName, string columnName, string name, object value)
+			: this(schemaName, tableName, name, value)
 		{
 			ForColumn = true;
-			SchemaName = schemaName;
-			TableName = tableName;
 			ColumnName = columnName;
-			Name = name;
-			Value = value;
 		}
 
 		public bool ForSchema { get; private set; }
@@ -45,7 +40,8 @@ namespace Rivet.Operations
 
 		public override string ToQuery()
 		{
-			var query = string.Format(@"EXEC sys.sp_updateextendedproperty{3}@name=N'{0}',{3}@value=N'{1}',{3}@level0type=N'SCHEMA', @level0name=N'{2}'", Name, Value.Replace("'", "''"), SchemaName, Environment.NewLine);
+			var propertyValue = (Value == null) ? "null" : String.Format("N'{0}'", Value.Replace("'", "''"));
+			var query = string.Format(@"EXEC sys.sp_updateextendedproperty{3}@name=N'{0}',{3}@value={1},{3}@level0type=N'SCHEMA', @level0name=N'{2}'", Name, propertyValue, SchemaName, Environment.NewLine);
 
 			if (ForTable || ForColumn)
 			{

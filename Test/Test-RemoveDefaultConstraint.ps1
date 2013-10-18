@@ -21,7 +21,7 @@ function Push-Migration()
     }
 
     Add-DefaultConstraint -TableName 'AddDefaultConstraint' -ColumnName 'DefaultConstraintMe' -Expression 101
-    Remove-DefaultConstraint -TableName 'AddDefaultConstraint' -ColumnName 'DefaultConstraintMe'
+    Remove-DefaultConstraint 'AddDefaultConstraint' 'DefaultConstraintMe'
 }
 
 function Pop-Migration()

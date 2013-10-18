@@ -18,6 +18,11 @@ function Update-Row
     Update-Row -SchemaName 'rivet' 'Migrations' @{ LastUpdated = (Get-Date -Utc) } -Force
     
     Demonstrates how to update the `LastUpdated` date *for all rows* in the `rivet.Migrations` table.  You *really, really* don't want to do this in real life.
+
+    .EXAMPLE
+    Update-Row 'Migrations' @{ MigrationID = 'MigrationID + 1' } -Raw -Where 'MigrationID=20130101010101'
+
+    Demonstrates how to pass a SQL expression as the value for the column to update: use the `-RawColumnValue` switch.
     #>
     param(
         [Parameter(Mandatory=$true,Position=0)]
@@ -34,6 +39,10 @@ function Update-Row
         [Hashtable]
         # A hashtable of name/value pairs that map to column names/values that will be updated.
         $Column,
+
+        [Switch]
+        # Don't escape/quote the column value(s).  
+        $RawColumnValue,
         
         [Parameter(Mandatory=$true,Position=2,ParameterSetName='SpecificRows')]
         [string]
@@ -48,13 +57,14 @@ function Update-Row
 
     if ($PSCmdlet.ParameterSetName -eq 'SpecificRows')
     {
-        $op = New-Object 'Rivet.Operations.UpdateRowOperation' $SchemaName, $TableName, $Column, $Where        
+        $op = New-Object 'Rivet.Operations.UpdateRowOperation' $SchemaName, $TableName, $Column, $Where, $RawColumnValue       
     }
     elseif ($PSCmdlet.ParameterSetName -eq 'AllRows')
     {
-        $op = New-Object 'Rivet.Operations.UpdateRowOperation' $SchemaName, $TableName, $Column
+        $op = New-Object 'Rivet.Operations.UpdateRowOperation' $SchemaName, $TableName, $Column, $RawColumnValue
     }
 
+    Write-Host (" {0}.{1} =" -f $SchemaName, $TableName) -NoNewline
     $rowsUpdated = Invoke-MigrationOperation –Operation $op -NonQuery
-    Write-Host (" [{0}].[{1}] ={2} row(s)" -f $SchemaName, $TableName, $rowsUpdated)
+    Write-Host ("{0} row(s)" -f $rowsUpdated)
 }

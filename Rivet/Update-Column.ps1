@@ -249,6 +249,6 @@ function Update-Column
     
 
     $op = New-Object 'Rivet.Operations.UpdateColumnOperation' $SchemaName, $TableName, $column
-    Write-Host(' [{0}].[{1}] {2} ={3}' -f $SchemaName,$TableName, $column.Name, $column.GetColumnDefinition($TableName, $SchemaName, $false))
+    Write-Host(' {0}.{1} {2} ={3}' -f $SchemaName,$TableName, $column.Name, $column.GetColumnDefinition($TableName, $SchemaName, $false))
     Invoke-MigrationOperation -operation $op 
 }

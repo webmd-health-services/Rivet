@@ -22,23 +22,20 @@ function Push-Migration()
 
     #Add an Index to 'IndexMe'
     Add-Index -TableName 'AddIndex' -ColumnName 'IndexMe'
-
-    #Remove Index
-    Remove-Index -TableName 'AddIndex' -ColumnName 'IndexMe'
 }
 
 function Pop-Migration()
 {
+    Remove-Index 'AddIndex' 'IndexMe'
 }
 '@ | New-Migration -Name 'RemoveIndex'
 
     Invoke-Rivet -Push 'RemoveIndex'
-
-     ##Assert Table and Column
     Assert-True (Test-Table 'AddIndex')
     Assert-True (Test-Column -Name 'IndexMe' -TableName 'AddIndex')
+    Assert-Index -TableName 'AddIndex' -ColumnName 'IndexMe'
 
-    ##Assert Index
+    Invoke-Rivet -Pop
     Assert-Index -TableName 'AddIndex' -ColumnName 'IndexMe' -TestNoIndex
 
 }
@@ -53,15 +50,18 @@ function Push-Migration()
     }
 
     Add-Index -TableName 'Remove-Index' -ColumnName 'IndexMe'
-    Remove-Index -TableName 'Remove-Index' -ColumnName 'IndexMe'
 }
 
 function Pop-Migration()
 {
+    Remove-Index -TableName 'Remove-Index' -ColumnName 'IndexMe'
 }
 '@ | New-Migration -Name 'RemoveIndex'
 
     Invoke-Rivet -Push 'RemoveIndex'
+    Assert-Index -TableName 'Remove-Index' -ColumnName 'IndexMe'
+
+    Invoke-Rivet -Pop
     Assert-Index -TableName 'Remove-Index' -ColumnName 'IndexMe' -TestNoIndex
 
 }
