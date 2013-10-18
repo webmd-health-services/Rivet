@@ -1,10 +1,11 @@
-function Setup
+
+function Start-Test
 {
-    Import-Module -Name (Join-Path $TestDir 'RivetTest') -ArgumentList 'AddExtendedProperty' 
+    Import-Module -Name (Join-Path $TestDir 'RivetTest') -ArgumentList 'RivetTest'
     Start-RivetTest
 }
 
-function TearDown
+function Stop-Test
 {
     Stop-RivetTest
     Remove-Module RivetTest
@@ -91,5 +92,32 @@ function Pop-Migration
     Assert-Equal 'Deploy' $expinfo[0].name 
     Assert-Equal 'TRUE' $expinfo[0].value 
     Assert-Equal 'OBJECT_OR_COLUMN' $expinfo[0].class_desc
+
+}
+
+function Test-ShouldAllowNullPropertyValue
+{
+    @'
+function Push-Migration
+{
+    Add-Table Foobar {
+        Int ID
+    }
+
+    Add-ExtendedProperty 'Deploy' $null -TableName 'Foobar' -ColumnName 'ID'
+}
+
+function Pop-Migration
+{
+    
+}
+
+'@ | New-Migration -Name 'AddExtendedPropertyToColumn'
+
+    Invoke-Rivet -Push 'AddExtendedPropertyToColumn'
+
+    $expinfo = Get-ExtendedProperties
+
+    Assert-Null $expInfo[0].value
 
 }
