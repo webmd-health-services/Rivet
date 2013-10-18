@@ -111,7 +111,7 @@ function Assert-Index
         }
         else
         {
-            Assert-Equal '' $id.filter_definition
+            Assert-Null $id.filter_definition
         }
 
         if ($TestDescending)

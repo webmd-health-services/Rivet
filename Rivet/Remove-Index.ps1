@@ -20,7 +20,7 @@ function Remove-Index
 
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory=$true,Position=0)]
         [string]
         # The name of the target table.
         $TableName,
@@ -30,7 +30,7 @@ function Remove-Index
         # The schema name of the target table.  Defaults to `dbo`.
         $SchemaName = 'dbo',
 
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory=$true,Position=1)]
         [string[]]
         # The column(s) on which the index is based
         $ColumnName  
