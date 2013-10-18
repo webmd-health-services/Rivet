@@ -5,7 +5,7 @@ using Rivet.Operations;
 namespace Rivet.Test.Operations
 {
 	[TestFixture]
-	public sealed class AddRemoveUpdateExtendedPropertyOperationTestFixture
+	public sealed class AddExtendedPropertyOperationTestFixture
 	{
 		private AddExtendedPropertyOperation _op;
 
