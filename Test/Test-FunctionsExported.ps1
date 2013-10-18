@@ -13,6 +13,7 @@ function Test-FunctionsExported
     $privateFunctions = @{
                             'Connect-Database' = $true;
                             'Disconnect-Database' = $true;
+                            'Export-Row' = $true;
                             'Get-MigrationScript' = $true;
                             'Get-RivetConfig' = $true;
                             'Import-Rivet' = $true;
