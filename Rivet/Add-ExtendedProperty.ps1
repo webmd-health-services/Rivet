@@ -47,7 +47,7 @@ function Add-ExtendedProperty
         $Name,
         
         [Parameter(Mandatory=$true,Position=2)]
-        [string]
+        [AllowNull()]
         # The value of the extended property.
         $Value,
 
@@ -70,20 +70,20 @@ function Add-ExtendedProperty
         $ColumnName
     )
 
-    If ($PsCmdlet.ParameterSetName -eq "SCHEMA")
+    if ($PsCmdlet.ParameterSetName -eq "SCHEMA")
     {
         $op = New-Object 'Rivet.Operations.AddExtendedPropertyOperation' $SchemaName, $Name, $Value
     }
 
-    If ($PsCmdlet.ParameterSetName -eq "TABLE")
+    if ($PsCmdlet.ParameterSetName -eq "TABLE")
     {
         $op = New-Object 'Rivet.Operations.AddExtendedPropertyOperation' $SchemaName, $TableName, $Name, $Value
     }
 
-    If ($PsCmdlet.ParameterSetName -eq "COLUMN")
+    if ($PsCmdlet.ParameterSetName -eq "COLUMN")
     {
         $op = New-Object 'Rivet.Operations.AddExtendedPropertyOperation' $SchemaName, $TableName, $ColumnName, $Name, $Value
     }
 
-    Invoke-MigrationOperation -Operation $op  
+    Invoke-MigrationOperation -Operation $op
 }
