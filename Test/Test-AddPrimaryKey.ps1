@@ -20,7 +20,7 @@ function Push-Migration()
         Int 'id' -NotNull
     }
 
-    Add-PrimaryKey -TableName 'PrimaryKey' -ColumnName 'id'
+    Add-PrimaryKey 'PrimaryKey' 'id'
 }
 
 function Pop-Migration()

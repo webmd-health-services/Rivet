@@ -25,7 +25,7 @@ function Push-Migration()
     }
 
     Add-PrimaryKey -TableName 'Reference' -ColumnName 'reference_id'
-    Add-ForeignKey -TableName 'Source' -ColumnName 'source_id' -References 'Reference' -ReferencedColumn 'reference_id'
+    Add-ForeignKey 'Source' 'source_id' 'Reference' 'reference_id'
 }
 
 function Pop-Migration()

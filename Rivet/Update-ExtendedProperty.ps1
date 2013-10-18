@@ -50,7 +50,7 @@ function Update-ExtendedProperty
         $Name,
         
         [Parameter(Mandatory=$true,Position=2)]
-        [string]
+        [AllowNull()]
         # The value of the extended property.
         $Value,
 

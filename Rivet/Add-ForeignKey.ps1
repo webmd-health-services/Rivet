@@ -24,7 +24,7 @@ function Add-ForeignKey
 
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory=$true,Position=0)]
         [string]
         # The name of the table to alter.
         $TableName,
@@ -34,12 +34,12 @@ function Add-ForeignKey
         # The schema name of the table.  Defaults to `dbo`.
         $SchemaName = 'dbo',
 
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory=$true,Position=1)]
         [string[]]
         # The column(s) that should be part of the foreign key.
         $ColumnName,
 
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory=$true,Position=2)]
         [string]
         # The table that the foreign key references
         $References,
@@ -49,7 +49,7 @@ function Add-ForeignKey
         # The schema name of the reference table.  Defaults to `dbo`.
         $ReferencesSchema = 'dbo',
 
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory=$true,Position=3)]
         [string[]]
         # The column(s) that the foreign key references
         $ReferencedColumn,

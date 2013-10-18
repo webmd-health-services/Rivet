@@ -1,6 +1,6 @@
 function Start-Test
 {
-    Import-Module -Name (Join-Path $TestDir 'RivetTest') -ArgumentList 'UpdateRow' 
+    Import-Module -Name (Join-Path $TestDir 'RivetTest') -ArgumentList 'RivetTest' 
     Start-RivetTest
 }
 
@@ -114,4 +114,89 @@ function Pop-Migration
     Assert-False $rows.State.Contains("New York")
     Assert-False $rows.Population.Contains("8336697")
 
+}
+
+function Test-ShouldUpdateAllTypes
+{
+    @'
+function Push-Migration
+{
+    Add-Table 'Members' {
+        int 'ID' -Identity
+        int 'MemberNumber' 
+        varchar 'Name' 50
+        datetime 'LastVisit'
+        time 'LastStayDuration'
+        bit 'IsActive'
+        varchar 'Comments' 100
+    }
+
+    Add-Row 'Members' @( @{
+        MemberNumber = $null;
+        Name = $null;
+        LastVisit = $null;
+        LastStayDuration = $null;
+        IsActive = $null;
+        Comments = "I know.  It's a pretty funny record.  So goes the world of testing!"
+    })
+
+    Update-Row 'Members' -Where 'ID = 1' @{
+        MemberNumber = 1;
+        Name = "Old McDonald's";
+        LastVisit = ([DateTime]'10/18/2013 10:44:00');
+        LastStayDuration = ([TimeSpan]'00:44:00');
+        IsActive = $true;
+        Comments = $null;
+    }
+}
+'@ | New-Migration -Name 'AddSingleRow'
+
+    Invoke-Rivet -Push 'AddSingleRow'
+
+    Assert-Table 'Members'
+
+    $rows = @(Get-Row -TableName 'Members')
+
+    Assert-Equal 1 $rows.count
+
+    $row = $rows[0]
+    Assert-Equal 1 $row.MemberNumber
+    Assert-Equal "Old McDonald's" $row.Name
+    Assert-Equal ([DateTime]'10/18/2013 10:44:00') $row.LastVisit
+    Assert-Equal ([TimeSpan]'00:44:00') $row.LastStayDuration
+    Assert-Equal $true $row.IsActive
+    Assert-Null $row.Description
+}
+
+function Test-ShouldAllowSqlExpressionForColumnValue
+{
+    @'
+function Push-Migration
+{
+    Add-Table 'Members' {
+        int 'ID' -Identity
+        datetime 'LastVisit'
+    }
+
+    Add-Row 'Members' @( @{
+        LastVisit = $null;
+    })
+
+    Update-Row 'Members' -Where 'ID = 1' -RawColumnValue @{
+        LastVisit = 'getutcdate()';
+    }
+}
+'@ | New-Migration -Name 'AddSingleRow'
+
+    Invoke-Rivet -Push 'AddSingleRow'
+
+    Assert-Table 'Members'
+
+    $rows = @(Get-Row -TableName 'Members')
+
+    Assert-Equal 1 $rows.count
+
+    $row = $rows[0]
+    Assert-NotNull $row.LastVisit
+    Assert-True ($row.LastVisit.AddSeconds(-1) -le (Get-Date).ToUniversalTime())
 }

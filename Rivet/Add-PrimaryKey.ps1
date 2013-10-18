@@ -23,7 +23,7 @@ function Add-PrimaryKey
     #>
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory=$true,Position=0)]
         [string]
         # The name of the table.
         $TableName,
@@ -33,7 +33,7 @@ function Add-PrimaryKey
         # The schema name of the table.  Defaults to `dbo`.
         $SchemaName = 'dbo',
 
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory=$true,Position=1)]
         [string[]]
         # The column(s) that should be part of the primary key.
         $ColumnName,

@@ -30,7 +30,7 @@ function Push-Migration()
 
 function Pop-Migration()
 {
-    Remove-ForeignKey -TableName 'Source' -References 'Reference'
+    Remove-ForeignKey 'Source' 'Reference'
 }
 '@ | New-Migration -Name 'RemoveForeignKey'
     Invoke-Rivet -Push "RemoveForeignKey"
