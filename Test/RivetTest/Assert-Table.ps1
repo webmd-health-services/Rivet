@@ -7,7 +7,6 @@ function Assert-Table
         [string]
         $SchemaName = 'dbo',
 
-        [string]
         $Description,
 
         [int]
