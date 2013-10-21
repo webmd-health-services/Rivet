@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using Rivet.Operations;
 
 namespace Rivet.Test.Operations
@@ -14,10 +13,10 @@ namespace Rivet.Test.Operations
 		private const string AssemblyName = "assemblyName";
 		private const string ClassName = "className";
 		static Column column1 = Column.VarChar("name", new CharacterLength(50), null, Nullable.NotNull, "''", "varchar column");
-		static Identity identity = new Identity();
-		static Column column2 = Column.Int("int column", identity, "test int column");
-		Column[] AsTable = new Column[] { column1, column2 };
-		string[] TableConstraint = new string[] { "constraint1", "constraint2" };
+		static readonly Identity Identity = new Identity();
+		static Column column2 = Column.Int("int column", Identity, "test int column");
+		static Column[] AsTable = { column1, column2 };
+		string[] TableConstraint = { "constraint1", "constraint2" };
 
 		[SetUp]
 		public void SetUp()
@@ -79,9 +78,24 @@ namespace Rivet.Test.Operations
 		public void ShouldWriteQueryForAddDataTypeUserDefinedTableType()
 		{
 			var op = new AddDataTypeOperation(SchemaName, Name, AsTable, TableConstraint);
-
 			var expectedQuery =
-				"create type [schemaName].name as table ([name] varchar(50) not null constraint [DF_schemaName_name_name] default '', [int column] int identity [constraint1, constraint2])";
+				"create type [schemaName].name as table ([name] varchar(50) not null constraint [DF_schemaName_name_name] default '', [int column] int identity constraint1, constraint2)";
+			Assert.AreEqual(expectedQuery, op.ToQuery());
+		}
+
+		[Test]
+		public void ShouldSetPropertiesForRemoveDataTypeAlias()
+		{
+			var op = new RemoveDataTypeOperation(SchemaName, Name);
+			Assert.AreEqual(SchemaName, op.SchemaName);
+			Assert.AreEqual(Name, op.Name);
+		}
+
+		[Test]
+		public void ShouldWriteQueryForRemoveDataTypeAlias()
+		{
+			var op = new RemoveDataTypeOperation(SchemaName, Name);
+			var expectedQuery = "drop type [schemaName].name";
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}
 	}
