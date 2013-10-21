@@ -66,6 +66,7 @@ $publicFunctions = @(
                         'New-View',
                         'New-XmlColumn',
                         'Remove-Column',
+                        'Remove-DataType',
                         'Remove-DefaultConstraint',
                         'Remove-Description',
                         'Remove-ExtendedProperty',
