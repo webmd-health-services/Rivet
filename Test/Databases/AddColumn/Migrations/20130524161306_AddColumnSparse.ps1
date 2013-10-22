@@ -1,7 +1,6 @@
 
 function Push-Migration()
 {
-
     Invoke-Query -Query @'
 create xml schema collection EmptyXsd as 
 N'
@@ -22,40 +21,40 @@ N'
         name varchar(max) not null,
     ) 
 '@
-    $commonArgs = @{
-                        TableName = 'WithSparseColumns'
-                   }
 
-    Add-Column -Name varchar -Varchar -Size 20 -Sparse -Description 'varchar(20) sparse' @commonArgs
-    Add-Column -Name varcharmax -Varchar -Max -Sparse -Description 'varchar(max) sparse' @commonArgs
-    Add-Column char -Char 10 -Sparse -Description 'char(10) sparse' @commonArgs
-    Add-Column nchar -Char 35 -Unicode -Sparse -Description 'nchar(35) sparse' @commonArgs
-    Add-Column nvarchar -VarChar 30 -Unicode -Sparse -Description 'nvarchar(30) sparse' @commonArgs
-    Add-Column nvarcharmax -VarChar -Max -Unicode -Sparse -Description 'nvarchar(max) sparse' @commonArgs
-    Add-Column binary -Binary 40 -Sparse -Description 'binary(40) sparse' @commonArgs
-    Add-Column varbinary -VarBinary 45 -Sparse -Description 'varbinary(45) sparse' @commonArgs
-    Add-Column varbinarymax -VarBinary -Max -Sparse -Description 'varbinary(max) sparse' @commonArgs
-    Add-Column bigint -BigInt -Sparse -Description 'bigint sparse' @commonArgs
-    Add-Column int -Int -Sparse -Description 'int sparse' @commonArgs
-    Add-Column smallint -SmallInt -Sparse -Description 'smallint sparse' @commonArgs
-    Add-Column tinyint -TinyInt -Sparse -Description 'tinyint sparse' @commonArgs
-    Add-Column decimal -Decimal 4 -Sparse -Description 'decimal(4) sparse' @commonArgs
-    Add-Column decimalwithscale -Decimal 5 5 -Sparse -Description 'decimal(5,5) sparse' @commonArgs
-    Add-Column bit -Bit -Sparse -Description 'bit sparse' @commonArgs
-    Add-Column money -Money -Sparse -Description 'money sparse' @commonArgs
-    Add-Column smallmoney -SmallMoney -Sparse -Description 'smallmoney sparse' @commonArgs
-    Add-Column float -Float -Sparse -Description 'float sparse' @commonArgs
-    Add-Column floatwithprecision -Float 53 -Sparse -Description 'float(53) sparse' @commonArgs
-    Add-Column real -Real -Sparse -Description 'real sparse' @commonArgs
-    Add-Column date -Date -Sparse -Description 'date sparse' @commonArgs
-    Add-Column datetime2 -Datetime2 -Sparse -Description 'datetime2 sparse' @commonArgs
-    Add-Column datetimeoffset -DateTimeOffset -Sparse -Description 'datetimeoffset sparse' @commonArgs
-    Add-Column smalldatetime -smalldatetime -Sparse -Description 'smalldatetime sparse' @commonArgs
-    Add-Column time -Time -Sparse -Description 'time sparse' @commonArgs
-    Add-Column uniqueidentifier -UniqueIdentifier -Sparse -Description 'uniqueidentifier sparse' @commonArgs
-    Add-Column xml -Xml -XmlSchemaCollection 'EmptyXsd' -Sparse -Description 'xml sparse' @commonArgs
-    Add-Column sql_variant -SqlVariant -Sparse -Description 'sql_variant sparse' @commonArgs
-    Add-Column hierarchyid -HierarchyID -Sparse -Description 'hierarchyid sparse' @commonArgs
+    Update-Table -Name 'WithSparseColumns' -AddColumn { 
+        VarChar 'varchar' -Size 20 -Sparse -Description 'varchar(20) sparse'
+        VarChar 'varcharmax' -Max -Sparse -Description 'varchar(max) sparse'
+        Char 'char' -Size 10 -Sparse -Description 'char(10) sparse'
+        NChar 'nchar' -Size 35 -Sparse -Description 'nchar(35) sparse'
+        NVarChar 'nvarchar' -Size 30 -Sparse -Description 'nvarchar(30) sparse'
+        NVarChar 'nvarcharmax' -Max -Sparse -Description 'nvarchar(max) sparse'
+        Binary 'binary' -Size 40 -Sparse -Description 'binary(40) sparse'
+        VarBinary 'varbinary' -Size 45 -Sparse -Description 'varbinary(45) sparse'
+        VarBinary 'varbinarymax' -Max -Sparse -Description 'varbinary(max) sparse'
+        BigInt 'bigint' -Sparse -Description 'bigint sparse'
+        Int 'int' -Sparse -Description 'int sparse'
+        SmallInt 'smallint' -Sparse -Description 'smallint sparse'
+        TinyInt 'tinyint' -Sparse -Description 'tinyint sparse'
+        Decimal 'decimal' -Precision 4 -Sparse -Description 'decimal(4) sparse'     
+        Decimal 'decimalwithscale' -Precision 5 -Scale 5 -Sparse -Description 'decimal(5,5) sparse'
+        Bit 'bit' -Sparse -Description 'bit sparse'
+        Money 'money' -Sparse -Description 'money sparse'
+        SmallMoney 'smallmoney' -Sparse -Description 'smallmoney sparse'
+        Float 'float' -Sparse -Description 'float sparse'
+        Float 'floatwithprecision' -Precision 53 -Sparse -Description 'float(53) sparse'
+        Real 'real' -Sparse -Description 'real sparse'
+        Date 'date' -Sparse -Description 'date sparse'
+        DateTime datetime -Sparse -Description 'date sparse'
+        DateTime2 'datetime2' -Sparse -Description 'datetime2 sparse'
+        DateTimeOffset 'datetimeoffset' -Sparse -Description 'datetimeoffset sparse'
+        SmallDateTime 'smalldatetime' -Sparse -Description 'smalldatetime sparse'
+        Time 'time' -Sparse -Description 'time sparse'
+        UniqueIdentifier 'uniqueidentifier' -Sparse -Description 'uniqueidentifier sparse'
+        Xml 'xml' -XmlSchemaCollection 'EmptyXsd' -Sparse -Description 'xml sparse'
+        SqlVariant 'sql_variant' -Sparse -Description 'sql_variant sparse'
+        HierarchyID 'hierarchyid' -Sparse -Description 'hierarchyid sparse'
+    }
 }
 
 function Pop-Migration()

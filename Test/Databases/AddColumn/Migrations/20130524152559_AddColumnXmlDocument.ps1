@@ -1,7 +1,6 @@
 
 function Push-Migration()
 {
-
     Invoke-Query -Query @'
 create xml schema collection EmptyXsd as 
 N'
@@ -16,14 +15,13 @@ N'
 </xsd:schema>
 ';
 '@
-
     Invoke-Query -Query @'
     create table WithXmlDocument (
         name varchar(max) not null
     )
 '@
-
-    Add-Column 'xmlasdocument' -Xml -Document -XmlSchemaCollection 'EmptyXsd' -TableName 'WithXmlDocument'
+    
+    Update-Table -Name 'WithXmlDocument' -AddColumn {  Xml 'xmlasdocument' -Document -XmlSchemaCollection 'EmptyXsd'  }
 }
 
 function Pop-Migration()

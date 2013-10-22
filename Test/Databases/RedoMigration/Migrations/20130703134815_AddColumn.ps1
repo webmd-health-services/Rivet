@@ -1,7 +1,9 @@
 
 function Push-Migration()
 {
-    Add-Column 'description' -VarChar -Max -TableName 'RedoMigration'
+    Update-Table -Name 'RedoMigration' -AddColumn {
+        Varchar 'description' -Max 
+    }
 
     Add-Table 'SecondTable' {
         Int 'id' -Identity

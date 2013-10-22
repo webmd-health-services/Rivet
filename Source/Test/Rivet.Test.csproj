@@ -63,7 +63,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ColumnTestFixture.cs" />
-    <Compile Include="Operations\AddColumnOperationTestFixture.cs" />
     <Compile Include="Operations\AddExtendedPropertyOperationTestFixture.cs" />
     <Compile Include="Operations\AddRemoveSchemaOperationTestFixture.cs" />
     <Compile Include="Operations\AddRemoveTableOperationTestFixture.cs" />
@@ -77,6 +76,7 @@
     <Compile Include="Operations\AddRowOperationTestFixture.cs" />
     <Compile Include="Operations\AddRemoveSynonymOperationTestFixture.cs" />
     <Compile Include="Operations\AddRemoveDataTypeOperationTestFixture.cs" />
+    <Compile Include="Operations\UpdateTableOperationTestFixture.cs" />
     <Compile Include="Operations\RemoveExtendedPropertyOperationTestFixture.cs" />
     <Compile Include="Operations\UpdateExtendedPropertyOperationTestFixture.cs" />
     <Compile Include="Operations\RenameOperationTestFixture.cs" />
@@ -84,7 +84,6 @@
     <Compile Include="Operations\UpdateUserDefinedFunctionOperationTestFixture.cs" />
     <Compile Include="Operations\UpdateTriggerOperationTestFixture.cs" />
     <Compile Include="Operations\UpdateStoredProcedureOperationTestFixture.cs" />
-    <Compile Include="Operations\UpdateColumnOperationTestFixture.cs" />
     <Compile Include="Operations\UpdateRowOperationTestFixture.cs" />
     <Compile Include="Operations\RemoveRowOperationTestFixture.cs" />
     <Compile Include="Operations\RemoveTriggerOperationTestFixture.cs" />

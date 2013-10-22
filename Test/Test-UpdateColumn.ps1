@@ -10,16 +10,18 @@ function TearDown
     Remove-Module RivetTest
 }
 
-function Test-ShouldUpdateColumnFromInttoBigInt
+function Test-ShouldUpdateColumnFromInttoBigIntWithDescription
 {
     @'
 function Push-Migration
 {
     Add-Table -Name 'Foobar' -Column {
-        Int 'id'
+        Int 'id' -Description 'Foo'
     } -Option 'data_compression = none'
 
-    Update-Column -TableName 'Foobar' -Name 'id' -BigInt
+    Update-Table -Name 'Foobar' -UpdateColumn {
+        BigInt 'id' -Description 'Bar'
+    }
 }
 
 function Pop-Migration
@@ -27,12 +29,12 @@ function Pop-Migration
     
 }
 
-'@ | New-Migration -Name 'UpdateDateColumn'
+'@ | New-Migration -Name 'UpdateDateColumnWithDescription'
 
-    Invoke-Rivet -Push 'UpdateDateColumn'
+    Invoke-Rivet -Push 'UpdateDateColumnWithDescription'
     
     Assert-Table 'Foobar'
-    Assert-Column -Name 'id' -DataType 'BigInt' -TableName 'Foobar'
+    Assert-Column -Name 'id' -DataType 'BigInt' -TableName 'Foobar' -Description 'Bar'
 }
 
 function Test-ShouldUpdateColumnFromBinarytoVarBinary
@@ -44,7 +46,9 @@ function Push-Migration
         Binary 'id' -NotNull -Size 50 
     }
 
-    Update-Column -TableName 'Foobar' -Name 'id' -VarBinary -Size 40 -Sparse
+    Update-Table -Name 'Foobar' -UpdateColumn {
+        VarBinary 'id' -Size 40 -Sparse
+    }
 }
 
 function Pop-Migration
@@ -69,7 +73,9 @@ function Push-Migration
         NChar 'id' 30
     }
 
-    Update-Column -TableName 'Foobar' -Name 'id' -NVarChar -Max -Collation "Chinese_Taiwan_Stroke_CI_AS" -NotNull
+    Update-Table -Name 'Foobar' -UpdateColumn {
+        NVarChar 'id' -Max -Collation "Chinese_Taiwan_Stroke_CI_AS" -NotNull
+    }
 }
 
 function Pop-Migration
@@ -111,7 +117,9 @@ N'
         Xml 'Two' -XmlSchemaCollection 'EmptyXsd'
     }
 
-    Update-Column -TableName 'WithXmlContent' -Name 'Two' -Xml -XmlSchemaCollection 'EmptyXsd'
+    Update-Table -Name 'WithXmlContent' -UpdateColumn{
+        Xml 'Two' -XmlSchemaCollection 'EmptyXsd'
+    }
 }
 
 function Pop-Migration
@@ -124,4 +132,41 @@ function Pop-Migration
     
     Assert-Table 'WithXmlContent'
     Assert-Column -Name 'Two' -DataType 'Xml' -TableName 'WithXmlContent'
+}
+
+function Test-ShouldUpdateColumnAfterAddColumninUpdateTable
+{
+    @'
+function Push-Migration
+{
+    Add-Table -Name 'Foobar' -Column {
+        Int 'id' -Description 'Foo'
+    } -Option 'data_compression = none'
+
+    Update-Table -Name 'Foobar' -AddColumn {
+        VarChar 'id2' -Max -Description 'Foo2'
+    } -UpdateColumn {
+        BigInt 'id2' -Description 'Bar'
+    } 
+
+    Update-Table -Name 'Foobar' -UpdateColumn {
+        VarChar 'id' -Max -Description 'Bar2'
+    } -AddColumn {
+        BigInt 'id3' -Description 'Foo'
+    } 
+}
+
+function Pop-Migration
+{
+    
+}
+
+'@ | New-Migration -Name 'UpdateDateColumnWithDescription'
+
+    Invoke-Rivet -Push 'UpdateDateColumnWithDescription'
+    
+    Assert-Table 'Foobar'
+    Assert-Column -Name 'id' -DataType 'VarChar' -TableName 'Foobar' -Max -Description 'Bar2'
+    Assert-Column -Name 'id2' -DataType 'BigInt' -TableName 'Foobar' -Description 'Bar'
+    Assert-Column -Name 'id3' -DataType 'BigInt' -TableName 'Foobar' -Description 'Foo'
 }

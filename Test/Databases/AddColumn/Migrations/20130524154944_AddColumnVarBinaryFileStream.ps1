@@ -1,7 +1,6 @@
 
 function Push-Migration()
 {
-
     Invoke-Query -Query @'
     create table WithVarBinaryFileStream (
         name varchar(max) not null,
@@ -9,8 +8,7 @@ function Push-Migration()
         [rowguidcol] uniqueidentifier not null rowguidcol primary key
     ) filestream_on "default"
 '@
-
-    Add-Column 'filestreamvarbinary' -VarBinary -FileStream -TableName 'WithVarBinaryFileStream'
+    Update-Table -Name 'WithVarBinaryFileStream' {  VarBinary 'filestreamvarbinary' -FileStream }
 }
 
 function Pop-Migration()

@@ -31,7 +31,7 @@ The `Add-(DataType)Column`'s  `Column` parameter is a script block that should r
 
 ## Columns
 
- * Add-Column
+ * Update-Table
  * Remove-Column
 
 ## Code Objects
@@ -83,7 +83,6 @@ You can use a PowerShell here string for longer queries and so you don't have to
     '@  # '@ must be the first two characters on the line to close the string.
 
 # SEE ALSO
-    Add-Column
     Add-Description
     Add-Table
     Invoke-Query
@@ -99,3 +98,4 @@ You can use a PowerShell here string for longer queries and so you don't have to
     Set-UserDefinedFunction
     Set-View
     Update-Description
+    Update-Table

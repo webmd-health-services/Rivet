@@ -6,8 +6,8 @@ function Push-Migration()
         name varchar(max) not null
     )
 '@
-
-    Add-Column 'uniqueidentiferasrowguidcol' -UniqueIdentifier -RowGuidCol -TableName 'WithRowGuidCol'
+    
+    Update-Table -Name 'WithRowGuidCol' -AddColumn {  UniqueIdentifier 'uniqueidentiferasrowguidcol' -RowGuidCol  }
 }
 
 function Pop-Migration()
