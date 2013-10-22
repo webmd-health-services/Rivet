@@ -34,8 +34,10 @@ function Complete-AddTable
             [string]
             $SchemaName
         )
-
-        Add-Column -TableName $TableName -SchemaName $SchemaName -Name 'CreatedAt' -Date -NotNull
+        
+        Update-Table -SchemaName $SchemaName -Name $TableName -AddColumn {
+            Date 'CreatedAt' -NotNull
+        }
         
     }
 
@@ -61,7 +63,9 @@ function Complete-AddTable
             $SchemaName
         )
 
-        Add-Column -TableName $TableName -SchemaName $SchemaName -Name 'CreatedAt' -Date -NotNull
+        Update-Table -SchemaName $SchemaName -Name $TableName -AddColumn {
+            Date 'CreatedAt' -NotNull
+        }
         
     }
 
@@ -97,7 +101,9 @@ function Complete-WrongName
             $SchemaName
         )
 
-        Add-Column -TableName $TableName -SchemaName $SchemaName -Name 'CreatedAt' -Date -NotNull
+        Update-Table -SchemaName $SchemaName -Name $TableName -AddColumn {
+            Date 'CreatedAt' -NotNull
+        }
         
     }
 
@@ -128,8 +134,11 @@ function Complete-AddTable
             $SchemaName
         )
 
-        Add-Column -TableName $TableName -SchemaName $SchemaName -Name 'CreatedAt' -Date -NotNull
-        Poop Poop Poop 
+        Update-Table -SchemaName $SchemaName -Name $TableName -AddColumn {
+            Date 'CreatedAt' -NotNull
+        }
+
+        Poop
     }
 
 '@ | Set-Content -Path (Join-Path -Path $tempPluginsPath -ChildPath '\Plugins\Complete-AddTable.ps1')

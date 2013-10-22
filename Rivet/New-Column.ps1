@@ -2,7 +2,7 @@ function New-Column
 {
     <#
     .SYNOPSIS
-    Creates a column object of an explicit datatype which can be used with the `Add-Table` or `Add-Column` migrations.
+    Creates a column object of an explicit datatype which can be used with the `Add-Table` or `Update-Table` migrations.
 
     .DESCRIPTION
     Use this function in the `Column` script block for `Add-Table`:

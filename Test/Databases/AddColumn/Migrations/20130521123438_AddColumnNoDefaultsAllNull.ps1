@@ -1,7 +1,6 @@
 
 function Push-Migration()
 {
-
     Invoke-Query -Query @'
 create xml schema collection EmptyXsd as 
 N'
@@ -22,54 +21,41 @@ N'
         id int not null
     )
 '@
-    $commonArgs = @{
-                        TableName = 'AddColumnNoDefaultsAllNull'
-                   }
 
-    Add-Column -Name varchar -Varchar -Size 20 -Description 'varchar(20) null' @commonArgs
-    Add-Column -Name varcharmax -Varchar -Max -Description 'varchar(max) null' @commonArgs
-    Add-Column char -Char 10 -Description 'char(10) null' @commonArgs
-    Add-Column nchar -Char 35 -Unicode -Description 'nchar(35) null' @commonArgs
-    Add-Column nvarchar -VarChar 30 -Unicode -Description 'nvarchar(30) null' @commonArgs
-    Add-Column nvarcharmax -VarChar -Max -Unicode -Description 'nvarchar(max) null' @commonArgs
-    Add-Column binary -Binary 40 -Description 'binary(40) null' @commonArgs
-    Add-Column varbinary -VarBinary 45 -Description 'varbinary(45) null' @commonArgs
-    Add-Column varbinarymax -VarBinary -Max -Description 'varbinary(max) null' @commonArgs
-    if( $PSVersionTable.PSVersion -eq ([Version]'2.0') )
-    {
-        Add-Column bigint 'BigInt' -Description 'bigint null' @commonArgs
-        Add-Column int 'Int' -Description 'int null' @commonArgs
-        Add-Column smallint 'SmallInt' -Description 'smallint null' @commonArgs
-        Add-Column tinyint 'TinyInt' -Description 'tinyint null' @commonArgs
-        Add-Column decimal 'decimal(4)' -Description 'decimal(4) null' @commonArgs
+    Update-Table -Name 'AddColumnNoDefaultsAllNull' -AddColumn { 
+        VarChar 'varchar' -Size 20 -Description 'varchar(20) null'
+        VarChar 'varcharmax' -Max -Description 'varchar(max) null'
+        Char 'char' -Size 10 -Description 'char(10) null'
+        NChar 'nchar' -Size 35 -Description 'nchar(35) null'
+        NVarChar 'nvarchar' -Size 30 -Description 'nvarchar(30) null'
+        NVarChar 'nvarcharmax' -Max -Description 'nvarchar(max) null'
+        Binary 'binary' -Size 40 -Description 'binary(40) null'
+        VarBinary 'varbinary' -Size 45 -Description 'varbinary(45) null'
+        VarBinary 'varbinarymax' -Max -Description 'varbinary(max) null'
+        BigInt 'bigint' -Description 'bigint null'
+        Int 'int' -Description 'int null'
+        SmallInt 'smallint' -Description 'smallint null'
+        TinyInt 'tinyint' -Description 'tinyint null'
+        Decimal 'decimal' -Precision 4 -Description 'decimal(4) null'     
+        Decimal 'decimalwithscale' -Precision 5 -Scale 5 -Description 'decimal(5,5) null'
+        Bit 'bit' -Description 'bit null'
+        Money 'money' -Description 'money null'
+        SmallMoney 'smallmoney' -Description 'smallmoney null'
+        Float 'float' -Description 'float null'
+        Float 'floatwithprecision' -Precision 53 -Description 'float(53) null'
+        Real 'real' -Description 'real null'
+        Date 'date' -Description 'date null'
+        DateTime datetime -Description 'date null'
+        DateTime2 'datetime2' -Description 'datetime2 null'
+        DateTimeOffset 'datetimeoffset' -Description 'datetimeoffset null'
+        SmallDateTime 'smalldatetime' -Description 'smalldatetime null'
+        Time 'time' -Description 'time null'
+        UniqueIdentifier 'uniqueidentifier' -Description 'uniqueidentifier null'
+        Xml 'xml' -XmlSchemaCollection 'EmptyXsd' -Description 'xml null'
+        SqlVariant 'sql_variant' -Description 'sql_variant null'
+        HierarchyID 'hierarchyid' -Description 'hierarchyid null'
+        RowVersion 'timestamp' -Description 'timestamp'
     }
-    else
-    {
-        Add-Column bigint -BigInt -Description 'bigint null' @commonArgs
-        Add-Column int -Int -Description 'int null' @commonArgs
-        Add-Column smallint -SmallInt -Description 'smallint null' @commonArgs
-        Add-Column tinyint -TinyInt -Description 'tinyint null' @commonArgs
-        Add-Column decimal -Decimal 4 -Description 'decimal(4) null' @commonArgs
-    }
-    
-    Add-Column decimalwithscale -Decimal 5 5 -Description 'decimal(5,5) null' @commonArgs
-    Add-Column bit -Bit -Description 'bit null' @commonArgs
-    Add-Column money -Money -Description 'money null' @commonArgs
-    Add-Column smallmoney -SmallMoney -Description 'smallmoney null' @commonArgs
-    Add-Column float -Float -Description 'float null' @commonArgs
-    Add-Column floatwithprecision -Float 53 -Description 'float(53) null' @commonArgs
-    Add-Column real -Real -Description 'real null' @commonArgs
-    Add-Column date -Date -Description 'date null' @commonArgs
-    Add-Column datetime -Datatype datetime -Description 'date null' @commonArgs
-    Add-Column datetime2 -Datetime2 -Description 'datetime2 null' @commonArgs
-    Add-Column datetimeoffset -DateTimeOffset -Description 'datetimeoffset null' @commonArgs
-    Add-Column smalldatetime -smalldatetime -Description 'smalldatetime null' @commonArgs
-    Add-Column time -Time -Description 'time null' @commonArgs
-    Add-Column uniqueidentifier -UniqueIdentifier -Description 'uniqueidentifier null' @commonArgs
-    Add-Column xml -Xml -XmlSchemaCollection 'EmptyXsd' -Description 'xml null' @commonArgs
-    Add-Column sql_variant -SqlVariant -Description 'sql_variant null' @commonArgs
-    Add-Column hierarchyid -HierarchyID -Description 'hierarchyid null' @commonArgs
-    Add-Column timestamp -RowVersion -Description 'timestamp' @commonArgs
 }
 
 function Pop-Migration()

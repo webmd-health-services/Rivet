@@ -44,7 +44,6 @@
     <Compile Include="DataType.cs" />
     <Compile Include="Identity.cs" />
     <Compile Include="Migration.cs" />
-    <Compile Include="Operations\AddColumnOperation.cs" />
     <Compile Include="Operations\AddDefaultConstraintOperation.cs" />
     <Compile Include="Operations\AddExtendedPropertyOperation.cs" />
     <Compile Include="Operations\AddForeignKeyOperation.cs" />
@@ -58,6 +57,7 @@
     <Compile Include="Operations\AddRowOperation.cs" />
     <Compile Include="Operations\AddSynonymOperation.cs" />
     <Compile Include="Operations\AddDataTypeOperation.cs" />
+    <Compile Include="Operations\UpdateTableOperation.cs" />
     <Compile Include="Operations\RemoveDataTypeOperation.cs" />
     <Compile Include="Operations\RemoveSynonymOperation.cs" />
     <Compile Include="Operations\RenameOperation.cs" />
@@ -65,7 +65,6 @@
     <Compile Include="Operations\UpdateUserDefinedFunctionOperation.cs" />
     <Compile Include="Operations\UpdateTriggerOperation.cs" />
     <Compile Include="Operations\UpdateStoredProcedureOperation.cs" />
-    <Compile Include="Operations\UpdateColumnOperation.cs" />
     <Compile Include="Operations\UpdateRowOperation.cs" />
     <Compile Include="Operations\RemoveRowOperation.cs" />
     <Compile Include="Operations\RemoveTriggerOperation.cs" />

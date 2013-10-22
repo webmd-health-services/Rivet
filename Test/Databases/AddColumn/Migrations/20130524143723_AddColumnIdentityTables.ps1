@@ -22,12 +22,11 @@ function Push-Migration()
         name varchar(max) not null
     )
 '@
-
-    Add-Column 'bigintidentity' -BigInt -Identity 1 2 -TableName 'BigIntIdentity'
-    Add-Column 'intidentity' -Int -Identity 3 5 -TableName 'IntIdentity'
-    Add-Column 'smallintidentity' -SmallInt -Identity 7 11 -TableName 'SmallIntIdentity'
-    Add-Column 'tinyintidentity' -TinyInt -Identity 13 17  -TableName 'TinyIntIdentity'
-    Add-Column 'decimalidentity' -Decimal 5 -Identity 37 41 -TableName 'DecimalIdentity'
+    Update-Table -Name 'BigIntIdentity' -AddColumn {  BigInt 'bigintidentity' -Identity 1 2  }
+    Update-Table -Name 'IntIdentity' -AddColumn {  Int 'intidentity' -Identity 3 5  }
+    Update-Table -Name 'SmallIntIdentity' -AddColumn {  SmallInt 'smallintidentity' -Identity 7 11  }
+    Update-Table -Name 'TinyIntIdentity' -AddColumn {  TinyInt 'tinyintidentity' -Identity 13 17  }
+    Update-Table -Name 'DecimalIdentity' -AddColumn {  Decimal 'decimalidentity' -Precision 5 -Identity -Seed 37 -Increment 41  }
 }
 
 function Pop-Migration()

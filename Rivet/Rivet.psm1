@@ -12,7 +12,6 @@ dir $PSScriptRoot *-*.ps1 |
     ForEach-Object { . $_.FullName }
 
 $publicFunctions = @(
-                        'Add-Column',
                         'Add-DataType',
                         'Add-DefaultConstraint',
                         'Add-Description',
@@ -89,11 +88,11 @@ $publicFunctions = @(
                         'Set-StoredProcedure',
                         'Set-UserDefinedFunction',
                         'Set-View',
-                        'Update-Column',
                         'Update-Description',
                         'Update-ExtendedProperty',
                         'Update-Row',
                         'Update-StoredProcedure',
+                        'Update-Table',
                         'Update-Trigger',
                         'Update-UserDefinedFunction',
                         'Update-View'

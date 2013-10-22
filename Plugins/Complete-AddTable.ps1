@@ -9,10 +9,12 @@ function Complete-AddTable
             $SchemaName
         )
 
-    Add-Column CreateDate -SmallDateTime -NotNull -TableName $TableName -SchemaName $SchemaName
-    Add-Column LastUpdated -DataType datetime -NotNull -TableName $TableName -SchemaName $SchemaName
-    Add-Column RowGuid -UniqueIdentifier -NotNull -RowGuidCol -TableName $TableName -SchemaName $SchemaName
-    Add-Column SkipBit -Bit -TableName $TableName -SchemaName $SchemaName
+    Update-Table -SchemaName $SchemaName -Name $TableName -AddColumn {
+        SmallDateTime 'CreateDate' -NotNull
+        DateTime 'LastUpdated' -NotNull
+        UniqueIdentifier 'RowGuid' -RowGuidCol -NotNull
+        Bit 'SkipBit'
+    }
 
     Write-Host ("+ Admin Columns for {0}.{1}" -f $SchemaName, $TableName)
 }
