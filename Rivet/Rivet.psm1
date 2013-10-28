@@ -12,6 +12,7 @@ dir $PSScriptRoot *-*.ps1 |
     ForEach-Object { . $_.FullName }
 
 $publicFunctions = @(
+                        'Add-CheckConstraint',
                         'Add-DataType',
                         'Add-DefaultConstraint',
                         'Add-Description',
@@ -64,6 +65,7 @@ $publicFunctions = @(
                         'New-VarCharColumn',
                         'New-View',
                         'New-XmlColumn',
+                        'Remove-CheckConstraint',
                         'Remove-Column',
                         'Remove-DataType',
                         'Remove-DefaultConstraint',
