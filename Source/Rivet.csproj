@@ -57,6 +57,8 @@
     <Compile Include="Operations\AddRowOperation.cs" />
     <Compile Include="Operations\AddSynonymOperation.cs" />
     <Compile Include="Operations\AddDataTypeOperation.cs" />
+    <Compile Include="Operations\AddCheckConstraintOperation.cs" />
+    <Compile Include="Operations\RemoveCheckConstraintOperation.cs" />
     <Compile Include="Operations\UpdateTableOperation.cs" />
     <Compile Include="Operations\RemoveDataTypeOperation.cs" />
     <Compile Include="Operations\RemoveSynonymOperation.cs" />

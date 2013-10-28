@@ -76,6 +76,7 @@
     <Compile Include="Operations\AddRowOperationTestFixture.cs" />
     <Compile Include="Operations\AddRemoveSynonymOperationTestFixture.cs" />
     <Compile Include="Operations\AddRemoveDataTypeOperationTestFixture.cs" />
+    <Compile Include="Operations\AddRemoveCheckConstraintOperationTestFixture.cs" />
     <Compile Include="Operations\UpdateTableOperationTestFixture.cs" />
     <Compile Include="Operations\RemoveExtendedPropertyOperationTestFixture.cs" />
     <Compile Include="Operations\UpdateExtendedPropertyOperationTestFixture.cs" />
