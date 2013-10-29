@@ -22,7 +22,7 @@ function Push-Migration()
     }
 
     #Add an Index to 'IndexMe'
-    Add-Index 'AddIndex' 'IndexMe'
+    Add-Index -TableName 'AddIndex' -ColumnName 'IndexMe'
 
 }
 
@@ -326,4 +326,30 @@ function Pop-Migration()
     Invoke-Rivet -Push 'AddIndex'
 
     Assert-Index -TableName 'Add-Index' -ColumnName 'IndexMe'
+}
+
+function Test-ShouldAddIndexWithOptionalName
+{
+    @'
+function Push-Migration()
+{
+    Add-Table -Name 'Add-Index' {
+        Int 'IndexMe' -NotNull
+    }
+
+    Add-Index -TableName 'Add-Index' -ColumnName 'IndexMe' -Name 'Example'
+}
+
+function Pop-Migration()
+{
+}
+'@ | New-Migration -Name 'AddIndexWithOptionalName'
+
+    Invoke-Rivet -Push 'AddIndexWithOptionalName'
+
+    $Indexes = Invoke-RivetTestQuery -Query @'
+    select * from sys.indexes where object_id = OBJECT_ID('Add-Index')
+'@
+
+    Assert-Equal 'Example' $Indexes.name[1]
 }

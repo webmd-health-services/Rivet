@@ -23,14 +23,22 @@ namespace Rivet
 			Type = type;
 		}
 
+		public ConstraintName(string customName)
+		{
+			CustomName = customName;
+		}
+
 		public string SchemaName { get; private set; }
 		public string TableName { get; private set; }
 		public List<string> ColumnName { get; private set; }
 		public ConstraintType Type { get; private set; }
+		public string CustomName { get; private set; }
 		public string Name { get { return ToString(); } }
 
 		public override string ToString()
 		{
+			if (!string.IsNullOrEmpty(CustomName))
+				return CustomName;
 			string keyname;
 			switch(Type)
 			{

@@ -58,3 +58,27 @@ function Pop-Migration()
     Assert-NoPrimaryKey -TableName 'Remove-PrimaryKey' -ColumnName 'id'
 }
 
+function Test-ShouldRemovePrimaryKeyWithCustomName
+{
+    @'
+function Push-Migration()
+{
+    Add-Table -Name 'Add-PrimaryKey' {
+        Int 'id' -NotNull
+    }
+
+    Add-PrimaryKey -TableName 'Add-PrimaryKey' -ColumnName 'id' -Name 'Custom'
+    Remove-PrimaryKey -TableName 'Add-PrimaryKey' -ColumnName 'id' -Name 'Custom'
+}
+
+function Pop-Migration()
+{
+}
+
+'@ | New-Migration -Name 'RemovePrimaryKeyWithCustomName'
+    Invoke-Rivet -Push 'RemovePrimaryKeyWithCustomName'
+
+    $PK = Invoke-RivetTestQuery -Query 'select * from sys.key_constraints'
+
+    Assert-Equal 'MigrationsPK' $PK[0].name
+}

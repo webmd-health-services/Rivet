@@ -39,6 +39,11 @@ function Add-Index
         # The column(s) on which the index is based
         $ColumnName,
 
+        [Parameter()]
+        [string]
+        # The name for the <object type>. If not given, a sensible name will be created.
+        $Name,
+
         [Parameter(ParameterSetName='Descending')]
         [bool[]]
         # Optional array of booleans to specify descending switch per column.  Length must match $ColumnName
@@ -74,7 +79,7 @@ function Add-Index
 
     ## Threshold check for $Descending, and whether the length matches $ColumnName
 
-    if ($Descending -and $PSCmdlet.ParameterSetName -eq "Descending")
+    if ($PSBoundParameters.containskey("Descending") -and $PSCmdlet.ParameterSetName -eq "Descending")
     {
         if ($ColumnName.length -ne $Descending.length)
         {
@@ -87,15 +92,33 @@ function Add-Index
 
     $ColumnClause = $ColumnName -join ','
 
-    if ($PSCmdlet.ParameterSetName -eq "Descending")
+    if ($PSBoundParameters.containskey("Descending"))
     {
-        $op = New-Object 'Rivet.Operations.AddIndexOperation' $SchemaName, $TableName, $ColumnName, $Descending, $Unique, $Clustered, $Option, $Where, $On, $FileStreamOn
+        if ($PSBoundParameters.containskey("Name"))
+        {
+            $op = New-Object 'Rivet.Operations.AddIndexOperation' $SchemaName, $TableName, $ColumnName, $Name, $Descending, $Unique, $Clustered, $Option, $Where, $On, $FileStreamOn
+            Write-Host (' {0}.{1} +{2} ({3})' -f $SchemaName,$TableName,$Name,$ColumnClause)
+        }
+        else 
+        {
+            $op = New-Object 'Rivet.Operations.AddIndexOperation' $SchemaName, $TableName, $ColumnName, $Descending, $Unique, $Clustered, $Option, $Where, $On, $FileStreamOn
+            Write-Host (' {0}.{1} +{2} ({3})' -f $SchemaName,$TableName,$op.ConstraintName.Name,$ColumnClause)
+        }
+        
     }
-    else 
+    else
     {
-        $op = New-Object 'Rivet.Operations.AddIndexOperation' $SchemaName, $TableName, $ColumnName, $Unique, $Clustered, $Option, $Where, $On, $FileStreamOn
+        if ($PSBoundParameters.containskey("Name"))
+        {
+            $op = New-Object 'Rivet.Operations.AddIndexOperation' $SchemaName, $TableName, $ColumnName, $Name, $Unique, $Clustered, $Option, $Where, $On, $FileStreamOn
+            Write-Host (' {0}.{1} +{2} ({3})' -f $SchemaName,$TableName,$Name,$ColumnClause)
+        }
+        else 
+        {
+            $op = New-Object 'Rivet.Operations.AddIndexOperation' $SchemaName, $TableName, $ColumnName, $Unique, $Clustered, $Option, $Where, $On, $FileStreamOn
+            Write-Host (' {0}.{1} +{2} ({3})' -f $SchemaName,$TableName,$op.ConstraintName.Name,$ColumnClause)
+        }
     }
     
-    Write-Host (' {0}.{1} +{2} ({3})' -f $SchemaName,$TableName,$op.ConstraintName.Name,$ColumnClause)
     Invoke-MigrationOperation -Operation $op
 }

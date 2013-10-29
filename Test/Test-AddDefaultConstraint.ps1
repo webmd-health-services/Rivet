@@ -74,9 +74,9 @@ function Push-Migration()
 function Pop-Migration()
 {
 }
-'@ | New-Migration -Name 'AddDefaultConstraint'
+'@ | New-Migration -Name 'AddDefaultConstraintQuotesName'
 
-    Invoke-Rivet -Push 'AddDefaultConstraint'
+    Invoke-Rivet -Push 'AddDefaultConstraintQuotesName'
     Assert-DefaultConstraint -TableName 'Add-DefaultConstraint' -ColumnName 'DefaultConstraintMe'
 
 }
@@ -97,9 +97,35 @@ function Push-Migration()
 function Pop-Migration()
 {
 }
-'@ | New-Migration -Name 'AddDefaultConstraint'
+'@ | New-Migration -Name 'AddDefaultConstraintOptionalParameterNames'
 
-    Invoke-Rivet -Push 'AddDefaultConstraint'
+    Invoke-Rivet -Push 'AddDefaultConstraintOptionalParameterNames'
     Assert-DefaultConstraint -TableName 'AddDefaultConstraint' -ColumnName 'DefaultConstraintMe'
+
+}
+
+function Test-ShouldSupportOptionalConstraintName
+{
+    @'
+function Push-Migration()
+{
+    Add-Table -Name 'AddDefaultConstraint' {
+        Int 'DefaultConstraintMe' -NotNull
+    }
+
+    Add-DefaultConstraint 'AddDefaultConstraint' 'DefaultConstraintMe' 101 -Name 'Optional'
+
+}
+
+function Pop-Migration()
+{
+}
+'@ | New-Migration -Name 'AddDefaultConstraintOptionalParameterNames'
+
+    Invoke-Rivet -Push 'AddDefaultConstraintOptionalParameterNames'
+    
+    $DefaultConstraints = Get-DefaultConstraint
+
+    Assert-Equal 'Optional' $DefaultConstraints.name[0]
 
 }

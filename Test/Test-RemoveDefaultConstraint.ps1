@@ -54,3 +54,25 @@ function Pop-Migration()
     Assert-DefaultConstraint -TableName 'Remove-DefaultConstraint' -ColumnName 'DefaultConstraintMe' -TestNoDefault
 
 }
+
+function Test-ShouldRemoveDefaultConstraintWithOptionalConstraintName
+{
+    @'
+function Push-Migration()
+{
+    Add-Table -Name 'AddDefaultConstraint' {
+        Int 'DefaultConstraintMe' -NotNull
+    }
+
+    Add-DefaultConstraint -TableName 'AddDefaultConstraint' -ColumnName 'DefaultConstraintMe' -Expression 101 -Name 'Optional'
+    Remove-DefaultConstraint 'AddDefaultConstraint' 'DefaultConstraintMe' -Name 'Optional'
+}
+
+function Pop-Migration()
+{
+}
+'@ | New-Migration -Name 'RemoveDefaultConstraintWithOptionalConstraintName'
+    Invoke-Rivet -Push 'RemoveDefaultConstraintWithOptionalConstraintName'
+    Assert-DefaultConstraint -TableName 'AddDefaultConstraint' -ColumnName 'DefaultConstraintMe' -TestNoDefault
+
+}

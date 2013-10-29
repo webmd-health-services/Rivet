@@ -55,7 +55,12 @@ function Add-UniqueConstraint
 
         [string]
         # The value of the `ON` clause, which controls the filegroup/partition to use for the index.
-        $On
+        $On,
+
+        [Parameter()]
+        [string]
+        # The name for the <object type>. If not given, a sensible name will be created.
+        $Name
         
     )
 
@@ -65,7 +70,15 @@ function Add-UniqueConstraint
 
     $ColumnClause = $ColumnName -join ','
 
-    $op = New-Object 'Rivet.Operations.AddUniqueConstraintOperation' $SchemaName, $TableName, $ColumnName, $Clustered, $FillFactor, $Option, $On
+    if ($PSBoundParameters.containskey("Name"))
+    {
+        $op = New-Object 'Rivet.Operations.AddUniqueConstraintOperation' $SchemaName, $TableName, $ColumnName, $Name, $Clustered, $FillFactor, $Option, $On
+    }
+    else 
+    {
+        $op = New-Object 'Rivet.Operations.AddUniqueConstraintOperation' $SchemaName, $TableName, $ColumnName, $Clustered, $FillFactor, $Option, $On
+    }
+    
     Write-Host (' {0}.{1} +{2} ({3})' -f $SchemaName,$TableName,$op.ConstraintName.Name,$ColumnClause)
     Invoke-MigrationOperation -Operation $op
 }

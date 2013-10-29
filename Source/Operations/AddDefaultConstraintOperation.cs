@@ -2,10 +2,23 @@
 {
 	public sealed class AddDefaultConstraintOperation : Operation
 	{
+		//System Generated Constraint Name
 		public AddDefaultConstraintOperation(string schemaName, string tableName, string expression, string columnName,
 		                                     bool withValues)
 		{
 			ConstraintName = new ConstraintName(schemaName, tableName, new[]{columnName}, ConstraintType.Default);
+			SchemaName = schemaName;
+			TableName = tableName;
+			Expression = expression;
+			ColumnName = columnName;
+			WithValues = withValues;
+		}
+
+		//Custom Constraint Name
+		public AddDefaultConstraintOperation(string schemaName, string tableName, string expression, string columnName, string customConstraintName,
+									 bool withValues)
+		{
+			ConstraintName = new ConstraintName(customConstraintName);
 			SchemaName = schemaName;
 			TableName = tableName;
 			Expression = expression;
@@ -30,7 +43,7 @@
 			}
 
 			return string.Format("alter table [{0}].[{1}] add constraint [{2}] default {3} for {4} {5}",
-				SchemaName, TableName, ConstraintName, Expression, ColumnName, withValuesClause);
+					SchemaName, TableName, ConstraintName, Expression, ColumnName, withValuesClause);
 		}
 	}
 }

@@ -1,4 +1,3 @@
-
 function Remove-ForeignKey
 {
     <#
@@ -37,12 +36,27 @@ function Remove-ForeignKey
         [Parameter()]
         [string]
         # The schema name of the table.  Defaults to `dbo`.
-        $ReferencesSchema = 'dbo'
+        $ReferencesSchema = 'dbo',
+
+        [Parameter()]
+        [string]
+        # The name for the <object type>. If not given, a sensible name will be created.
+        $Name
     )
 
     Set-StrictMode -Version Latest
 
-    $op = New-Object 'Rivet.Operations.RemoveForeignKeyOperation' $SchemaName, $TableName, $ReferencesSchema, $References
-    Write-Host (' {0}.{1} -{2}' -f $SchemaName,$TableName,$op.ForeignKeyConstraintName.Name)
+    if ($PSBoundParameters.containskey("Name"))
+    {
+        $op = New-Object 'Rivet.Operations.RemoveForeignKeyOperation' $SchemaName, $TableName, $ReferencesSchema, $References, $Name
+        Write-Host (' {0}.{1} -{2}' -f $SchemaName,$TableName,$Name)
+    }
+    else 
+    {
+        $op = New-Object 'Rivet.Operations.RemoveForeignKeyOperation' $SchemaName, $TableName, $ReferencesSchema, $References
+        Write-Host (' {0}.{1} -{2}' -f $SchemaName,$TableName,$op.ForeignKeyConstraintName.Name)
+    }
+
     Invoke-MigrationOperation -Operation $op
+    
 }

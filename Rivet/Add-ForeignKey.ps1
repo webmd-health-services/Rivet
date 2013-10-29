@@ -1,4 +1,3 @@
-
 function Add-ForeignKey
 {
     <#
@@ -67,9 +66,12 @@ function Add-ForeignKey
         [Parameter()]
         [switch]
         # Can be specified for FOREIGN KEY constraints and CHECK constraints. If this clause is specified for a constraint, the constraint is not enforced when replication agents perform insert, update, or delete operations.
-        $NotForReplication
+        $NotForReplication,
 
-
+        [Parameter()]
+        [string]
+        # The name for the <object type>. If not given, a sensible name will be created.
+        $Name
     )
 
     Set-StrictMode -Version Latest
@@ -77,9 +79,19 @@ function Add-ForeignKey
     $source_columns = $ColumnName -join ','
     $ref_columns = $ReferencedColumn -join ','
     
-    $op = New-Object 'Rivet.Operations.AddForeignKeyOperation' $SchemaName, $TableName, $ColumnName, $ReferencesSchema, $references, $ReferencedColumn, $OnDelete, $OnUpdate, $NotForReplication
-    Write-Host (' {0}.{1} +{2} ({3}) => {4}.{5} ({6})' -f $SchemaName,$TableName,$op.ForeignKeyConstraintName.Name,$source_columns,$ReferencesSchema,$References,$ref_columns)
-    Invoke-MigrationOperation -Operation $op
+    if ($PSBoundParameters.containskey("Name"))
+    {
+        $op = New-Object 'Rivet.Operations.AddForeignKeyOperation' $SchemaName, $TableName, $ColumnName, $ReferencesSchema, $references, $ReferencedColumn, $Name, $OnDelete, $OnUpdate, $NotForReplication
+        Write-Host (' {0}.{1} +{2} ({3}) => {4}.{5} ({6})' -f $SchemaName,$TableName,$Name,$source_columns,$ReferencesSchema,$References,$ref_columns)
+    }
+    else
+    {
+        $op = New-Object 'Rivet.Operations.AddForeignKeyOperation' $SchemaName, $TableName, $ColumnName, $ReferencesSchema, $references, $ReferencedColumn, $OnDelete, $OnUpdate, $NotForReplication
+        Write-Host (' {0}.{1} +{2} ({3}) => {4}.{5} ({6})' -f $SchemaName,$TableName,$op.ForeignKeyConstraintName.Name,$source_columns,$ReferencesSchema,$References,$ref_columns)
+     
+    }
+    
+    Invoke-MigrationOperation -Operation $op   
 }
 
     

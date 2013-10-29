@@ -30,6 +30,25 @@ namespace Rivet.Test.Operations
 		}
 
 		[Test]
+		public void ShouldSetPropertiesForAddDefaultConstraintWithOptionalName()
+		{
+			var schemaName = "schemaName";
+			var tableName = "tableName";
+			var columnName = "columnName";
+			var expression = "expression";
+			var optionalConstraintName = "optionalConstraintName";
+			bool withValues = true;
+
+			var op = new AddDefaultConstraintOperation(schemaName, tableName, expression, columnName, optionalConstraintName, withValues);
+			Assert.AreEqual(schemaName, op.SchemaName);
+			Assert.AreEqual(tableName, op.TableName);
+			Assert.AreEqual(columnName, op.ColumnName);
+			Assert.AreEqual(expression, op.Expression);
+			Assert.AreEqual(optionalConstraintName, op.ConstraintName.ToString());
+			Assert.AreEqual(withValues, op.WithValues);
+		}
+
+		[Test]
 		public void ShouldWriteQueryForAddDefaultConstrait()
 		{
 			var schemaName = "schemaName";
@@ -58,6 +77,21 @@ namespace Rivet.Test.Operations
 		}
 
 		[Test]
+		public void ShouldWriteQueryWithOptionalConstraintNameForAddDefaultConstrait()
+		{
+			var schemaName = "schemaName";
+			var tableName = "tableName";
+			var columnName = "columnName";
+			var expression = "expression";
+			var optionalConstraintName = "optionalConstraintName";
+			bool withValues = true;
+
+			var op = new AddDefaultConstraintOperation(schemaName, tableName, expression, columnName, optionalConstraintName, withValues);
+			var expectedQuery = @"alter table [schemaName].[tableName] add constraint [optionalConstraintName] default expression for columnName with values";
+			Assert.AreEqual(expectedQuery, op.ToQuery());
+		}
+
+		[Test]
 		public void ShouldSetPropertiesForRemoveDefaultConstraint()
 		{
 			var schemaName = "schemaName";
@@ -79,6 +113,19 @@ namespace Rivet.Test.Operations
 
 			var op = new RemoveDefaultConstraintOperation(schemaName, tableName, columnName);
 			var expectedQuery = "alter table [schemaName].[tableName] drop constraint [DF_schemaName_tableName_columnName]";
+			Assert.AreEqual(expectedQuery, op.ToQuery());
+		}
+
+		[Test]
+		public void ShouldWriteQueryForRemoveDefaultConstraitWithOptionalConstraintName()
+		{
+			var schemaName = "schemaName";
+			var tableName = "tableName";
+			var columnName = "columnName";
+			var optionalConstraintName = "optionalConstraintName";
+
+			var op = new RemoveDefaultConstraintOperation(schemaName, tableName, columnName, optionalConstraintName);
+			var expectedQuery = "alter table [schemaName].[tableName] drop constraint [optionalConstraintName]";
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}
 
