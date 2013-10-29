@@ -2,6 +2,7 @@
 {
 	public sealed class AddForeignKeyOperation : Operation
 	{
+		// System Generated Constraint Name
 		public AddForeignKeyOperation(string schemaName, string tableName, string[] columnName, string referencesSchemaName,
 		                              string referencesTableName, string[] referencesColumnName, string onDelete,
 		                              string onUpdate, bool notForReplication)
@@ -18,7 +19,25 @@
 			NotForReplication = notForReplication;
 		}
 
+		//Custom Constraint Name
+		public AddForeignKeyOperation(string schemaName, string tableName, string[] columnName, string referencesSchemaName,
+							  string referencesTableName, string[] referencesColumnName, string customConstraintName, string onDelete,
+							  string onUpdate, bool notForReplication)
+		{
+			CustomConstraintName = customConstraintName;
+			SchemaName = schemaName;
+			TableName = tableName;
+			ColumnName = (string[])columnName.Clone();
+			ReferencesSchemaName = referencesSchemaName;
+			ReferencesTableName = referencesTableName;
+			ReferencesColumnName = (string[])referencesColumnName.Clone();
+			OnDelete = onDelete;
+			OnUpdate = onUpdate;
+			NotForReplication = notForReplication;
+		}
+
 		public ForeignKeyConstraintName ForeignKeyConstraintName { get; private set; }
+		public string CustomConstraintName { get; private set; }
 		public string SchemaName { get; private set; }
 		public string TableName { get; private set; }
 		public string[] ColumnName { get; private set; }
@@ -52,9 +71,22 @@
 				notForReplicationClause = "not for replication";
 			}
 
-			return string.Format("alter table [{0}].[{1}] add constraint [{2}] foreign key ({3}) references {4}.{5} ({6}) {7} {8} {9}", 
-				SchemaName, TableName, ForeignKeyConstraintName, sourceColumns, ReferencesSchemaName, ReferencesTableName, 
-				refColumns, onDeleteClause, onUpdateClause, notForReplicationClause);
+			if (string.IsNullOrEmpty(CustomConstraintName))
+			{
+				return
+					string.Format(
+						"alter table [{0}].[{1}] add constraint [{2}] foreign key ({3}) references {4}.{5} ({6}) {7} {8} {9}",
+						SchemaName, TableName, ForeignKeyConstraintName, sourceColumns, ReferencesSchemaName, ReferencesTableName,
+						refColumns, onDeleteClause, onUpdateClause, notForReplicationClause);
+			}
+			else
+			{
+				return 
+					string.Format(
+						"alter table [{0}].[{1}] add constraint [{2}] foreign key ({3}) references {4}.{5} ({6}) {7} {8} {9}",
+						SchemaName, TableName, CustomConstraintName, sourceColumns, ReferencesSchemaName, ReferencesTableName,
+						refColumns, onDeleteClause, onUpdateClause, notForReplicationClause);
+			}
 		}
 	}
 }

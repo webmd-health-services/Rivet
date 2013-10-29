@@ -165,3 +165,27 @@ function Pop-Migration()
     Invoke-Rivet -Push 'AddUniqueConstraintToOneColumn'
     Assert-UniqueConstraint -TableName 'Add-UniqueConstraint' -ColumnName 'UniqueConstraintMe'
 }
+
+function Test-ShouldAddUniqueConstraintWithCustomName
+{
+    @'
+function Push-Migration()
+{
+    Add-Table -Name 'Add-UniqueConstraint' {
+        Int 'UniqueConstraintMe' -NotNull
+    }
+
+    Add-UniqueConstraint -TableName 'Add-UniqueConstraint' -ColumnName 'UniqueConstraintMe' -Name 'Custom'
+}
+
+function Pop-Migration()
+{
+}
+'@ | New-Migration -Name 'AddUniqueConstraintWithCustomName'
+    Invoke-Rivet -Push 'AddUniqueConstraintWithCustomName'
+    
+    $UQC = Invoke-RivetTestQuery -Query "select * from sys.indexes where is_unique_constraint='True'"
+
+    Assert-Equal 'Custom' $UQC.name
+
+}

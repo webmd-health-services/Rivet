@@ -2,10 +2,30 @@
 {
 	public sealed class AddPrimaryKeyOperation : Operation
 	{
+		//System Generated Constraint Name
 		public AddPrimaryKeyOperation(string schemaName, string tableName, string [] columnName, bool nonClustered,
 		                              string[] options)
 		{
 			ConstraintName = new ConstraintName(schemaName, tableName, columnName, ConstraintType.PrimaryKey);
+			SchemaName = schemaName;
+			TableName = tableName;
+			ColumnName = (string[])columnName.Clone();
+			NonClustered = nonClustered;
+			if (options != null)
+			{
+				Options = (string[])options.Clone();
+			}
+			else
+			{
+				Options = null;
+			}
+		}
+
+		//Custom Constraint Name
+		public AddPrimaryKeyOperation(string schemaName, string tableName, string[] columnName, string customConstraintName, bool nonClustered,
+							  string[] options)
+		{
+			ConstraintName = new ConstraintName(customConstraintName);
 			SchemaName = schemaName;
 			TableName = tableName;
 			ColumnName = (string[])columnName.Clone();

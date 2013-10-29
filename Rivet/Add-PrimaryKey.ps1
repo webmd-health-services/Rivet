@@ -44,14 +44,27 @@ function Add-PrimaryKey
 
         [string[]]
         # An array of primary key options.
-        $Option
+        $Option,
+
+        [Parameter()]
+        [string]
+        # The name for the <object type>. If not given, a sensible name will be created.
+        $Name
     )
 
     Set-StrictMode -Version Latest
 
     $columns = $ColumnName -join ','
 
-    $op = New-Object 'Rivet.Operations.AddPrimaryKeyOperation' $SchemaName, $TableName, $ColumnName, $NonClustered, $Option
+    if ($PSBoundParameters.containskey("Name"))
+    {
+        $op = New-Object 'Rivet.Operations.AddPrimaryKeyOperation' $SchemaName, $TableName, $ColumnName, $Name, $NonClustered, $Option
+    }
+    else 
+    {
+        $op = New-Object 'Rivet.Operations.AddPrimaryKeyOperation' $SchemaName, $TableName, $ColumnName, $NonClustered, $Option
+    }
+
     Write-Host (' {0}.{1} +{2} ({3})' -f $SchemaName,$TableName,$op.ConstraintName.Name,$columns)
     Invoke-MigrationOperation -Operation $op
 }

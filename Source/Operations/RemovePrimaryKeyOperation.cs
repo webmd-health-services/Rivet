@@ -2,9 +2,19 @@
 {
 	public sealed class RemovePrimaryKeyOperation : Operation
 	{
+		//System Generated Constraint Name
 		public RemovePrimaryKeyOperation(string schemaName, string tableName, string[] columnName)
 		{
 			ConstraintName = new ConstraintName(schemaName, tableName, columnName, ConstraintType.PrimaryKey);
+			SchemaName = schemaName;
+			TableName = tableName;
+			ColumnName = (string[])columnName.Clone();
+		}
+
+		//Custom Constraint Name
+		public RemovePrimaryKeyOperation(string schemaName, string tableName, string[] columnName, string customConstraintName)
+		{
+			ConstraintName = new ConstraintName(customConstraintName);
 			SchemaName = schemaName;
 			TableName = tableName;
 			ColumnName = (string[])columnName.Clone();

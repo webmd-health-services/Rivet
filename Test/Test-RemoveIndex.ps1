@@ -65,3 +65,30 @@ function Pop-Migration()
     Assert-Index -TableName 'Remove-Index' -ColumnName 'IndexMe' -TestNoIndex
 
 }
+
+function Test-ShouldRemoveIndexWithOptionalName
+{
+    @'
+function Push-Migration()
+{
+    Add-Table -Name 'Add-Index' {
+        Int 'IndexMe' -NotNull
+    }
+
+    Add-Index -TableName 'Add-Index' -ColumnName 'IndexMe' -Name 'Example'
+    Remove-Index -TableName 'Add-Index' -ColumnName 'IndexMe' -Name 'Example'
+}
+
+function Pop-Migration()
+{
+}
+'@ | New-Migration -Name 'RemoveIndexWithOptionalName'
+
+    Invoke-Rivet -Push 'RemoveIndexWithOptionalName'
+
+    $Indexes = Invoke-RivetTestQuery -Query @'
+    select * from sys.indexes where object_id = OBJECT_ID('Add-Index')
+'@
+    
+    Assert-Null $Indexes[1]
+}

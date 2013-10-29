@@ -7,7 +7,6 @@ namespace Rivet.Test.Operations
 	[TestFixture]
 	public sealed class RemoveExtendedPropertyOperationTestFixture
 	{
-		private AddExtendedPropertyOperation _op;
 
 		const string SchemaName = "schemaName";
 		const string TableName = "tableName";

@@ -2,9 +2,19 @@
 {
 	public sealed class RemoveUniqueConstraintOperation : Operation
 	{
+		//System Generated Constraint Name
 		public RemoveUniqueConstraintOperation(string schemaName, string tableName, string[] columnName)
 		{
 			ConstraintName = new ConstraintName(schemaName, tableName, columnName, ConstraintType.Unique);
+			SchemaName = schemaName;
+			TableName = tableName;
+			ColumnName = (string[])columnName.Clone(); //Used only for testing
+		}
+
+		//Custom Constraint Name
+		public RemoveUniqueConstraintOperation(string schemaName, string tableName, string[] columnName, string customConstraintName)
+		{
+			ConstraintName = new ConstraintName(customConstraintName);
 			SchemaName = schemaName;
 			TableName = tableName;
 			ColumnName = (string[])columnName.Clone(); //Used only for testing

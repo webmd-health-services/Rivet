@@ -148,3 +148,27 @@ function Pop-Migration()
     Invoke-Rivet -Push 'AddTableWithPrimaryKey'
     Assert-PrimaryKey -TableName 'Add-PrimaryKey' -ColumnName 'id'
 }
+
+function Test-ShouldAddPrimaryKeyWithCustomName
+{
+    @'
+function Push-Migration()
+{
+    Add-Table -Name 'Add-PrimaryKey' {
+        Int 'id' -NotNull
+    }
+
+    Add-PrimaryKey -TableName 'Add-PrimaryKey' -ColumnName 'id' -Name 'Custom'
+}
+
+function Pop-Migration()
+{
+}
+
+'@ | New-Migration -Name 'AddPrimaryKeyWithCustomName'
+    Invoke-Rivet -Push 'AddPrimaryKeyWithCustomName'
+
+    $PK = Invoke-RivetTestQuery -Query 'select * from sys.key_constraints'
+
+    Assert-Equal 'Custom' $PK[0].name
+}

@@ -190,3 +190,30 @@ function Pop-Migration()
     Assert-ForeignKey -TableName 'Add-ForeignKey' -References 'Reference'
 }
 
+function Test-ShouldAddForeignKeyWithOptionalConstraintName
+{
+    @'
+function Push-Migration()
+{
+    Add-Table -Name 'Add-ForeignKey' {
+        Int 'source_id' -NotNull
+    }
+
+    Add-Table -Name 'Reference' {
+        Int 'reference_id' -NotNull
+    }
+
+    Add-PrimaryKey -TableName 'Reference' -ColumnName 'reference_id'
+    Add-ForeignKey -TableName 'Add-ForeignKey' -ColumnName 'source_id' -References 'Reference' -ReferencedColumn 'reference_id' -Name 'OptionalName'
+}
+
+function Pop-Migration()
+{
+}
+'@ | New-Migration -Name 'AddForeignKeyWithOptionalConstraintName'
+    Invoke-Rivet -Push 'AddForeignKeyWithOptionalConstraintName'
+    
+    $ForeignKeys = @(Invoke-RivetTestQuery -Query 'select * from sys.foreign_keys')
+
+    Assert-Equal 'OptionalName' $ForeignKeys.Name
+}

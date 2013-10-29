@@ -43,6 +43,38 @@ namespace Rivet.Test.Operations
 		}
 
 		[Test]
+		public void ShouldSetPropertiesForAddIndexWithOptionalConstraintName()
+		{
+			const string schemaName = "schemaName";
+			const string tableName = "tableName";
+			var columnName = new[] { "column1", "column2" };
+			var smokeColumnName = new[] { "column1" };
+			var optionalConstraintName = "optionalConstraintName";
+			const bool unique = true;
+			const bool clustered = true;
+			var options = new[] { "option1", "option2" };
+			var smokeOptions = new[] { "option2" };
+			const string whereString = "whereString";
+			const string onString = "onString";
+			const string filestreamonString = "filestreamonString";
+
+			var op = new AddIndexOperation(schemaName, tableName, columnName, optionalConstraintName, unique, clustered, options, whereString, onString, filestreamonString);
+			Assert.AreEqual(schemaName, op.SchemaName);
+			Assert.AreEqual(tableName, op.TableName);
+			Assert.AreEqual(columnName, op.ColumnName);
+			Assert.AreNotEqual(smokeColumnName, op.ColumnName);
+			Assert.AreEqual(optionalConstraintName, op.ConstraintName.ToString());
+			Assert.AreEqual(false, op.SomeColumnsDesc);
+			Assert.AreEqual(unique, op.Unique);
+			Assert.AreEqual(clustered, op.Clustered);
+			Assert.AreEqual(options, op.Options);
+			Assert.AreNotEqual(smokeOptions, op.Options);
+			Assert.AreEqual(whereString, op.Where);
+			Assert.AreEqual(onString, op.On);
+			Assert.AreEqual(filestreamonString, op.FileStreamOn);
+		}
+
+		[Test]
 		public void ShouldSetPropertiesForAddIndexWithDescending()
 		{
 			const string schemaName = "schemaName";
@@ -75,6 +107,40 @@ namespace Rivet.Test.Operations
 		}
 
 		[Test]
+		public void ShouldSetPropertiesForAddIndexWithDescendingAndOptionalConstraintName()
+		{
+			const string schemaName = "schemaName";
+			const string tableName = "tableName";
+			var columnName = new[] { "column1", "column2" };
+			var smokeColumnName = new[] { "column1" };
+			var optionalConstraintName = "optionalConstraintName";
+			bool[] descending = { true, false };
+			const bool unique = true;
+			const bool clustered = true;
+			var options = new[] { "option1", "option2" };
+			var smokeOptions = new[] { "option2" };
+			const string whereString = "whereString";
+			const string onString = "onString";
+			const string filestreamonString = "filestreamonString";
+
+			var op = new AddIndexOperation(schemaName, tableName, columnName, optionalConstraintName, descending, unique, clustered, options, whereString, onString, filestreamonString);
+			Assert.AreEqual(schemaName, op.SchemaName);
+			Assert.AreEqual(tableName, op.TableName);
+			Assert.AreEqual(columnName, op.ColumnName);
+			Assert.AreNotEqual(smokeColumnName, op.ColumnName);
+			Assert.AreEqual(optionalConstraintName, op.ConstraintName.ToString());
+			Assert.AreEqual(descending, op.Descending);
+			Assert.AreEqual(true, op.SomeColumnsDesc);
+			Assert.AreEqual(unique, op.Unique);
+			Assert.AreEqual(clustered, op.Clustered);
+			Assert.AreEqual(options, op.Options);
+			Assert.AreNotEqual(smokeOptions, op.Options);
+			Assert.AreEqual(whereString, op.Where);
+			Assert.AreEqual(onString, op.On);
+			Assert.AreEqual(filestreamonString, op.FileStreamOn);
+		}
+
+		[Test]
 		public void ShouldWriteQueryForAddIndexWithAllOptionsTrue()
 		{
 			const string schemaName = "schemaName";
@@ -90,6 +156,27 @@ namespace Rivet.Test.Operations
 
 			var op = new AddIndexOperation(schemaName, tableName, columnName, descending, unique, clustered, options, whereString, onString, filestreamonString);
 			const string expectedQuery = "create unique clustered index [IX_schemaName_tableName_column1_column2] on [schemaName].[tableName] (column1 DESC,column2 ASC) with ( option1, option2 ) where ( whereString ) on onString filestream_on filestreamonString";
+
+			Assert.AreEqual(expectedQuery, op.ToQuery());
+		}
+
+		[Test]
+		public void ShouldWriteQueryForAddIndexWithAllOptionsTrueWithOptionalConstraintName()
+		{
+			const string schemaName = "schemaName";
+			const string tableName = "tableName";
+			var columnName = new[] { "column1", "column2" };
+			var optionalConstraintName = "optionalConstraintName";
+			bool[] descending = { true, false };
+			const bool unique = true;
+			const bool clustered = true;
+			var options = new[] { "option1", "option2" };
+			const string whereString = "whereString";
+			const string onString = "onString";
+			const string filestreamonString = "filestreamonString";
+
+			var op = new AddIndexOperation(schemaName, tableName, columnName, optionalConstraintName, descending, unique, clustered, options, whereString, onString, filestreamonString);
+			const string expectedQuery = "create unique clustered index [optionalConstraintName] on [schemaName].[tableName] (column1 DESC,column2 ASC) with ( option1, option2 ) where ( whereString ) on onString filestream_on filestreamonString";
 
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}
@@ -129,6 +216,23 @@ namespace Rivet.Test.Operations
 		}
 
 		[Test]
+		public void ShouldSetPropertiesForRemoveIndexWithOptionalConstraintName()
+		{
+			const string schemaName = "schemaName";
+			const string tableName = "tableName";
+			var columnName = new[] { "column1", "column2" };
+			var smokeColumnName = new[] { "column1" };
+			var optionalConstraintName = "optionalConstraintName";
+
+			var op = new RemoveIndexOperation(schemaName, tableName, columnName, optionalConstraintName);
+			Assert.AreEqual(schemaName, op.SchemaName);
+			Assert.AreEqual(tableName, op.TableName);
+			Assert.AreEqual(columnName, op.ColumnName);
+			Assert.AreNotEqual(smokeColumnName, op.ColumnName);
+			Assert.AreEqual(optionalConstraintName, op.ConstraintName.ToString());
+		}
+
+		[Test]
 		public void ShouldWriteQueryForRemoveIndex()
 		{
 			const string schemaName = "schemaName";
@@ -137,6 +241,19 @@ namespace Rivet.Test.Operations
 
 			var op = new RemoveIndexOperation(schemaName, tableName, columnName);
 			const string expectedQuery = "drop index [IX_schemaName_tableName_column1_column2] on [schemaName].[tableName]";
+			Assert.AreEqual(expectedQuery, op.ToQuery());
+		}
+
+		[Test]
+		public void ShouldWriteQueryForRemoveIndexWithOptionalConstraintName()
+		{
+			const string schemaName = "schemaName";
+			const string tableName = "tableName";
+			var columnName = new[] { "column1", "column2" };
+			var optionalConstraintName = "optionalConstraintName";
+
+			var op = new RemoveIndexOperation(schemaName, tableName, columnName, optionalConstraintName);
+			const string expectedQuery = "drop index [optionalConstraintName] on [schemaName].[tableName]";
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}
 

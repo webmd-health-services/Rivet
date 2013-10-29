@@ -4,6 +4,7 @@ namespace Rivet.Operations
 {
 	public sealed class AddUniqueConstraintOperation : Operation
 	{
+		//System Generated Constraint Name
 		public AddUniqueConstraintOperation(string schemaName, string tableName, string[] columnName, bool clustered,
 		                                    int fillFactor, string[] options, string filegroup)
 		{
@@ -16,6 +17,27 @@ namespace Rivet.Operations
 			if (options != null) {
 				Options = (string[])options.Clone();
 			} else {
+				Options = null;
+			}
+			FileGroup = filegroup;
+		}
+
+		//Custom Constraint Name
+		public AddUniqueConstraintOperation(string schemaName, string tableName, string[] columnName, string customConstraintName, bool clustered,
+									int fillFactor, string[] options, string filegroup)
+		{
+			ConstraintName = new ConstraintName(customConstraintName);
+			SchemaName = schemaName;
+			TableName = tableName;
+			ColumnName = (string[])columnName.Clone();
+			Clustered = clustered;
+			FillFactor = fillFactor;
+			if (options != null)
+			{
+				Options = (string[])options.Clone();
+			}
+			else
+			{
 				Options = null;
 			}
 			FileGroup = filegroup;

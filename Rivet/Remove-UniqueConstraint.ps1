@@ -33,14 +33,27 @@ function Remove-UniqueConstraint
         [Parameter(Mandatory=$true)]
         [string[]]
         # The column(s) on which the UniqueConstraint is based
-        $ColumnName  
+        $ColumnName,
+
+        [Parameter()]
+        [string]
+        # The name for the <object type>. If not given, a sensible name will be created.
+        $Name
     )
 
     Set-StrictMode -Version Latest
 
     $ColumnClause = $ColumnName -join ','
 
-    $op = New-Object 'Rivet.Operations.RemoveUniqueConstraintOperation' $SchemaName, $TableName, $ColumnName
+    if ($PSBoundParameters.containskey("Name"))
+    {
+        $op = New-Object 'Rivet.Operations.RemoveUniqueConstraintOperation' $SchemaName, $TableName, $ColumnName, $Name
+    }
+    else 
+    {
+        $op = New-Object 'Rivet.Operations.RemoveUniqueConstraintOperation' $SchemaName, $TableName, $ColumnName
+    }
+    
     Write-Host (' {0}.{1} -{2} ({3})' -f $SchemaName,$TableName,$op.ConstraintName.Name,$ColumnClause)
     Invoke-MigrationOperation -Operation $op
 }

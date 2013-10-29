@@ -20,12 +20,47 @@ namespace Rivet.Operations
 			On = on;
 			FileStreamOn = fileStreamOn;
 		}
+
+		// All Columns ASC With Custom Constraint Name
+		public AddIndexOperation(string schemaName, string tableName, string[] columnName, string customConstraintName, bool unique, bool clustered,
+								 string[] options, string where, string on, string fileStreamOn)
+		{
+			ConstraintName = new ConstraintName(customConstraintName);
+			SchemaName = schemaName;
+			TableName = tableName;
+			ColumnName = new List<string>(columnName ?? new string[0]);
+			SomeColumnsDesc = false;
+			Unique = unique;
+			Clustered = clustered;
+			Options = new List<string>(options ?? new string[0]);
+			Where = where;
+			On = on;
+			FileStreamOn = fileStreamOn;
+		}
 		
 		// Some Columns DESC
 		public AddIndexOperation(string schemaName, string tableName, string [] columnName, bool [] descending, bool unique, bool clustered,
 		                         string[] options, string where, string on, string fileStreamOn)
 		{
 			ConstraintName = new ConstraintName(schemaName, tableName, columnName, ConstraintType.Index);
+			SchemaName = schemaName;
+			TableName = tableName;
+			ColumnName = new List<string>(columnName ?? new string[0]);
+			Descending = descending;
+			SomeColumnsDesc = true;
+			Unique = unique;
+			Clustered = clustered;
+			Options = new List<string>(options ?? new string[0]);
+			Where = where;
+			On = on;
+			FileStreamOn = fileStreamOn;
+		}
+
+		// Some Columns DESC With Custom Constraint Name
+		public AddIndexOperation(string schemaName, string tableName, string[] columnName, string customConstraintName, bool[] descending, bool unique, bool clustered,
+								 string[] options, string where, string on, string fileStreamOn)
+		{
+			ConstraintName = new ConstraintName(customConstraintName);
 			SchemaName = schemaName;
 			TableName = tableName;
 			ColumnName = new List<string>(columnName ?? new string[0]);
@@ -115,9 +150,10 @@ namespace Rivet.Operations
 
 				columnClause = string.Join(",", ColumnName.ToArray());
 			}
-			var query = string.Format(@"create {0}{1} index [{2}] on [{3}].[{4}] ({5}) {6} {7} {8} {9}", 
-						uniqueClause, clusteredClause, ConstraintName, SchemaName, TableName, columnClause, optionsClause, whereClause, onClause, fileStreamClause);
 
+			var query = string.Format(@"create {0}{1} index [{2}] on [{3}].[{4}] ({5}) {6} {7} {8} {9}",
+				uniqueClause, clusteredClause, ConstraintName, SchemaName, TableName, columnClause, optionsClause, whereClause,
+				onClause, fileStreamClause);
 			return query;
 		}
 	}
