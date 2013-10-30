@@ -41,33 +41,56 @@ function Update-ExtendedProperty
     Update-ExtendedProperty -Name 'IsEncrypted' -Value 'TRUE' -TableName 'User' -ColumnName 'Password'
     
     Sets the custom `IsEncrypted` metadata to be `TRUE` on the `User` table's `Password` column.
+
+    .EXAMPLE
+    Update-ExtendedProperty -Name 'ContainsPII' -Value 'FALSE' -View 'LoggedInUsers'
+    
+    Demonstrates how to update custom metadata on the `LoggedInUsers` view
+
+    .EXAMPLE
+    Update-ExtendedProperty -Name 'IsEncrypted' -Value 'FALSE' -View 'LoggedInUsers' -ColumnName 'Password'
+    
+    Demonstrates how to update custom metadata for a view's column
+
     #>
+
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory=$true,Position=1)]
+        [Parameter(Mandatory=$true,Position=0)]
         [string]
         # The name of the extended property to update.
         $Name,
         
-        [Parameter(Mandatory=$true,Position=2)]
+        [Parameter(Mandatory=$true,Position=1)]
         [AllowNull()]
         # The value of the extended property.
         $Value,
-
+        
         [Parameter(ParameterSetName='SCHEMA')]
         [Parameter(ParameterSetName='TABLE')]
-        [Parameter(ParameterSetName='COLUMN')]
+        [Parameter(ParameterSetName='TABLE-COLUMN')]
+        [Parameter(ParameterSetName='VIEW-COLUMN')]
         [string]
         # The schema of the object.
         $SchemaName = 'dbo',
         
         [Parameter(Mandatory=$true,ParameterSetName='TABLE')]
-        [Parameter(Mandatory=$true,ParameterSetName='COLUMN')]
+        [Parameter(Mandatory=$true,ParameterSetName='TABLE-COLUMN')]
+        [Alias('Table')]
         [string]
         # The table name.
         $TableName,
         
-        [Parameter(Mandatory=$true,ParameterSetName='COLUMN')]
+        [Parameter(Mandatory=$true,ParameterSetName='VIEW')]
+        [Parameter(Mandatory=$true,ParameterSetName='VIEW-COLUMN')]
+        [Alias('View')]
+        [string]
+        # The table name.
+        $ViewName,        
+        
+        [Parameter(Mandatory=$true,ParameterSetName='VIEW-COLUMN')]
+        [Parameter(Mandatory=$true,ParameterSetName='TABLE-COLUMN')]
+        [Alias('Column')]
         [string]
         # The column name.
         $ColumnName
@@ -80,12 +103,22 @@ function Update-ExtendedProperty
 
     If ($PsCmdlet.ParameterSetName -eq "TABLE")
     {
-        $op = New-Object 'Rivet.Operations.UpdateExtendedPropertyOperation' $SchemaName, $TableName, $Name, $Value
+        $op = New-Object 'Rivet.Operations.UpdateExtendedPropertyOperation' $SchemaName, $TableName, $Name, $Value, $false
     }
 
-    If ($PsCmdlet.ParameterSetName -eq "COLUMN")
+    If ($PsCmdlet.ParameterSetName -eq "VIEW")
     {
-        $op = New-Object 'Rivet.Operations.UpdateExtendedPropertyOperation' $SchemaName, $TableName, $ColumnName, $Name, $Value
+        $op = New-Object 'Rivet.Operations.UpdateExtendedPropertyOperation' $SchemaName, $ViewName, $Name, $Value, $true
+    }
+
+    If ($PsCmdlet.ParameterSetName -eq "TABLE-COLUMN")
+    {
+        $op = New-Object 'Rivet.Operations.UpdateExtendedPropertyOperation' $SchemaName, $TableName, $ColumnName, $Name, $Value, $false
+    }
+
+    If ($PsCmdlet.ParameterSetName -eq "VIEW-COLUMN")
+    {
+        $op = New-Object 'Rivet.Operations.UpdateExtendedPropertyOperation' $SchemaName, $ViewName, $ColumnName, $Name, $Value, $true
     }
 
     Invoke-MigrationOperation -Operation $op  

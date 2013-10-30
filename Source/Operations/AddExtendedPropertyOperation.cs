@@ -13,15 +13,22 @@ namespace Rivet.Operations
 			Value = (value == null) ? null : value.ToString();
 		}
 
-		// Table
-		public AddExtendedPropertyOperation(string schemaName, string tableName, string name, object value) : this(schemaName, name, value)
+		// Table or View
+		public AddExtendedPropertyOperation(string schemaName, string tableViewName, string name, object value, bool forView) : this(schemaName, name, value)
 		{
-			ForTable = true;
-			TableName = tableName;
+			if (forView)
+			{
+				ForView = true;
+			}
+			else
+			{
+				ForTable = true;
+			}
+			TableViewName = tableViewName;
 		}
 
 		// Column
-		public AddExtendedPropertyOperation(string schemaName, string tableName, string columnName, string name, object value) : this(schemaName, tableName, name, value)
+		public AddExtendedPropertyOperation(string schemaName, string tableViewName, string columnName, string name, object value, bool forView) : this(schemaName, tableViewName, name, value, forView)
 		{
 			ForColumn = true;
 			ColumnName = columnName;
@@ -29,9 +36,10 @@ namespace Rivet.Operations
 
 		public bool ForSchema { get; private set; }
 		public bool ForTable { get; private set; }
+		public bool ForView { get; private set; }
 		public bool ForColumn { get; private set; }
 		public string SchemaName { get; private set; }
-		public string TableName { get; private set; }
+		public string TableViewName { get; private set; }
 		public string ColumnName { get; private set; }
 		public string Value { get; private set; }
 		public string Name { get; private set; }
@@ -41,9 +49,14 @@ namespace Rivet.Operations
 			var propertyValue = (Value == null) ? "null" : string.Format("N'{0}'", Value.Replace("'", "''"));
 			var query = string.Format(@"EXEC sys.sp_addextendedproperty{3}@name=N'{0}',{3}@value={1},{3}@level0type=N'SCHEMA', @level0name=N'{2}'", Name, propertyValue, SchemaName, Environment.NewLine);
 
-			if (ForTable || ForColumn)
+			if (ForTable)
 			{
-				query += string.Format(",{1}@level1type=N'TABLE', @level1name='{0}'", TableName, Environment.NewLine);
+				query += string.Format(",{1}@level1type=N'TABLE', @level1name='{0}'", TableViewName, Environment.NewLine);
+			}
+
+			if (ForView)
+			{
+				query += string.Format(",{1}@level1type=N'VIEW', @level1name='{0}'", TableViewName, Environment.NewLine);
 			}
 
 			if (ForColumn)

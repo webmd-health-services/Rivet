@@ -11,6 +11,7 @@ namespace Rivet.Test.Operations
 
 		const string SchemaName = "schemaName";
 		const string TableName = "tableName";
+		const string ViewName = "viewName";
 		const string ColumnName = "columnName";
 		const string Name = "name";
 		const string Value = "value";
@@ -66,18 +67,26 @@ namespace Rivet.Test.Operations
 			Assert.AreEqual(Value, op.Value);
 
 			//For Table
-			op = new UpdateExtendedPropertyOperation(SchemaName, TableName, Name, Value);
+			op = new UpdateExtendedPropertyOperation(SchemaName, TableName, Name, Value, false);
 			Assert.AreEqual(true, op.ForTable);
 			Assert.AreEqual(SchemaName, op.SchemaName);
-			Assert.AreEqual(TableName, op.TableName);
+			Assert.AreEqual(TableName, op.TableViewName);
+			Assert.AreEqual(Name, op.Name);
+			Assert.AreEqual(Value, op.Value);
+
+			//For View
+			op = new UpdateExtendedPropertyOperation(SchemaName, ViewName, Name, Value, true);
+			Assert.AreEqual(true, op.ForView);
+			Assert.AreEqual(SchemaName, op.SchemaName);
+			Assert.AreEqual(ViewName, op.TableViewName);
 			Assert.AreEqual(Name, op.Name);
 			Assert.AreEqual(Value, op.Value);
 
 			//For Column
-			op = new UpdateExtendedPropertyOperation(SchemaName, TableName, ColumnName, Name, Value);
+			op = new UpdateExtendedPropertyOperation(SchemaName, TableName, ColumnName, Name, Value, false);
 			Assert.AreEqual(true, op.ForColumn);
 			Assert.AreEqual(SchemaName, op.SchemaName);
-			Assert.AreEqual(TableName, op.TableName);
+			Assert.AreEqual(TableName, op.TableViewName);
 			Assert.AreEqual(ColumnName, op.ColumnName);
 			Assert.AreEqual(Name, op.Name);
 			Assert.AreEqual(Value, op.Value);
@@ -94,16 +103,32 @@ namespace Rivet.Test.Operations
 		[Test]
 		public void ShouldWriteQueryForUpdateExtendedPropertyForTable()
 		{
-			var op = new UpdateExtendedPropertyOperation(SchemaName, TableName, Name, Value);
+			var op = new UpdateExtendedPropertyOperation(SchemaName, TableName, Name, Value, false);
 			var expectedQuery = String.Format("EXEC sys.sp_updateextendedproperty{0}@name=N'name',{0}@value=N'value',{0}@level0type=N'SCHEMA', @level0name=N'schemaName',{0}@level1type=N'TABLE', @level1name='tableName'", Environment.NewLine);
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}
 
 		[Test]
-		public void ShouldWriteQueryForUpdateExtendedPropertyForColumn()
+		public void ShouldWriteQueryForUpdateExtendedPropertyForView()
 		{
-			var op = new UpdateExtendedPropertyOperation(SchemaName, TableName, ColumnName, Name, Value);
+			var op = new UpdateExtendedPropertyOperation(SchemaName, ViewName, Name, Value, true);
+			var expectedQuery = String.Format("EXEC sys.sp_updateextendedproperty{0}@name=N'name',{0}@value=N'value',{0}@level0type=N'SCHEMA', @level0name=N'schemaName',{0}@level1type=N'VIEW', @level1name='viewName'", Environment.NewLine);
+			Assert.AreEqual(expectedQuery, op.ToQuery());
+		}
+
+		[Test]
+		public void ShouldWriteQueryForUpdateExtendedPropertyForTableColumn()
+		{
+			var op = new UpdateExtendedPropertyOperation(SchemaName, TableName, ColumnName, Name, Value, false);
 			var expectedQuery = String.Format("EXEC sys.sp_updateextendedproperty{0}@name=N'name',{0}@value=N'value',{0}@level0type=N'SCHEMA', @level0name=N'schemaName',{0}@level1type=N'TABLE', @level1name='tableName',{0}@level2type=N'COLUMN', @level2name='columnName'", Environment.NewLine);
+			Assert.AreEqual(expectedQuery, op.ToQuery());
+		}
+
+		[Test]
+		public void ShouldWriteQueryForUpdateExtendedPropertyForViewColumn()
+		{
+			var op = new UpdateExtendedPropertyOperation(SchemaName, ViewName, ColumnName, Name, Value, true);
+			var expectedQuery = String.Format("EXEC sys.sp_updateextendedproperty{0}@name=N'name',{0}@value=N'value',{0}@level0type=N'SCHEMA', @level0name=N'schemaName',{0}@level1type=N'VIEW', @level1name='viewName',{0}@level2type=N'COLUMN', @level2name='columnName'", Environment.NewLine);
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}
 
