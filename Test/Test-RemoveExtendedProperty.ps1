@@ -63,7 +63,32 @@ function Pop-Migration
 
 }
 
-function Test-ShouldRemoveExtendedPropertyToColumn
+function Test-ShouldRemoveExtendedPropertyToView
+{
+    @'
+function Push-Migration
+{
+    Add-View -SchemaName 'dbo' 'Foobar' 'AS select * from rivet.Migrations'
+    Add-ExtendedProperty -Name 'Deploy' -Value 'TRUE' -ViewName 'Foobar' 
+    Remove-ExtendedProperty -Name 'Deploy' -ViewName 'Foobar' 
+}
+
+function Pop-Migration
+{
+    
+}
+
+'@ | New-Migration -Name 'RemoveExtendedPropertyToView'
+
+    Invoke-Rivet -Push 'RemoveExtendedPropertyToView'
+
+    $expinfo = Get-ExtendedProperties
+
+    Assert-Null $expinfo
+
+}
+
+function Test-ShouldRemoveExtendedPropertyToTableColumn
 {
     @'
 function Push-Migration
@@ -81,9 +106,37 @@ function Pop-Migration
     
 }
 
-'@ | New-Migration -Name 'RemoveExtendedPropertyToColumn'
+'@ | New-Migration -Name 'RemoveExtendedPropertyToTableColumn'
 
-    Invoke-Rivet -Push 'RemoveExtendedPropertyToColumn'
+    Invoke-Rivet -Push 'RemoveExtendedPropertyToTableColumn'
+
+    $expinfo = Get-ExtendedProperties
+
+    Assert-Null $expinfo
+
+}
+
+function Test-ShouldRemoveExtendedPropertyToViewColumn
+{
+    @'
+function Push-Migration
+{
+    Add-Table Foobar2 {
+        Int ID
+    }
+    Add-View -SchemaName 'dbo' 'Foobar' 'AS select * from rivet.Migrations'
+    Add-ExtendedProperty -Name 'Deploy' -Value 'TRUE' -ViewName 'Foobar' -ColumnName 'ID'
+    Remove-ExtendedProperty -Name 'Deploy' -ViewName 'Foobar' -ColumnName 'ID'
+}
+
+function Pop-Migration
+{
+    
+}
+
+'@ | New-Migration -Name 'RemoveExtendedPropertyToViewColumn'
+
+    Invoke-Rivet -Push 'RemoveExtendedPropertyToViewColumn'
 
     $expinfo = Get-ExtendedProperties
 

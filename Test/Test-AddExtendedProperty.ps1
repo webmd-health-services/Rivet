@@ -66,7 +66,34 @@ function Pop-Migration
 
 }
 
-function Test-ShouldAddExtendedPropertyToColumn
+function Test-ShouldAddExtendedPropertyToView
+{
+    @'
+function Push-Migration
+{
+    Add-View -SchemaName 'dbo' 'Foobar' 'AS select * from rivet.Migrations'
+
+    Add-ExtendedProperty -Name 'Deploy' -Value 'TRUE' -ViewName 'Foobar'
+}
+
+function Pop-Migration
+{
+    
+}
+
+'@ | New-Migration -Name 'AddExtendedPropertyToView'
+
+    Invoke-Rivet -Push 'AddExtendedPropertyToView'
+
+    $expinfo = Get-ExtendedProperties
+
+    Assert-Equal 'Deploy' $expinfo[0].name 
+    Assert-Equal 'TRUE' $expinfo[0].value 
+    Assert-Equal 'OBJECT_OR_COLUMN' $expinfo[0].class_desc
+
+}
+
+function Test-ShouldAddExtendedPropertyToTableColumn
 {
     @'
 function Push-Migration
@@ -83,9 +110,40 @@ function Pop-Migration
     
 }
 
-'@ | New-Migration -Name 'AddExtendedPropertyToColumn'
+'@ | New-Migration -Name 'AddExtendedPropertyToTableColumn'
 
-    Invoke-Rivet -Push 'AddExtendedPropertyToColumn'
+    Invoke-Rivet -Push 'AddExtendedPropertyToTableColumn'
+
+    $expinfo = Get-ExtendedProperties
+
+    Assert-Equal 'Deploy' $expinfo[0].name 
+    Assert-Equal 'TRUE' $expinfo[0].value 
+    Assert-Equal 'OBJECT_OR_COLUMN' $expinfo[0].class_desc
+
+}
+
+function Test-ShouldAddExtendedPropertyToViewColumn
+{
+    @'
+function Push-Migration
+{
+    Add-Table Table {
+        Int ID
+    }
+
+    Add-View -SchemaName 'dbo' 'Foobar' 'AS select * from rivet.Migrations'
+
+    Add-ExtendedProperty -Name 'Deploy' -Value 'TRUE' -ViewName 'Foobar' -ColumnName 'ID'
+}
+
+function Pop-Migration
+{
+    
+}
+
+'@ | New-Migration -Name 'AddExtendedPropertyToViewColumn'
+
+    Invoke-Rivet -Push 'AddExtendedPropertyToViewColumn'
 
     $expinfo = Get-ExtendedProperties
 
@@ -112,9 +170,9 @@ function Pop-Migration
     
 }
 
-'@ | New-Migration -Name 'AddExtendedPropertyToColumn'
+'@ | New-Migration -Name 'AllowNullPropertyValue'
 
-    Invoke-Rivet -Push 'AddExtendedPropertyToColumn'
+    Invoke-Rivet -Push 'AllowNullPropertyValue'
 
     $expinfo = Get-ExtendedProperties
 

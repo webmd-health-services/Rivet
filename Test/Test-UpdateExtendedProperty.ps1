@@ -67,7 +67,38 @@ function Pop-Migration
 
 }
 
-function Test-ShouldUpdateExtendedPropertyToColumn
+
+function Test-ShouldUpdateExtendedPropertyToView
+{
+    @'
+function Push-Migration
+{
+    Add-View -SchemaName 'dbo' 'Foobar' 'AS select * from rivet.Migrations'
+
+    Add-ExtendedProperty -Name 'Deploy' -Value 'TRUE' -ViewName 'Foobar'
+
+    Update-ExtendedProperty -Name 'Deploy' -Value 'FALSE' -ViewName 'Foobar' 
+}
+
+function Pop-Migration
+{
+    
+}
+
+'@ | New-Migration -Name 'UpdateExtendedPropertyToView'
+
+    Invoke-Rivet -Push 'UpdateExtendedPropertyToView'
+
+    $expinfo = Get-ExtendedProperties
+
+    Assert-Equal 'Deploy' $expinfo[0].name 
+    Assert-Equal 'FALSE' $expinfo[0].value 
+    Assert-Equal 'OBJECT_OR_COLUMN' $expinfo[0].class_desc
+
+}
+
+
+function Test-ShouldUpdateExtendedPropertyToTableColumn
 {
     @'
 function Push-Migration
@@ -85,9 +116,9 @@ function Pop-Migration
     
 }
 
-'@ | New-Migration -Name 'UpdateExtendedPropertyToColumn'
+'@ | New-Migration -Name 'UpdateExtendedPropertyToTableColumn'
 
-    Invoke-Rivet -Push 'UpdateExtendedPropertyToColumn'
+    Invoke-Rivet -Push 'UpdateExtendedPropertyToTableColumn'
 
     $expinfo = Get-ExtendedProperties
 
@@ -96,6 +127,40 @@ function Pop-Migration
     Assert-Equal 'OBJECT_OR_COLUMN' $expinfo[0].class_desc
 
 }
+
+
+function Test-ShouldUpdateExtendedPropertyToViewColumn
+{
+    @'
+function Push-Migration
+{
+    Add-Table Table {
+        Int ID
+    }
+
+    Add-View -SchemaName 'dbo' 'Foobar' 'AS select * from rivet.Migrations'
+
+    Add-ExtendedProperty -Name 'Deploy' -Value 'TRUE' -ViewName 'Foobar' -ColumnName 'ID'
+    Update-ExtendedProperty -Name 'Deploy' -Value 'FALSE' -ViewName 'Foobar' -ColumnName 'ID'
+}
+
+function Pop-Migration
+{
+    
+}
+
+'@ | New-Migration -Name 'UpdateExtendedPropertyToViewColumn'
+
+    Invoke-Rivet -Push 'UpdateExtendedPropertyToViewColumn'
+
+    $expinfo = Get-ExtendedProperties
+
+    Assert-Equal 'Deploy' $expinfo[0].name 
+    Assert-Equal 'FALSE' $expinfo[0].value 
+    Assert-Equal 'OBJECT_OR_COLUMN' $expinfo[0].class_desc
+
+}
+
 
 
 function Test-ShouldAllowNullPropertyValue
@@ -116,9 +181,9 @@ function Pop-Migration
     
 }
 
-'@ | New-Migration -Name 'AddExtendedPropertyToColumn'
+'@ | New-Migration -Name 'AllowNullPropertyValue'
 
-    Invoke-Rivet -Push 'AddExtendedPropertyToColumn'
+    Invoke-Rivet -Push 'AllowNullPropertyValue'
 
     $expinfo = Get-ExtendedProperties
 
@@ -144,9 +209,9 @@ function Pop-Migration
     
 }
 
-'@ | New-Migration -Name 'AddExtendedPropertyToColumn'
+'@ | New-Migration -Name 'AllowEmptyPropertyValue'
 
-    Invoke-Rivet -Push 'AddExtendedPropertyToColumn'
+    Invoke-Rivet -Push 'AllowEmptyPropertyValue'
 
     $expinfo = Get-ExtendedProperties
 
