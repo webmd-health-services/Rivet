@@ -60,7 +60,7 @@ namespace Rivet
 					break;
 
 				case ConstraintType.Unique:
-					keyname = "UQ";
+					keyname = "AK";
 					break;
 
 				case ConstraintType.UniqueIndex:

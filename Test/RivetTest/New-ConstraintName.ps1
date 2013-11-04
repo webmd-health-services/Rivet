@@ -37,7 +37,7 @@ function New-ConstraintName
         # Creates an index name.
         $Index,
 
-        [Parameter(Mandatory=$true,ParameterSetName='UQ')]
+        [Parameter(Mandatory=$true,ParameterSetName='AK')]
         [Switch]
         # Creates an 'unique' constraint name.
         $Unique,
@@ -65,7 +65,7 @@ function New-ConstraintName
         $op = New-Object 'Rivet.ConstraintName' $SchemaName, $TableName, $ColumnName, Index
         $name = $op.Name
     }
-    if ($PSCmdlet.ParameterSetName -eq "UQ")
+    if ($PSCmdlet.ParameterSetName -eq "AK")
     {
         $op = New-Object 'Rivet.ConstraintName' $SchemaName, $TableName, $ColumnName, Unique
         $name = $op.Name
