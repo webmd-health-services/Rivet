@@ -92,9 +92,15 @@ param(
     # The number of migrations to pop. Default is 1.
     $Count = 1,
 
+    [Parameter(ParameterSetName='PopAll')]
+    [Switch]
+    # Pop all migrations
+    $Force,
+
     [Parameter(ParameterSetName='New',Position=2)]
     [Parameter(ParameterSetName='Push')]
     [Parameter(ParameterSetName='Pop')]
+    [Parameter(ParameterSetName='PopAll')]
     [Parameter(ParameterSetName='Redo')]
     [string[]]
     # The database(s) to migrate. Optional.  Will operate on all databases otherwise.
@@ -103,6 +109,7 @@ param(
     [Parameter(ParameterSetName='New')]
     [Parameter(ParameterSetName='Push')]
     [Parameter(ParameterSetName='Pop')]
+    [Parameter(ParameterSetName='PopAll')]
     [Parameter(ParameterSetName='Redo')]
     [string]
     # The environment you're working in.  Controls which settings Rivet loads from the `rivet.json` configuration file.
@@ -111,6 +118,7 @@ param(
     [Parameter(ParameterSetName='New')]
     [Parameter(ParameterSetName='Push')]
     [Parameter(ParameterSetName='Pop')]
+    [Parameter(ParameterSetName='PopAll')]
     [Parameter(ParameterSetName='Redo')]
     [string]
     # The path to the Rivet configuration file.  Default behavior is to look in the current directory for a `rivet.json` file.  See `about_Rivet_Configuration` for more information.
