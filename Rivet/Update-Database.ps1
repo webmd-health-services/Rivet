@@ -152,7 +152,7 @@ function Update-Database
                 
                 Write-Host $hostOutput
                 Push-Migration
-                Remove-Item -Path $pushFunctionPath
+                Remove-Item -Path $pushFunctionPath -Confirm:$False
                 $auditQuery = "insert into {0} (ID,Name,Who,ComputerName) values ({1},'{2}','{3}','{4}')"
                 $who = '{0}\{1}' -f $env:USERDOMAIN,$env:USERNAME
                 $auditQuery = $auditQuery -f $RivetMigrationsTableFullName,$migrationInfo.MigrationID,$migrationInfo.MigrationName,$who,$env:COMPUTERNAME
@@ -183,10 +183,13 @@ function Update-Database
 Function Commit-Transaction
 {
     [CmdletBinding()]
-    param ([Switch]$Comfirm)
+    param ()
 
-    if (-not $Comfirm -or $psCmdlet.ShouldContinue("Do you wish to commit to this operation?", "Commit?"))
+    if ($psCmdlet.ShouldContinue("Do you wish to commit to this operation?", "Commit?"))
     {
         $Connection.Transaction.Commit()
+    }
+    else {
+        $Connection.Transaction.Rollback()
     }
 }

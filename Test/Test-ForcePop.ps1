@@ -48,7 +48,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'B'
 
-    Invoke-Rivet -Push 'A'
+    Invoke-Rivet -Push 'A' -Confirm
     Invoke-Rivet -Push 'B'
     
     Invoke-Rivet -Force
