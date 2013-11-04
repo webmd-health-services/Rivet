@@ -124,7 +124,7 @@ namespace Rivet.Test
 			ConstraintType c_type = ConstraintType.Unique;
 
 			var cons = new ConstraintName(schemaName, tableName, columnName, c_type);
-			var expectedConstraintString = "UQ_schemaName_tableName_column1_column2";
+			var expectedConstraintString = "AK_schemaName_tableName_column1_column2";
 			Assert.AreEqual(expectedConstraintString, cons.ToString());
 		}
 

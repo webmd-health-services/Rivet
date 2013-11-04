@@ -70,7 +70,7 @@
     <Compile Include="ConstraintNameTestFixture.cs" />
     <Compile Include="Operations\AddRemoveDefaultConstraintOperationTestFixture.cs" />
     <Compile Include="Operations\AddRemovePrimaryKeyOperationTestFixture.cs" />
-    <Compile Include="Operations\AddRemoveUniqueConstraintTestFixture.cs" />
+    <Compile Include="Operations\AddRemoveUniqueKeyTestFixture.cs" />
     <Compile Include="Operations\AddRemoveForeignKeyOperationTestFixture.cs" />
     <Compile Include="Operations\AddTriggerOperationTestFixture.cs" />
     <Compile Include="Operations\AddRowOperationTestFixture.cs" />
