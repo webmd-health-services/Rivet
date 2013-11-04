@@ -10,7 +10,8 @@ namespace Rivet
 		ForeignKey,
 		Check,
 		Index,
-		Unique
+		Unique,
+		UniqueIndex
 	}
 
 	public class ConstraintName
@@ -60,6 +61,10 @@ namespace Rivet
 
 				case ConstraintType.Unique:
 					keyname = "UQ";
+					break;
+
+				case ConstraintType.UniqueIndex:
+					keyname = "UIX";
 					break;
 
 				default:

@@ -65,8 +65,14 @@ function Assert-Index
         Assert-NotNull $id_columns ('Clustered or NonClustered Index Column(s) on table {0} doesn''t exist.' -f $TableName)
 
         ## Assert Index Name
-        Assert-Equal (New-ConstraintName -ColumnName $ColumnName -TableName $TableName -SchemaName $SchemaName -Index) $id.name
-
+        If ($TestUnique)
+        {
+            Assert-Equal (New-ConstraintName -ColumnName $ColumnName -TableName $TableName -SchemaName $SchemaName -UniqueIndex) $id.name
+        }
+        else 
+        {
+            Assert-Equal (New-ConstraintName -ColumnName $ColumnName -TableName $TableName -SchemaName $SchemaName -Index) $id.name
+        }
         ## Assert Count
         if ($id_columns -is 'Object[]')
         {

@@ -155,7 +155,7 @@ namespace Rivet.Test.Operations
 			const string filestreamonString = "filestreamonString";
 
 			var op = new AddIndexOperation(schemaName, tableName, columnName, descending, unique, clustered, options, whereString, onString, filestreamonString);
-			const string expectedQuery = "create unique clustered index [IX_schemaName_tableName_column1_column2] on [schemaName].[tableName] (column1 DESC,column2 ASC) with ( option1, option2 ) where ( whereString ) on onString filestream_on filestreamonString";
+			const string expectedQuery = "create unique clustered index [UIX_schemaName_tableName_column1_column2] on [schemaName].[tableName] (column1 DESC,column2 ASC) with ( option1, option2 ) where ( whereString ) on onString filestream_on filestreamonString";
 
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}

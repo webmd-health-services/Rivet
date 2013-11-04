@@ -40,7 +40,12 @@ function New-ConstraintName
         [Parameter(Mandatory=$true,ParameterSetName='UQ')]
         [Switch]
         # Creates an 'unique' constraint name.
-        $Unique
+        $Unique,
+
+        [Parameter(Mandatory=$true,ParameterSetName='UIX')]
+        [Switch]
+        # Creates an 'unique index' constraint name.
+        $UniqueIndex
     )
 
     if ($PSCmdlet.ParameterSetName -eq "DF")
@@ -63,6 +68,11 @@ function New-ConstraintName
     if ($PSCmdlet.ParameterSetName -eq "UQ")
     {
         $op = New-Object 'Rivet.ConstraintName' $SchemaName, $TableName, $ColumnName, Unique
+        $name = $op.Name
+    }
+    if ($PSCmdlet.ParameterSetName -eq "UIX")
+    {
+        $op = New-Object 'Rivet.ConstraintName' $SchemaName, $TableName, $ColumnName, UniqueIndex
         $name = $op.Name
     }
 
