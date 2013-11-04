@@ -33,12 +33,17 @@ function Update-Database
         [Parameter(Mandatory=$true,ParameterSetName='Pop')]
         [UInt32]
         # Reverse the given migration(s).
-        $Pop
+        $Pop,
+
+        [Parameter(ParameterSetName='PopAll')]
+        [Switch]
+        # Reverse the given migration(s).
+        $Force
     )
     
     $stopMigrating = $false
     
-    $popping = ($pscmdlet.ParameterSetName -eq 'Pop')
+    $popping = ($pscmdlet.ParameterSetName -eq 'Pop' -or $pscmdlet.ParameterSetName -eq 'PopAll')
     $numPopped = 0
 
     $Path | ForEach-Object {
@@ -74,7 +79,7 @@ function Update-Database
     Where-Object { 
         if( $popping )
         {
-            if( $numPopped -ge $Pop )
+            if( -not $Force -and $numPopped -ge $Pop )
             {
                 return $false
             }
@@ -111,7 +116,7 @@ function Update-Database
         
         
         $action = '+'
-        if( $Pop )
+        if( $Pop -or $Force)
         {
             $action = '-'
         }
@@ -123,7 +128,7 @@ function Update-Database
             $DBScriptRoot = $DBScriptsPath
             $DBMigrationsRoot = Join-Path -Path $DBScriptsPath -ChildPath Migrations
 
-            if( $Pop )
+            if( $Pop -or $Force)
             {
                 if( -not (Test-Path $popFuntionPath) )
                 {

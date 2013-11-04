@@ -34,9 +34,15 @@ function Invoke-Rivet
         # The number of migrations to pop. Default is 1.
         $Count = 1,
 
+        [Parameter(ParameterSetName='PopAll')]
+        [Switch]
+        # The number of migrations to pop. Default is 1.
+        $Force,
+
         [Parameter(ParameterSetName='New',Position=2)]
         [Parameter(ParameterSetName='Push')]
         [Parameter(ParameterSetName='Pop')]
+        [Parameter(ParameterSetName='PopAll')]
         [Parameter(ParameterSetName='Redo')]
         [string[]]
         # The database(s) to migrate. Optional.  Will operate on all databases otherwise.
@@ -52,6 +58,11 @@ function Invoke-Rivet
         # The path to the Rivet configuration file.  Default behavior is to look in the current directory for a `rivet.json` file.  See `about_Rivet_Configuration` for more information.
         $ConfigFilePath
     )
+
+    if ($Force)
+    {
+        $Count = 99999
+    }
 
     $settings = Get-RivetConfig -Database $Database -Path $ConfigFilePath -Environment $Environment
 
@@ -108,6 +119,10 @@ function Invoke-Rivet
             elseif( $pscmdlet.ParameterSetName -eq 'Pop' )
             {
                 Update-Database -Pop $Count @updateParams
+            }
+            elseif ( $pscmdlet.ParameterSetName -eq 'PopAll' )
+            {
+                Update-Database -Force @updateParams
             }
             elseif( $pscmdlet.ParameterSetName -eq 'Redo' )
             {

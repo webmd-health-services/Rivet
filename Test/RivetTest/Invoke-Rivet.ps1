@@ -17,7 +17,11 @@ function Invoke-Rivet
         
         [Parameter(Position=1,ParameterSetName='Pop')]
         [UInt32]
-        $Count,
+        $Count = 1,
+
+        [Parameter(ParameterSetName='PopAll')]
+        [Switch]
+        $Force,
 
         [Parameter(ParameterSetName='Redo')]
         [Switch]
@@ -44,6 +48,14 @@ function Invoke-Rivet
     }
 
     $parms = $PSBoundParameters
+
+    <#
+    Write-Host -Foregroundcolor black $PSCmdlet.ParameterSetName
+    Write-Host -Foregroundcolor blue $RTRivetPath
+    Write-Host -Foregroundcolor red @PSBoundParameters
+    Write-Host -Foregroundcolor green @customParams
+    #>
+
     & $RTRivetPath @PSBoundParameters @customParams
 
 }
