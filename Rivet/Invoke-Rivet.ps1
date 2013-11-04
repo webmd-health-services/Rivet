@@ -1,7 +1,7 @@
 
 function Invoke-Rivet
 {
-    [CmdletBinding()]
+    [CmdletBinding(SupportsShouldProcess=$True)]
     param(
         [Parameter(Mandatory=$true,ParameterSetName='New')]
         [Switch]
@@ -58,11 +58,6 @@ function Invoke-Rivet
         # The path to the Rivet configuration file.  Default behavior is to look in the current directory for a `rivet.json` file.  See `about_Rivet_Configuration` for more information.
         $ConfigFilePath
     )
-
-    if ($Force)
-    {
-        $Count = 99999
-    }
 
     $settings = Get-RivetConfig -Database $Database -Path $ConfigFilePath -Environment $Environment
 

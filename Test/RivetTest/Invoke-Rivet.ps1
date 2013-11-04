@@ -1,6 +1,7 @@
 
 function Invoke-Rivet
 {
+    [CmdletBinding(SupportsShouldProcess=$True)]
     param(
         [Parameter(Mandatory=$true,ParameterSEtName='Push')]
         [Switch]

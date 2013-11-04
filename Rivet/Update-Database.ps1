@@ -18,7 +18,7 @@ function Update-Database
     
     Reverses all migrations in the `C:\Projects\Rivet\Databases\Rivet\Migrations` directory
     #>
-    [CmdletBinding(DefaultParameterSetName='Push')]
+    [CmdletBinding(DefaultParameterSetName='Push', SupportsShouldProcess=$True)]
     param(
         [Parameter(Mandatory=$true)]
         [string[]]
@@ -158,7 +158,8 @@ function Update-Database
                 $auditQuery = $auditQuery -f $RivetMigrationsTableFullName,$migrationInfo.MigrationID,$migrationInfo.MigrationName,$who,$env:COMPUTERNAME
                 Invoke-Query -Query $auditQuery
             }
-            $Connection.Transaction.Commit()
+
+            Commit-Transaction
         }
         catch
         {
@@ -176,5 +177,16 @@ function Update-Database
         {
             $Connection.Transaction = $null
         }
+    }
+}
+
+Function Commit-Transaction
+{
+    [CmdletBinding()]
+    param ([Switch]$Comfirm)
+
+    if (-not $Comfirm -or $psCmdlet.ShouldContinue("Do you wish to commit to this operation?", "Commit?"))
+    {
+        $Connection.Transaction.Commit()
     }
 }
