@@ -8,7 +8,14 @@ namespace Rivet.Operations
 		public AddIndexOperation(string schemaName, string tableName, string[] columnName, bool unique, bool clustered,
 								 string[] options, string where, string on, string fileStreamOn)
 		{
-			ConstraintName = new ConstraintName(schemaName, tableName, columnName, ConstraintType.Index);
+			if (unique)
+			{
+				ConstraintName = new ConstraintName(schemaName, tableName, columnName, ConstraintType.UniqueIndex);
+			}
+			else
+			{
+				ConstraintName = new ConstraintName(schemaName, tableName, columnName, ConstraintType.Index);
+			}
 			SchemaName = schemaName;
 			TableName = tableName;
 			ColumnName = new List<string>(columnName ?? new string[0]);
@@ -42,7 +49,14 @@ namespace Rivet.Operations
 		public AddIndexOperation(string schemaName, string tableName, string [] columnName, bool [] descending, bool unique, bool clustered,
 		                         string[] options, string where, string on, string fileStreamOn)
 		{
-			ConstraintName = new ConstraintName(schemaName, tableName, columnName, ConstraintType.Index);
+			if (unique)
+			{
+				ConstraintName = new ConstraintName(schemaName, tableName, columnName, ConstraintType.UniqueIndex);
+			}
+			else
+			{
+				ConstraintName = new ConstraintName(schemaName, tableName, columnName, ConstraintType.Index);
+			}
 			SchemaName = schemaName;
 			TableName = tableName;
 			ColumnName = new List<string>(columnName ?? new string[0]);
