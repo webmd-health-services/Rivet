@@ -118,6 +118,7 @@ filter Invoke-Query
         } |
         Where-Object { $_.Trim() } |
         ForEach-Object {
+            Write-Verbose $_
             $operation = New-Object 'Rivet.Operations.RawQueryOperation' $_
             Invoke-MigrationOperation -Operation $operation @invokeMigrationParams
         }

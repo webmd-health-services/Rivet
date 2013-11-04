@@ -81,6 +81,7 @@ function Invoke-Migration
             }
             finally
             {
+                Write-Verbose $query
                 $cmdReader.Close()
             }
         }
