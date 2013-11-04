@@ -20,7 +20,7 @@ function Connect-Database
     Disconnect-Database
     
     $connString = 'Server={0};Database={1};Integrated Security=True;Connection Timeout={2}' -f $SqlServerName,$Database,$ConnectionTimeout
-    Set-Variable -Name 'Connection' -Scope 1 -Value (New-Object Data.SqlClient.SqlConnection ($connString))
+    Set-Variable -Name 'Connection' -Scope 1 -Value (New-Object Data.SqlClient.SqlConnection ($connString)) -Confirm:$False
 
     $Connection.Open()
     
