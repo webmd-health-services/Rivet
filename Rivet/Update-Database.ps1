@@ -185,7 +185,7 @@ Function Commit-Transaction
     [CmdletBinding()]
     param ()
 
-    if ($psCmdlet.ShouldContinue("Do you wish to commit to this operation?", "Commit?"))
+    if ($psCmdlet.ShouldProcess("Do you wish to commit to this operation?", "Commit?"))
     {
         $Connection.Transaction.Commit()
     }
