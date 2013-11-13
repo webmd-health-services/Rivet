@@ -52,7 +52,11 @@ function Update-Row
         [Parameter(Mandatory=$true,ParameterSetName='AllRows')]
         [Switch]
         # Updates all the rows in the table.
-        $All
+        $All,
+
+        [Switch]
+        # Does not write messages.
+        $Quiet
     )
 
     if ($PSCmdlet.ParameterSetName -eq 'SpecificRows')
@@ -64,7 +68,13 @@ function Update-Row
         $op = New-Object 'Rivet.Operations.UpdateRowOperation' $SchemaName, $TableName, $Column, $RawColumnValue
     }
 
-    Write-Host (" {0}.{1} =" -f $SchemaName, $TableName) -NoNewline
-    $rowsUpdated = Invoke-MigrationOperation –Operation $op -NonQuery
-    Write-Host ("{0} row(s)" -f $rowsUpdated)
+    if( -not $Quiet )
+    {
+        Write-Host (" {0}.{1} =" -f $SchemaName,$TableName) -NoNewline
+    }
+    $rowsUpdated = Invoke-MigrationOperation -operation $op -NonQuery
+    if( -not $Quiet )
+    {
+        Write-Host ("{0} row(s)" -f $rowsUpdated)
+    }
 }

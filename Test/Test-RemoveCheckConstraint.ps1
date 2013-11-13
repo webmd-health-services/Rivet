@@ -31,5 +31,5 @@ function Pop-Migration()
     Invoke-Rivet -Push 'RemoveCheckConstraint'
     $CheckConstraints = Invoke-RivetTestQuery -Query 'select * from sys.check_constraints'
 
-    Assert-Null $CheckConstraints
+    Assert-Equal $CheckConstraints[0].name CK_rivet_Activity_Operation
 }

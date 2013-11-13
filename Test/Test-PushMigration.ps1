@@ -49,6 +49,41 @@ function Test-ShouldPushMigrations
     $rows | ForEach-Object { Assert-True ($_.AtUtc.AddMilliseconds(-500) -lt $createdBefore) }
 }
 
+function Test-ShouldPushMigrationAndAddToActivityTable
+{
+    Invoke-Rivet -Push
+
+    $migrationScripts = Get-MigrationScript
+    
+    $migrationScripts | ForEach-Object {
+        
+        $id,$name = $_.BaseName -split '_'
+        
+        Assert-Migration -ID $id -Name $name
+    }
+
+    Assert-True (Test-Table -Schema 'rivet' -Name 'Migrations')
+    Assert-True (Test-Table -Schema 'rivet' -Name 'Activity')
+    
+    $rowsmigration = Get-MigrationInfo
+    $rowsactivity = Get-ActivityInfo 
+
+    Assert-NotNull $rowsmigration
+    Assert-Equal 'InvokeQuery' $rowsmigration[0].Name
+    Assert-Equal 'SecondTable' $rowsmigration[1].Name
+    Assert-Equal 'CreateObjectsFromFiles' $rowsmigration[2].Name
+
+    Assert-NotNull $rowsactivity
+    Assert-Equal 'Push' $rowsactivity[0].Operation
+    Assert-Equal 'InvokeQuery' $rowsactivity[0].Name
+
+    Assert-Equal 'Push' $rowsactivity[1].Operation
+    Assert-Equal 'SecondTable' $rowsactivity[1].Name
+
+    Assert-Equal 'Push' $rowsactivity[2].Operation
+    Assert-Equal 'CreateObjectsFromFiles' $rowsactivity[2].Name
+}
+
 function Test-ShouldPushMigrationsForMultipleDBs
 {
     $createdAfter = (Get-Date).ToUniversalTime()

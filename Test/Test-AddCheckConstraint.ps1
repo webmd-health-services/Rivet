@@ -30,8 +30,8 @@ function Pop-Migration()
     Invoke-Rivet -Push 'AddCheckConstraint'
     $CheckConstraints = Invoke-RivetTestQuery -Query 'select * from sys.check_constraints'
 
-    Assert-Equal 'CK_MIgrations_Example' $CheckConstraints.name
-    Assert-False $CheckConstraints.is_not_for_replication
+    Assert-Equal 'CK_MIgrations_Example' $CheckConstraints[1].name
+    Assert-False $CheckConstraints[1].is_not_for_replication
 }
 
 function Test-ShouldAddCheckConstraintWithNoReplication
@@ -54,6 +54,6 @@ function Pop-Migration()
     Invoke-Rivet -Push 'AddCheckConstraint'
     $CheckConstraints = Invoke-RivetTestQuery -Query 'select * from sys.check_constraints'
 
-    Assert-Equal 'CK_MIgrations_Example' $CheckConstraints.name
+    Assert-Equal 'CK_MIgrations_Example' $CheckConstraints[1].name
     Assert-True $CheckConstraints.is_not_for_replication
 }

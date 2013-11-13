@@ -19,7 +19,8 @@ function Test-ShouldCreateRivetObjectsInDatabase
     
     Assert-True (Test-Database)
     Assert-True (Test-Schema -Name 'rivet') 'rivet schema not created'   
-    Assert-True (Test-Table -Name 'Migrations' -SchemaName 'rivet') 'rivet table not created'
+    Assert-True (Test-Table -Name 'Migrations' -SchemaName 'rivet') 'rivet migrations table not created'
+    Assert-True (Test-Table -Name 'Activity' -SchemaName 'rivet') 'rivet activity table not created'
 }
 
 function Test-ShouldRenamePstepSchemaToRivet
@@ -32,6 +33,8 @@ function Test-ShouldRenamePstepSchemaToRivet
     Invoke-RivetTestQuery -Query ('create schema {0}' -f $oldSchemaName)
 
     Invoke-RivetTestQuery -Query ('alter schema {0} transfer {1}.Migrations' -f $oldSchemaName,$RivetSchemaName)
+
+    Invoke-RivetTestQuery -Query ('alter schema {0} transfer {1}.Activity' -f $oldSchemaName,$RivetSchemaName)
 
     Invoke-RivetTestQuery -Query ('drop schema {0}' -f $RivetSchemaName)
 

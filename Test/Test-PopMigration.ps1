@@ -41,6 +41,23 @@ function Test-ShouldPopAllMigrations
     Assert-False (Test-DatabaseObject -ScalarFunction 'MiscellaneousObject') 'the miscellaneous function not dropped'
 }
 
+function Test-ShouldWriteToActivityTableOnPop
+{
+    $migrationCount = Measure-Migration
+    Assert-True ($migrationCount -gt 1)
+
+    Invoke-Rivet -Pop 1
+    Assert-LastProcessSucceeded
+
+    Assert-Equal ($migrationCount-1) (Measure-Migration)
+
+    $rows = Get-ActivityInfo
+
+    Assert-Equal 'Pop' $rows[4].Operation
+    Assert-Equal 'CreateObjectInCustomDirectory' $rows[4].Name
+    Assert-Equal 5 $rows[4].ID
+}
+
 function Test-ShouldPopSpecificNumberOfDatabaseMigrations
 {
     $rivetCount = Measure-Migration

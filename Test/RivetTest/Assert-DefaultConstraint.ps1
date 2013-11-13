@@ -36,16 +36,16 @@ function Assert-defaultConstraint
     {
         if ($default_constraint -isnot 'Object[]')
         {
-            Assert-Equal "atUtcDefault" $default_constraint.name
+            Assert-Equal "DF_rivet_Activity_AtUtc" $default_constraint.name
         }
         else
         {
-            Assert-Equal "atUtcDefault" $default_constraint[0].name
+            Assert-Equal "DF_rivet_Activity_AtUtc" $default_constraint[0].name
         }
     }
     else
     {
         Assert-NotNull $default_constraint ('There are no default constraints in the database')
-        Assert-Equal $expected_constraint_name $default_constraint[0].name
+        Assert-Equal $expected_constraint_name $default_constraint[1].name
     }
 }
