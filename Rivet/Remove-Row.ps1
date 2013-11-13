@@ -41,7 +41,11 @@
         [Parameter(ParameterSetName='AllRows')]
         [Switch]
         # Truncate the table instead to delete all the rows.  This is faster than using a `delete` statement.
-        $Truncate
+        $Truncate,
+
+        [Switch]
+        # Does not write messages.
+        $Quiet
     )
 
     if ($PSCmdlet.ParameterSetName -eq 'DropSpecificRows')
@@ -61,7 +65,11 @@
         }
     }
 
-    Write-Host (" {0}.{1} -" -f $SchemaName,$TableName) -NoNewline
+    if (-not $Quiet)
+    {
+        Write-Host (" {0}.{1} -" -f $SchemaName,$TableName) -NoNewline
+    }
+
     $rowsRemoved = Invoke-MigrationOperation -operation $op -NonQuery
 
     if ($Truncate -and $PSCmdlet.ParameterSetName -eq 'AllRows')
@@ -69,5 +77,8 @@
         $rowsRemoved = $rowCount
     }
 
-    Write-Host ("{0} row(s)" -f $rowsRemoved)
+    if (-not $Quiet)
+    {
+        Write-Host ("{0} row(s)" -f $rowsRemoved)
+    }
 }

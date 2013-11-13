@@ -139,8 +139,17 @@ function Update-Database
                 Write-Host $hostOutput
                 Pop-Migration
                 Remove-Item -Path $popFuntionPath
-                $auditQuery = "delete from {0} where ID={1}" -f $RivetMigrationsTableFullName,$migrationInfo.MigrationID
-                Invoke-Query -Query $auditQuery
+
+                Remove-Row -SchemaName $RivetSchemaName $RivetMigrationsTableName -Quiet -Where ('ID = {0}' -f $migrationInfo.MigrationID)
+                $who = '{0}\{1}' -f $env:USERDOMAIN,$env:USERNAME
+                Add-Row -SchemaName $RivetSchemaName $RivetActivityTableName -Quiet -Column @{
+                                                                            Operation = 'Pop';
+                                                                            MigrationID = $migrationInfo.MigrationID;
+                                                                            Name = $migrationInfo.MigrationName;
+                                                                            Who = $who;
+                                                                            ComputerName = $env:COMPUTERNAME;
+                                                                          }
+
             }
             else
             {
@@ -153,10 +162,24 @@ function Update-Database
                 Write-Host $hostOutput
                 Push-Migration
                 Remove-Item -Path $pushFunctionPath -Confirm:$False
-                $auditQuery = "insert into {0} (ID,Name,Who,ComputerName) values ({1},'{2}','{3}','{4}')"
+
                 $who = '{0}\{1}' -f $env:USERDOMAIN,$env:USERNAME
-                $auditQuery = $auditQuery -f $RivetMigrationsTableFullName,$migrationInfo.MigrationID,$migrationInfo.MigrationName,$who,$env:COMPUTERNAME
-                Invoke-Query -Query $auditQuery
+
+                Add-Row -SchemaName $RivetSchemaName $RivetMigrationsTableName -Quiet -Column @{
+                                                                                ID = $migrationInfo.MigrationID;
+                                                                                Name = $migrationInfo.MigrationName;
+                                                                                Who = $who;
+                                                                                ComputerName = $env:COMPUTERNAME;
+                                                                            }
+
+                Add-Row -SchemaName $RivetSchemaName $RivetActivityTableName -Quiet -Column @{
+                                                                                Operation = 'Push';
+                                                                                MigrationID = $migrationInfo.MigrationID;
+                                                                                Name = $migrationInfo.MigrationName;
+                                                                                Who = $who;
+                                                                                ComputerName = $env:COMPUTERNAME;
+                                                                          }
+
             }
 
             Commit-Transaction

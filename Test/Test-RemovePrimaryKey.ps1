@@ -80,5 +80,5 @@ function Pop-Migration()
 
     $PK = Invoke-RivetTestQuery -Query 'select * from sys.key_constraints'
 
-    Assert-Equal 'MigrationsPK' $PK[0].name
+    Assert-Equal 'PK_rivet_Activity_ID' $PK[0].name
 }

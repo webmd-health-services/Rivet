@@ -40,14 +40,25 @@ function Add-Row
 
         [Switch]
         # Allow inserting identies.
-        $IdentityInsert
+        $IdentityInsert,
+
+        [Switch]
+        # Does not write messages.
+        $Quiet
     )
 
     process
     {
         $op = New-Object 'Rivet.Operations.AddRowOperation' $SchemaName, $TableName, $Column, $IdentityInsert
-        Write-Host (" {0}.{1} +" -f $SchemaName,$TableName) -NoNewline
+
+        if( -not $Quiet )
+        {
+            Write-Host (" {0}.{1} +" -f $SchemaName,$TableName) -NoNewline
+        }
         $rowsAdded = Invoke-MigrationOperation -operation $op -NonQuery
-        Write-Host ("{0} row(s)" -f $rowsAdded)
+        if( -not $Quiet )
+        {
+            Write-Host ("{0} row(s)" -f $rowsAdded)
+        }
     }
 }

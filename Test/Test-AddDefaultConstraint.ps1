@@ -126,6 +126,6 @@ function Pop-Migration()
     
     $DefaultConstraints = Get-DefaultConstraint
 
-    Assert-Equal 'Optional' $DefaultConstraints.name[0]
+    Assert-Equal 'Optional' $DefaultConstraints.name[1]
 
 }
