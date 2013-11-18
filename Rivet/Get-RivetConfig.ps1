@@ -102,19 +102,17 @@ function Get-RivetConfig
             $value = $rawConfig.$Name
         }
 
-        if( $Environment -and 
-            ($rawConfig | Get-Member -Name 'Environments') -and 
-            ($rawConfig.Environments | Get-Member -Name $Environment) -and 
-            ($rawConfig.Environments.$Environment | Get-Member -Name $Name))
+        $env = Get-Environment
+        if( $env -and ($env | Get-Member -Name $Name))
         {
-            $value = $rawConfig.Environments.$Environment.$Name
+            $value = $env.$Name
         }
 
         if( -not $value )
         {
             if( $Required )
             {
-                Write-ValidationError ('setting ''SqlServerName'' is missing.' -f $Name)
+                Write-ValidationError ('setting ''{0}'' is missing.' -f $Name)
                 return $false
             }
             return $true
@@ -175,6 +173,18 @@ function Get-RivetConfig
     }
 
 
+    function Get-Environment
+    {
+        if( $Environment )
+        {
+            if( ($rawConfig | Get-Member -Name 'Environments') -and 
+                ($rawConfig.Environments | Get-Member -Name $Environment) )
+            {
+                $rawConfig.Environments.$Environment
+            }
+        }
+    }
+
     ## If there is no $Path defined set $Path to current directory
     if( -not $Path )
     {
@@ -218,6 +228,12 @@ function Get-RivetConfig
 
     if( $valid )
     {
+        if( $Environment -and -not (Get-Environment) )
+        {
+            Write-Error ('Environment ''{0}'' not found in ''{1}''.' -f $Environment,$Path)
+            return
+        }
+
         $properties.Databases = Invoke-Command {
 
                                     # Get user-specified databases first
