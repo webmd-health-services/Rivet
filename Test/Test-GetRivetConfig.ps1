@@ -372,6 +372,18 @@ function Test-ShouldOnlyReturnExplicitDatabases
     Assert-Equal (Join-Path -Path $tempDir -ChildPath "Databases\one") $config.Databases[0].Root
 }
 
+function Test-ShouldFailIfEnvironmentMissing
+{
+    $dbName = [Guid]::NewGuid().ToString()
+    $dbName | New-DatabaseDirectory
+
+    $Error.Clear()
+    $config = Get-RivetConfig -Path $rivetConfigPath -Environment 'IDoNotExist' -ErrorAction SilentlyContinue
+    Assert-Null $config
+    Assert-Equal 1 $Error.Count
+    Assert-Like $Error[0].Exception.Message '*Environment ''IDoNotExist'' not found*'
+}
+
 function Set-RivetConfig
 {
     param(
