@@ -88,7 +88,7 @@ function Push-Migration()
 
 function Pop-Migration()
 {
-    Remove-ForeignKey 'Source' 'Reference' -Name 'Optional'
+    Remove-ForeignKey 'Source' -Name 'Optional'
 }
 '@ | New-Migration -Name 'RemoveForeignKeyWithOptionalName'
     Invoke-Rivet -Push "RemoveForeignKeyWithOptionalName"

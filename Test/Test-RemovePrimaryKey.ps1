@@ -68,7 +68,7 @@ function Push-Migration()
     }
 
     Add-PrimaryKey -TableName 'Add-PrimaryKey' -ColumnName 'id' -Name 'Custom'
-    Remove-PrimaryKey -TableName 'Add-PrimaryKey' -ColumnName 'id' -Name 'Custom'
+    Remove-PrimaryKey -TableName 'Add-PrimaryKey' -Name 'Custom'
 }
 
 function Pop-Migration()

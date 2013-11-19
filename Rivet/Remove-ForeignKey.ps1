@@ -15,6 +15,10 @@ function Remove-ForeignKey
 
     Removes a Foreign key to the `Cars` table on the `Year`, `Make`, and `Model` columns.
 
+    .EXAMPLE
+    Remove-ForeignKey 'Cars' -Name 'FK_Cars_Year'
+
+    Demonstrates how to remove a foreign key that has a name different than Rivet's derived name.
     #>
     [CmdletBinding()]
     param(
@@ -28,17 +32,17 @@ function Remove-ForeignKey
         # The schema name of the table.  Defaults to `dbo`.
         $SchemaName = 'dbo',
 
-        [Parameter(Mandatory=$true,Position=1)]
+        [Parameter(Mandatory=$true,Position=1,ParameterSetName='ByDefaultName')]
         [string]
         # The string that references the table
         $References,
 
-        [Parameter()]
+        [Parameter(ParameterSetName='ByDefaultName')]
         [string]
         # The schema name of the table.  Defaults to `dbo`.
         $ReferencesSchema = 'dbo',
 
-        [Parameter()]
+        [Parameter(Mandatory=$true,ParameterSetName='ByCustomName')]
         [string]
         # The name for the <object type>. If not given, a sensible name will be created.
         $Name
@@ -46,7 +50,7 @@ function Remove-ForeignKey
 
     Set-StrictMode -Version 'Latest'
 
-    if ($PSBoundParameters.containskey("Name"))
+    if( $PSBoundParameters.ContainsKey("Name") )
     {
         $op = New-Object 'Rivet.Operations.RemoveForeignKeyOperation' $SchemaName, $TableName, $Name
         Write-Host (' {0}.{1} -{2}' -f $SchemaName,$TableName,$Name)
