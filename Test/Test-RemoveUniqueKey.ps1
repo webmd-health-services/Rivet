@@ -67,7 +67,7 @@ function Push-Migration()
     }
 
     Add-UniqueKey -TableName 'Add-UniqueKey' -ColumnName 'UniqueKeyMe' -Name 'Custom'
-    Remove-UniqueKey -TableName 'Add-UniqueKey' -ColumnName 'UniqueKeyMe' -Name 'Custom'
+    Remove-UniqueKey -TableName 'Add-UniqueKey' -Name 'Custom'
 }
 
 function Pop-Migration()

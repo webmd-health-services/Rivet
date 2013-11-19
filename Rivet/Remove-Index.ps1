@@ -16,6 +16,10 @@ function Remove-Index
 
     Drops a relational index of column 'Year' on the table 'Cars'
 
+    .EXAMPLE
+    Remove-Index 'Cars' -Name 'YearIX'
+
+    Demonstrates how to drop an index with a different name than the name Rivet derives for index.
     #>
 
     [CmdletBinding()]
@@ -30,12 +34,12 @@ function Remove-Index
         # The schema name of the target table.  Defaults to `dbo`.
         $SchemaName = 'dbo',
 
-        [Parameter(Mandatory=$true,Position=1)]
+        [Parameter(Mandatory=$true,Position=1,ParameterSetName='ByDefaultName')]
         [string[]]
         # The column(s) on which the index is based
         $ColumnName,
 
-        [Parameter()]
+        [Parameter(Mandatory=$true,ParameterSetName='ByExplicitName')]
         [string]
         # The name for the <object type>. If not given, a sensible name will be created.
         $Name
@@ -43,7 +47,7 @@ function Remove-Index
 
     Set-StrictMode -Version 'Latest'
 
-    if ($PSBoundParameters.containskey("Name"))
+    if( $PSBoundParameters.ContainsKey("Name") )
     {
         $op = New-Object 'Rivet.Operations.RemoveIndexOperation' $SchemaName, $TableName, $Name
         Write-Host (' {0}.{1} -{2}' -f $SchemaName,$TableName,$Name) 

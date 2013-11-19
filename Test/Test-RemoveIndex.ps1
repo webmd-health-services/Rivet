@@ -76,7 +76,7 @@ function Push-Migration()
     }
 
     Add-Index -TableName 'Add-Index' -ColumnName 'IndexMe' -Name 'Example'
-    Remove-Index -TableName 'Add-Index' -ColumnName 'IndexMe' -Name 'Example'
+    Remove-Index -TableName 'Add-Index' -Name 'Example'
 }
 
 function Pop-Migration()

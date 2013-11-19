@@ -16,11 +16,15 @@ function Remove-UniqueKey
 
     Drops a Unique Constraint of column 'Year' in the table 'Cars'
 
+    .EXAMPLE
+    Remove-UniqueKey 'Cars' -Name 'YearUK'
+
+    Demonstrates how to remove a unique key whose name is different than the name Rivet derives for unique keys.
     #>
 
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory=$true,Position=0)]
         [string]
         # The name of the target table.
         $TableName,
@@ -30,12 +34,12 @@ function Remove-UniqueKey
         # The schema name of the target table.  Defaults to `dbo`.
         $SchemaName = 'dbo',
 
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory=$true,Position=1,ParameterSetName='ByColumnName')]
         [string[]]
         # The column(s) on which the UniqueConstraint is based
         $ColumnName,
 
-        [Parameter()]
+        [Parameter(Mandatory=$true,ParameterSetName='ByExplicitName')]
         [string]
         # The name for the <object type>. If not given, a sensible name will be created.
         $Name
@@ -45,7 +49,7 @@ function Remove-UniqueKey
 
     $ColumnClause = $ColumnName -join ','
 
-    if ($PSBoundParameters.containskey("Name"))
+    if ($PSBoundParameters.ContainsKey("Name"))
     {
         $op = New-Object 'Rivet.Operations.RemoveUniqueKeyOperation' $SchemaName, $TableName, $Name
     }

@@ -16,6 +16,10 @@ function Remove-DefaultConstraint
 
     Drops a Default Constraint of column 'Year' in the table 'Cars'
 
+    .EXAMPLE
+    Remove-DefaultConstraint 'Cars' -Name 'Cars_Year_DefaultConstraint'
+
+    Demonstrates how to remove a default constraint with a name different than the derived name Rivet creates for default constraints.
     #>
 
     [CmdletBinding()]
@@ -30,12 +34,12 @@ function Remove-DefaultConstraint
         # The schema name of the target table.  Defaults to `dbo`.
         $SchemaName = 'dbo',
 
-        [Parameter(Mandatory=$true,Position=1,ParameterSetName='ByColumnName')]
+        [Parameter(Mandatory=$true,Position=1,ParameterSetName='ByDefaultName')]
         [string]
         # The column(s) on which the DefaultConstraint is based
         $ColumnName,
 
-        [Parameter(Mandatory=$true,ParameterSetName='ByExplicitName')]
+        [Parameter(Mandatory=$true,ParameterSetName='ByCustomName')]
         [string]
         # The name for the <object type>. If not given, a sensible name will be created.
         $Name
@@ -44,7 +48,7 @@ function Remove-DefaultConstraint
 
     Set-StrictMode -Version 'Latest'
 
-    if( $PSBoundParameters.containskey("Name") )
+    if( $PSBoundParameters.ContainsKey("Name") )
     {
         $op = New-Object 'Rivet.Operations.RemoveDefaultConstraintOperation' $SchemaName, $TableName, $null, $Name
         Write-Host (' {0}.{1} -{2}' -f $SchemaName,$TableName,$Name)
