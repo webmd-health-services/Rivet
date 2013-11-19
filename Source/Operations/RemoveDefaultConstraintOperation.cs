@@ -2,33 +2,29 @@
 {
 	public sealed class RemoveDefaultConstraintOperation : Operation
 	{
-		//System Generated Constraint Name
 		public RemoveDefaultConstraintOperation(string schemaName, string tableName, string columnName)
 		{
-			ConstraintName = new ConstraintName(schemaName, tableName, new[] { columnName }, ConstraintType.Default);
+			Name = new ConstraintName(schemaName, tableName, new[] { columnName }, ConstraintType.Default);
 			SchemaName = schemaName;
 			TableName = tableName;
-			ColumnName = columnName; //For Testing Purposes Only
+			ColumnName = columnName;
 		}
 
-		//Custom Constraint Name
-		public RemoveDefaultConstraintOperation(string schemaName, string tableName, string columnName, string customConstraintName)
+		public RemoveDefaultConstraintOperation(string schemaName, string tableName, string columnName, string name)
 		{
-			ConstraintName = new ConstraintName(customConstraintName);
+			Name = new ConstraintName(name);
 			SchemaName = schemaName;
 			TableName = tableName;
-			ColumnName = columnName; //For Testing Purposes Only
 		}
 
-		public ConstraintName ConstraintName { get; private set; }
+		public ConstraintName Name { get; private set; }
 		public string SchemaName { get; private set; }
 		public string TableName { get; private set; }
 		public string ColumnName { get; private set; }
 
 		public override string ToQuery()
 		{
-			return string.Format("alter table [{0}].[{1}] drop constraint [{2}]", SchemaName, TableName,
-					ConstraintName.ToString());
+			return string.Format("alter table [{0}].[{1}] drop constraint [{2}]", SchemaName, TableName, Name);
 		}
 	}
 }

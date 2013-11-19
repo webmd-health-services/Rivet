@@ -121,7 +121,7 @@ namespace Rivet.Test
 			var tableName = "tableName";
 			string[] columnName = new string[] { "column1", "column2" };
 			string[] smokeColumnName = new string[] { "column1" };
-			ConstraintType c_type = ConstraintType.Unique;
+			ConstraintType c_type = ConstraintType.UniqueKey;
 
 			var cons = new ConstraintName(schemaName, tableName, columnName, c_type);
 			var expectedConstraintString = "AK_schemaName_tableName_column1_column2";

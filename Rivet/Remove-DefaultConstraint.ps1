@@ -30,29 +30,29 @@ function Remove-DefaultConstraint
         # The schema name of the target table.  Defaults to `dbo`.
         $SchemaName = 'dbo',
 
-        [Parameter(Mandatory=$true,Position=1)]
+        [Parameter(Mandatory=$true,Position=1,ParameterSetName='ByColumnName')]
         [string]
         # The column(s) on which the DefaultConstraint is based
         $ColumnName,
 
-        [Parameter()]
+        [Parameter(Mandatory=$true,ParameterSetName='ByExplicitName')]
         [string]
         # The name for the <object type>. If not given, a sensible name will be created.
         $Name
 
     )
 
-    Set-StrictMode -Version Latest
+    Set-StrictMode -Version 'Latest'
 
-    if ($PSBoundParameters.containskey("Name"))
+    if( $PSBoundParameters.containskey("Name") )
     {
-        $op = New-Object 'Rivet.Operations.RemoveDefaultConstraintOperation' $SchemaName, $TableName, $ColumnName, $Name
+        $op = New-Object 'Rivet.Operations.RemoveDefaultConstraintOperation' $SchemaName, $TableName, $null, $Name
         Write-Host (' {0}.{1} -{2}' -f $SchemaName,$TableName,$Name)
     }
     else 
     {
         $op = New-Object 'Rivet.Operations.RemoveDefaultConstraintOperation' $SchemaName, $TableName, $ColumnName
-        Write-Host (' {0}.{1} -{2}' -f $SchemaName,$TableName,$op.ConstraintName.Name)
+        Write-Host (' {0}.{1} -{2}' -f $SchemaName,$TableName,$op.Name)
     }
 
     Invoke-MigrationOperation -Operation $op

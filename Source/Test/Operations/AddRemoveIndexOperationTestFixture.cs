@@ -220,16 +220,13 @@ namespace Rivet.Test.Operations
 		{
 			const string schemaName = "schemaName";
 			const string tableName = "tableName";
-			var columnName = new[] { "column1", "column2" };
-			var smokeColumnName = new[] { "column1" };
 			var optionalConstraintName = "optionalConstraintName";
 
-			var op = new RemoveIndexOperation(schemaName, tableName, columnName, optionalConstraintName);
+			var op = new RemoveIndexOperation(schemaName, tableName, optionalConstraintName);
 			Assert.AreEqual(schemaName, op.SchemaName);
 			Assert.AreEqual(tableName, op.TableName);
-			Assert.AreEqual(columnName, op.ColumnName);
-			Assert.AreNotEqual(smokeColumnName, op.ColumnName);
-			Assert.AreEqual(optionalConstraintName, op.ConstraintName.ToString());
+			Assert.That(op.ColumnName, Is.Null);
+			Assert.AreEqual(optionalConstraintName, op.Name.ToString());
 		}
 
 		[Test]
@@ -249,10 +246,9 @@ namespace Rivet.Test.Operations
 		{
 			const string schemaName = "schemaName";
 			const string tableName = "tableName";
-			var columnName = new[] { "column1", "column2" };
 			var optionalConstraintName = "optionalConstraintName";
 
-			var op = new RemoveIndexOperation(schemaName, tableName, columnName, optionalConstraintName);
+			var op = new RemoveIndexOperation(schemaName, tableName, optionalConstraintName);
 			const string expectedQuery = "drop index [optionalConstraintName] on [schemaName].[tableName]";
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}

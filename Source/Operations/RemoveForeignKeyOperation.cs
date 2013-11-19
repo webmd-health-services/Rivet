@@ -5,25 +5,22 @@
 		// System Generated Constraint Name
 		public RemoveForeignKeyOperation(string schemaName, string tableName, string referencesSchemaName, string referencesTableName)
 		{
-			ForeignKeyConstraintName = new ForeignKeyConstraintName(schemaName, tableName, referencesSchemaName, referencesTableName);
+			Name = new ForeignKeyConstraintName(schemaName, tableName, referencesSchemaName, referencesTableName);
 			SchemaName = schemaName;
 			TableName = tableName;
- 			ReferencesSchemaName = referencesSchemaName; //Testing Purposes Only
-			ReferencesTableName = referencesTableName; //Testing Purposes Only
+ 			ReferencesSchemaName = referencesSchemaName;
+			ReferencesTableName = referencesTableName;
 		}
 
 		// Custom Constraint Name
-		public RemoveForeignKeyOperation(string schemaName, string tableName, string referencesSchemaName, string referencesTableName, string customConstraintName)
+		public RemoveForeignKeyOperation(string schemaName, string tableName, string name)
 		{
-			CustomConstraintName = customConstraintName;
 			SchemaName = schemaName;
 			TableName = tableName;
-			ReferencesSchemaName = referencesSchemaName; //Testing Purposes Only
-			ReferencesTableName = referencesTableName; //Testing Purposes Only
+			Name = new ForeignKeyConstraintName(name);
 		}
 
-		public ForeignKeyConstraintName ForeignKeyConstraintName { get; private set; }
-		public string CustomConstraintName { get; private set; }
+		public ForeignKeyConstraintName Name { get; private set; }
 		public string SchemaName { get; private set; }
 		public string TableName { get; private set; }
 		public string ReferencesSchemaName { get; private set; }
@@ -31,9 +28,7 @@
 
 		public override string ToQuery()
 		{
-			if (string.IsNullOrEmpty(CustomConstraintName))
-				return string.Format("alter table [{0}].[{1}] drop constraint [{2}]", SchemaName, TableName, ForeignKeyConstraintName);
-			return string.Format("alter table [{0}].[{1}] drop constraint [{2}]", SchemaName, TableName, CustomConstraintName);
+			return string.Format("alter table [{0}].[{1}] drop constraint [{2}]", SchemaName, TableName, Name);
 		}
 	}
 }

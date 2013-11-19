@@ -129,16 +129,14 @@ namespace Rivet.Test.Operations
 		{
 			var schemaName = "schemaName";
 			var tableName = "tableName";
-			var referencesSchemaName = "rschemaName";
-			var referencesTableName = "rtableName";
 			var optionalConstraintName = "optionalConstraintName";
 
-			var op = new RemoveForeignKeyOperation(schemaName, tableName, referencesSchemaName, referencesTableName, optionalConstraintName);
+			var op = new RemoveForeignKeyOperation(schemaName, tableName, optionalConstraintName);
 			Assert.AreEqual(schemaName, op.SchemaName);
 			Assert.AreEqual(tableName, op.TableName);
-			Assert.AreEqual(referencesSchemaName, op.ReferencesSchemaName);
-			Assert.AreEqual(referencesTableName, op.ReferencesTableName);
-			Assert.AreEqual(optionalConstraintName, op.CustomConstraintName);
+			Assert.That(op.ReferencesTableName, Is.Null);
+			Assert.That(op.ReferencesSchemaName, Is.Null);
+			Assert.AreEqual(optionalConstraintName, op.Name.ToString());
 		}
 
 		[Test]
@@ -160,11 +158,9 @@ namespace Rivet.Test.Operations
 		{
 			var schemaName = "schemaName";
 			var tableName = "tableName";
-			var referencesSchemaName = "rschemaName";
-			var referencesTableName = "rtableName";
 			var optionalConstraintName = "optionalConstraintName";
 
-			var op = new RemoveForeignKeyOperation(schemaName, tableName, referencesSchemaName, referencesTableName, optionalConstraintName);
+			var op = new RemoveForeignKeyOperation(schemaName, tableName, optionalConstraintName);
 			System.Console.WriteLine(op.ToQuery());
 			var expectedQuery = "alter table [schemaName].[tableName] drop constraint [optionalConstraintName]";
 			Assert.AreEqual(expectedQuery, op.ToQuery());

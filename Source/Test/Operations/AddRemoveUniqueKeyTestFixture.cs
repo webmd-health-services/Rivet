@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using NUnit.Framework.Constraints;
 using Rivet.Operations;
 
 namespace Rivet.Test.Operations
@@ -191,16 +192,13 @@ namespace Rivet.Test.Operations
 		{
 			var schemaName = "schemaName";
 			var tableName = "tableName";
-			string[] columnName = new string[] { "column1", "column2" };
-			string[] smokeColumnName = new string[] { "column1" };
 			var customConstraintName = "customConstraintName";
 
-			var op = new RemoveUniqueKeyOperation(schemaName, tableName, columnName, customConstraintName);
+			var op = new RemoveUniqueKeyOperation(schemaName, tableName, customConstraintName);
 			Assert.AreEqual(schemaName, op.SchemaName);
 			Assert.AreEqual(tableName, op.TableName);
-			Assert.AreEqual(columnName, op.ColumnName);
-			Assert.AreNotEqual(smokeColumnName, op.ColumnName);
-			Assert.AreEqual(customConstraintName, op.ConstraintName.ToString());
+			Assert.That(op.ColumnName, Is.Null);
+			Assert.AreEqual(customConstraintName, op.Name.ToString());
 		}
 
 		[Test]
@@ -220,10 +218,9 @@ namespace Rivet.Test.Operations
 		{
 			var schemaName = "schemaName";
 			var tableName = "tableName";
-			string[] columnName = new string[] { "column1", "column2" };
 			var customConstraintName = "customConstraintName";
 
-			var op = new RemoveUniqueKeyOperation(schemaName, tableName, columnName, customConstraintName);
+			var op = new RemoveUniqueKeyOperation(schemaName, tableName, customConstraintName);
 			var expectedQuery = "alter table [schemaName].[tableName] drop constraint [customConstraintName]";
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}

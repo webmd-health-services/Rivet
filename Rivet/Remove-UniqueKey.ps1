@@ -41,19 +41,19 @@ function Remove-UniqueKey
         $Name
     )
 
-    Set-StrictMode -Version Latest
+    Set-StrictMode -Version 'Latest'
 
     $ColumnClause = $ColumnName -join ','
 
     if ($PSBoundParameters.containskey("Name"))
     {
-        $op = New-Object 'Rivet.Operations.RemoveUniqueKeyOperation' $SchemaName, $TableName, $ColumnName, $Name
+        $op = New-Object 'Rivet.Operations.RemoveUniqueKeyOperation' $SchemaName, $TableName, $Name
     }
     else 
     {
         $op = New-Object 'Rivet.Operations.RemoveUniqueKeyOperation' $SchemaName, $TableName, $ColumnName
     }
     
-    Write-Host (' {0}.{1} -{2} ({3})' -f $SchemaName,$TableName,$op.ConstraintName.Name,$ColumnClause)
+    Write-Host (' {0}.{1} -{2} ({3})' -f $SchemaName,$TableName,$op.Name,$ColumnClause)
     Invoke-MigrationOperation -Operation $op
 }
