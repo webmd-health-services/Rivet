@@ -71,7 +71,7 @@ namespace Rivet.Test.Operations
 			var op = new RemoveCheckConstraintOperation(schemaName, tableName, constraintName);
 			Assert.AreEqual(schemaName, op.SchemaName);
 			Assert.AreEqual(tableName, op.TableName);
-			Assert.AreEqual(constraintName, op.ConstraintName);
+			Assert.AreEqual(constraintName, op.Name);
 		}
 
 		[Test]

@@ -10,12 +10,14 @@ namespace Rivet
 		ForeignKey,
 		Check,
 		Index,
-		Unique,
+		UniqueKey,
 		UniqueIndex
 	}
 
 	public class ConstraintName
 	{
+		private string _name;
+
 		public ConstraintName(string schemaName, string tableName, string[] columnName, ConstraintType type)
 		{
 			SchemaName = schemaName;
@@ -24,22 +26,22 @@ namespace Rivet
 			Type = type;
 		}
 
-		public ConstraintName(string customName)
+		public ConstraintName(string name)
 		{
-			CustomName = customName;
+			_name = name;
 		}
 
 		public string SchemaName { get; private set; }
 		public string TableName { get; private set; }
 		public List<string> ColumnName { get; private set; }
 		public ConstraintType Type { get; private set; }
-		public string CustomName { get; private set; }
 		public string Name { get { return ToString(); } }
 
 		public override string ToString()
 		{
-			if (!string.IsNullOrEmpty(CustomName))
-				return CustomName;
+			if (!string.IsNullOrEmpty(_name))
+				return _name;
+
 			string keyname;
 			switch(Type)
 			{
@@ -59,7 +61,7 @@ namespace Rivet
 					keyname = "IX";
 					break;
 
-				case ConstraintType.Unique:
+				case ConstraintType.UniqueKey:
 					keyname = "AK";
 					break;
 

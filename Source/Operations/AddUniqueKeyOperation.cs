@@ -8,7 +8,7 @@ namespace Rivet.Operations
 		public AddUniqueKeyOperation(string schemaName, string tableName, string[] columnName, bool clustered,
 		                                    int fillFactor, string[] options, string filegroup)
 		{
-			ConstraintName = new ConstraintName(schemaName, tableName, columnName, ConstraintType.Unique);
+			ConstraintName = new ConstraintName(schemaName, tableName, columnName, ConstraintType.UniqueKey);
 			SchemaName = schemaName;
 			TableName = tableName;
 			ColumnName = (string[])columnName.Clone();
