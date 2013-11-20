@@ -47,17 +47,17 @@ function Remove-UniqueKey
 
     Set-StrictMode -Version 'Latest'
 
-    $ColumnClause = $ColumnName -join ','
-
     if ($PSBoundParameters.ContainsKey("Name"))
     {
         $op = New-Object 'Rivet.Operations.RemoveUniqueKeyOperation' $SchemaName, $TableName, $Name
+        Write-Host (' {0}.{1} -{2}' -f $SchemaName,$TableName,$op.Name)
     }
     else 
     {
+        $ColumnClause = $ColumnName -join ','
         $op = New-Object 'Rivet.Operations.RemoveUniqueKeyOperation' $SchemaName, $TableName, $ColumnName
+        Write-Host (' {0}.{1} -{2} ({3})' -f $SchemaName,$TableName,$op.Name,$ColumnClause)
     }
     
-    Write-Host (' {0}.{1} -{2} ({3})' -f $SchemaName,$TableName,$op.Name,$ColumnClause)
     Invoke-MigrationOperation -Operation $op
 }

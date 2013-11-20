@@ -53,14 +53,13 @@ function Remove-ForeignKey
     if( $PSBoundParameters.ContainsKey("Name") )
     {
         $op = New-Object 'Rivet.Operations.RemoveForeignKeyOperation' $SchemaName, $TableName, $Name
-        Write-Host (' {0}.{1} -{2}' -f $SchemaName,$TableName,$Name)
     }
     else 
     {
         $op = New-Object 'Rivet.Operations.RemoveForeignKeyOperation' $SchemaName, $TableName, $ReferencesSchema, $References
-        Write-Host (' {0}.{1} -{2}' -f $SchemaName,$TableName,$op.Name)
     }
 
+    Write-Host (' {0}.{1} -{2}' -f $SchemaName,$TableName,$op.Name)
     Invoke-MigrationOperation -Operation $op
     
 }

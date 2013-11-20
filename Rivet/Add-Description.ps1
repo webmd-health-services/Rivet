@@ -52,22 +52,16 @@ function Add-Description
         $Quiet
     )
 
-    $columnMsg = ''
-    if( $PSCmdlet.ParameterSetName -eq 'ForColumn' )
-    {
-        $columnMsg = '.{0}' -f $ColumnName
-    }
-    
-    if( -not $Quiet )
-    {
-        Write-Host (' {0}.{1}{2} +MS_Description: {3}' -f $SchemaName,$TableName,$columnMsg,$Description)
-    }
-
     $optionalArgs = @{ }
     if( $ColumnName )
     {
         $optionalArgs.ColumnName = $ColumnName
     }
 
-    Add-ExtendedProperty -Name 'MS_Description' -Value $Description -SchemaName $SchemaName -TableName $TableName @optionalArgs
+    Add-ExtendedProperty -Name 'MS_Description' `
+                         -Value $Description `
+                         -SchemaName $SchemaName `
+                         -TableName $TableName `
+                         -Quiet:$Quiet `
+                         @optionalArgs
 }

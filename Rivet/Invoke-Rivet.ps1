@@ -14,6 +14,7 @@ function Invoke-Rivet
         $Push,
     
         [Parameter(Mandatory=$true,ParameterSetName='Pop')]
+        [Parameter(Mandatory=$true,ParameterSetName='PopAll')]
         [Switch]
         # Reverts migrations.
         $Pop,

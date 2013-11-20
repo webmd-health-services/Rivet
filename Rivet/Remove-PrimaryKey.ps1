@@ -46,17 +46,17 @@ function Remove-PrimaryKey
 
     Set-StrictMode -Version 'Latest'
 
-    $columns = $ColumnName -join ','
-
     if ($PSBoundParameters.containskey("Name"))
     {
         $op = New-Object 'Rivet.Operations.RemovePrimaryKeyOperation' $SchemaName, $TableName, $Name
+        Write-Host (' {0}.{1} -{2}' -f $SchemaName,$TableName,$op.Name)
     }
     else 
     {
+        $columns = $ColumnName -join ','
         $op = New-Object 'Rivet.Operations.RemovePrimaryKeyOperation' $SchemaName, $TableName, $ColumnName
+        Write-Host (' {0}.{1} -{2} ({3})' -f $SchemaName,$TableName,$op.Name,$columns)
     }
 
-    Write-Host (' {0}.{1} -{2} ({3})' -f $SchemaName,$TableName,$op.Name,$columns)
     Invoke-MigrationOperation -Operation $op
 }
