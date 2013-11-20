@@ -88,6 +88,32 @@ function Pop-Migration
 
 }
 
+function Test-ShouldRemoveExtendedPropertyToViewInCustomSchema
+{
+    @'
+function Push-Migration
+{
+    Add-Schema 'metric'
+    Add-View -SchemaName 'metric' 'Foobar' 'AS select * from rivet.Migrations'
+    Add-ExtendedProperty 'Deploy' 'TRUE' -SchemaName 'metric' -ViewName 'Foobar' 
+    Remove-ExtendedProperty 'Deploy' -SchemaName 'metric' -ViewName 'Foobar' 
+}
+
+function Pop-Migration
+{
+    
+}
+
+'@ | New-Migration -Name 'RemoveExtendedPropertyToView'
+
+    Invoke-Rivet -Push 'RemoveExtendedPropertyToView'
+
+    $expinfo = Get-ExtendedProperties
+
+    Assert-Null $expinfo
+
+}
+
 function Test-ShouldRemoveExtendedPropertyToTableColumn
 {
     @'
