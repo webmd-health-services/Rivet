@@ -19,7 +19,7 @@ $PSScriptRoot = Split-Path -Parent -Path $MyInvocation.MyCommand.Definition
 
 if( (Get-Module Rivet) )
 {
-    Remove-Module Rivet -verbose:$false -confirm:$false
+    Remove-Module Rivet -Verbose:$false -Confirm:$false -WhatIf:$false
 }
 
-Import-Module (Join-Path -Path $PSScriptRoot -ChildPath Rivet.psd1 -Resolve) -verbose:$false
+Import-Module (Join-Path -Path $PSScriptRoot -ChildPath Rivet.psd1 -Resolve) -Verbose:$false
