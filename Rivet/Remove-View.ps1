@@ -18,7 +18,7 @@ function Remove-View
     Removes the `dbo.MyView` view.
     
     .EXAMPLE
-    Remove-View -Name MyView -Schema rivet
+    Remove-View -Name MyView -SchemaName rivet
     
     Removes the `rivet.MyView` view.
     
@@ -33,10 +33,11 @@ function Remove-View
         [Parameter()]
         [string]
         # The schema of the view.  Default is `dbo`.
-        $Schema = 'dbo'
+        $SchemaName = 'dbo'
         
     )
     
-    $op = New-Object 'Rivet.Operations.RemoveViewOperation' $Schema, $Name
+    $op = New-Object 'Rivet.Operations.RemoveViewOperation' $SchemaName, $Name
+    Write-Host (' -{0}.{1}' -f $SchemaName,$Name)
     Invoke-MigrationOperation -Operation $op
 }

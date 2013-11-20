@@ -42,23 +42,15 @@ function Remove-Description
         $Quiet
     )
 
-    $columnMsg = ''
-    if( $PSCmdlet.ParameterSetName -eq 'ForColumn' )
-    {
-        $columnMsg = '.{0}' -f $ColumnName
-    }
-
-    if( -not $Quiet )
-    {
-        Write-Host (' {0}.{1}{2} -MS_Description' -f $SchemaName,$TableName,$columnMsg)
-    }
-
     $optionalArgs = @{ }
     if( $ColumnName )
     {
         $optionalArgs.ColumnName = $ColumnName
     }
     
-    Remove-ExtendedProperty -Name 'MS_Description' -SchemaName $SchemaName -TableName $TableName @optionalArgs
-
+    Remove-ExtendedProperty -Name 'MS_Description' `
+                            -SchemaName $SchemaName `
+                            -TableName $TableName `
+                            -Quiet:$Quiet `
+                            @optionalArgs
 }

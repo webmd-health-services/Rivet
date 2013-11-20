@@ -93,33 +93,47 @@ function Update-ExtendedProperty
         [Alias('Column')]
         [string]
         # The column name.
-        $ColumnName
+        $ColumnName,
+
+        [Switch]
+        # Don't output any host message.
+        $Quiet
     )
 
-    If ($PsCmdlet.ParameterSetName -eq "SCHEMA")
+    $objectName = ''
+    if ($PsCmdlet.ParameterSetName -eq "SCHEMA")
     {
         $op = New-Object 'Rivet.Operations.UpdateExtendedPropertyOperation' $SchemaName, $Name, $Value
+        $objectName = $SchemaName
     }
 
-    If ($PsCmdlet.ParameterSetName -eq "TABLE")
+    if ($PsCmdlet.ParameterSetName -eq "TABLE")
     {
         $op = New-Object 'Rivet.Operations.UpdateExtendedPropertyOperation' $SchemaName, $TableName, $Name, $Value, $false
+        $objectName = '{0}.{1}' -f $SchemaName,$TableName
     }
 
-    If ($PsCmdlet.ParameterSetName -eq "VIEW")
+    if ($PsCmdlet.ParameterSetName -eq "VIEW")
     {
         $op = New-Object 'Rivet.Operations.UpdateExtendedPropertyOperation' $SchemaName, $ViewName, $Name, $Value, $true
+        $objectName = '{0}.{1}' -f $SchemaName,$ViewName
     }
 
-    If ($PsCmdlet.ParameterSetName -eq "TABLE-COLUMN")
+    if ($PsCmdlet.ParameterSetName -eq "TABLE-COLUMN")
     {
         $op = New-Object 'Rivet.Operations.UpdateExtendedPropertyOperation' $SchemaName, $TableName, $ColumnName, $Name, $Value, $false
+        $objectName = '{0}.{1}.{2}' -f $SchemaName,$TableName,$ColumnName
     }
 
-    If ($PsCmdlet.ParameterSetName -eq "VIEW-COLUMN")
+    if ($PsCmdlet.ParameterSetName -eq "VIEW-COLUMN")
     {
         $op = New-Object 'Rivet.Operations.UpdateExtendedPropertyOperation' $SchemaName, $ViewName, $ColumnName, $Name, $Value, $true
+        $objectName = '{0}.{1}.{2}' -f $SchemaName,$ViewName,$ColumnName
     }
 
+    if( -not $Quiet )
+    {
+        Write-Host (' {0} ={1}' -f $objectName,$Name)
+    }
     Invoke-MigrationOperation -Operation $op  
 }

@@ -18,7 +18,7 @@ function Remove-UserDefinedFunction
     Removes the `dbo.MyFunc` user-defined function.
     
     .EXAMPLE
-    Remove-UserDefinedFunction -Name MyFunc -Schema rivet
+    Remove-UserDefinedFunction -Name MyFunc -SchemaName rivet
     
     Removes the `rivet.MyFunc` user-defined function.
     
@@ -33,10 +33,11 @@ function Remove-UserDefinedFunction
         [Parameter()]
         [string]
         # The schema of the user-defined function.  Default is `dbo`.
-        $Schema = 'dbo'
+        $SchemaName = 'dbo'
 
     )
     
-    $op = New-Object 'Rivet.Operations.RemoveUserDefinedFunctionOperation' $Schema, $Name
+    $op = New-Object 'Rivet.Operations.RemoveUserDefinedFunctionOperation' $SchemaName, $Name
+    Write-Host (' -{0}.{1}' -f $SchemaName,$Name)
     Invoke-MigrationOperation -Operation $op
 }

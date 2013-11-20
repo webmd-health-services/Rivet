@@ -25,7 +25,6 @@ function Remove-Table
     )
 
     Write-Host (' -{0}.{1}' -f $SchemaName,$Name)
-    
     $op = New-Object 'Rivet.Operations.RemoveTableOperation' $SchemaName, $Name
     Invoke-MigrationOperation -Operation $op
 }

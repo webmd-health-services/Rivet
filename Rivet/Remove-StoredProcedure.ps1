@@ -18,7 +18,7 @@ function Remove-StoredProcedure
     Removes the `dbo.MySproc` stored procedure.
     
     .EXAMPLE
-    Remove-StoredProcedure -Name MySproc -Schema rivet
+    Remove-StoredProcedure -Name MySproc -SchemaName rivet
     
     Removes the `rivet.MySproc` stored procedure.
     
@@ -33,10 +33,11 @@ function Remove-StoredProcedure
         [Parameter()]
         [string]
         # The schema of the stored procedure.  Default is `dbo`.
-        $Schema = 'dbo'
+        $SchemaName = 'dbo'
         
     )
 
-    $op = New-Object 'Rivet.Operations.RemoveStoredProcedureOperation' $Schema, $Name
+    $op = New-Object 'Rivet.Operations.RemoveStoredProcedureOperation' $SchemaName, $Name
+    Write-Host (' -{0}.{1}' -f $SchemaName,$Name)
     Invoke-MigrationOperation -Operation $op
 }
