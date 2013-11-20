@@ -72,6 +72,7 @@ param(
     $Push,
     
     [Parameter(Mandatory=$true,ParameterSetName='Pop')]
+    [Parameter(Mandatory=$true,ParameterSetName='PopAll')]
     [Switch]
     # Reverts migrations.
     $Pop,
@@ -92,7 +93,7 @@ param(
     # The number of migrations to pop. Default is 1.
     $Count = 1,
 
-    [Parameter(ParameterSetName='PopAll')]
+    [Parameter(Mandatory=$true,ParameterSetName='PopAll')]
     [Switch]
     # Pop all migrations
     $Force,
