@@ -98,6 +98,34 @@ function Pop-Migration
 }
 
 
+function Test-ShouldUpdateExtendedPropertyToViewInCustomSchema
+{
+    @'
+function Push-Migration
+{
+    Add-Schema 'metric'
+    Add-View -SchemaName 'metric' 'Foobar' 'AS select * from rivet.Migrations'
+    Add-ExtendedProperty 'Deploy' 'TRUE' -SchemaName 'metric' -ViewName 'Foobar'
+    Update-ExtendedProperty 'Deploy' 'FALSE' -SchemaName 'metric' -ViewName 'Foobar' 
+}
+
+function Pop-Migration
+{
+}
+
+'@ | New-Migration -Name 'UpdateExtendedPropertyToView'
+
+    Invoke-Rivet -Push 'UpdateExtendedPropertyToView'
+
+    $expinfo = Get-ExtendedProperties
+
+    Assert-Equal 'Deploy' $expinfo[0].name 
+    Assert-Equal 'FALSE' $expinfo[0].value 
+    Assert-Equal 'OBJECT_OR_COLUMN' $expinfo[0].class_desc
+
+}
+
+
 function Test-ShouldUpdateExtendedPropertyToTableColumn
 {
     @'

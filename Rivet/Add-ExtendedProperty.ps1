@@ -64,6 +64,7 @@ function Add-ExtendedProperty
         [Parameter(ParameterSetName='SCHEMA')]
         [Parameter(ParameterSetName='TABLE')]
         [Parameter(ParameterSetName='TABLE-COLUMN')]
+        [Parameter(ParameterSetName='VIEW')]
         [Parameter(ParameterSetName='VIEW-COLUMN')]
         [string]
         # The schema of the object.
