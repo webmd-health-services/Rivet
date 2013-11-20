@@ -15,7 +15,7 @@ namespace Rivet.Test.Operations
 			var columnName = new[] { "column1", "column2" };
 			var smokeColumnName = new[] { "column1" };
 
-			var op = new RemoveIndexOperation(schemaName, tableName, columnName);
+			var op = new RemoveIndexOperation(schemaName, tableName, columnName, ConstraintType.Index);
 			Assert.AreEqual(schemaName, op.SchemaName);
 			Assert.AreEqual(tableName, op.TableName);
 			Assert.AreEqual(columnName, op.ColumnName);
@@ -43,7 +43,7 @@ namespace Rivet.Test.Operations
 			const string tableName = "tableName";
 			var columnName = new[] { "column1", "column2" };
 
-			var op = new RemoveIndexOperation(schemaName, tableName, columnName);
+			var op = new RemoveIndexOperation(schemaName, tableName, columnName, ConstraintType.Index);
 			const string expectedQuery = "drop index [IX_schemaName_tableName_column1_column2] on [schemaName].[tableName]";
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}
@@ -58,6 +58,18 @@ namespace Rivet.Test.Operations
 			var op = new RemoveIndexOperation(schemaName, tableName, optionalConstraintName);
 			const string expectedQuery = "drop index [optionalConstraintName] on [schemaName].[tableName]";
 			Assert.AreEqual(expectedQuery, op.ToQuery());
+		}
+
+		[Test]
+		public void ShouldAllowCustomIndexType()
+		{
+			var schemaName = "blah";
+			var tableName = "bar";
+			var columnName = "foo";
+
+			var op = new RemoveIndexOperation(schemaName, tableName, new[] {columnName}, ConstraintType.UniqueIndex);
+			Assert.That(op.Name.Type, Is.EqualTo(ConstraintType.UniqueIndex));
+			Assert.That(op.Name.ToString(), Is.EqualTo("UIX_blah_bar_foo"));
 		}
 
 	}

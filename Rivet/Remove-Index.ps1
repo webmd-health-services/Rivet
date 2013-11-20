@@ -39,6 +39,11 @@ function Remove-Index
         # The column(s) on which the index is based
         $ColumnName,
 
+        [Parameter(ParameterSetName='ByDefaultName')]
+        [Switch]
+        # Removes a unique index.
+        $Unique,
+
         [Parameter(Mandatory=$true,ParameterSetName='ByExplicitName')]
         [string]
         # The name for the <object type>. If not given, a sensible name will be created.
@@ -53,7 +58,12 @@ function Remove-Index
     }
     else 
     {
-        $op = New-Object 'Rivet.Operations.RemoveIndexOperation' $SchemaName, $TableName, $ColumnName
+        $type = [Rivet.ConstraintType]::Index
+        if( $Unique )
+        {
+            $type = [Rivet.ConstraintType]::UniqueIndex
+        }
+        $op = New-Object 'Rivet.Operations.RemoveIndexOperation' $SchemaName, $TableName, $ColumnName, $type
     }
 
     Write-Host (' {0}.{1} -{2}' -f $SchemaName,$TableName,$op.Name) 

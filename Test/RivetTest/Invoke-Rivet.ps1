@@ -13,6 +13,7 @@ function Invoke-Rivet
         $Name,
 
         [Parameter(Mandatory=$true,ParameterSetName='Pop')]
+        [Parameter(Mandatory=$true,ParameterSetName='PopAll')]
         [Switch]
         $Pop,
         
@@ -20,7 +21,7 @@ function Invoke-Rivet
         [UInt32]
         $Count = 1,
 
-        [Parameter(ParameterSetName='PopAll')]
+        [Parameter(Mandatory=$true,ParameterSetName='PopAll')]
         [Switch]
         $Force,
 

@@ -92,3 +92,31 @@ function Pop-Migration()
     
     Assert-Null $Indexes[1]
 }
+
+function Test-ShouldRemoveUniqueIndex
+{
+    @'
+function Push-Migration()
+{
+    Add-Table -Name 'AddIndex' {
+        Int 'IndexMe' -NotNull
+    }
+
+    #Add an Index to 'IndexMe'
+    Add-Index -TableName 'AddIndex' -ColumnName 'IndexMe' -Unique
+}
+
+function Pop-Migration()
+{
+    Remove-Index 'AddIndex' 'IndexMe' -Unique
+}
+'@ | New-Migration -Name 'RemoveIndex'
+
+    Invoke-Rivet -Push 'RemoveIndex'
+    Assert-True (Test-Table 'AddIndex')
+    Assert-True (Test-Column -Name 'IndexMe' -TableName 'AddIndex')
+    Assert-Index -TableName 'AddIndex' -ColumnName 'IndexMe' -TestUnique
+
+    Invoke-Rivet -Pop
+    Assert-Index -TableName 'AddIndex' -ColumnName 'IndexMe' -TestNoIndex
+}
