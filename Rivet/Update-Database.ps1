@@ -103,13 +103,13 @@ function Update-Database
         $pushFunctionPath = 'function:Push-Migration'
         if( (Test-Path -Path $pushFunctionPath) )
         {
-            Remove-Item -Path $pushFunctionPath
+            Remove-Item -Path $pushFunctionPath -Confirm:$false
         }
         
         $popFuntionPath = 'function:Pop-Migration'
         if( (Test-Path -Path $popFuntionPath) )
         {
-            Remove-Item -Path $popFuntionPath
+            Remove-Item -Path $popFuntionPath -Confirm:$false
         }
         
         . $migrationInfo.FullName
@@ -138,7 +138,7 @@ function Update-Database
                 
                 Write-Host $hostOutput
                 Pop-Migration
-                Remove-Item -Path $popFuntionPath
+                Remove-Item -Path $popFuntionPath -Confirm:$false
 
                 Remove-Row -SchemaName $RivetSchemaName $RivetMigrationsTableName -Quiet -Where ('ID = {0}' -f $migrationInfo.MigrationID)
                 $who = '{0}\{1}' -f $env:USERDOMAIN,$env:USERNAME
@@ -182,7 +182,17 @@ function Update-Database
 
             }
 
-            Commit-Transaction
+            $target = '{0}.{1}' -f $Connection.DataSource,$Connection.Database
+            $operation = '{0} migration {1} {2}' -f $PSCmdlet.ParameterSetName,$migrationInfo.MigrationID,$migrationInfo.MigrationName
+            if ($PSCmdlet.ShouldProcess($target, $operation))
+            {
+                $Connection.Transaction.Commit()
+            }
+            else 
+            {
+                $stopMigrating = $true
+                $Connection.Transaction.Rollback()
+            }
         }
         catch
         {
@@ -200,19 +210,5 @@ function Update-Database
         {
             $Connection.Transaction = $null
         }
-    }
-}
-
-Function Commit-Transaction
-{
-    [CmdletBinding()]
-    param ()
-
-    if ($psCmdlet.ShouldProcess("Do you wish to commit to this operation?", "Commit?"))
-    {
-        $Connection.Transaction.Commit()
-    }
-    else {
-        $Connection.Transaction.Rollback()
     }
 }
