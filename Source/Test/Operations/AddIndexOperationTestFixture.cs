@@ -4,7 +4,7 @@ using Rivet.Operations;
 namespace Rivet.Test.Operations
 {
 	[TestFixture]
-	public sealed class AddRemoveIndexOperationTestFixture
+	public sealed class AddIndexOperationTestFixture
 	{
 		[SetUp]
 		public void SetUp()
