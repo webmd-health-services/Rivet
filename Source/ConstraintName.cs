@@ -16,7 +16,7 @@ namespace Rivet
 
 	public class ConstraintName
 	{
-		private string _name;
+		private readonly string _name;
 
 		public ConstraintName(string schemaName, string tableName, string[] columnName, ConstraintType type)
 		{

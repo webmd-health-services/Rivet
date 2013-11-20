@@ -35,7 +35,7 @@ function Invoke-Rivet
         # The number of migrations to pop. Default is 1.
         $Count = 1,
 
-        [Parameter(ParameterSetName='PopAll')]
+        [Parameter(Mandatory=$true,ParameterSetName='PopAll')]
         [Switch]
         # The number of migrations to pop. Default is 1.
         $Force,

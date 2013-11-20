@@ -2,9 +2,9 @@
 {
 	public sealed class RemoveIndexOperation : Operation
 	{
-		public RemoveIndexOperation(string schemaName, string tableName, string [] columnName)
+		public RemoveIndexOperation(string schemaName, string tableName, string[] columnName, ConstraintType type)
 		{
-			Name = new ConstraintName(schemaName, tableName, columnName, ConstraintType.Index);
+			Name = new ConstraintName(schemaName, tableName, columnName, type);
 			SchemaName = schemaName;
 			TableName = tableName;
 			ColumnName = (string[])columnName.Clone();
