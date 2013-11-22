@@ -1,4 +1,6 @@
-﻿namespace Rivet.Operations
+﻿using System;
+
+namespace Rivet.Operations
 {
 	public sealed class RemoveCheckConstraintOperation : Operation
 	{
@@ -13,6 +15,11 @@
 		public string SchemaName { get; private set; }
 		public string TableName { get; private set; }
 		public string Name { get; private set; }
+
+		public override string ToIdempotentQuery()
+		{
+			return String.Format("if object_id('{0}', 'C') is not null{1}\t{2}", Name, Environment.NewLine, ToQuery());
+		}
 
 		public override string ToQuery()
 		{

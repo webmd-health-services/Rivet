@@ -60,7 +60,7 @@ function Add-PrimaryKey
 
     $columns = $ColumnName -join ','
 
-    if ($PSBoundParameters.containskey("Name"))
+    if ($PSBoundParameters.ContainsKey("Name"))
     {
         $op = New-Object 'Rivet.Operations.AddPrimaryKeyOperation' $SchemaName, $TableName, $ColumnName, $Name, $NonClustered, $Option
     }
@@ -71,7 +71,7 @@ function Add-PrimaryKey
 
     if( -not $Quiet )
     {
-        Write-Host (' {0}.{1} +{2} ({3})' -f $SchemaName,$TableName,$op.ConstraintName.Name,$columns)
+        Write-Host (' {0}.{1} +{2} ({3})' -f $SchemaName,$TableName,$op.Name,$columns)
     }
     Invoke-MigrationOperation -Operation $op
 }

@@ -20,7 +20,7 @@ namespace Rivet.Test.Operations
 		{
 			var op = new RemoveTriggerOperation(SchemaName, TriggerName);
 			Assert.AreEqual(SchemaName, op.SchemaName);
-			Assert.AreEqual(TriggerName, op.TriggerName);
+			Assert.AreEqual(TriggerName, op.Name);
 		}
 
 		[Test]

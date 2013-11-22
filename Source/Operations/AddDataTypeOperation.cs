@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Rivet.Operations
 {
-	public enum Datatypeoperation
+	public enum DatatypeOperation
 	{
 		From,
 		Assembly,
@@ -15,7 +15,7 @@ namespace Rivet.Operations
 		// Create an alias type
 		public AddDataTypeOperation(string schemaName, string name, string from)
 		{
-			Type = Datatypeoperation.From;
+			Type = DatatypeOperation.From;
 			SchemaName = schemaName;
 			Name = name;
 			From = from;
@@ -24,7 +24,7 @@ namespace Rivet.Operations
 		// Create a user-defined type
 		public AddDataTypeOperation(string schemaName, string name, string assemblyName, string className)
 		{
-			Type = Datatypeoperation.Assembly;
+			Type = DatatypeOperation.Assembly;
 			SchemaName = schemaName;
 			Name = name;
 			AssemblyName = assemblyName;
@@ -34,7 +34,7 @@ namespace Rivet.Operations
 		// Create a user-defined table type
 		public AddDataTypeOperation(string schemaName, string name, Column[] asTable, string[] tableConstraint)
 		{
-			Type = Datatypeoperation.Table;
+			Type = DatatypeOperation.Table;
 			SchemaName = schemaName;
 			Name = name;
 			AsTable = new List<Column>(asTable ?? new Column[0]);
@@ -42,7 +42,7 @@ namespace Rivet.Operations
 		}
 
 
-		private Datatypeoperation Type { get; set; }
+		private DatatypeOperation Type { get; set; }
 		public string SchemaName { get; private set; }
 		public string Name { get; private set; }
 		public string From { get; private set; }
@@ -51,15 +51,24 @@ namespace Rivet.Operations
 		public List<Column> AsTable { get; private set; }
 		public List<string> TableConstraint { get; private set; }
 
+		public override string ToIdempotentQuery()
+		{
+			if (Type == DatatypeOperation.Table)
+			{
+				return String.Format("if object_id('{0}.{1}', 'TT') is null{2}\t{3}", SchemaName, Name, Environment.NewLine, ToQuery());
+			}
+			return string.Format("if type_id('{0}.{1}') is null{2}\t{3}", SchemaName, Name, Environment.NewLine, ToQuery());
+		}
+
 		public override string ToQuery()
 		{
 			switch (Type)
 			{
-				case Datatypeoperation.From:
+				case DatatypeOperation.From:
 					return string.Format("create type [{0}].{1} from {2}", SchemaName, Name, From);
-				case Datatypeoperation.Assembly:
+				case DatatypeOperation.Assembly:
 					return string.Format("create type [{0}].{1} external name {2}.[{3}] ", SchemaName, Name, AssemblyName, ClassName);
-				case Datatypeoperation.Table:
+				case DatatypeOperation.Table:
 					var columnDefinitionList = new List<string>();
 					foreach (Column column in AsTable)
 					{

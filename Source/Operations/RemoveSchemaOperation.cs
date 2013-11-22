@@ -1,18 +1,24 @@
-﻿namespace Rivet.Operations
+﻿using System;
+
+namespace Rivet.Operations
 {
 	public sealed class RemoveSchemaOperation : Operation
 	{
-		public RemoveSchemaOperation(string schemaName)
+		public RemoveSchemaOperation(string name)
 		{
-			SchemaName = schemaName;
+			Name = name;
 		}
 
-		public string SchemaName { get; private set; }
+		public string Name { get; private set; }
+
+		public override string ToIdempotentQuery()
+		{
+			return string.Format("if exists (select * from sys.schemas where name = '{0}'){1}\t{2}", Name, Environment.NewLine, ToQuery());
+		}
 
 		public override string ToQuery()
 		{
-			string query = string.Format("drop schema [{0}]", SchemaName);
-			return query;
+			return string.Format("drop schema [{0}]", Name);
 		}
 	}
 }

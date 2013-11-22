@@ -42,13 +42,12 @@ function Rename-Table
     )
 
     $op = New-Object 'Rivet.Operations.RenameOperation' $SchemaName, $Name, $NewName
-    $return = Invoke-MigrationOperation -Operation $op -AsScalar
-    Write-Host (' ={0}.{1}' -f $SchemaName,$NewName)
+    Write-Host (' {0}.{1} -> {0}.{2}' -f $SchemaName,$Name,$NewName)
+    $result = Invoke-MigrationOperation -Operation $op -AsScalar
     
-    if ($return -ne 0)
+    if ($result -ne 0)
     {
-        throw "sp_rename operation has failed with error code: {0}" -f $return
-        return
+        throw ("Failed to rename {0}.{1} to {0}.{2}: error code {3}" -f $SchemaName,$Name,$NewName,$result)
     }
 
 }

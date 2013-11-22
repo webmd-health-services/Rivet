@@ -8,50 +8,43 @@ function Rename-Constraint
     SQL Server ships with a stored procedure which is used to rename certain objects.  This operation wraps that stored procedure for renaming table constraints.
     
     .EXAMPLE
-    Rename-Constraint -TableName 'FooBar' -Name 'Fizz' -NewName 'PK_Fizz'
+    Rename-Constraint  -Name 'Fizz' -NewName 'PK_Fizz'
     
     Changes the name of the `Fizz` constraint on the `FooBar` table to `PK_Fizz`.
     
     .EXAMPLE
-    Rename-Constraint -SchemaName 'fizz' -TableName 'FooBar' -Name 'Fizz' -NewName 'PK_Fizz'
+    Rename-Constraint -Name 'Fizz' -NewName 'PK_Fizz'
     
     Demonstrates how to rename a constraint on a table that is in a schema other than `dbo`.
     
     .EXAMPLE
-    Rename-Constraint 'FooBar' 'Fizz' 'PK_Fizz'
+    Rename-Constraint 'FizzPK' 'PK_Fizz'
     
     Demonstrates how to use the short form to rename the `Fizz` constraint on the `FooBar` table to `PK_Fizz`: table name is first, then existing constraint name, then new constraint name.
     #>
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory=$true,Position=1)]
-        [string]
-        # The name of the table of the constraint to rename.
-        $TableName,
-        
-        [Parameter(Mandatory=$true,Position=2)]
+        [Parameter(Mandatory=$true,Position=0)]
         [string]
         # The current name of the constraint.
         $Name,
         
-        [Parameter(Mandatory=$true,Position=3)]
+        [Parameter(Mandatory=$true,Position=1)]
         [string]
         # The new name of the constraint.
         $NewName,
         
-        [Parameter()]
         [string]
         # The schema of the table.  Default is `dbo`.
         $SchemaName = 'dbo'
     )
 
-    $op = New-Object 'Rivet.Operations.RenameOperation' $SchemaName, $TableName, $Name, $NewName, Default
-    $return = Invoke-MigrationOperation -Operation $op -AsScalar
-    Write-Host (' ={0}.{1}.{2}' -f $SchemaName,$TableName,$NewName)
+    $op = New-Object 'Rivet.Operations.RenameOperation' $SchemaName, $Name, $NewName
+    Write-Host (' {0}.{1} -> {0}.{2}' -f $SchemaName,$Name,$NewName)
+    $result = Invoke-MigrationOperation -Operation $op -AsScalar
     
-    if ($return -ne 0)
+    if ($result -ne 0)
     {
-        throw "sp_rename operation has failed with error code: {0}" -f $return
-        return
+        throw ("Failed to rename {0}.{1} to {0}.{2}: error code {3}" -f $SchemaName,$Name,$NewName,$result)
     }
 }

@@ -42,7 +42,7 @@ namespace Rivet.Test.Operations
 		public void ShouldWriteQueryForAddSynonym()
 		{
 			var op = new AddSynonymOperation(SchemaName, Name, TargetSchemaName, TargetDatabaseName, TargetObjectName);
-			const string expectedQuery = "create synonym schemaName.name for targetDataBaseName.targetSchemaName.targetObjectName";
+			const string expectedQuery = "create synonym [schemaName].[name] for [targetDataBaseName].[targetSchemaName].[targetObjectName]";
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}
 
@@ -50,7 +50,7 @@ namespace Rivet.Test.Operations
 		public void ShouldWriteQueryForAddSynonymNoTargetDatabase()
 		{
 			var op = new AddSynonymOperation(SchemaName, Name, TargetSchemaName, "", TargetObjectName);
-			const string expectedQuery = "create synonym schemaName.name for targetSchemaName.targetObjectName";
+			const string expectedQuery = "create synonym [schemaName].[name] for [targetSchemaName].[targetObjectName]";
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}
 
@@ -59,7 +59,7 @@ namespace Rivet.Test.Operations
 		{
 			var op = new RemoveSynonymOperation(SchemaName, Name);
 			Trace.WriteLine(op.ToQuery());
-			const string expectedQuery = "drop synonym schemaName.name";
+			const string expectedQuery = "drop synonym [schemaName].[name]";
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}
 
