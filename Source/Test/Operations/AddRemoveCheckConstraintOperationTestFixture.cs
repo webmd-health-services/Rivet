@@ -25,7 +25,7 @@ namespace Rivet.Test.Operations
 			var op = new AddCheckConstraintOperation(schemaName, tableName, name, expression, notForReplication);
 			Assert.AreEqual(schemaName, op.SchemaName);
 			Assert.AreEqual(tableName, op.TableName);
-			Assert.AreEqual(name, op.ConstraintName);
+			Assert.AreEqual(name, op.Name);
 			Assert.AreEqual(expression, op.Expression);
 			Assert.AreEqual(notForReplication, op.NotForReplication);
 		}

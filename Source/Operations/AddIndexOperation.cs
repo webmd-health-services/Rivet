@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Rivet.Operations
 {
@@ -10,11 +11,11 @@ namespace Rivet.Operations
 		{
 			if (unique)
 			{
-				ConstraintName = new ConstraintName(schemaName, tableName, columnName, ConstraintType.UniqueIndex);
+				Name = new ConstraintName(schemaName, tableName, columnName, ConstraintType.UniqueIndex);
 			}
 			else
 			{
-				ConstraintName = new ConstraintName(schemaName, tableName, columnName, ConstraintType.Index);
+				Name = new ConstraintName(schemaName, tableName, columnName, ConstraintType.Index);
 			}
 			SchemaName = schemaName;
 			TableName = tableName;
@@ -32,7 +33,7 @@ namespace Rivet.Operations
 		public AddIndexOperation(string schemaName, string tableName, string[] columnName, string customConstraintName, bool unique, bool clustered,
 								 string[] options, string where, string on, string fileStreamOn)
 		{
-			ConstraintName = new ConstraintName(customConstraintName);
+			Name = new ConstraintName(customConstraintName);
 			SchemaName = schemaName;
 			TableName = tableName;
 			ColumnName = new List<string>(columnName ?? new string[0]);
@@ -51,11 +52,11 @@ namespace Rivet.Operations
 		{
 			if (unique)
 			{
-				ConstraintName = new ConstraintName(schemaName, tableName, columnName, ConstraintType.UniqueIndex);
+				Name = new ConstraintName(schemaName, tableName, columnName, ConstraintType.UniqueIndex);
 			}
 			else
 			{
-				ConstraintName = new ConstraintName(schemaName, tableName, columnName, ConstraintType.Index);
+				Name = new ConstraintName(schemaName, tableName, columnName, ConstraintType.Index);
 			}
 			SchemaName = schemaName;
 			TableName = tableName;
@@ -74,7 +75,7 @@ namespace Rivet.Operations
 		public AddIndexOperation(string schemaName, string tableName, string[] columnName, string customConstraintName, bool[] descending, bool unique, bool clustered,
 								 string[] options, string where, string on, string fileStreamOn)
 		{
-			ConstraintName = new ConstraintName(customConstraintName);
+			Name = new ConstraintName(customConstraintName);
 			SchemaName = schemaName;
 			TableName = tableName;
 			ColumnName = new List<string>(columnName ?? new string[0]);
@@ -88,7 +89,7 @@ namespace Rivet.Operations
 			FileStreamOn = fileStreamOn;
 		}
 
-		public ConstraintName ConstraintName { get; private set; }
+		public ConstraintName Name { get; private set; }
 		public string SchemaName { get; private set; }
 		public string TableName { get; private set; }
 		public List<string> ColumnName { get; private set; }
@@ -100,6 +101,14 @@ namespace Rivet.Operations
 		public string Where { get; private set; }
 		public string On { get; private set; }
 		public string FileStreamOn { get; private set; }
+
+		public override string ToIdempotentQuery()
+		{
+			return
+				String.Format(
+					"if not exists (select * from sys.indexes where name = '{0}' and (object_id = object_id('{1}.{2}', 'U') or object_id = object_id('{1}.{2}', 'V'))){3}\t{4}",
+					Name, SchemaName, TableName, Environment.NewLine, ToQuery());
+		}
 
 		public override string ToQuery()
 		{
@@ -165,8 +174,8 @@ namespace Rivet.Operations
 				columnClause = string.Join(",", ColumnName.ToArray());
 			}
 
-			var query = string.Format(@"create {0}{1} index [{2}] on [{3}].[{4}] ({5}) {6} {7} {8} {9}",
-				uniqueClause, clusteredClause, ConstraintName, SchemaName, TableName, columnClause, optionsClause, whereClause,
+			var query = string.Format("create {0}{1} index [{2}] on [{3}].[{4}] ({5}) {6} {7} {8} {9}",
+				uniqueClause, clusteredClause, Name, SchemaName, TableName, columnClause, optionsClause, whereClause,
 				onClause, fileStreamClause);
 			return query;
 		}

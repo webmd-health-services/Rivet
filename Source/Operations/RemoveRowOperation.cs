@@ -28,6 +28,11 @@ namespace Rivet.Operations
 		public bool All { get; private set; }
 		public bool Truncate { get; private set; }
 
+		public override string ToIdempotentQuery()
+		{
+			return ToQuery();
+		}
+
 		public override string ToQuery()
 		{
 			var query = "";

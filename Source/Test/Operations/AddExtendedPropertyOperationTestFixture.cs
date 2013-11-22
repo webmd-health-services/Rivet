@@ -16,11 +16,6 @@ namespace Rivet.Test.Operations
 		const string Name = "name";
 		const string Value = "value";
 
-		[SetUp]
-		public void SetUp()
-		{
-		}
-
 		[Test]
 		public void ShouldSetPropertiesForAddExtendedPropertyForScheam()
 		{
@@ -72,68 +67,142 @@ namespace Rivet.Test.Operations
 		[Test]
 		public void ShouldAllowNullValue()
 		{
-			GivenPropertyValue(null);
+			GivenSchemaPropertyValue(null);
 			ThenValueInQueryShouldBe("null");
+			ThenLevel0ShouldBeSchema();
 		}
 
 		[Test]
 		public void ShouldAllowEmptyStringForValue()
 		{
-			GivenPropertyValue("");
+			GivenSchemaPropertyValue("");
 			ThenValueInQueryShouldBe("N''");
+			ThenLevel0ShouldBeSchema();
 		}
 
 		[Test]
 		public void ShouldWriteQueryForAddExtendedPropertyForSchema()
 		{
-			GivenPropertyValue(Value);
+			GivenSchemaPropertyValue(Value);
 			ThenValueInQueryShouldBe("N'" + Value + "'");
-		}
-
-		private void ThenValueInQueryShouldBe(string value)
-		{
-			var expectedQuery =
-				String.Format(
-					"EXEC sys.sp_addextendedproperty{0}@name=N'name',{0}@value={1},{0}@level0type=N'SCHEMA', @level0name=N'schemaName'",
-					Environment.NewLine, value);
-			Assert.That(_op.ToQuery(), Is.EqualTo(expectedQuery));
-		}
-
-		private void GivenPropertyValue(string value)
-		{
-			_op = new AddExtendedPropertyOperation(SchemaName, Name, value);
+			ThenLevel0ShouldBeSchema();
 		}
 
 		[Test]
 		public void ShouldWriteQueryForAddExtendedPropertyForTable()
 		{
-			var op = new AddExtendedPropertyOperation(SchemaName, TableName, Name, Value, false);
-			var expectedQuery = String.Format("EXEC sys.sp_addextendedproperty{0}@name=N'name',{0}@value=N'value',{0}@level0type=N'SCHEMA', @level0name=N'schemaName',{0}@level1type=N'TABLE', @level1name='tableName'", Environment.NewLine);
-			Assert.AreEqual(expectedQuery, op.ToQuery());
+			GivenTablePropertyValue();
+			ThenValueInQueryShouldBe();
+			ThenLevel1ShouldBeTable();
 		}
 
 		[Test]
 		public void ShouldWriteQueryForAddExtendedPropertyForView()
 		{
-			var op = new AddExtendedPropertyOperation(SchemaName, ViewName, Name, Value, true);
-			var expectedQuery = String.Format("EXEC sys.sp_addextendedproperty{0}@name=N'name',{0}@value=N'value',{0}@level0type=N'SCHEMA', @level0name=N'schemaName',{0}@level1type=N'VIEW', @level1name='viewName'", Environment.NewLine);
-			Assert.AreEqual(expectedQuery, op.ToQuery());
+			GivenViewPropertyValue();
+			ThenValueInQueryShouldBe();
+			ThenLevel1ShouldBeView();
 		}
 
 		[Test]
 		public void ShouldWriteQueryForAddExtendedPropertyForTableColumn()
 		{
-			var op = new AddExtendedPropertyOperation(SchemaName, TableName, ColumnName, Name, Value, false);
-			var expectedQuery = String.Format("EXEC sys.sp_addextendedproperty{0}@name=N'name',{0}@value=N'value',{0}@level0type=N'SCHEMA', @level0name=N'schemaName',{0}@level1type=N'TABLE', @level1name='tableName',{0}@level2type=N'COLUMN', @level2name='columnName'", Environment.NewLine);
-			Assert.AreEqual(expectedQuery, op.ToQuery());
+			GivenTableColumnPropertyValue();
+			ThenValueInQueryShouldBe();
+			ThenLevel1ShouldBeTable();
+			ThenLevel2ShouldBeColumn();
 		}
 
 		[Test]
 		public void ShouldWriteQueryForAddExtendedPropertyForViewColumn()
 		{
-			var op = new AddExtendedPropertyOperation(SchemaName, ViewName, ColumnName, Name, Value, true);
-			var expectedQuery = String.Format("EXEC sys.sp_addextendedproperty{0}@name=N'name',{0}@value=N'value',{0}@level0type=N'SCHEMA', @level0name=N'schemaName',{0}@level1type=N'VIEW', @level1name='viewName',{0}@level2type=N'COLUMN', @level2name='columnName'", Environment.NewLine);
-			Assert.AreEqual(expectedQuery, op.ToQuery());
+			GivenViewColumnPropertyValue();
+			ThenValueInQueryShouldBe();
+			ThenLevel1ShouldBeView();
+			ThenLevel2ShouldBeColumn();
+		}
+
+		private void ThenValueInQueryShouldBe()
+		{
+			ThenValueInQueryShouldBe(string.Format("N'{0}'", _op.Value));
+		}
+
+		private void ThenValueInQueryShouldBe(string value)
+		{
+			Assert.That(_op.ToQuery(), Contains.Substring(string.Format("@value={0}", value)));
+		}
+
+		private void ThenLevel0ShouldBeSchema()
+		{
+			Assert.That(_op.ToQuery(), Contains.Substring(string.Format("@level0type=N'SCHEMA', @level0name=N'{0}'", _op.SchemaName)));
+		}
+
+		private void ThenLevel1ShouldBeTable()
+		{
+			ThenLevel0ShouldBeSchema();
+			Assert.That(_op.ToQuery(), Contains.Substring(string.Format("@level1type=N'TABLE', @level1name='{0}'", _op.TableViewName)));
+		}
+
+		private void ThenLevel1ShouldBeView()
+		{
+			ThenLevel0ShouldBeSchema();
+			Assert.That(_op.ToQuery(), Contains.Substring(string.Format("@level1type=N'VIEW', @level1name='{0}'", _op.TableViewName)));
+		}
+
+		private void ThenLevel2ShouldBeColumn()
+		{
+			Assert.That(_op.ToQuery(), Contains.Substring(string.Format("@level2type=N'COLUMN', @level2name='{0}'", _op.ColumnName)));
+		}
+
+		private void GivenSchemaPropertyValue(string value)
+		{
+			var schemaName = Guid.NewGuid().ToString();
+			var name = Guid.NewGuid().ToString();
+
+			_op = new AddExtendedPropertyOperation(schemaName, name, value);
+		}
+
+		private void GivenTablePropertyValue()
+		{
+			var schemaName = Guid.NewGuid().ToString();
+			var tableName = Guid.NewGuid().ToString();
+			var name = Guid.NewGuid().ToString();
+			var value = Guid.NewGuid().ToString();
+
+			_op = new AddExtendedPropertyOperation(schemaName, tableName, name, value, false);
+		}
+
+		private void GivenViewPropertyValue()
+		{
+			var schemaName = Guid.NewGuid().ToString();
+			var viewName = Guid.NewGuid().ToString();
+			var name = Guid.NewGuid().ToString();
+			var value = Guid.NewGuid().ToString();
+
+			_op = new AddExtendedPropertyOperation(schemaName, viewName, name, value, true);
+		}
+
+		private void GivenTableColumnPropertyValue()
+		{
+			var schemaName = Guid.NewGuid().ToString();
+			var tableName = Guid.NewGuid().ToString();
+			var columnName = Guid.NewGuid().ToString();
+			var name = Guid.NewGuid().ToString();
+			var value = Guid.NewGuid().ToString();
+
+			_op = new AddExtendedPropertyOperation(schemaName, tableName, columnName, name, value, false);
+		}
+
+		private void GivenViewColumnPropertyValue()
+		{
+			var schemaName = Guid.NewGuid().ToString();
+			var viewName = Guid.NewGuid().ToString();
+			var columnName = Guid.NewGuid().ToString();
+			var name = Guid.NewGuid().ToString();
+			var value = Guid.NewGuid().ToString();
+
+			_op = new AddExtendedPropertyOperation(schemaName, viewName, columnName, name, value, true);
+
 		}
 	}
 }

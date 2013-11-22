@@ -1,4 +1,6 @@
-﻿namespace Rivet.Operations
+﻿using System;
+
+namespace Rivet.Operations
 {
 	public sealed class RemoveDefaultConstraintOperation : Operation
 	{
@@ -21,6 +23,11 @@
 		public string SchemaName { get; private set; }
 		public string TableName { get; private set; }
 		public string ColumnName { get; private set; }
+
+		public override string ToIdempotentQuery()
+		{
+			return String.Format("if object_id('{0}', 'D') is not null{1}\t{2}", Name, Environment.NewLine, ToQuery());
+		}
 
 		public override string ToQuery()
 		{

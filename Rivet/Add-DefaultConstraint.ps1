@@ -66,7 +66,7 @@ function Add-DefaultConstraint
     else 
     {
         $op = New-Object 'Rivet.Operations.AddDefaultConstraintOperation' $SchemaName, $TableName, $Expression, $ColumnName, $WithValues
-        Write-Host (' {0}.{1} +{2} {3} {4}' -f $SchemaName, $TableName, $op.ConstraintName.Name, $ColumnName, $Expression)
+        Write-Host (' {0}.{1} +{2} {3} {4}' -f $SchemaName, $TableName, $op.Name, $ColumnName, $Expression)
     }
 
     Invoke-MigrationOperation -Operation $op
