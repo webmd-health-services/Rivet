@@ -67,7 +67,7 @@ function New-ConstraintName
     }
     if ($PSCmdlet.ParameterSetName -eq "AK")
     {
-        $op = New-Object 'Rivet.ConstraintName' $SchemaName, $TableName, $ColumnName, Unique
+        $op = New-Object 'Rivet.ConstraintName' $SchemaName, $TableName, $ColumnName, UniqueKey
         $name = $op.Name
     }
     if ($PSCmdlet.ParameterSetName -eq "UIX")

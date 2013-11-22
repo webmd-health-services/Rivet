@@ -51,7 +51,7 @@ function Pop-Migration
     Invoke-Rivet -Push 'A' 
     Invoke-Rivet -Push 'B'
     
-    Invoke-Rivet -Force
+    Invoke-Rivet -Pop -Force
     
     Assert-False (Test-Table 'Foobar1')
     Assert-False (Test-Table 'Foobar2')
