@@ -5,11 +5,11 @@ namespace Rivet.Operations
 {
 	public sealed class AddTableOperation : Operation
 	{
-		public AddTableOperation(string schemaName, string tableName, Column[] columns, bool fileTable, string fileGroup,
+		public AddTableOperation(string schemaName, string name, Column[] columns, bool fileTable, string fileGroup,
 		                         string textImageFileGroup, string fileStreamFileGroup, string[] options, string description)
 		{
 			SchemaName = schemaName;
-			TableName = tableName;
+			Name = name;
 			Columns = new List<Column>(columns ?? new Column[0]);
 			FileTable = fileTable;
 			FileGroup = fileGroup;
@@ -20,7 +20,7 @@ namespace Rivet.Operations
 		}
 
 		public string SchemaName { get; private set; }
-		public string TableName { get; private set; }
+		public string Name { get; private set; }
 		public List<Column> Columns { get; private set; }
 		public bool FileTable { get; private set; }
 		public string FileGroup { get; private set; }
@@ -28,6 +28,11 @@ namespace Rivet.Operations
 		public string FileStreamFileGroup { get; private set; }
 		public List<string> Options { get; private set; }
 		public string Description { get; private set; }
+
+		public override string ToIdempotentQuery()
+		{
+			return string.Format("if object_id('{0}.{1}', 'U') is null{2}\t{3}", SchemaName, Name, Environment.NewLine, ToQuery());
+		}
 
 		public override string ToQuery()
 		{
@@ -41,7 +46,7 @@ namespace Rivet.Operations
 				var columnDefinitionList = new List<string>();
 				foreach (Column column in Columns)
 				{
-					columnDefinitionList.Add(column.GetColumnDefinition(TableName, SchemaName, false));
+					columnDefinitionList.Add(column.GetColumnDefinition(Name, SchemaName, false));
 				}
 				columnDefinitionClause = string.Join(String.Format(",{0}    ", Environment.NewLine), columnDefinitionList.ToArray());
 				columnDefinitionClause = string.Format("({0}    {1}{0})", Environment.NewLine, columnDefinitionClause);
@@ -72,7 +77,7 @@ namespace Rivet.Operations
 				optionsClause = string.Format("{0}with ( {1} )", Environment.NewLine, optionsClause);
 			}
 
-			var query = string.Format("create table [{0}].[{1}] {2}{3}{4}{5}{6}", SchemaName, TableName, columnDefinitionClause, fileGroupClause, textImageFileGroupClause, fileStreamFileGroupClause, optionsClause);
+			var query = string.Format("create table [{0}].[{1}] {2}{3}{4}{5}{6}", SchemaName, Name, columnDefinitionClause, fileGroupClause, textImageFileGroupClause, fileStreamFileGroupClause, optionsClause);
 			return query;
 		}
 	}

@@ -82,7 +82,7 @@ namespace Rivet.Test.Operations
 			Assert.AreEqual(tableName, op.TableName);
 			Assert.AreEqual(columnName, op.ColumnName);
 			Assert.AreNotEqual(smokeColumnName, op.ColumnName);
-			Assert.AreEqual(customConstraintName, op.ConstraintName.ToString());
+			Assert.AreEqual(customConstraintName, op.Name.ToString());
 			Assert.AreEqual(clustered, op.Clustered);
 			Assert.AreEqual(fillfactor, op.FillFactor);
 			Assert.AreEqual(options, op.Options);

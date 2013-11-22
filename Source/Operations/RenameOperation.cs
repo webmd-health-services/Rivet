@@ -1,72 +1,33 @@
-﻿namespace Rivet.Operations
+﻿using System;
+
+namespace Rivet.Operations
 {
-	public sealed class RenameOperation : Operation
+	public class RenameOperation : Operation
 	{
-		private enum RenameOperationType
-		{
-			Table,
-			Column,
-			Constraint
-		}
-		
-		// Table
-		public RenameOperation(string schemaName, string currentName, string newName)
+		public RenameOperation(string schemaName, string name, string newName)
 		{
 			SchemaName = schemaName;
-			CurrentName = currentName;
+			Name = name;
 			NewName = newName;
-			OperationType = RenameOperationType.Table;
-		}
-
-		//Column
-		public RenameOperation(string schemaName, string tableName, string currentName, string newName)
-		{
-			SchemaName = schemaName;
-			TableName = tableName;
-			CurrentName = currentName;
-			NewName = newName;
-			OperationType = RenameOperationType.Column;
-		}
-
-		//Constraint
-		public RenameOperation(string schemaName, string tableName, string currentName, string newName, ConstraintType constraintType)
-		{
-			SchemaName = schemaName;
-			TableName = tableName;
-			CurrentName = currentName;
-			NewName = newName;
-			ConstraintType = constraintType;
-			OperationType = RenameOperationType.Constraint;
 		}
 
 		public string SchemaName { get; private set; }
-		public string TableName { get; private set; }
-		public string CurrentName { get; private set; }
+		public string Name { get; private set; }
 		public string NewName { get; private set; }
-		public ConstraintType ConstraintType { get; private set; }
-		private RenameOperationType OperationType { get; set; }
+
+		protected virtual string GetRenameArguments()
+		{
+			return string.Format("'{0}.{1}', '{2}', 'OBJECT'", SchemaName, Name, NewName);
+		}
+
+		public override string ToIdempotentQuery()
+		{
+			return string.Format("if object_id('{0}.{1}') is not null and object_id('{0}.{2}') is null{3}\t{4}", SchemaName, Name, NewName, Environment.NewLine, ToQuery());
+		}
 
 		public override string ToQuery()
 		{
-			if (OperationType == RenameOperationType.Table)
-			{
-				return string.Format("declare @valback int; exec @valback = sp_rename '{0}.{1}', '{2}'; select @valback;", SchemaName, CurrentName, NewName);
-			}
-
-			if (OperationType == RenameOperationType.Column)
-			{
-				return string.Format("declare @valback int; exec @valback = sp_rename '{0}.{1}.{2}', '{3}', 'COLUMN'; select @valback;", SchemaName, TableName, CurrentName, NewName);
-			}
-
-			if (OperationType == RenameOperationType.Constraint)
-			{
-				if (ConstraintType == ConstraintType.Index)
-				{
-					return string.Format("declare @valback int; exec @valback = sp_rename '{0}.{1}.{2}', '{3}', 'INDEX'; select @valback;", SchemaName, TableName, CurrentName, NewName);
-				}
-				return string.Format("declare @valback int; exec @valback = sp_rename '{0}.{1}', '{2}'; select @valback;", SchemaName, CurrentName, NewName);
-			}
-			return "";
+			return string.Format("declare @result{0} int{1}exec @result{0} = sp_rename {2}{1}select @result{0}", Guid.NewGuid().ToString("N"), Environment.NewLine, GetRenameArguments());
 		}
 	}
 }

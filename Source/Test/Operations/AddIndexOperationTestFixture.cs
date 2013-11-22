@@ -63,7 +63,7 @@ namespace Rivet.Test.Operations
 			Assert.AreEqual(tableName, op.TableName);
 			Assert.AreEqual(columnName, op.ColumnName);
 			Assert.AreNotEqual(smokeColumnName, op.ColumnName);
-			Assert.AreEqual(optionalConstraintName, op.ConstraintName.ToString());
+			Assert.AreEqual(optionalConstraintName, op.Name.ToString());
 			Assert.AreEqual(false, op.SomeColumnsDesc);
 			Assert.AreEqual(unique, op.Unique);
 			Assert.AreEqual(clustered, op.Clustered);
@@ -128,7 +128,7 @@ namespace Rivet.Test.Operations
 			Assert.AreEqual(tableName, op.TableName);
 			Assert.AreEqual(columnName, op.ColumnName);
 			Assert.AreNotEqual(smokeColumnName, op.ColumnName);
-			Assert.AreEqual(optionalConstraintName, op.ConstraintName.ToString());
+			Assert.AreEqual(optionalConstraintName, op.Name.ToString());
 			Assert.AreEqual(descending, op.Descending);
 			Assert.AreEqual(true, op.SomeColumnsDesc);
 			Assert.AreEqual(unique, op.Unique);

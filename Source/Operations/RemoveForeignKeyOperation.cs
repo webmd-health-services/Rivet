@@ -1,4 +1,6 @@
-﻿namespace Rivet.Operations
+﻿using System;
+
+namespace Rivet.Operations
 {
 	public sealed class RemoveForeignKeyOperation : Operation
 	{
@@ -25,6 +27,11 @@
 		public string TableName { get; private set; }
 		public string ReferencesSchemaName { get; private set; }
 		public string ReferencesTableName { get; private set; }
+
+		public override string ToIdempotentQuery()
+		{
+			return string.Format("if object_id('{0}', 'F') is not null{1}\t{2}", Name, Environment.NewLine, ToQuery());
+		}
 
 		public override string ToQuery()
 		{

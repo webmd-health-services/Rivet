@@ -1,4 +1,6 @@
-﻿namespace Rivet.Operations
+﻿using System;
+
+namespace Rivet.Operations
 {
 	public sealed class RawQueryOperation : Operation
 	{
@@ -8,6 +10,11 @@
 		}
 
 		public string Query { get; private set; }
+
+		public override string ToIdempotentQuery()
+		{
+			return ToQuery();
+		}
 
 		public override string ToQuery()
 		{
