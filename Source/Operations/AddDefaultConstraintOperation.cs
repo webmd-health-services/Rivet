@@ -1,4 +1,6 @@
-﻿namespace Rivet.Operations
+﻿using System;
+
+namespace Rivet.Operations
 {
 	public sealed class AddDefaultConstraintOperation : Operation
 	{
@@ -6,7 +8,7 @@
 		public AddDefaultConstraintOperation(string schemaName, string tableName, string expression, string columnName,
 		                                     bool withValues)
 		{
-			ConstraintName = new ConstraintName(schemaName, tableName, new[]{columnName}, ConstraintType.Default);
+			Name = new ConstraintName(schemaName, tableName, new[]{columnName}, ConstraintType.Default);
 			SchemaName = schemaName;
 			TableName = tableName;
 			Expression = expression;
@@ -15,10 +17,10 @@
 		}
 
 		//Custom Constraint Name
-		public AddDefaultConstraintOperation(string schemaName, string tableName, string expression, string columnName, string customConstraintName,
+		public AddDefaultConstraintOperation(string schemaName, string tableName, string expression, string columnName, string name,
 									 bool withValues)
 		{
-			ConstraintName = new ConstraintName(customConstraintName);
+			Name = new ConstraintName(name);
 			SchemaName = schemaName;
 			TableName = tableName;
 			Expression = expression;
@@ -26,13 +28,17 @@
 			WithValues = withValues;
 		}
 
-		public ConstraintName ConstraintName { get; private set; }
+		public ConstraintName Name { get; private set; }
 		public string SchemaName { get; private set; }
 		public string TableName { get; private set; }
 		public string Expression { get; private set; }
 		public string ColumnName { get; private set; }
 		public bool WithValues { get; private set; }
 
+		public override string ToIdempotentQuery()
+		{
+			return String.Format("if object_id('{0}', 'D') is null{1}\t{2}", Name, Environment.NewLine, ToQuery());
+		}
 
 		public override string ToQuery()
 		{
@@ -43,7 +49,7 @@
 			}
 
 			return string.Format("alter table [{0}].[{1}] add constraint [{2}] default {3} for {4} {5}",
-					SchemaName, TableName, ConstraintName, Expression, ColumnName, withValuesClause);
+					SchemaName, TableName, Name, Expression, ColumnName, withValuesClause);
 		}
 	}
 }

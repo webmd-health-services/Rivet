@@ -20,7 +20,7 @@ namespace Rivet.Test.Operations
 		{
 			var op = new RemoveViewOperation(SchemaName, ViewName);
 			Assert.AreEqual(SchemaName, op.SchemaName);
-			Assert.AreEqual(ViewName, op.ViewName);
+			Assert.AreEqual(ViewName, op.Name);
 		}
 
 		[Test]

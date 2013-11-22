@@ -24,17 +24,17 @@
     #>
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory=$true,Position=1)]
+        [Parameter(Mandatory=$true,Position=0)]
         [string]
         # The name of the table of the index to rename.
         $TableName,
         
-        [Parameter(Mandatory=$true,Position=2)]
+        [Parameter(Mandatory=$true,Position=1)]
         [string]
         # The current name of the index.
         $Name,
         
-        [Parameter(Mandatory=$true,Position=3)]
+        [Parameter(Mandatory=$true,Position=2)]
         [string]
         # The new name of the index.
         $NewName,
@@ -45,13 +45,12 @@
         $SchemaName = 'dbo'
     )
     
-    $op = New-Object 'Rivet.Operations.RenameOperation' $SchemaName, $TableName, $Name, $NewName, Index
-    $return = Invoke-MigrationOperation -Operation $op -AsScalar
-    Write-Host (' ={0}.{1}.{2}' -f $SchemaName,$TableName,$NewName)
+    $op = New-Object 'Rivet.Operations.RenameIndexOperation' $SchemaName, $TableName, $Name, $NewName
+    Write-Host (' {0}.{1}.{2} -> {0}.{1}.{3}' -f $SchemaName,$TableName,$Name,$NewName)
+    $result = Invoke-MigrationOperation -Operation $op -AsScalar
     
-    if ($return -ne 0)
+    if ($result -ne 0)
     {
-        throw "sp_rename operation has failed with error code: {0}" -f $return
-        return
+        throw ("Failed to rename index {0}.{1}.{2} to {0}.{1}.{3}: error code {4}" -f $SchemaName,$TableName,$Name,$NewName,$result)
     }
 }

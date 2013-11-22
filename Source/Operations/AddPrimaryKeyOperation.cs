@@ -1,4 +1,6 @@
-﻿namespace Rivet.Operations
+﻿using System;
+
+namespace Rivet.Operations
 {
 	public sealed class AddPrimaryKeyOperation : Operation
 	{
@@ -6,7 +8,7 @@
 		public AddPrimaryKeyOperation(string schemaName, string tableName, string [] columnName, bool nonClustered,
 		                              string[] options)
 		{
-			ConstraintName = new ConstraintName(schemaName, tableName, columnName, ConstraintType.PrimaryKey);
+			Name = new ConstraintName(schemaName, tableName, columnName, ConstraintType.PrimaryKey);
 			SchemaName = schemaName;
 			TableName = tableName;
 			ColumnName = (string[])columnName.Clone();
@@ -25,7 +27,7 @@
 		public AddPrimaryKeyOperation(string schemaName, string tableName, string[] columnName, string customConstraintName, bool nonClustered,
 							  string[] options)
 		{
-			ConstraintName = new ConstraintName(customConstraintName);
+			Name = new ConstraintName(customConstraintName);
 			SchemaName = schemaName;
 			TableName = tableName;
 			ColumnName = (string[])columnName.Clone();
@@ -40,12 +42,20 @@
 			}
 		}
 
-		public ConstraintName ConstraintName { get; private set; }
+		public ConstraintName Name { get; private set; }
 		public string SchemaName { get; private set; }
 		public string TableName { get; private set; }
 		public string[] ColumnName { get; private set; }
 		public bool NonClustered { get; private set; }
 		public string[] Options { get; private set; }
+
+		public override string ToIdempotentQuery()
+		{
+			return
+				String.Format(
+					"if not exists (select * from sys.indexes where name = '{0}' and object_id = object_id('{1}.{2}', 'U')){3}\t{4}",
+					Name, SchemaName, TableName, Environment.NewLine, ToQuery());
+		}
 
 		public override string ToQuery()
 		{
@@ -65,7 +75,7 @@
 			var columnClause = string.Join(",", ColumnName);
 
 			return string.Format("alter table [{0}].[{1}] add constraint [{2}] primary key {3} ({4}){5}", 
-				SchemaName, TableName, ConstraintName.ToString(), clusteredClause, columnClause, optionClause);
+				SchemaName, TableName, Name, clusteredClause, columnClause, optionClause);
 		}
 	}
 }

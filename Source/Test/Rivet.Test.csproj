@@ -78,6 +78,8 @@
     <Compile Include="Operations\AddRemoveDataTypeOperationTestFixture.cs" />
     <Compile Include="Operations\AddRemoveCheckConstraintOperationTestFixture.cs" />
     <Compile Include="Operations\RemoveIndexOperationTestFixture.cs" />
+    <Compile Include="Operations\RenameColumnOperationTestFixture.cs" />
+    <Compile Include="Operations\RenameIndexOperationTestFixture.cs" />
     <Compile Include="Operations\UpdateTableOperationTestFixture.cs" />
     <Compile Include="Operations\RemoveExtendedPropertyOperationTestFixture.cs" />
     <Compile Include="Operations\UpdateExtendedPropertyOperationTestFixture.cs" />

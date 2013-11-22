@@ -33,7 +33,17 @@ namespace Rivet.Operations
 			get { return Column.Length; }
 		}
 
+		public override string ToIdempotentQuery()
+		{
+			return ToQuery(true);
+		}
+
 		public override string ToQuery()
+		{
+			return ToQuery(false);
+		}
+
+		private string ToQuery(bool withConditionalInserts)
 		{
 			var query = new StringBuilder();
 
@@ -49,36 +59,45 @@ namespace Rivet.Operations
 				var columnList = row.Keys.Cast<string>().ToList();
 				var columnClause = String.Join(", ", columnList.ToArray());
 				columnClause = String.Format("({0})", columnClause);
+				var whereClauses = new List<string>(row.Count);
 
 				var valueList = new List<string>();
 				foreach (DictionaryEntry de in row)
 				{
+					string value;
 					if (de.Value == null)
 					{
-						valueList.Add("null");
+						value = "null";
 					}
 					else if (de.Value is Boolean)
 					{
-						valueList.Add(((bool)de.Value) ? "1" : "0");
+						value = ((bool) de.Value) ? "1" : "0";
 					}
 					else if (de.Value is string || de.Value is char)
 					{
-						var temp = String.Format("'{0}'", de.Value.ToString().Replace("'", "''"));
-						valueList.Add(temp);
+						value = String.Format("'{0}'", de.Value.ToString().Replace("'", "''"));
 					}
-					else if (de.Value is DateTime || de.Value is TimeSpan )
+					else if (de.Value is DateTime || de.Value is TimeSpan)
 					{
-						var temp = String.Format("'{0}'", de.Value);
-						valueList.Add(temp);
+						value = String.Format("'{0}'", de.Value);
 					}
 					else
 					{
-						valueList.Add(de.Value.ToString());
+						value = de.Value.ToString();
 					}
+
+					var whereClause = string.Format("{0} = {1}", de.Key, value);
+					whereClauses.Add(whereClause);
+					valueList.Add(value);
 				}
 				var valueClause = String.Join(", ", valueList.ToArray());
 				valueClause = String.Format("({0})", valueClause);
 
+				if (withConditionalInserts)
+				{
+					query.AppendFormat("if not exists (select * from [{0}].[{1}] where {2}){3}\t", SchemaName, TableName,
+						String.Join(" and ", whereClauses.ToArray()), Environment.NewLine);
+				}
 				query.AppendFormat("insert into [{0}].[{1}] {2} values {3}", SchemaName, TableName, columnClause, valueClause);
 				query.AppendLine();
 			}

@@ -44,7 +44,7 @@ namespace Rivet.Test.Operations
 			Assert.AreEqual(tableName, op.TableName);
 			Assert.AreEqual(columnName, op.ColumnName);
 			Assert.AreEqual(expression, op.Expression);
-			Assert.AreEqual(optionalConstraintName, op.ConstraintName.ToString());
+			Assert.AreEqual(optionalConstraintName, op.Name.ToString());
 			Assert.AreEqual(withValues, op.WithValues);
 		}
 

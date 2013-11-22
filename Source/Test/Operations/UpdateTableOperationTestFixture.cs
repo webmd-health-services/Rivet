@@ -40,7 +40,7 @@ namespace Rivet.Test.Operations
 			var op = new UpdateTableOperation(SchemaName, Name, addColumnList, null);
 
 			var expectedQuery =
-				string.Format("alter table [schemaName].[name] add [name] varchar(50) not null constraint [DF_schemaName_name_name] default '', [int column] int identity {0}", Environment.NewLine);
+				string.Format("alter table [schemaName].[name] add [name] varchar(50) not null constraint [DF_schemaName_name_name] default ''{0}alter table [schemaName].[name] add [int column] int identity{0}", Environment.NewLine);
 
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}
@@ -51,7 +51,7 @@ namespace Rivet.Test.Operations
 			var op = new UpdateTableOperation(SchemaName, Name, null, updateColumnList);
 
 			var expectedQuery = 
-				string.Format("alter table [schemaName].[name] alter column [int column] int identity{0}alter table [schemaName].[name] alter column [name] varchar(50) not null constraint [DF_schemaName_name_name] default ''", Environment.NewLine);
+				string.Format("alter table [schemaName].[name] alter column [int column] int identity{0}alter table [schemaName].[name] alter column [name] varchar(50) not null constraint [DF_schemaName_name_name] default ''{0}", Environment.NewLine);
 
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}
@@ -62,7 +62,7 @@ namespace Rivet.Test.Operations
 			var op = new UpdateTableOperation(SchemaName, Name, addColumnList, updateColumnList);
 
 			var expectedQuery = 
-				string.Format("alter table [schemaName].[name] add [name] varchar(50) not null constraint [DF_schemaName_name_name] default '', [int column] int identity {0}alter table [schemaName].[name] alter column [int column] int identity{0}alter table [schemaName].[name] alter column [name] varchar(50) not null constraint [DF_schemaName_name_name] default ''", Environment.NewLine);
+				string.Format("alter table [schemaName].[name] add [name] varchar(50) not null constraint [DF_schemaName_name_name] default ''{0}alter table [schemaName].[name] add [int column] int identity{0}alter table [schemaName].[name] alter column [int column] int identity{0}alter table [schemaName].[name] alter column [name] varchar(50) not null constraint [DF_schemaName_name_name] default ''{0}", Environment.NewLine);
 
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}

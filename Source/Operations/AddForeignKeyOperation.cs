@@ -1,4 +1,6 @@
-﻿namespace Rivet.Operations
+﻿using System;
+
+namespace Rivet.Operations
 {
 	public sealed class AddForeignKeyOperation : Operation
 	{
@@ -7,7 +9,7 @@
 		                              string referencesTableName, string[] referencesColumnName, string onDelete,
 		                              string onUpdate, bool notForReplication)
 		{
-			ForeignKeyConstraintName = new ForeignKeyConstraintName(schemaName, tableName, referencesSchemaName, referencesTableName);
+			Name = new ForeignKeyConstraintName(schemaName, tableName, referencesSchemaName, referencesTableName);
 			SchemaName = schemaName;
 			TableName = tableName;
 			ColumnName = (string[])columnName.Clone();
@@ -36,7 +38,7 @@
 			NotForReplication = notForReplication;
 		}
 
-		public ForeignKeyConstraintName ForeignKeyConstraintName { get; private set; }
+		public ForeignKeyConstraintName Name { get; private set; }
 		public string CustomConstraintName { get; private set; }
 		public string SchemaName { get; private set; }
 		public string TableName { get; private set; }
@@ -47,6 +49,11 @@
 		public string OnDelete { get; private set; }
 		public string OnUpdate { get; private set; }
 		public bool NotForReplication { get; private set; }
+
+		public override string ToIdempotentQuery()
+		{
+			return string.Format("if object_id('{0}', 'F') is null{1}\t{2}", Name, Environment.NewLine, ToQuery());
+		}
 
 		public override string ToQuery()
 		{
@@ -76,7 +83,7 @@
 				return
 					string.Format(
 						"alter table [{0}].[{1}] add constraint [{2}] foreign key ({3}) references {4}.{5} ({6}) {7} {8} {9}",
-						SchemaName, TableName, ForeignKeyConstraintName, sourceColumns, ReferencesSchemaName, ReferencesTableName,
+						SchemaName, TableName, Name, sourceColumns, ReferencesSchemaName, ReferencesTableName,
 						refColumns, onDeleteClause, onUpdateClause, notForReplicationClause);
 			}
 			else

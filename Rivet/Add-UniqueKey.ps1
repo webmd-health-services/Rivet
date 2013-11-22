@@ -69,7 +69,7 @@ function Add-UniqueKey
 
     $ColumnClause = $ColumnName -join ','
 
-    if ($PSBoundParameters.containskey("Name"))
+    if ($PSBoundParameters.ContainsKey("Name"))
     {
         $op = New-Object 'Rivet.Operations.AddUniqueKeyOperation' $SchemaName, $TableName, $ColumnName, $Name, $Clustered, $FillFactor, $Option, $On
     }
@@ -78,6 +78,6 @@ function Add-UniqueKey
         $op = New-Object 'Rivet.Operations.AddUniqueKeyOperation' $SchemaName, $TableName, $ColumnName, $Clustered, $FillFactor, $Option, $On
     }
     
-    Write-Host (' {0}.{1} +{2} ({3})' -f $SchemaName,$TableName,$op.ConstraintName.Name,$ColumnClause)
+    Write-Host (' {0}.{1} +{2} ({3})' -f $SchemaName,$TableName,$op.Name,$ColumnClause)
     Invoke-MigrationOperation -Operation $op
 }

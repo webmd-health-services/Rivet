@@ -31,7 +31,7 @@ namespace Rivet.Test.Operations
 
 			var op = new AddTableOperation(schemaName, tableName, columnlist, fileTable, fileGroup, textImageFileGroup, fileStremFileGroup, options, description);
 			Assert.That(op.SchemaName, Is.EqualTo(schemaName));
-			Assert.That(op.TableName, Is.EqualTo(tableName));
+			Assert.That(op.Name, Is.EqualTo(tableName));
 			Assert.That(op.Columns.Contains(column1));
 			Assert.That(op.Columns.Contains(column2));
 			Assert.That(op.Columns.Count, Is.EqualTo(2));
@@ -199,7 +199,7 @@ namespace Rivet.Test.Operations
 			var op = new RemoveTableOperation(schemaName, tableName);
 
 			Assert.AreEqual(schemaName, op.SchemaName);
-			Assert.AreEqual(tableName, op.TableName);
+			Assert.AreEqual(tableName, op.Name);
 		}
 
 		[Test]

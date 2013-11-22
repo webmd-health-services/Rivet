@@ -20,7 +20,7 @@ namespace Rivet.Test.Operations
 		{
 			var op = new RemoveStoredProcedureOperation(SchemaName, ProcedureName);
 			Assert.AreEqual(SchemaName, op.SchemaName);
-			Assert.AreEqual(ProcedureName, op.ProcedureName);
+			Assert.AreEqual(ProcedureName, op.Name);
 		}
 
 		[Test]

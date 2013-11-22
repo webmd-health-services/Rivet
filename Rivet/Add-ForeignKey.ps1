@@ -87,7 +87,7 @@ function Add-ForeignKey
     else
     {
         $op = New-Object 'Rivet.Operations.AddForeignKeyOperation' $SchemaName, $TableName, $ColumnName, $ReferencesSchema, $references, $ReferencedColumn, $OnDelete, $OnUpdate, $NotForReplication
-        Write-Host (' {0}.{1} +{2} ({3}) => {4}.{5} ({6})' -f $SchemaName,$TableName,$op.ForeignKeyConstraintName.Name,$source_columns,$ReferencesSchema,$References,$ref_columns)
+        Write-Host (' {0}.{1} +{2} ({3}) => {4}.{5} ({6})' -f $SchemaName,$TableName,$op.Name,$source_columns,$ReferencesSchema,$References,$ref_columns)
      
     }
     

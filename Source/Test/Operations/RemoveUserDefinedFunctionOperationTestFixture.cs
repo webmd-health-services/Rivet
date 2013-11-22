@@ -20,7 +20,7 @@ namespace Rivet.Test.Operations
 		{
 			var op = new RemoveUserDefinedFunctionOperation(SchemaName, FunctionName);
 			Assert.AreEqual(SchemaName, op.SchemaName);
-			Assert.AreEqual(FunctionName, op.FunctionName);
+			Assert.AreEqual(FunctionName, op.Name);
 		}
 
 		[Test]
