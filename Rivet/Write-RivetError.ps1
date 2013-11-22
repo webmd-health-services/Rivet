@@ -45,21 +45,13 @@ function Write-RivetError
     }
         
     Write-Error (@"
-`v
-MESSAGE:
-========
 [{0}].[{1}] {2}: {3}
-`v
-STACKTRACE:
-===========
-{4}
-`v
-QUERY:
-======
+  {4}
+ 
+QUERY
+=====
 {5}
-`v
-ERROR-INFO:
-===========
-"@ -f $Connection.DataSource,$Connection.Database,$Message,$firstException.Message,$CallStack, $Query) -ErrorID $ErrorID -Category $CategoryInfo 
+ 
+"@ -f $Connection.DataSource,$Connection.Database,$Message,$firstException.Message,($CallStack -replace "`n","`n  "), $Query) -ErrorID $ErrorID -Category $CategoryInfo 
 
 }
