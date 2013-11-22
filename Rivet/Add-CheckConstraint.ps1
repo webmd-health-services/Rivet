@@ -36,13 +36,19 @@ function Add-CheckConstraint
         
         [Switch]
         # Don't use the check constraint when inserting, updating, or deleting rows during replication.
-        $NotForReplication
-        
+        $NotForReplication,
+
+        [Switch]
+        # Don't show any host output.
+        $Quiet
     )
 
-    Set-StrictMode -Version Latest
+    Set-StrictMode -Version 'Latest'
 
     $op = New-Object 'Rivet.Operations.AddCheckConstraintOperation' $SchemaName, $TableName, $Name, $Expression, $NotForReplication
-    Write-Host (' {0}.{1} +{2} {3}' -f $SchemaName, $TableName, $Name, $Expression)
+    if( -not $Quiet )
+    {
+        Write-Host (' {0}.{1} +{2} {3}' -f $SchemaName, $TableName, $Name, $Expression)
+    }
     Invoke-MigrationOperation -Operation $op
 }

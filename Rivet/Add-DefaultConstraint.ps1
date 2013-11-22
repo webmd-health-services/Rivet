@@ -35,39 +35,47 @@ function Add-DefaultConstraint
         # The schema name of the target table.  Defaults to `dbo`.
         $SchemaName = 'dbo',
 
-        [Parameter(Mandatory=$true,Position=1)]
+        [Parameter(Mandatory=$true,Position=1,ParameterSetName='ByDefaultName')]
         [string]
         # The column on which to add the default constraint
         $ColumnName,
 
-        [Parameter(Mandatory=$true,Position=2)]
+        [Parameter(Mandatory=$true,ParameterSetName='ByCustomName')]
+        [string]
+        # The name for the <object type>. If not given, a sensible name will be created.
+        $Name,
+
+        [Parameter(Mandatory=$true,Position=2,ParameterSetName='ByDefaultName')]
+        [Parameter(Mandatory=$true,Position=1,ParameterSetName='ByCustomName')]
         [string]
         #The default expression
         $Expression,
 
         [Parameter()]
         [switch]
-        #WithValues
+        # WithValues
         $WithValues,
 
-        [Parameter()]
-        [string]
-        # The name for the <object type>. If not given, a sensible name will be created.
-        $Name
+        [Switch]
+        # Don't show any host output.
+        $Quiet
     )
 
-    Set-StrictMode -Version Latest
+    Set-StrictMode -Version 'Latest'
 
     if ($PSBoundParameters.containskey("Name"))
     {
         $op = New-Object 'Rivet.Operations.AddDefaultConstraintOperation' $SchemaName, $TableName, $Expression, $ColumnName, $Name, $WithValues
-        Write-Host (' {0}.{1} +{2} {3} {4}' -f $SchemaName, $TableName, $Name, $ColumnName, $Expression)
     }
     else 
     {
         $op = New-Object 'Rivet.Operations.AddDefaultConstraintOperation' $SchemaName, $TableName, $Expression, $ColumnName, $WithValues
-        Write-Host (' {0}.{1} +{2} {3} {4}' -f $SchemaName, $TableName, $op.ConstraintName.Name, $ColumnName, $Expression)
+        $Name = $op.ConstraintName.Name
     }
 
+    if( -not $Quiet )
+    {
+        Write-Host (' {0}.{1} +{2} {3} {4}' -f $SchemaName, $TableName, $Name, $ColumnName, $Expression)
+    }
     Invoke-MigrationOperation -Operation $op
 }

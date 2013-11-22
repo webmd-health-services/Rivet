@@ -60,15 +60,21 @@ function Add-Table
 
         [string]
         # A description of the table.
-        $Description
+        $Description,
 
+        [Switch]
+        # Don't show any host output.
+        $Quiet
     )
 
-    # Process Column Scriptblock -> Rivet.Column[]
+    Set-StrictMode -Version 'Latest'
+
+    if( -not $Quiet )
+    {
+        Write-Host (' +{0}.{1}' -f $SchemaName,$Name)
+    }
+
     $columns = & $Column
-
-    Write-Host (' +{0}.{1}' -f $SchemaName,$Name)
-
     $op = New-Object 'Rivet.Operations.AddTableOperation' $SchemaName, $Name, $columns, $FileTable, $FileGroup, $TextImageFileGroup, $FileStreamFileGroup, $Option, $Description
     Invoke-MigrationOperation -Operation $op
 

@@ -21,10 +21,19 @@ function Add-Schema
         [Alias('Authorization')]
         [string]
         # The owner of the schema.
-        $Owner
+        $Owner,
+
+        [Switch]
+        # Don't show any host output.
+        $Quiet
     )
 
-    Write-Host (" +{0} {1}" -f $Name, $Owner)
+    Set-StrictMode -Version 'Latest'
+
+    if( -not $Quiet )
+    {
+        Write-Host (" +{0} {1}" -f $Name, $Owner)
+    }
     $op = New-Object 'Rivet.Operations.AddSchemaOperation' $Name, $Owner
     Invoke-MigrationOperation -Operation $op
 }

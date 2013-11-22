@@ -49,10 +49,14 @@ function Add-PrimaryKey
         [Parameter()]
         [string]
         # The name for the <object type>. If not given, a sensible name will be created.
-        $Name
+        $Name,
+
+        [Switch]
+        # Don't show any host output.
+        $Quiet
     )
 
-    Set-StrictMode -Version Latest
+    Set-StrictMode -Version 'Latest'
 
     $columns = $ColumnName -join ','
 
@@ -65,6 +69,9 @@ function Add-PrimaryKey
         $op = New-Object 'Rivet.Operations.AddPrimaryKeyOperation' $SchemaName, $TableName, $ColumnName, $NonClustered, $Option
     }
 
-    Write-Host (' {0}.{1} +{2} ({3})' -f $SchemaName,$TableName,$op.ConstraintName.Name,$columns)
+    if( -not $Quiet )
+    {
+        Write-Host (' {0}.{1} +{2} ({3})' -f $SchemaName,$TableName,$op.ConstraintName.Name,$columns)
+    }
     Invoke-MigrationOperation -Operation $op
 }

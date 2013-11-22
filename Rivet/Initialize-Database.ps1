@@ -14,7 +14,7 @@ function Initialize-Database
     {
         if( -not (Test-Schema -Name $RivetSchemaName) )
         {
-            Add-Schema -Name $RivetSchemaName
+            Add-Schema -Name $RivetSchemaName -Quiet
         }
     
         $oldRivetSchemaName = 'pstep'
@@ -30,7 +30,7 @@ function Initialize-Database
 
         if( (Test-Schema -Name $oldRivetSchemaName) )
         {
-            Remove-Schema -Name $oldRivetSchemaName
+            Remove-Schema -Name $oldRivetSchemaName -Quiet
         }
     
         if( (Test-Table -Name $RivetMigrationsTableName -SchemaName $RivetSchemaName) )
@@ -66,7 +66,7 @@ function Initialize-Database
                 NVarChar 'Who' -Size 50  -NotNull
                 NVarChar 'ComputerName' -Size 50 -NotNull
                 DateTime2 'AtUtc' -NotNull
-            }
+            } -Quiet
 
             
             $query = @'
@@ -81,18 +81,18 @@ function Initialize-Database
         if( -not (Test-Table -Name $RivetActivityTableName -SchemaName $RivetSchemaName) )
         {
             Add-Table -SchemaName $RivetSchemaName $RivetActivityTableName {
-                int ID -Identity
+                int 'ID' -Identity
                 nvarchar 'Operation' -Size 4 -NotNull
                 bigint 'MigrationID' -NotNull
                 nvarchar 'Name' -Size 50 -NotNull
                 nvarchar 'Who' -Size 50 -NotNull
                 nvarchar 'ComputerName' -Size 50 -NotNull
                 datetime2 'AtUtc' -NotNull
-            }
+            } -Quiet
             
-            Add-PrimaryKey -SchemaName $RivetSchemaName $RivetActivityTableName -ColumnName 'ID'
-            Add-DefaultConstraint -SchemaName $RivetSchemaName $RivetActivityTableName -ColumnName 'AtUtc' -Expression 'getutcdate()'
-            Add-CheckConstraint -SchemaName $RivetSchemaName -TableName $RivetActivityTableName -Name 'CK_rivet_Activity_Operation' -Expression 'Operation = ''Push'' or Operation = ''Pop'''
+            Add-PrimaryKey -SchemaName $RivetSchemaName $RivetActivityTableName -ColumnName 'ID' -Quiet
+            Add-DefaultConstraint -SchemaName $RivetSchemaName $RivetActivityTableName -ColumnName 'AtUtc' -Expression 'getutcdate()' -Quiet
+            Add-CheckConstraint -SchemaName $RivetSchemaName -TableName $RivetActivityTableName -Name 'CK_rivet_Activity_Operation' -Expression 'Operation = ''Push'' or Operation = ''Pop''' -Quiet
         }
 
         $Connection.Transaction.Commit()
