@@ -1,0 +1,102 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{E987DC29-C1B0-4C9A-B8A3-46823E636087}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Rivet</RootNamespace>
+    <AssemblyName>Rivet</AssemblyName>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\Rivet\bin\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="ForeignKeyConstraintName.cs" />
+    <Compile Include="Column.cs" />
+    <Compile Include="DataType.cs" />
+    <Compile Include="Identity.cs" />
+    <Compile Include="Migration.cs" />
+    <Compile Include="Operations\AddDefaultConstraintOperation.cs" />
+    <Compile Include="Operations\AddExtendedPropertyOperation.cs" />
+    <Compile Include="Operations\AddForeignKeyOperation.cs" />
+    <Compile Include="Operations\AddIndexOperation.cs" />
+    <Compile Include="Operations\AddPrimaryKeyOperation.cs" />
+    <Compile Include="Operations\AddSchemaOperation.cs" />
+    <Compile Include="Operations\AddTableOperation.cs" />
+    <Compile Include="Operations\AddUniqueKeyOperation.cs" />
+    <Compile Include="ConstraintName.cs" />
+    <Compile Include="Operations\AddTriggerOperation.cs" />
+    <Compile Include="Operations\AddRowOperation.cs" />
+    <Compile Include="Operations\AddSynonymOperation.cs" />
+    <Compile Include="Operations\AddDataTypeOperation.cs" />
+    <Compile Include="Operations\AddCheckConstraintOperation.cs" />
+    <Compile Include="Operations\RemoveCheckConstraintOperation.cs" />
+    <Compile Include="Operations\UpdateTableOperation.cs" />
+    <Compile Include="Operations\RemoveDataTypeOperation.cs" />
+    <Compile Include="Operations\RemoveSynonymOperation.cs" />
+    <Compile Include="Operations\RenameOperation.cs" />
+    <Compile Include="Operations\UpdateViewOperation.cs" />
+    <Compile Include="Operations\UpdateUserDefinedFunctionOperation.cs" />
+    <Compile Include="Operations\UpdateTriggerOperation.cs" />
+    <Compile Include="Operations\UpdateStoredProcedureOperation.cs" />
+    <Compile Include="Operations\UpdateRowOperation.cs" />
+    <Compile Include="Operations\RemoveRowOperation.cs" />
+    <Compile Include="Operations\RemoveTriggerOperation.cs" />
+    <Compile Include="Operations\AddViewOperation.cs" />
+    <Compile Include="Operations\AddUserDefinedFunctionOperation.cs" />
+    <Compile Include="Operations\AddStoredProcedureOperation.cs" />
+    <Compile Include="Operations\RemoveStoredProcedureOperation.cs" />
+    <Compile Include="Operations\RemoveUserDefinedFunctionOperation.cs" />
+    <Compile Include="Operations\RemoveViewOperation.cs" />
+    <Compile Include="Operations\RemoveColumnOperation.cs" />
+    <Compile Include="Operations\RemoveExtendedPropertyOperation.cs" />
+    <Compile Include="Operations\RemoveSchemaOperation.cs" />
+    <Compile Include="Operations\Operation.cs" />
+    <Compile Include="Operations\RawQueryOperation.cs" />
+    <Compile Include="Operations\RemoveDefaultConstraintOperation.cs" />
+    <Compile Include="Operations\RemoveForeignKeyOperation.cs" />
+    <Compile Include="Operations\RemoveIndexOperation.cs" />
+    <Compile Include="Operations\RemovePrimaryKeyOperation.cs" />
+    <Compile Include="Operations\RemoveTableOperation.cs" />
+    <Compile Include="Operations\RemoveUniqueKeyOperation.cs" />
+    <Compile Include="Operations\UpdateExtendedPropertyOperation.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Precision.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
