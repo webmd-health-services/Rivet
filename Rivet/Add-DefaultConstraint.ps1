@@ -35,24 +35,21 @@ function Add-DefaultConstraint
         # The schema name of the target table.  Defaults to `dbo`.
         $SchemaName = 'dbo',
 
-        [Parameter(Mandatory=$true,Position=1,ParameterSetName='ByDefaultName')]
+        [Parameter(Mandatory=$true,Position=1)]
         [string]
         # The column on which to add the default constraint
         $ColumnName,
 
-        [Parameter(Mandatory=$true,ParameterSetName='ByCustomName')]
         [string]
         # The name for the <object type>. If not given, a sensible name will be created.
         $Name,
 
-        [Parameter(Mandatory=$true,Position=2,ParameterSetName='ByDefaultName')]
-        [Parameter(Mandatory=$true,Position=1,ParameterSetName='ByCustomName')]
+        [Parameter(Mandatory=$true,Position=2)]
         [string]
         #The default expression
         $Expression,
 
-        [Parameter()]
-        [switch]
+        [Switch]
         # WithValues
         $WithValues,
 

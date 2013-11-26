@@ -134,18 +134,20 @@ function Pop-Migration
     Assert-Column -Name 'Two' -DataType 'Xml' -TableName 'WithXmlContent'
 }
 
-function Test-ShouldUpdateColumnAfterAddColumninUpdateTable
+function Test-ShouldUpdateColumnAfterAddColumnInUpdateTable
 {
     @'
 function Push-Migration
 {
     Add-Table -Name 'Foobar' -Column {
         Int 'id' -Description 'Foo'
-    } -Option 'data_compression = none'
+    }
 
     Update-Table -Name 'Foobar' -AddColumn {
         VarChar 'id2' -Max -Description 'Foo2'
-    } -UpdateColumn {
+    }
+    
+    Update-Table -Name 'FooBar' -UpdateColumn {
         BigInt 'id2' -Description 'Bar'
     } 
 

@@ -50,29 +50,33 @@ function Update-Table
         $UpdateColumn
     )
 
-    if ($AddColumn){
-        $Add = @(& $AddColumn)
+    $newColumns = @()
+    if ($AddColumn)
+    {
+        [Object[]]$newColumns = & $AddColumn
     }
     
-    if ($UpdateColumn){
-        $Update = @(& $UpdateColumn)
+    $updatedColumns = @()
+    if ($UpdateColumn)
+    {
+        [Object[]]$Update = & $UpdateColumn
     }
 
-    foreach ($i in $Add)
+    foreach ($i in $newColumns)
     {
         Write-Host (' {0}.{1} +{2}' -f $SchemaName,$Name,$i.GetColumnDefinition($TableName,$SchemaName,$false))
     }
 
-    foreach ($i in $Update)
+    foreach ($i in $updatedColumns)
     {
         Write-Host (' {0}.{1} ={2}' -f $SchemaName,$Name,$i.GetColumnDefinition($TableName,$SchemaName,$false))
     }
 
 
-    $op = New-Object 'Rivet.Operations.UpdateTableOperation' $SchemaName,$Name,$Add,$Update
+    $op = New-Object 'Rivet.Operations.UpdateTableOperation' $SchemaName,$Name,$newColumns,$updatedColumns
     Invoke-MigrationOperation -Operation $op
 
-    foreach ($i in $Add)
+    foreach ($i in $newColumns)
     {
         if ($i.Description)
         {
@@ -80,7 +84,7 @@ function Update-Table
         }
     }
 
-    foreach ($i in $Update)
+    foreach ($i in $updatedColumns)
     {
         if ($i.Description)
         {
