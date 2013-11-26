@@ -64,12 +64,12 @@ function Update-Table
 
     foreach ($i in $newColumns)
     {
-        Write-Host (' {0}.{1} +{2}' -f $SchemaName,$Name,$i.GetColumnDefinition($TableName,$SchemaName,$false))
+        Write-Host (' {0}.{1} +{2}' -f $SchemaName,$Name,$i.GetColumnDefinition($Name,$SchemaName,$false))
     }
 
     foreach ($i in $updatedColumns)
     {
-        Write-Host (' {0}.{1} ={2}' -f $SchemaName,$Name,$i.GetColumnDefinition($TableName,$SchemaName,$false))
+        Write-Host (' {0}.{1} ={2}' -f $SchemaName,$Name,$i.GetColumnDefinition($Name,$SchemaName,$false))
     }
 
 
