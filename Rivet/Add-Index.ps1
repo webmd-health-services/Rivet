@@ -116,7 +116,7 @@ function Add-Index
         else 
         {
             $op = New-Object 'Rivet.Operations.AddIndexOperation' $SchemaName, $TableName, $ColumnName, $Unique, $Clustered, $Option, $Where, $On, $FileStreamOn
-            Write-Host (' {0}.{1} +{2} ({3})' -f $SchemaName,$TableName,$op.ConstraintName.Name,$ColumnClause)
+            Write-Host (' {0}.{1} +{2} ({3})' -f $SchemaName,$TableName,$op.Name,$ColumnClause)
         }
     }
     
