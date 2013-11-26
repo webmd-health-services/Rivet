@@ -59,7 +59,7 @@ function Update-Table
     $updatedColumns = @()
     if ($UpdateColumn)
     {
-        [Object[]]$Update = & $UpdateColumn
+        [Object[]]$updatedColumns = & $UpdateColumn
     }
 
     foreach ($i in $newColumns)

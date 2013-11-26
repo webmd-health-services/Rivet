@@ -128,7 +128,7 @@ function Update-Database
             $DBScriptRoot = $DBScriptsPath
             $DBMigrationsRoot = Join-Path -Path $DBScriptsPath -ChildPath Migrations
 
-            if( $Pop -or $Force)
+            if( $Pop -or $Force )
             {
                 if( -not (Test-Path $popFuntionPath) )
                 {

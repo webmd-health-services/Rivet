@@ -117,7 +117,7 @@ function Push-Migration
 
     Add-PrimaryKey -TableName 'Reference' -ColumnName 'reference_id'
     Add-ForeignKey -TableName 'Source' -ColumnName 'source_id' -References 'Reference' -ReferencedColumn 'reference_id'
-    Rename-Constraint -TableName 'Source' -Name 'FK_Source_Reference' -NewName 'FK_Reference_Source'
+    Rename-Constraint -Name 'FK_Source_Reference' -NewName 'FK_Reference_Source'
 }
 
 function Pop-Migration
