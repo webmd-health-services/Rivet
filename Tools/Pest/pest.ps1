@@ -315,7 +315,7 @@ $testScripts |
             Get-Module | % {
                 if( -not $modules.ContainsKey( $_.Name ) )
                 {
-                    Remove-Module $_.Name
+                    Remove-Module $_.Name -ErrorAction SilentlyContinue
                 }
             }
         }        
