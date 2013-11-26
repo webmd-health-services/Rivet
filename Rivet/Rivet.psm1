@@ -9,7 +9,7 @@ $RivetMigrationsTableFullName = '{0}.{1}' -f $RivetSchemaName,$RivetMigrationsTa
 $RivetActivityTableName = 'Activity'
 
 dir $PSScriptRoot *-*.ps1 |
-    Where-Object { $_.BaseName -ne 'Import-Rivet' -and $_.BaseName -ne 'Get-Migration' -and $_.BaseName -ne 'Export-Row' } |
+    Where-Object { $_.BaseName -ne 'Import-Rivet' -and $_.BaseName -ne 'Export-Row' } |
     ForEach-Object { . $_.FullName }
 
 $publicFunctions = @(

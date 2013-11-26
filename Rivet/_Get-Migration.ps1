@@ -1,27 +1,28 @@
-<#
-.SYNOPSIS
-Gets the migrations for a given database.
 
-.DESCRIPTION
-This function exposes Rivet's internal migration objects so you can do cool things with them.  You're welcome.  Enjoy!
-
-Each object returned represents one migration, and includes properties for the push and pop operations in that migration.
-
-.OUTPUTS
-Rivet.Migration.
-
-.EXAMPLE
-Get-Migration
-
-Returns `Rivet.Migration` objects for each migration in each database.
-
-.EXAMPLE
-Get-Migration -Database StarWars
-
-Returns `Rivet.Migration` objects for each migration in the `StarWars` database.
-#>
 function Get-Migration
 {
+    <#
+    .SYNOPSIS
+    Gets the migrations for a given database.
+
+    .DESCRIPTION
+    This function exposes Rivet's internal migration objects so you can do cool things with them.  You're welcome.  Enjoy!
+
+    Each object returned represents one migration, and includes properties for the push and pop operations in that migration.
+
+    .OUTPUTS
+    Rivet.Migration.
+
+    .EXAMPLE
+    Get-Migration
+
+    Returns `Rivet.Migration` objects for each migration in each database.
+
+    .EXAMPLE
+    Get-Migration -Database StarWars
+
+    Returns `Rivet.Migration` objects for each migration in the `StarWars` database.
+    #>
     [CmdletBinding()]
     param(
         [string[]]

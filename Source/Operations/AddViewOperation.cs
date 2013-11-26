@@ -17,7 +17,7 @@ namespace Rivet.Operations
 
 		public override string ToIdempotentQuery()
 		{
-			return string.Format("if object_id('{0}.{1}', 'V') is null{2}\t{0}exec sp_executesql N'{3}'", SchemaName, Name,
+			return string.Format("if object_id('{0}.{1}', 'V') is null{2}\texec sp_executesql N'{3}'", SchemaName, Name,
 				Environment.NewLine, ToQuery().Replace("'", "''"));
 		}
 
