@@ -23,17 +23,16 @@ function Assert-View
         $Description
     )
     
-    Set-StrictMode -Version Latest
+    Set-StrictMode -Version 'Latest'
 
-    $view = Get-SysObject -Name $Name -Type 'V'
+    $view = Get-SysObject -SchemaName $SchemaName -Name $Name -Type 'V'
    
-    Assert-NotNull $view ('View {0}.{1} doesn''t exist.' -f $SchemaName,$Name)
+    Assert-NotNull $view ('View {0}.{1} not found.' -f $SchemaName,$Name)
     
     if( $PSBoundParameters.ContainsKey('Definition') )
     {
-        $od = Get-ObjectDefinition $view.object_id
         $expectedDefinition = "create view [{0}].[{1}] {2}" -f $SchemaName, $Name, $Definition
-        Assert-Equal $expectedDefinition $od.'Object Definition'
+        Assert-Match $view.definition ([Text.RegularExpressions.Regex]::Escape($expectedDefinition))
     }
 
     if( $PSBoundParameters.ContainsKey('Description') )

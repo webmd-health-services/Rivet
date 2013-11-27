@@ -47,7 +47,7 @@ function Rename-Column
 
     $op = New-Object 'Rivet.Operations.RenameColumnOperation' $SchemaName, $TableName, $Name, $NewName
     Write-Host (' {0}.{1}.{2} -> {0}.{1}.{3}' -f $SchemaName,$TableName,$Name,$NewName)
-    $result = Invoke-MigrationOperation -Operation $op -AsScalar
+    [int]$result = Invoke-MigrationOperation -Operation $op -AsScalar
     
     if ($result -ne 0)
     {

@@ -16,7 +16,7 @@ namespace Rivet.Operations
 		{
 			return
 				string.Format(
-					"if exists (select * from sys.columns where object_id('{0}.{1}', 'U') = object_id and name='{2}') and not exists (select * from sys.columns where object_id('{0}.{1}', 'U') = object_id and name='{3}'){4}\t{5}",
+					"if exists (select * from sys.columns where object_id('{0}.{1}', 'U') = [object_id] and [name]='{2}') and not exists (select * from sys.columns where object_id('{0}.{1}', 'U') = [object_id] and [name]='{3}'){4}begin{4}\t{5}{4}end",
 					SchemaName, TableName, Name, NewName, Environment.NewLine, ToQuery());
 		}
 

@@ -128,19 +128,35 @@ function Resolve-Error ($ErrorRecord=$Error[0])
    }
 }
 
+function New-TestInfoObject
+{
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]
+        # The name of the test fixture.
+        $Fixture,
+
+        [Parameter(Mandatory=$true)]
+        [string]
+        # The name of the test.
+        $Name
+    )
+    $props =  @{ 
+                    Fixture = $Fixture; 
+                    Name = $Name ; 
+                    Passed = $false; 
+                    Failure = $null;
+                    Exception = $null; 
+                    Duration = $null; 
+                    PipelineOutput = @();
+                }
+    
+    New-Object PsObject -Property $props
+}
+
 function Invoke-Test($fixture, $function)
 {
-    $testProperties = @{ 
-                            Fixture = $fixture; 
-                            Name = $function ; 
-                            Passed = $false; 
-                            Failure = $null;
-                            Exception = $null; 
-                            Duration = $null; 
-                            PipelineOutput = @();
-                        }
-    
-    $testInfo = New-Object PsObject -Property $testProperties
+    $testInfo = New-TestInfoObject -Fixture $fixture -Name $function
     Set-CurrentTest $function
     $startedAt = Get-Date
     $output = @()
@@ -206,6 +222,7 @@ function Invoke-Test($fixture, $function)
         catch
         {
             Write-Host "An error occured tearing down test '$function': $_" -ForegroundColor Red
+            $testInfo.Passed = $false
             $error.Clear()
         }
     }
@@ -296,6 +313,9 @@ $testScripts |
                 catch
                 {
                     Write-Host ("An error occured tearing down test fixture '{0}': {1}" -f $testCase.Name,$_) -ForegroundColor Red
+                    $result = New-TestInfoObject -Fixture $testModuleName -Name 'Stop-TestFixture'
+                    $result.Exception = $_
+                    $result
                     $error.Clear()
                 }                
             }

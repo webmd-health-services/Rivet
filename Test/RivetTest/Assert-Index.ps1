@@ -21,6 +21,10 @@ function Assert-Index
         # The table's schema.  Default is `dbo`.
         $SchemaName = 'dbo',
 
+        [string]
+        # The name of the index, if different than the default, computed name.
+        $Name,
+
         [Switch]
         # Index Created Should be Clustered
         $TestClustered,
@@ -37,10 +41,6 @@ function Assert-Index
         # Test that filter predicates are passed along in the query
         $TestFilter,
 
-        [Switch]
-        # Test that the specified index is removed
-        $TestNoIndex,
-
         [Parameter()]
         [bool[]]
         # Test that the specified index is descending
@@ -48,91 +48,95 @@ function Assert-Index
 
     )
 
-    Set-StrictMode -Version Latest
+    Set-StrictMode -Version 'Latest'
 
-    $id = Get-Index -TableName $TableName
-    Assert-True ($id -isnot 'Object[]')
-    $id_columns = @(Get-IndexColumns -TableName $TableName)
-
-    if ($TestNoIndex)
+    if( -not $PSBoundParameters.ContainsKey('Name') )
     {
-        Assert-Null $id ('Clustered or NonClustered Index on table {0} does exist.' -f $TableName)
-        Assert-Null $id_columns ('Clustered or NonClustered Index Column(s) on table {0} does exist.' -f $TableName)
+        $newConstraintNameParams = @{ }
+        if( $TestUnique )
+        {
+            $newConstraintNameParams.UniqueIndex = $true
+        }
+        else
+        {
+            $newConstraintNameParams.Index = $true
+        }
+        $Name = New-ConstraintName -ColumnName $ColumnName -TableName $TableName -SchemaName $SchemaName
+        $Name = $Name.ToString()
+    }
+
+    $id = Get-Index -Name $Name
+    Assert-NotNull $id 
+
+    $query = @'
+    select * 
+    from sys.index_columns ic join
+        sys.indexes i on ic.index_id = i.index_id
+    where i.name = '{0}' and i.object_id = ic.object_id
+'@ -f $Name
+    
+    [Object[]]$id_columns = Invoke-RivetTestQuery -Query $query
+    Assert-NotNull $id_columns ('Clustered or NonClustered Index Column(s) on table {0} doesn''t exist.' -f $TableName)
+
+    ## Assert Count
+    if ($id_columns -is 'Object[]')
+    {
+        Assert-Equal $ColumnName.Count $id_columns.Count
+    }
+
+    ## Assert Clustered / NonClustered
+    if ($TestClustered)
+    {
+        Assert-Equal "CLUSTERED" $id.type_desc 
+        Assert-Equal 1 $id.type
     }
     else
     {
-        Assert-NotNull $id ('Clustered or NonClustered Index on table {0} doesn''t exist.' -f $TableName)
-        Assert-NotNull $id_columns ('Clustered or NonClustered Index Column(s) on table {0} doesn''t exist.' -f $TableName)
+        Assert-Equal "NONCLUSTERED" $id.type_desc
+        Assert-Equal 2 $id.type
+    }
 
-        ## Assert Index Name
-        If ($TestUnique)
-        {
-            Assert-Equal (New-ConstraintName -ColumnName $ColumnName -TableName $TableName -SchemaName $SchemaName -UniqueIndex) $id.name
-        }
-        else 
-        {
-            Assert-Equal (New-ConstraintName -ColumnName $ColumnName -TableName $TableName -SchemaName $SchemaName -Index) $id.name
-        }
-        ## Assert Count
-        if ($id_columns -is 'Object[]')
-        {
-            Assert-Equal $ColumnName.Count $id_columns.Count
-        }
+    if ($TestUnique)
+    {
+        Assert-Equal $true $id.is_unique
+    }
+    else
+    {
+        Assert-Equal $false $id.is_unique
+    }
 
-        ## Assert Clustered / NonClustered
-        if ($TestClustered)
-        {
-            Assert-Equal "CLUSTERED" $id.type_desc 
-            Assert-Equal 1 $id.type
-        }
-        else
-        {
-            Assert-Equal "NONCLUSTERED" $id.type_desc
-            Assert-Equal 2 $id.type
-        }
-
-        if ($TestUnique)
-        {
-            Assert-Equal $true $id.is_unique
-        }
-        else
-        {
-            Assert-Equal $false $id.is_unique
-        }
-
-        if ($TestOption)
-        {
-            Assert-Equal $true $id.ignore_dup_key
-            Assert-Equal $false $id.allow_row_locks
-        }
-        else
-        {
-            Assert-Equal $false $id.ignore_dup_key
-            Assert-Equal $true $id.allow_row_locks
-        }
+    if ($TestOption)
+    {
+        Assert-Equal $true $id.ignore_dup_key
+        Assert-Equal $false $id.allow_row_locks
+    }
+    else
+    {
+        Assert-Equal $false $id.ignore_dup_key
+        Assert-Equal $true $id.allow_row_locks
+    }
     
-        if ($TestFilter)
-        {
-            Assert-Equal "([EndDate] IS NOT NULL)" $id.filter_definition
-        }
-        else
-        {
-            Assert-Null $id.filter_definition
-        }
+    if ($TestFilter)
+    {
+        Assert-Equal "([EndDate] IS NOT NULL)" $id.filter_definition
+    }
+    else
+    {
+        Assert-Null $id.filter_definition
+    }
 
-        if ($TestDescending)
-        {
-            for ($i = 0; $i -lt $id_columns.Length; $i++)
-            { 
-                Assert-Equal $TestDescending[$i] $id_columns[$i].is_descending_key
-            }
+    if ($TestDescending)
+    {
+        for ($i = 0; $i -lt $id_columns.Length; $i++)
+        { 
+            Assert-Equal $TestDescending[$i] $id_columns[$i].is_descending_key
         }
-        else
-        {
-            for ($i = 0; $i -lt $id_columns.Length; $i++)
-            { 
-                Assert-Equal $false $id_columns[$i].is_descending_key
-            }
+    }
+    else
+    {
+        for ($i = 0; $i -lt $id_columns.Length; $i++)
+        { 
+            Assert-Equal $false $id_columns[$i].is_descending_key
         }
     }
     

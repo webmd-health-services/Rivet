@@ -7,9 +7,13 @@ function Get-SysObject
     #>
 
     param(
+        [Parameter(Mandatory=$true)]
         [string]
         # The name of the object.
         $Name,
+
+        [string]
+        $SchemaName = 'dbo',
 
         [string]
         # The type of the object.
@@ -18,36 +22,24 @@ function Get-SysObject
     
     Set-StrictMode -Version Latest
 
-    $query = @'
-    select 
-            o.*, ex.value MS_Description 
-        from 
-            sys.objects o left outer join
-            sys.extended_properties ex on ex.major_id = o.object_id and minor_id = 0 and OBJECTPROPERTY(o.object_id, 'IsMsShipped') = 0 and ex.name = 'MS_Description' 
-'@
-    $whereClauses = @()
-    if( $PSBoundParameters.ContainsKey('Name') )
-    {
-        $whereClauses += 'o.name = ''{0}''' -f $Name
-    }
-
+    $typeClause = ''
     if( $PSBoundParameters.ContainsKey('Type') )
     {
-        $whereClauses += 'o.type = ''{0}''' -f $Type
+        $typeClause = " and`n            o.type = '{0}'" -f $Type
     }
 
-    if( $whereClauses )
-    {
-        $query = @'
-{0}
+    $query = @'
+    select 
+            s.name schema_name, o.*, ex.value MS_Description, object_definition(o.object_id) definition
+        from 
+            sys.objects o join
+            sys.schemas s on o.schema_id = s.schema_id left outer join
+            sys.extended_properties ex on ex.major_id = o.object_id and minor_id = 0 and OBJECTPROPERTY(o.object_id, 'IsMsShipped') = 0 and ex.name = 'MS_Description' 
         where
-            {1}
-'@ -f $query,($whereClauses -join " and`n            ")
-        
-    }
+            s.name = '{0}' and
+            o.name = '{1}'{2}
+'@ -f $SchemaName,$Name,$typeClause
 
     Invoke-RivetTestQuery -Query $query
 
 }
-
-Set-Alias -Name 'Get-SysObjects' -Value 'Get-SysObject'

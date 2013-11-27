@@ -3,9 +3,12 @@ function Get-DefaultConstraint
 {
     <#
     .SYNOPSIS
-    Contains a row for each object that is a default definition (created as part of a CREATE TABLE or ALTER TABLE statement instead of a CREATE DEFAULT statement), with sys.objects.type = D.
+    Gets the default constraints in a database.
     #>
     param(
+        [string]
+        # The name of the default constraint to get.
+        $Name
     )
     
     Set-StrictMode -Version Latest
@@ -14,6 +17,14 @@ function Get-DefaultConstraint
     select * 
     from sys.default_constraints
 '@
+    if( $Name )
+    {
+        $query = @'
+{0}
+    where
+        [name] = '{1}'
+'@ -f $query,$Name
+    }
     
     Invoke-RivetTestQuery -Query $query
 

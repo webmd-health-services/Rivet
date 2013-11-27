@@ -41,7 +41,7 @@ function Rename-Constraint
 
     $op = New-Object 'Rivet.Operations.RenameOperation' $SchemaName, $Name, $NewName
     Write-Host (' {0}.{1} -> {0}.{2}' -f $SchemaName,$Name,$NewName)
-    $result = Invoke-MigrationOperation -Operation $op -AsScalar
+    [int]$result = Invoke-MigrationOperation -Operation $op -AsScalar
     
     if ($result -ne 0)
     {

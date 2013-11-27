@@ -23,15 +23,14 @@ function Assert-StoredProcedure
     
     Set-StrictMode -Version Latest
 
-    $sp = Get-SysObjects | where{$_.type_desc -match "SQL_STORED_PROCEDURE" -and $_.name -match $Name}
+    $sp = Get-SysObject -SchemaName $SchemaName -Name $Name -Type 'P'
    
     Assert-NotNull $sp ('Stored Procedure {0}.{1} doesn''t exist.' -f $SchemaName,$Name)
 
     if( $PSBoundParameters.ContainsKey('Definition') )
     {    
-        $od = Get-ObjectDefinition $sp.object_id
-        $expectedDefinition = "create procedure [{0}].[{1}] {2}" -f $SchemaName, $Name, $Definition
-        Assert-Equal $expectedDefinition $od.'Object Definition'
+        $expectedDefinition = "CREATE procedure [{0}].[{1}] {2}" -f $SchemaName, $Name, $Definition
+        Assert-Match $sp.definition ([Text.RegularExpressions.Regex]::Escape($expectedDefinition))
     }
 
 }

@@ -17,6 +17,10 @@ function Test-ShouldAddDataTypeByAlias
 function Push-Migration
 {
     Add-DataType 'G U I D' 'uniqueidentifier'
+
+    Add-Table 'important' {
+        New-Column -DataType '[G U I D]' -Name 'ident' 
+    }
 }
 
 function Pop-Migration
@@ -27,13 +31,13 @@ function Pop-Migration
 '@ | New-Migration -Name 'ByAlias'
 
     Invoke-Rivet -Push 'ByAlias'
-    
-    Invoke-RivetTestQuery -Query 'create table important (ident [G U I D]);'
+
+    Assert-DataType -Name 'G U I D' -BaseTypeName 'uniqueidentifier' -UserDefined
     Assert-Table 'important'
     Assert-Column 'ident' -DataType 'G U I D' -TableName 'important'
 }
 
-function Test-ShouldAddDataTypeByAssembly
+function Ignore-ShouldAddDataTypeByAssembly
 {
     $assemblyPath = Join-Path -Path $PSScriptRoot -ChildPath '..\Source\Rivet.Test.Fake\bin\Debug\Rivet.Test.Fake.dll' -Resolve
     # Yes.  Spaces in the name so we check the name gets quoted.
@@ -42,6 +46,10 @@ function Push-Migration
 {
     Invoke-Query "create assembly rivettest from '$assemblyPath' "
     Add-DataType 'Point Point' -AssemblyName 'rivettest' -ClassName 'Rivet.Test.Fake.Point'
+
+    Add-Table 'important' {
+        New-Column -Name 'ident' -DataType '[Point Point]'
+    }
 }
 
 function Pop-Migration
@@ -53,7 +61,7 @@ function Pop-Migration
 
     Invoke-Rivet -Push 'ByAssembly'
     
-    Invoke-RivetTestQuery -Query 'create table important (ident [Point Point]);'
+    Assert-DataType -Name 'Point Point' -BaseTypeName $null -UserDefined -AssemblyType
     Assert-Table 'important'
     Assert-Column 'ident' -DataType 'Point Point' -TableName 'important'
 }
@@ -76,6 +84,5 @@ function Pop-Migration
 
     Invoke-Rivet -Push 'ByTable'
 
-    $temp = Invoke-RivetTestQuery -Query 'select * from sys.table_types'
-    Assert-Equal "U s e r s" $temp[0].name
+    Assert-DataType -Name 'U s e r s' -UserDefined -TableType -NotNull
 }

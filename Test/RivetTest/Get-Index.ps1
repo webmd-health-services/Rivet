@@ -8,9 +8,7 @@ function Get-Index
 
     param(
         [Parameter(Mandatory=$true)]
-        [string]
-        # The name of the table whose primary key to get.
-        $TableName
+        $Name
     )
     
     Set-StrictMode -Version Latest
@@ -18,8 +16,8 @@ function Get-Index
     $query = @'
     select * 
     from sys.indexes
-    where object_id = OBJECT_ID('{0}') and index_id > 0 and type in (1,2)
-'@ -f $TableName
+    where name = '{0}' and index_id > 0 and type in (1,2)
+'@ -f $Name
     
     Invoke-RivetTestQuery -Query $query
 

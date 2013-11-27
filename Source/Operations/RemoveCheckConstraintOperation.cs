@@ -18,7 +18,7 @@ namespace Rivet.Operations
 
 		public override string ToIdempotentQuery()
 		{
-			return String.Format("if object_id('{0}', 'C') is not null{1}\t{2}", Name, Environment.NewLine, ToQuery());
+			return String.Format("if object_id('{0}.{1}', 'C') is not null{2}\t{3}", SchemaName, Name, Environment.NewLine, ToQuery());
 		}
 
 		public override string ToQuery()

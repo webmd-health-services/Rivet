@@ -40,7 +40,7 @@ namespace Rivet.Operations
 			switch (All)
 			{
 				case false: //Drop Specific Rows
-					query = String.Format("delete from [{0}].[{1}] where {2};", SchemaName, TableName, Where);
+					query = String.Format("delete from [{0}].[{1}] where {2}", SchemaName, TableName, Where);
 					break;
 				case true: //Drop All Rows
 					query = String.Format(Truncate == false ? "delete from [{0}].[{1}]" : "truncate table  [{0}].[{1}]", SchemaName, TableName);
