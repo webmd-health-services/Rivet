@@ -65,9 +65,9 @@ namespace Rivet.Operations
 			switch (Type)
 			{
 				case DatatypeOperation.From:
-					return string.Format("create type [{0}].{1} from {2}", SchemaName, Name, From);
+					return string.Format("create type [{0}].[{1}] from {2}", SchemaName, Name, From);
 				case DatatypeOperation.Assembly:
-					return string.Format("create type [{0}].{1} external name {2}.[{3}] ", SchemaName, Name, AssemblyName, ClassName);
+					return string.Format("create type [{0}].[{1}] external name {2}.[{3}]", SchemaName, Name, AssemblyName, ClassName);
 				case DatatypeOperation.Table:
 					var columnDefinitionList = new List<string>();
 					foreach (Column column in AsTable)
@@ -77,7 +77,7 @@ namespace Rivet.Operations
 					string columnDefinitionClause = string.Join(", ", columnDefinitionList.ToArray());
 					var tableConstraintClause = string.Join(", ", TableConstraint.ToArray());
 					columnDefinitionClause = string.Format("({0} {1})", columnDefinitionClause, tableConstraintClause);
-					var query = string.Format("create type [{0}].{1} as table {2}", SchemaName, Name, columnDefinitionClause);
+					var query = string.Format("create type [{0}].[{1}] as table {2}", SchemaName, Name, columnDefinitionClause);
 					return query;
 				default:
 					throw new ArgumentOutOfRangeException();

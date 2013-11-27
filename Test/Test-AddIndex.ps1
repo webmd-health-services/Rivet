@@ -13,16 +13,17 @@ function Stop-Test
 
 function Test-ShouldAddIndexWithOneColumn
 {
+    # Yes.  Spaces in the name so we check the name gets quoted.
     @'
 function Push-Migration()
 {
 
-    Add-Table -Name 'AddIndex' {
-        Int 'IndexMe' -NotNull
+    Add-Table -Name 'Add Index' {
+        Int 'Index Me' -NotNull
     }
 
     #Add an Index to 'IndexMe'
-    Add-Index -TableName 'AddIndex' -ColumnName 'IndexMe'
+    Add-Index -TableName 'Add Index' -ColumnName 'Index Me'
 
 }
 
@@ -34,11 +35,11 @@ function Pop-Migration()
     Invoke-Rivet -Push 'AddIndex'
 
     ##Assert Table and Column
-    Assert-True (Test-Table 'AddIndex')
-    Assert-True (Test-Column -Name 'IndexMe' -TableName 'AddIndex')
+    Assert-True (Test-Table 'Add Index')
+    Assert-True (Test-Column -Name 'Index Me' -TableName 'Add Index')
 
     ##Assert Index
-    Assert-Index -TableName 'AddIndex' -ColumnName 'IndexMe'
+    Assert-Index -TableName 'Add Index' -ColumnName 'Index Me'
 
 }
 

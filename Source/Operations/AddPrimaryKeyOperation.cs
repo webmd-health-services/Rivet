@@ -72,9 +72,9 @@ namespace Rivet.Operations
 				optionClause = string.Format(" with ( {0} )", optionClause);
 			}
 
-			var columnClause = string.Join(",", ColumnName);
+			var columnClause = string.Join("], [", ColumnName);
 
-			return string.Format("alter table [{0}].[{1}] add constraint [{2}] primary key {3} ({4}){5}", 
+			return string.Format("alter table [{0}].[{1}] add constraint [{2}] primary key {3} ([{4}]){5}", 
 				SchemaName, TableName, Name, clusteredClause, columnClause, optionClause);
 		}
 	}

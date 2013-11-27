@@ -61,7 +61,7 @@ namespace Rivet.Test.Operations
 		{
 			var op = new AddDataTypeOperation(SchemaName, Name, From);
 
-			var expectedQuery = "create type [schemaName].name from uniqueidentifier";
+			var expectedQuery = "create type [schemaName].[name] from uniqueidentifier";
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}
 
@@ -70,7 +70,7 @@ namespace Rivet.Test.Operations
 		{
 			var op = new AddDataTypeOperation(SchemaName, Name, AssemblyName, ClassName);
 
-			var expectedQuery = "create type [schemaName].name external name assemblyName.[className] ";
+			var expectedQuery = "create type [schemaName].[name] external name assemblyName.[className]";
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}
 
@@ -79,7 +79,7 @@ namespace Rivet.Test.Operations
 		{
 			var op = new AddDataTypeOperation(SchemaName, Name, AsTable, TableConstraint);
 			var expectedQuery =
-				"create type [schemaName].name as table ([name] varchar(50) not null constraint [DF_schemaName_name_name] default '', [int column] int identity constraint1, constraint2)";
+				"create type [schemaName].[name] as table ([name] varchar(50) not null constraint [DF_schemaName_name_name] default '', [int column] int identity constraint1, constraint2)";
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}
 
@@ -95,7 +95,7 @@ namespace Rivet.Test.Operations
 		public void ShouldWriteQueryForRemoveDataTypeAlias()
 		{
 			var op = new RemoveDataTypeOperation(SchemaName, Name);
-			var expectedQuery = "drop type [schemaName].name";
+			var expectedQuery = "drop type [schemaName].[name]";
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}
 	}

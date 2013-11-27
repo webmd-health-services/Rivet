@@ -37,7 +37,7 @@ namespace Rivet.Operations
 
 		public override string ToIdempotentQuery()
 		{
-			return String.Format("if object_id('{0}', 'D') is null{1}\t{2}", Name, Environment.NewLine, ToQuery());
+			return String.Format("if object_id('{0}.{1}', 'D') is null{2}\t{3}", SchemaName, Name, Environment.NewLine, ToQuery());
 		}
 
 		public override string ToQuery()
@@ -48,7 +48,7 @@ namespace Rivet.Operations
 				withValuesClause = "with values";
 			}
 
-			return string.Format("alter table [{0}].[{1}] add constraint [{2}] default {3} for {4} {5}",
+			return string.Format("alter table [{0}].[{1}] add constraint [{2}] default {3} for [{4}] {5}",
 					SchemaName, TableName, Name, Expression, ColumnName, withValuesClause);
 		}
 	}

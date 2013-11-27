@@ -16,16 +16,17 @@ function Test-ShouldAddForeignKeyFromSingleColumnToSingleColumn
     @'
 function Push-Migration()
 {
-    Add-Table -Name 'Source' {
-        Int 'source_id' -NotNull
+    # Yes.  Spaces in the name so we check the name gets quoted.
+    Add-Table -Name 'Source Table' {
+        Int 'Source ID' -NotNull
     }
 
-    Add-Table -Name 'Reference' {
-        Int 'reference_id' -NotNull
+    Add-Table -Name 'Reference Table' {
+        Int 'Reference ID' -NotNull
     }
 
-    Add-PrimaryKey -TableName 'Reference' -ColumnName 'reference_id'
-    Add-ForeignKey 'Source' 'source_id' 'Reference' 'reference_id'
+    Add-PrimaryKey -TableName 'Reference Table' -ColumnName 'Reference ID'
+    Add-ForeignKey 'Source Table' 'Source ID' 'Reference Table' 'Reference ID'
 }
 
 function Pop-Migration()
@@ -33,7 +34,7 @@ function Pop-Migration()
 }
 '@ | New-Migration -Name 'AddForeignKeyFromSingleColumnToSingleColumn'
     Invoke-Rivet -Push 'AddForeignKeyFromSingleColumnToSingleColumn'
-    Assert-ForeignKey -TableName 'Source' -References 'Reference'
+    Assert-ForeignKey -TableName 'Source Table' -References 'Reference Table'
 }
 
 function Test-ShouldAddForeignKeyFromMultipleColumnToMultipleColumn

@@ -13,26 +13,27 @@ function Stop-Test
 
 function Test-ShouldAddPrimaryKey
 {
+    # Yes.  Spaces in the name so we check the name gets quoted.
     @'
 function Push-Migration()
 {
-    Add-Table -Name 'PrimaryKey' {
-        Int 'id' -NotNull
+    Add-Table -Name 'Primary Key' {
+        Int 'PK ID' -NotNull
     }
 
-    Add-PrimaryKey 'PrimaryKey' 'id'
+    Add-PrimaryKey 'Primary Key' 'PK ID'
 }
 
 function Pop-Migration()
 {
-    Remove-PrimaryKey -TableName 'PrimaryKey' -ColumnName 'id'
-    Remove-Table -Name 'PrimaryKey'
+    Remove-PrimaryKey -TableName 'Primary Key' -ColumnName 'PK ID'
+    Remove-Table -Name 'Primary Key'
 }
 
 '@ | New-Migration -Name 'AddTableWithPrimaryKey'
     Invoke-Rivet -Push 'AddTableWithPrimaryKey'
-    Assert-True (Test-Table 'PrimaryKey')
-    Assert-PrimaryKey -TableName 'PrimaryKey' -ColumnName 'id'
+    Assert-True (Test-Table 'Primary Key')
+    Assert-PrimaryKey -TableName 'Primary Key' -ColumnName 'PK ID'
 }
 
 function Test-ShouldAddPrimaryKeyWithMultipleColumns
