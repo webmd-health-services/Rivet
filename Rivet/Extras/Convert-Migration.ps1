@@ -72,6 +72,11 @@ Get-Migration @getMigrationParams |
                     break
                 }
 
+                'Rename(Column|Constraint|Index)?Operation'
+                {
+                    $schemaScriptPath
+                }
+
                 '(Add|Remove|Update)(StoredProcedure|Synonym|UserDefinedFunction|View)'
                 {
                     $codeObjectScriptPath
@@ -104,6 +109,6 @@ Get-Migration @getMigrationParams |
             }
             $header | Add-Content -Path $path
             $op.ToIdempotentQuery() | Add-Content -Path $path
-            "`nGO`n`n" | Add-Content -Path $path
+            "GO`n" | Add-Content -Path $path
         }
     }

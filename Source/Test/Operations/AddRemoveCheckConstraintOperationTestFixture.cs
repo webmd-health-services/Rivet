@@ -41,7 +41,7 @@ namespace Rivet.Test.Operations
 
 			var op = new AddCheckConstraintOperation(schemaName, tableName, name, expression, notForReplication);
 			
-			var expectedQuery = @"alter table [schemaName].[tableName] add constraint [constraintName] check not for replication (expression) ";
+			var expectedQuery = @"alter table [schemaName].[tableName] add constraint [constraintName] check not for replication (expression)";
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}
 
@@ -56,7 +56,7 @@ namespace Rivet.Test.Operations
 
 			var op = new AddCheckConstraintOperation(schemaName, tableName, name, expression, notForReplication);
 			Trace.WriteLine(op.ToQuery());
-			var expectedQuery = @"alter table [schemaName].[tableName] add constraint [constraintName] check (expression) ";
+			var expectedQuery = @"alter table [schemaName].[tableName] add constraint [constraintName] check (expression)";
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}
 

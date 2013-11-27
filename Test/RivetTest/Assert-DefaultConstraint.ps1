@@ -1,5 +1,5 @@
 
-function Assert-defaultConstraint
+function Assert-DefaultConstraint
 {
     <#
     .SYNOPSIS
@@ -21,31 +21,20 @@ function Assert-defaultConstraint
         # The table's schema.  Default is `dbo`.
         $SchemaName = 'dbo',
 
-        [Switch]
-        # Test that the default constraint has been removed
-        $TestNoDefault
-
+        [string]
+        # The expected expression.
+        $Definition
     )
 
     Set-StrictMode -Version Latest
 
-    $default_constraint = Get-DefaultConstraint
-    $expected_constraint_name = @(New-ConstraintName -ColumnName $ColumnName -TableName $TableName -SchemaName $SchemaName -Default)
+    $name = New-ConstraintName -ColumnName $ColumnName -TableName $TableName -SchemaName $SchemaName -Default
 
-    if ($TestNoDefault)
+    $constraint = Get-DefaultConstraint -Name $name
+    Assert-NotNull $constraint ('Default constraint ''{0}'' not found.' -f $name)
+
+    if( $PSBoundParameters.ContainsKey('Expression') )
     {
-        if ($default_constraint -isnot 'Object[]')
-        {
-            Assert-Equal "DF_rivet_Activity_AtUtc" $default_constraint.name
-        }
-        else
-        {
-            Assert-Equal "DF_rivet_Activity_AtUtc" $default_constraint[0].name
-        }
-    }
-    else
-    {
-        Assert-NotNull $default_constraint ('There are no default constraints in the database')
-        Assert-Equal $expected_constraint_name $default_constraint[1].name
+        Assert-Equal $Definition $constraint.definition
     }
 }

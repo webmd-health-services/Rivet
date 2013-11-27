@@ -39,7 +39,7 @@ namespace Rivet.Test.Operations
 		public void ShouldWriteQueryForRemoveSpecificRows()
 		{
 			var op = new RemoveRowOperation(SchemaName, TableName, Where);
-			const string expectedQuery = "delete from [schemaName].[tableName] where (sample meaningless where string);";
+			const string expectedQuery = "delete from [schemaName].[tableName] where (sample meaningless where string)";
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}
 

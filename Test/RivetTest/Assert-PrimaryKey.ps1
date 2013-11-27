@@ -21,6 +21,10 @@ function Assert-PrimaryKey
         # The column(s) that are part of the primary key.
         $ColumnName,
 
+        [string]
+        # The name of the primary key.
+        $Name,
+
         [Switch]
         # Create a non-clustered primary key.
         $NonClustered,
@@ -39,8 +43,12 @@ function Assert-PrimaryKey
     $ColumnName = [Object[]]$ColumnName
     $pk = [Object[]]$pk
 
-    $name = New-ConstraintName -TableName $TableName -SchemaName $SchemaName -ColumnName $ColumnName -PrimaryKey
-    Assert-Equal $name $pk[0].name
+    $expectedName = New-ConstraintName -TableName $TableName -SchemaName $SchemaName -ColumnName $ColumnName -PrimaryKey
+    if( $PSBoundParameters.ContainsKey('Name') )
+    {
+        $expectedName = $Name
+    }
+    Assert-Equal $expectedName $pk[0].name
 
     Assert-Equal $ColumnName.Count $pk.Count
 
