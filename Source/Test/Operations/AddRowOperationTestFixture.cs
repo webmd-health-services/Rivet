@@ -56,14 +56,14 @@ namespace Rivet.Test.Operations
 		public void ShouldWriteQueryForAddRow()
 		{
 			GivenRows(ArrayofHashtables);
-			ThenQueryValuesAre("City, State, Population", new []{"'New York', 'New York', 8336697", "'Los Angeles', 'California', 3857799"});
+			ThenQueryValuesAre("City], [State], [Population", new []{"'New York', 'New York', 8336697", "'Los Angeles', 'California', 3857799"});
 		}
 
 		[Test]
 		public void ShouldTurnOnIdentityInsert()
 		{
 			GivenIdentityRows(ArrayofHashtables);
-			ThenQueryValuesAre("City, State, Population", new []{"'New York', 'New York', 8336697", "'Los Angeles', 'California', 3857799"});
+			ThenQueryValuesAre("City], [State], [Population", new []{"'New York', 'New York', 8336697", "'Los Angeles', 'California', 3857799"});
 		}
 
 		[Test]
@@ -155,14 +155,14 @@ namespace Rivet.Test.Operations
 			}
 			foreach (var row in rows)
 			{
-				queryBuilder.AppendFormat("insert into [schemaName].[tableName] ({0}) values ({1}){2}", columns, row, Environment.NewLine);
+				queryBuilder.AppendFormat("insert into [schemaName].[tableName] ([{0}]) values ({1}){2}", columns, row, Environment.NewLine);
 			}
 			if (_op.IdentityInsert)
 			{
 				queryBuilder.AppendFormat("set IDENTITY_INSERT [{0}].[{1}] off{2}", SchemaName, TableName, Environment.NewLine);
 
 			}
-			Assert.That(_op.ToQuery(), Is.EqualTo(queryBuilder.ToString()));
+			Assert.That(_op.ToQuery(), Is.EqualTo(queryBuilder.ToString().Trim()));
 		}
 
 		private void GivenRows(Hashtable[] rows)

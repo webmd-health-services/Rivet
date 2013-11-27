@@ -23,10 +23,10 @@ namespace Rivet.Operations
 
 		//Custom Constraint Name
 		public AddForeignKeyOperation(string schemaName, string tableName, string[] columnName, string referencesSchemaName,
-							  string referencesTableName, string[] referencesColumnName, string customConstraintName, string onDelete,
+							  string referencesTableName, string[] referencesColumnName, string name, string onDelete,
 							  string onUpdate, bool notForReplication)
 		{
-			CustomConstraintName = customConstraintName;
+			Name = new ForeignKeyConstraintName(name);
 			SchemaName = schemaName;
 			TableName = tableName;
 			ColumnName = (string[])columnName.Clone();
@@ -39,7 +39,6 @@ namespace Rivet.Operations
 		}
 
 		public ForeignKeyConstraintName Name { get; private set; }
-		public string CustomConstraintName { get; private set; }
 		public string SchemaName { get; private set; }
 		public string TableName { get; private set; }
 		public string[] ColumnName { get; private set; }
@@ -52,13 +51,13 @@ namespace Rivet.Operations
 
 		public override string ToIdempotentQuery()
 		{
-			return string.Format("if object_id('{0}', 'F') is null{1}\t{2}", Name, Environment.NewLine, ToQuery());
+			return string.Format("if object_id('{0}.{1}', 'F') is null{2}\t{3}", SchemaName,Name, Environment.NewLine, ToQuery());
 		}
 
 		public override string ToQuery()
 		{
-			var sourceColumns = string.Join(",", ColumnName);
-			var refColumns = string.Join(",", ReferencesColumnName);
+			var sourceColumns = string.Join("],[", ColumnName);
+			var refColumns = string.Join("],[", ReferencesColumnName);
 
 			var onDeleteClause = "";
 			if (!string.IsNullOrEmpty(OnDelete))
@@ -78,22 +77,11 @@ namespace Rivet.Operations
 				notForReplicationClause = "not for replication";
 			}
 
-			if (string.IsNullOrEmpty(CustomConstraintName))
-			{
-				return
-					string.Format(
-						"alter table [{0}].[{1}] add constraint [{2}] foreign key ({3}) references {4}.{5} ({6}) {7} {8} {9}",
-						SchemaName, TableName, Name, sourceColumns, ReferencesSchemaName, ReferencesTableName,
-						refColumns, onDeleteClause, onUpdateClause, notForReplicationClause);
-			}
-			else
-			{
-				return 
-					string.Format(
-						"alter table [{0}].[{1}] add constraint [{2}] foreign key ({3}) references {4}.{5} ({6}) {7} {8} {9}",
-						SchemaName, TableName, CustomConstraintName, sourceColumns, ReferencesSchemaName, ReferencesTableName,
-						refColumns, onDeleteClause, onUpdateClause, notForReplicationClause);
-			}
+			return
+				string.Format(
+					"alter table [{0}].[{1}] add constraint [{2}] foreign key ([{3}]) references [{4}].[{5}] ([{6}]) {7} {8} {9}",
+					SchemaName, TableName, Name, sourceColumns, ReferencesSchemaName, ReferencesTableName,
+					refColumns, onDeleteClause, onUpdateClause, notForReplicationClause);
 		}
 	}
 }

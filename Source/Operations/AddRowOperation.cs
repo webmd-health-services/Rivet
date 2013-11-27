@@ -50,15 +50,13 @@ namespace Rivet.Operations
 			if (IdentityInsert)
 			{
 				query.AppendFormat("set IDENTITY_INSERT [{0}].[{1}] on", SchemaName, TableName);
-				query.AppendLine();
 			}
-
 
 			foreach (var row in Column)
 			{
 				var columnList = row.Keys.Cast<string>().ToList();
-				var columnClause = String.Join(", ", columnList.ToArray());
-				columnClause = String.Format("({0})", columnClause);
+				var columnClause = String.Join("], [", columnList.ToArray());
+				columnClause = String.Format("([{0}])", columnClause);
 				var whereClauses = new List<string>(row.Count);
 
 				var valueList = new List<string>();
@@ -86,12 +84,17 @@ namespace Rivet.Operations
 						value = de.Value.ToString();
 					}
 
-					var whereClause = string.Format("{0} = {1}", de.Key, value);
+					var whereClause = string.Format("[{0}] = {1}", de.Key, value);
 					whereClauses.Add(whereClause);
 					valueList.Add(value);
 				}
 				var valueClause = String.Join(", ", valueList.ToArray());
 				valueClause = String.Format("({0})", valueClause);
+
+				if (query.Length > 0)
+				{
+					query.AppendLine();
+				}
 
 				if (withConditionalInserts)
 				{
@@ -99,13 +102,12 @@ namespace Rivet.Operations
 						String.Join(" and ", whereClauses.ToArray()), Environment.NewLine);
 				}
 				query.AppendFormat("insert into [{0}].[{1}] {2} values {3}", SchemaName, TableName, columnClause, valueClause);
-				query.AppendLine();
 			}
 
 			if (IdentityInsert)
 			{
-				query.AppendFormat("set IDENTITY_INSERT [{0}].[{1}] off", SchemaName, TableName);
 				query.AppendLine();
+				query.AppendFormat("set IDENTITY_INSERT [{0}].[{1}] off", SchemaName, TableName);
 			}
 
 			return query.ToString();

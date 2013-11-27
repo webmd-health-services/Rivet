@@ -16,11 +16,12 @@ function Test-ShouldAddDefaultConstraint
     @'
 function Push-Migration()
 {
+    # Yes.  Spaces in the name so we check the name gets quoted.
     Add-Table -Name 'AddDefaultConstraint' {
-        Int 'DefaultConstraintMe' -NotNull
+        Int 'Default Constraint Me' -NotNull
     }
 
-    Add-DefaultConstraint -TableName 'AddDefaultConstraint' -ColumnName 'DefaultConstraintMe' -Expression 101
+    Add-DefaultConstraint -TableName 'AddDefaultConstraint' -ColumnName 'Default Constraint Me' -Expression 101
 
 }
 
@@ -30,7 +31,7 @@ function Pop-Migration()
 '@ | New-Migration -Name 'AddDefaultConstraint'
 
     Invoke-Rivet -Push 'AddDefaultConstraint'
-    Assert-DefaultConstraint -TableName 'AddDefaultConstraint' -ColumnName 'DefaultConstraintMe'
+    Assert-DefaultConstraint -TableName 'AddDefaultConstraint' -ColumnName 'Default Constraint Me'
 
 }
 

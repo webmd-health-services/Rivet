@@ -12,27 +12,28 @@ function Stop-Test
 
 function Test-ShouldAddSingleRow
 {
+    # Yes.  Spaces in names so we check that the names get quoted.
     @'
 function Push-Migration
 {
-    Add-Table 'Cities' {
-        VarChar 'City' -Max -NotNull
-        VarChar 'State' -Max -NotNull
+    Add-Table 'Table of Cities' {
+        VarChar 'City Name' -Max -NotNull
+        VarChar 'State Name' -Max -NotNull
         Int 'Population' -NotNull
-        datetime2 'FoundedOn' -NotNull
-        time 'UtcOffset' -NotNull
+        datetime2 'Founded On' -NotNull
+        time 'Utc Offset' -NotNull
         varchar 'Description' 100
-        bit 'StillPresent' 
+        bit 'Still Present' 
     }
 
-    Add-Row 'Cities' @( @{
-        City = 'New York'; 
-        State = 'New York'; 
-        Population = 8336697;
-        FoundedOn = ([DateTime]'1/1/1624');
-        UtcOffset = ([TimeSpan]'05:00:00');
-        Description = "New York's the greatest city in the world!";
-        StillPresent = $true;
+    Add-Row 'Table of Cities' @( @{
+        'City Name' = 'New York'; 
+        'State Name' = 'New York'; 
+        'Population' = 8336697;
+        'Founded On' = ([DateTime]'1/1/1624');
+        'Utc Offset' = ([TimeSpan]'05:00:00');
+        'Description' = "New York's the greatest city in the world!";
+        'Still Present' = $true;
     })
 }
 
@@ -45,20 +46,20 @@ function Pop-Migration
 
     Invoke-Rivet -Push 'AddSingleRow'
 
-    Assert-Table 'Cities'
+    Assert-Table 'Table of Cities'
 
-    $rows = @(Get-Row -SchemaName 'dbo' -TableName 'Cities')
+    $rows = @(Get-Row -SchemaName 'dbo' -TableName 'Table of Cities')
 
     Assert-Equal 1 $rows.count
 
     $row = $rows[0]
-    Assert-Equal "New York" $rows.City 
-    Assert-Equal "New York" $rows.State 
+    Assert-Equal "New York" $rows.'City Name'
+    Assert-Equal "New York" $rows.'State Name'
     Assert-Equal "8336697" $rows.Population 
-    Assert-Equal ([DateTime]'1/1/1624') $row.FoundedOn
-    Assert-Equal ([TimeSpan]'05:00:00') $row.UtcOffset
+    Assert-Equal ([DateTime]'1/1/1624') $row.'Founded On'
+    Assert-Equal ([TimeSpan]'05:00:00') $row.'Utc Offset'
     Assert-Equal "New York's the greatest city in the world!" $row.Description
-    Assert-Equal $True $row.StillPresent
+    Assert-Equal $True $row.'Still Present'
 }
 
 

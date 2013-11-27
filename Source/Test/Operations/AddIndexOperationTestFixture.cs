@@ -32,7 +32,6 @@ namespace Rivet.Test.Operations
 			Assert.AreEqual(tableName, op.TableName);
 			Assert.AreEqual(columnName, op.ColumnName);
 			Assert.AreNotEqual(smokeColumnName, op.ColumnName);
-			Assert.AreEqual(false, op.SomeColumnsDesc);
 			Assert.AreEqual(unique, op.Unique);
 			Assert.AreEqual(clustered, op.Clustered);
 			Assert.AreEqual(options, op.Options);
@@ -64,7 +63,6 @@ namespace Rivet.Test.Operations
 			Assert.AreEqual(columnName, op.ColumnName);
 			Assert.AreNotEqual(smokeColumnName, op.ColumnName);
 			Assert.AreEqual(optionalConstraintName, op.Name.ToString());
-			Assert.AreEqual(false, op.SomeColumnsDesc);
 			Assert.AreEqual(unique, op.Unique);
 			Assert.AreEqual(clustered, op.Clustered);
 			Assert.AreEqual(options, op.Options);
@@ -96,7 +94,6 @@ namespace Rivet.Test.Operations
 			Assert.AreEqual(columnName, op.ColumnName);
 			Assert.AreNotEqual(smokeColumnName, op.ColumnName);
 			Assert.AreEqual(descending, op.Descending);
-			Assert.AreEqual(true, op.SomeColumnsDesc);
 			Assert.AreEqual(unique, op.Unique);
 			Assert.AreEqual(clustered, op.Clustered);
 			Assert.AreEqual(options, op.Options);
@@ -130,7 +127,6 @@ namespace Rivet.Test.Operations
 			Assert.AreNotEqual(smokeColumnName, op.ColumnName);
 			Assert.AreEqual(optionalConstraintName, op.Name.ToString());
 			Assert.AreEqual(descending, op.Descending);
-			Assert.AreEqual(true, op.SomeColumnsDesc);
 			Assert.AreEqual(unique, op.Unique);
 			Assert.AreEqual(clustered, op.Clustered);
 			Assert.AreEqual(options, op.Options);
@@ -155,7 +151,7 @@ namespace Rivet.Test.Operations
 			const string filestreamonString = "filestreamonString";
 
 			var op = new AddIndexOperation(schemaName, tableName, columnName, descending, unique, clustered, options, whereString, onString, filestreamonString);
-			const string expectedQuery = "create unique clustered index [UIX_schemaName_tableName_column1_column2] on [schemaName].[tableName] (column1 DESC,column2 ASC) with ( option1, option2 ) where ( whereString ) on onString filestream_on filestreamonString";
+			const string expectedQuery = "create unique clustered index [UIX_schemaName_tableName_column1_column2] on [schemaName].[tableName] ([column1] desc, [column2]) with ( option1, option2 ) where ( whereString ) on onString filestream_on filestreamonString";
 
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}
@@ -176,7 +172,7 @@ namespace Rivet.Test.Operations
 			const string filestreamonString = "filestreamonString";
 
 			var op = new AddIndexOperation(schemaName, tableName, columnName, optionalConstraintName, descending, unique, clustered, options, whereString, onString, filestreamonString);
-			const string expectedQuery = "create unique clustered index [optionalConstraintName] on [schemaName].[tableName] (column1 DESC,column2 ASC) with ( option1, option2 ) where ( whereString ) on onString filestream_on filestreamonString";
+			const string expectedQuery = "create unique clustered index [optionalConstraintName] on [schemaName].[tableName] ([column1] desc, [column2]) with ( option1, option2 ) where ( whereString ) on onString filestream_on filestreamonString";
 
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}
@@ -196,7 +192,7 @@ namespace Rivet.Test.Operations
 			const string filestreamonString = "";
 			
 			var op = new AddIndexOperation(schemaName, tableName, columnName, descending, unique, clustered, options, whereString, onString, filestreamonString);
-			const string expectedQuery = "create  index [IX_schemaName_tableName_column1] on [schemaName].[tableName] (column1 ASC)    ";
+			const string expectedQuery = "create  index [IX_schemaName_tableName_column1] on [schemaName].[tableName] ([column1])";
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}
 

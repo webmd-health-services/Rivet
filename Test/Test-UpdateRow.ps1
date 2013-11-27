@@ -12,33 +12,34 @@ function Stop-Test
 
 function Test-ShouldUpdateSpecificRows
 {
+    # Yes.  Spaces in names so we check that the names get quoted.
     @'
 function Push-Migration
 {
-    Add-Table -Name 'Cities' -Column {
-        VarChar 'City' -Max -NotNull
+    Add-Table -Name 'City List' -Column {
+        VarChar 'City Name' -Max -NotNull
         VarChar 'State' -Max -NotNull
         Int 'Population' -NotNull
     } -Option 'data_compression = none'
 
     $Top8USCities = @(  
-                        @{City = 'New York'; State = 'New York'; Population = 8336697}, 
-                        @{City = 'Los Angeles'; State = 'California'; Population = 3857799},
-                        @{City = 'Chicago'; State = 'Illnois'; Population = 2714856},
-                        @{City = 'Houston'; State = 'Texas'; Population = 2160821},
-                        @{City = 'Philadelphia'; State = 'Pennsylvania'; Population = 1547607},
-                        @{City = 'Phoenix'; State = 'Arizona'; Population = 1488750},
-                        @{City = 'San Antonio'; State = 'Texas'; Population = 1382951},
-                        @{City = 'San Diego'; State = 'California'; Population = 1338348} 
+                        @{'City Name' = 'New York'; State = 'New York'; Population = 8336697}, 
+                        @{'City Name' = 'Los Angeles'; State = 'California'; Population = 3857799},
+                        @{'City Name' = 'Chicago'; State = 'Illnois'; Population = 2714856},
+                        @{'City Name' = 'Houston'; State = 'Texas'; Population = 2160821},
+                        @{'City Name' = 'Philadelphia'; State = 'Pennsylvania'; Population = 1547607},
+                        @{'City Name' = 'Phoenix'; State = 'Arizona'; Population = 1488750},
+                        @{'City Name' = 'San Antonio'; State = 'Texas'; Population = 1382951},
+                        @{'City Name' = 'San Diego'; State = 'California'; Population = 1338348} 
                      )
 
     $Changes = @{ 
-                    "State" = "Oregon";
+                    "City Name" = "San Diego UPDATED";
                     "Population" = 123456
                 }     
     
-    Add-Row -SchemaName 'dbo' -TableName 'Cities' -Column $Top8USCities
-    Update-Row -SchemaName 'dbo' -TableName 'Cities' -Column $Changes -Where "City = 'San Diego'"
+    Add-Row -SchemaName 'dbo' -TableName 'City List' -Column $Top8USCities
+    Update-Row -SchemaName 'dbo' -TableName 'City List' -Column $Changes -Where "[City Name] = 'San Diego'"
 }
 
 function Pop-Migration
@@ -50,16 +51,15 @@ function Pop-Migration
 
     Invoke-Rivet -Push 'UpdateSpecificRows'
 
-    Assert-Table 'Cities'
-    Assert-Column -TableName 'Cities' -Name 'City' -DataType 'VarChar' -NotNull
-    Assert-Column -TableName 'Cities' -Name 'State' -DataType 'VarChar' -NotNull
-    Assert-Column -TableName 'Cities' -Name 'Population' -DataType 'Int' -NotNull
+    Assert-Table 'City List'
+    Assert-Column -TableName 'City List' -Name 'City Name' -DataType 'VarChar' -NotNull
+    Assert-Column -TableName 'City List' -Name 'State' -DataType 'VarChar' -NotNull
+    Assert-Column -TableName 'City List' -Name 'Population' -DataType 'Int' -NotNull
 
-    $rows = @(Get-Row -SchemaName 'dbo' -TableName 'Cities')
+    $rows = @(Get-Row -SchemaName 'dbo' -TableName 'City List')
     Assert-Equal 8 $rows.count
-    Assert-True $rows.City.Contains("San Diego")
-    Assert-True $rows.State.Contains("Oregon")
-    Assert-Equal "Oregon" $rows[7].State
+    Assert-True $rows.'City Name'.Contains("San Diego UPDATED")
+    Assert-Equal 123456 $rows[7].Population
 }
 
 function Test-ShouldUpdateAllRows

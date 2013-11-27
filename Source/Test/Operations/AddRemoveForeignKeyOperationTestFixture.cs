@@ -66,7 +66,7 @@ namespace Rivet.Test.Operations
 			Assert.AreNotEqual(smokeReferencesColumnName, op.ReferencesColumnName);
 			Assert.AreEqual(referencesSchemaName, op.ReferencesSchemaName);
 			Assert.AreEqual(referencesTableName, op.ReferencesTableName);
-			Assert.AreEqual(optionalConstraintName, op.CustomConstraintName);
+			Assert.AreEqual(optionalConstraintName, op.Name.ToString());
 			Assert.AreEqual(onDelete, op.OnDelete);
 			Assert.AreEqual(onUpdate, op.OnUpdate);
 			Assert.AreEqual(notForReplication, op.NotForReplication);
@@ -86,7 +86,7 @@ namespace Rivet.Test.Operations
 			bool notForReplication = true;
 
 			var op = new AddForeignKeyOperation(schemaName, tableName, columnName, referencesSchemaName, referencesTableName, referencesColumnName, onDelete, onUpdate, notForReplication);
-			var expectedQuery = "alter table [schemaName].[tableName] add constraint [FK_schemaName_tableName_rschemaName_rtableName] foreign key (column1,column2) references rschemaName.rtableName (rcolumn1,rcolumn2) on delete onDelete on update onUpdate not for replication";
+			var expectedQuery = "alter table [schemaName].[tableName] add constraint [FK_schemaName_tableName_rschemaName_rtableName] foreign key ([column1],[column2]) references [rschemaName].[rtableName] ([rcolumn1],[rcolumn2]) on delete onDelete on update onUpdate not for replication";
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}
 
@@ -105,7 +105,7 @@ namespace Rivet.Test.Operations
 			bool notForReplication = true;
 
 			var op = new AddForeignKeyOperation(schemaName, tableName, columnName, referencesSchemaName, referencesTableName, referencesColumnName, optionalConstraintName, onDelete, onUpdate, notForReplication);
-			var expectedQuery = "alter table [schemaName].[tableName] add constraint [optionalConstraintName] foreign key (column1,column2) references rschemaName.rtableName (rcolumn1,rcolumn2) on delete onDelete on update onUpdate not for replication";
+			var expectedQuery = "alter table [schemaName].[tableName] add constraint [optionalConstraintName] foreign key ([column1],[column2]) references [rschemaName].[rtableName] ([rcolumn1],[rcolumn2]) on delete onDelete on update onUpdate not for replication";
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}
 

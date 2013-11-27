@@ -20,7 +20,7 @@ namespace Rivet.Operations
 
 		public override string ToQuery()
 		{
-			return string.Format("drop type [{0}].{1}", SchemaName, Name);
+			return string.Format("drop type [{0}].[{1}]", SchemaName, Name);
 		}
 	}
 }

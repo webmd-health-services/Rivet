@@ -72,7 +72,7 @@ namespace Rivet.Operations
 				{
 					value = value.ToString();
 				}
-				columnList.Add(String.Format("{0} = {1}", name, value));
+				columnList.Add(String.Format("[{0}] = {1}", name, value));
 			}
 			var columnClause = String.Join(", ", columnList.ToArray());
 

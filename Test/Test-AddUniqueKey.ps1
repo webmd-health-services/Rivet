@@ -18,14 +18,15 @@ function TearDown
 
 function Test-ShouldAddUniqueKeyToOneColumn
 {
+    # Yes.  Spaces in names so we check that the names get quoted.
     @'
 function Push-Migration()
 {
-    Add-Table -Name 'AddUniqueKey' {
-        Int 'UniqueKeyMe' -NotNull
+    Add-Table -Name 'Add Unique Key' {
+        Int 'Unique Key Me' -NotNull
     }
 
-    Add-UniqueKey -TableName 'AddUniqueKey' -ColumnName 'UniqueKeyMe'
+    Add-UniqueKey -TableName 'Add Unique Key' -ColumnName 'Unique Key Me'
 }
 
 function Pop-Migration()
@@ -33,7 +34,7 @@ function Pop-Migration()
 }
 '@ | New-Migration -Name 'AddUniqueKeyToOneColumn'
     Invoke-Rivet -Push 'AddUniqueKeyToOneColumn'
-    Assert-UniqueKey -TableName 'AddUniqueKey' -ColumnName 'UniqueKeyMe'
+    Assert-UniqueKey -TableName 'Add Unique Key' -ColumnName 'Unique Key Me'
 }
 
 function Test-ShouldAddUniqueKeyToMultipleColumns

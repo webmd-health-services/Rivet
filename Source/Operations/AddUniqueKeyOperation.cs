@@ -63,7 +63,7 @@ namespace Rivet.Operations
 			var clusteredClause = "";
 			if (Clustered)
 			{
-				clusteredClause = "clustered";
+				clusteredClause = " clustered";
 			}
 
 			var fillFactorClause = "";
@@ -97,9 +97,9 @@ namespace Rivet.Operations
 				fileGroupClause = string.Format("on {0}", FileGroup);
 			}
 
-			var columnClause = string.Join(",", ColumnName);
+			var columnClause = string.Join("], [", ColumnName);
 
-			return string.Format("alter table [{0}].[{1}] add constraint [{2}] unique {3}({4}) {5} {6}", 
+			return string.Format("alter table [{0}].[{1}] add constraint [{2}] unique{3} ([{4}]) {5} {6}", 
 				SchemaName, TableName, Name, clusteredClause, columnClause, optionClause, fileGroupClause);
 
 		}
