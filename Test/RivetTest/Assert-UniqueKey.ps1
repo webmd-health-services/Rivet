@@ -41,7 +41,7 @@ function Assert-UniqueKey
     
     Set-StrictMode -Version Latest
 
-    $key_Key = Get-KeyConstraint -TableName 'AddUniqueKey' -ReturnUnique
+    $key_Key = Get-UniqueKey -TableName 'AddUniqueKey'
     $Name = New-ConstraintName -SchemaName $SchemaName -TableName $TableName -ColumnName $ColumnName -Unique
     $id = Get-Index -Name $Name
 
