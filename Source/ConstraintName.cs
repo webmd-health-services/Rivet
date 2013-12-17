@@ -75,10 +75,17 @@ namespace Rivet
 			}
 			
 			var columnClause = string.Join("_", ColumnName.ToArray());
-			var name = string.Format("{0}_{1}_{2}_{3}", keyname, SchemaName, TableName, columnClause);
+			columnClause = String.Format("_{0}", columnClause);
+
+			if( Type == ConstraintType.PrimaryKey )
+			{
+				columnClause = "";
+			}
+
+			var name = string.Format("{0}_{1}_{2}{3}", keyname, SchemaName, TableName, columnClause);
 			if (string.Equals(SchemaName, "dbo", StringComparison.InvariantCultureIgnoreCase))
 			{
-				name = string.Format("{0}_{1}_{2}", keyname, TableName, columnClause);
+				name = string.Format("{0}_{1}{2}", keyname, TableName, columnClause);
 			}
 
 			return name;

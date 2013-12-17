@@ -82,7 +82,7 @@ namespace Rivet.Test
 			ConstraintType c_type = ConstraintType.PrimaryKey;
 
 			var cons = new ConstraintName(schemaName, tableName, columnName, c_type);
-			var expectedConstraintString = "PK_schemaName_tableName_column1_column2";
+			var expectedConstraintString = "PK_schemaName_tableName";
 			Assert.AreEqual(expectedConstraintString, cons.ToString());
 		}
 
@@ -128,6 +128,12 @@ namespace Rivet.Test
 			Assert.AreEqual(expectedConstraintString, cons.ToString());
 		}
 
+		[Test]
+		public void ShouldNotIncludeColumnsForPrimaryKey()
+		{
+			var name = new ConstraintName("dbo", "TableName", new[] {"does", "not", "matter"}, ConstraintType.PrimaryKey);
+			Assert.That(name.ToString(), Is.EqualTo("PK_TableName"));
+		}
 
 	}
 }

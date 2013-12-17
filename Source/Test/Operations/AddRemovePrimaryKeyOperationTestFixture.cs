@@ -66,7 +66,7 @@ namespace Rivet.Test.Operations
 			string[] options = new string[] { "option1", "option2" };
 
 			var op = new AddPrimaryKeyOperation(schemaName, tableName, columnName, nonClustered, options);
-			var expectedQuery = "alter table [schemaName].[tableName] add constraint [PK_schemaName_tableName_column1_column2] primary key nonclustered ([column1], [column2]) with ( option1, option2 )";
+			var expectedQuery = "alter table [schemaName].[tableName] add constraint [PK_schemaName_tableName] primary key nonclustered ([column1], [column2]) with ( option1, option2 )";
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}
 
@@ -94,7 +94,7 @@ namespace Rivet.Test.Operations
 			bool nonClustered = false;
 
 			var op = new AddPrimaryKeyOperation(schemaName, tableName, columnName, nonClustered, null);
-			var expectedQuery = "alter table [dbo].[tableName] add constraint [PK_tableName_column1] primary key clustered ([column1])";
+			var expectedQuery = "alter table [dbo].[tableName] add constraint [PK_tableName] primary key clustered ([column1])";
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}
 
@@ -135,7 +135,7 @@ namespace Rivet.Test.Operations
 			string[] columnName = new string[] { "column1", "column2" };
 
 			var op = new RemovePrimaryKeyOperation(schemaName, tableName, columnName);
-			var expectedQuery = "alter table [schemaName].[tableName] drop constraint [PK_schemaName_tableName_column1_column2]";
+			var expectedQuery = "alter table [schemaName].[tableName] drop constraint [PK_schemaName_tableName]";
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}
 
