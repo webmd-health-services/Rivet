@@ -1,34 +1,27 @@
 
-function Get-KeyConstraint
+function Get-UniqueKey
 {
     <#
     .SYNOPSIS
-    Contains a row for each object that is a primary key or unique constraint. Includes sys.objects.type PK and UQ.
+    Gets a unique key.
     #>
-
+    [CmdletBinding()]
     param(
+        [string]
+        $SchemaName = 'dbo',
+
         [Parameter(Mandatory=$true)]
         [string]
         # The name of the table whose primary key to get.
-        $TableName,
-
-        [Switch]
-        # Only return key constraints of the UNIQUE type
-        $ReturnUnique
-
+        $TableName
     )
     
     Set-StrictMode -Version Latest
 
-    $uniqueclause = ''
-    if ($ReturnUnique)
-    {
-        $uniqueclause = "where type = 'UQ'"
-    }
-
     $query = @'
     select * 
     from sys.key_constraints
+    where type='UQ'
     {0}
 '@ -f $uniqueclause
     
