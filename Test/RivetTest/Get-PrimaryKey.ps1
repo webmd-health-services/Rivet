@@ -6,31 +6,38 @@ function Get-PrimaryKey
     Gets objects for all the columns that are part of a a table's primary key.
     #>
     param(
-        [Parameter(Mandatory=$true)]
+        [Parameter(ParameterSetName='ByTable')]
+        [string]
+        # The schema name of the table.  Defaults to `dbo`.
+        $SchemaName = 'dbo',
+
+        [Parameter(Mandatory=$true,ParameterSetName='ByTable')]
         [string]
         # The name of the table whose primary key to get.
         $TableName,
 
-        [Parameter()]
+        [Parameter(Mandatory=$true,ParameterSetName='ByName')]
         [string]
-        # The schema name of the table.  Defaults to `dbo`.
-        $SchemaName = 'dbo'
+        $Name
     )
 
     Set-StrictMode -Version Latest
     
+    if( $PSCmdlet.ParameterSetName -eq 'ByTable' )
+    {
+        $Name = New-ConstraintName @PSBoundParameters -PrimaryKey
+    }
+
     $query = @'
-    SELECT
-       s.name SchemaName, ta.name  TableName, col.name ColumnName, ind.*, indcol.*
-     from sys.tables ta 
-      inner join sys.schemas s on s.schema_id = ta.schema_id
-      inner join sys.indexes ind on ind.object_id = ta.object_id
-      inner join sys.index_columns indcol on indcol.object_id = ta.object_id and indcol.index_id = ind.index_id 
-      inner join sys.columns col on col.object_id = ta.object_id and col.column_id = indcol.column_id
-     where ind.is_primary_key = 1 and ta.name = '{0}' and s.name = '{1}'
-     order by
-       ta.name, indcol.key_ordinal
-'@ -f $TableName,$SchemaName
+    select
+       SCHEMA_NAME(t.schema_id) schema_name, t.name table_name, i.*
+    from 
+        sys.indexes i 
+        inner join sys.tables t on i.object_id = t.object_id
+    where 
+        i.is_primary_key = 1 and i.name = '{0}'
+'@ -f $name
     
-    Invoke-RivetTestQuery -Query $query
+    $key = Invoke-RivetTestQuery -Query $query 
+    $key | Get-IndexColumn
 }

@@ -7,7 +7,12 @@ function Assert-Index
     #>
 
     param(
-        [Parameter(Mandatory=$true)]
+        [Parameter(ParameterSetName='ByTable')]
+        [string]
+        # The table's schema.  Default is `dbo`.
+        $SchemaName = 'dbo',
+
+        [Parameter(Mandatory=$true,ParameterSetName='ByTable')]
         [string]
         # The name of the table whose primary key to get.
         $TableName,
@@ -16,76 +21,56 @@ function Assert-Index
         # Array of Column Names
         $ColumnName,
 
-        [Parameter()]
-        [string]
-        # The table's schema.  Default is `dbo`.
-        $SchemaName = 'dbo',
-
+        [Parameter(Mandatory=$true,ParameterSetName='ByName')]
         [string]
         # The name of the index, if different than the default, computed name.
         $Name,
 
         [Switch]
-        # Index Created Should be Clustered
-        $TestClustered,
+        # Make sure it's a unique index.
+        $Unique,
 
         [Switch]
-        # Index Created Should be Unique
-        $TestUnique,
+        # Index Created Should be Clustered
+        $Clustered,
+
+        [Switch]
+        # Assert that the ignore_dup_key option is ON
+        $IgnoreDupKey,
+
+        [Switch]
+        # Assert the allow_row_locks options is ON
+        $DenyRowLocks,
 
         [Switch]
         # Test that options are passed along in the query
         $TestOption,
 
-        [Switch]
-        # Test that filter predicates are passed along in the query
-        $TestFilter,
+        [string]
+        # Assert the index's filter predicates
+        $Filter,
 
         [Parameter()]
         [bool[]]
         # Test that the specified index is descending
-        $TestDescending
-
+        $Descending
     )
 
     Set-StrictMode -Version 'Latest'
 
-    if( -not $PSBoundParameters.ContainsKey('Name') )
+    if( $PSCmdlet.ParameterSetName -eq 'ByName' )
     {
-        $newConstraintNameParams = @{ }
-        if( $TestUnique )
-        {
-            $newConstraintNameParams.UniqueIndex = $true
-        }
-        else
-        {
-            $newConstraintNameParams.Index = $true
-        }
-        $Name = New-ConstraintName -ColumnName $ColumnName -TableName $TableName -SchemaName $SchemaName
-        $Name = $Name.ToString()
+        $id = Get-Index -Name $Name -Unique:$Unique
+        Assert-NotNull $id ('Index {0} not found.' -f $Name)
     }
-
-    $id = Get-Index -Name $Name
-    Assert-NotNull $id 
-
-    $query = @'
-    select * 
-    from sys.index_columns ic join
-        sys.indexes i on ic.index_id = i.index_id
-    where i.name = '{0}' and i.object_id = ic.object_id
-'@ -f $Name
-    
-    [Object[]]$id_columns = Invoke-RivetTestQuery -Query $query
-    Assert-NotNull $id_columns ('Clustered or NonClustered Index Column(s) on table {0} doesn''t exist.' -f $TableName)
-
-    ## Assert Count
-    if ($id_columns -is 'Object[]')
+    else
     {
-        Assert-Equal $ColumnName.Count $id_columns.Count
+        $id = Get-Index -SchemaName $SchemaName -TableName $TableName -ColumnName $ColumnName -Unique:$Unique
+        Assert-NotNull $id ('Index {0}.{1}.{2} not found.' -f $SchemaName,$TableName,($ColumnName -join ','))
     }
 
     ## Assert Clustered / NonClustered
-    if ($TestClustered)
+    if( $Clustered )
     {
         Assert-Equal "CLUSTERED" $id.type_desc 
         Assert-Equal 1 $id.type
@@ -96,47 +81,39 @@ function Assert-Index
         Assert-Equal 2 $id.type
     }
 
-    if ($TestUnique)
-    {
-        Assert-Equal $true $id.is_unique
-    }
-    else
-    {
-        Assert-Equal $false $id.is_unique
-    }
+    Assert-Equal $Unique $id.is_unique
+    Assert-Equal $IgnoreDupKey $id.ignore_dup_key
+    Assert-Equal (-not $DenyRowLocks) $id.allow_row_locks
 
-    if ($TestOption)
+    if( $PSBoundParameters.ContainsKey( 'Filter' ) )
     {
-        Assert-Equal $true $id.ignore_dup_key
-        Assert-Equal $false $id.allow_row_locks
-    }
-    else
-    {
-        Assert-Equal $false $id.ignore_dup_key
-        Assert-Equal $true $id.allow_row_locks
-    }
-    
-    if ($TestFilter)
-    {
-        Assert-Equal "([EndDate] IS NOT NULL)" $id.filter_definition
+        Assert-Equal $Filter $id.filter_definition
     }
     else
     {
         Assert-Null $id.filter_definition
     }
 
-    if ($TestDescending)
+    $columns = $id.Columns
+
+    Assert-Equal $ColumnName.Count $columns.Count
+    for( $idx = 0; $idx -lt $ColumnName.Count; ++$idx )
     {
-        for ($i = 0; $i -lt $id_columns.Length; $i++)
+        Assert-Equal $ColumnName[$idx] $columns[$idx].column_name
+    }
+
+    if( $PSBoundParameters.ContainsKey('Descending') )
+    {
+        for ($i = 0; $i -lt $columns.Length; $i++)
         { 
-            Assert-Equal $TestDescending[$i] $id_columns[$i].is_descending_key
+            Assert-Equal $Descending[$i] $columns[$i].is_descending_key
         }
     }
     else
     {
-        for ($i = 0; $i -lt $id_columns.Length; $i++)
+        for ($i = 0; $i -lt $columns.Length; $i++)
         { 
-            Assert-Equal $false $id_columns[$i].is_descending_key
+            Assert-Equal $false $columns[$i].is_descending_key
         }
     }
     

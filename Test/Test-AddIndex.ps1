@@ -100,7 +100,7 @@ function Pop-Migration()
     Assert-True (Test-Column -Name 'IndexMe' -TableName 'AddIndex')
 
     ##Assert Index
-    Assert-Index -TableName 'AddIndex' -ColumnName 'IndexMe' -TestClustered
+    Assert-Index -TableName 'AddIndex' -ColumnName 'IndexMe' -Clustered
 }
 
 function Test-ShouldCreateUniqueIndex
@@ -128,7 +128,7 @@ function Pop-Migration()
     Assert-True (Test-Column -Name 'IndexMe' -TableName 'AddIndex')
 
     ##Assert Index
-    Assert-Index -TableName 'AddIndex' -ColumnName 'IndexMe' -TestUnique
+    Assert-Index -TableName 'AddIndex' -ColumnName 'IndexMe' -Unique
 }
 
 
@@ -159,7 +159,7 @@ function Pop-Migration()
     Assert-True (Test-Column -Name 'IndexMe' -TableName 'AddIndex')
 
     ##Assert Index
-    Assert-Index -TableName 'AddIndex' -ColumnName 'IndexMe' -TestUnique -TestOption
+    Assert-Index -TableName 'AddIndex' -ColumnName 'IndexMe' -Unique -IgnoreDupKey -DenyRowLocks
 }
 
 
@@ -192,7 +192,7 @@ function Pop-Migration()
     Assert-True (Test-Column -Name 'EndDate' -TableName 'AddIndex')
 
     ##Assert Index
-    Assert-Index -TableName 'AddIndex' -ColumnName 'IndexMe' -TestFilter
+    Assert-Index -TableName 'AddIndex' -ColumnName 'IndexMe' -Filter '([EndDate] IS NOT NULL)'
 }
 
 function Test-ShouldCreateIndexOnCustomFileGroup
@@ -278,7 +278,7 @@ function Pop-Migration()
     Invoke-Rivet -Push 'CreateIndexWithDescending'
 
     ##Assert Index
-    Assert-Index -TableName 'AddIndex' -ColumnName 'IndexMe' -TestDescending @($true)
+    Assert-Index -TableName 'AddIndex' -ColumnName 'IndexMe' -Descending @($true)
 
 }
 
@@ -304,7 +304,7 @@ function Pop-Migration()
     Invoke-Rivet -Push 'CreateIndexWithMultipleDescending'
 
     ##Assert Index
-    Assert-Index -TableName 'AddIndex' -ColumnName "IndexMe","Ascending","IndexMe2" -TestDescending @($true, $false, $true)
+    Assert-Index -TableName 'AddIndex' -ColumnName "IndexMe","Ascending","IndexMe2" -Descending @($true, $false, $true)
 }
 
 function Test-ShouldQuoteIndexName
@@ -347,10 +347,5 @@ function Pop-Migration()
 '@ | New-Migration -Name 'AddIndexWithOptionalName'
 
     Invoke-Rivet -Push 'AddIndexWithOptionalName'
-
-    $Indexes = Invoke-RivetTestQuery -Query @'
-    select * from sys.indexes where object_id = OBJECT_ID('Add-Index')
-'@
-
-    Assert-Equal 'Example' $Indexes.name[1]
+    Assert-Index -Name 'Example' -ColumnName 'IndexMe'
 }

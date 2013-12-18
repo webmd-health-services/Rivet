@@ -5,14 +5,14 @@ function Assert-View
     Tests that a custom view exists.
     #>
     param(
+        [string]
+        # The schema name of the view.  Defaults to `dbo`.
+        $SchemaName = 'dbo',
+
         [Parameter(Mandatory=$true)]
         [string]
         # The name of the view.
         $Name,
-
-        [string]
-        # The schema name of the view.  Defaults to `dbo`.
-        $SchemaName = 'dbo',
 
         [string]
         # The definition of the view.
@@ -25,7 +25,7 @@ function Assert-View
     
     Set-StrictMode -Version 'Latest'
 
-    $view = Get-SysObject -SchemaName $SchemaName -Name $Name -Type 'V'
+    $view = Get-View -SchemaName $SchemaName -Name $Name
    
     Assert-NotNull $view ('View {0}.{1} not found.' -f $SchemaName,$Name)
     

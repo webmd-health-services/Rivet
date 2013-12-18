@@ -205,7 +205,6 @@ function Pop-Migration
 
     Invoke-ConvertedScripts
 
-
     $schema = @{ SchemaName = 'idempotent' }
     $crops = @{ TableName = 'Crops' }
     $farmers = @{ TableName = 'Farmers' }
@@ -221,7 +220,7 @@ function Pop-Migration
     Assert-CheckConstraint -Name 'CK_Crops_AllowedCrops' -Definition '([Name]=''Strawberries'' or [Name]=''Rasberries'')'
     Assert-DefaultConstraint @schema @crops -ColumnName 'Name' -Definition '(''Strawberries'')'
     Assert-ForeignKey @schema @crops -ReferencesSchema $schema.SchemaName -References $farmers.TableName
-    Assert-Index @schema @crops -Name 'IX_Crops_Name2' -ColumnName 'Name'
+    Assert-Index -Name 'IX_Crops_Name2' -ColumnName 'Name'
     Assert-UniqueKey @schema @crops -ColumnName 'Name'
     Assert-DataType @schema -Name 'GUID' -BaseTypeName 'uniqueidentifier' -UserDefined
     Assert-StoredProcedure @schema -Name 'GetFarmers' -Definition 'AS select * from Farmers'
@@ -229,6 +228,118 @@ function Pop-Migration
     Assert-Trigger @schema -Name 'CropActivity' -Definition 'on idempotent.Crops after insert, update as return'
     Assert-UserDefinedFunction @schema -Name 'GetInteger' -Definition '(@Number int) returns int as begin return @Number + @Number end'
     Assert-View @schema -Name 'FarmerCrops' -Definition "as select Farmers.Name FarmerName, Crops.Name CropName from Crops join Farmers on Crops.FarmerID = Farmers.ID"
+}
+
+function Test-ShouldCreateIdempotentQueriesForRemoveOperations
+{
+    @'
+function Push-Migration
+{
+    $idempotent = @{ SchemaName = 'idempotent' }
+    $crops = @{ TableName = 'Crops' }
+    $farmers = @{ TableName = 'Farmers' }
+
+    Add-Schema 'empty'
+    Add-Schema $idempotent.SchemaName
+    
+    Add-Table @idempotent $farmers.TableName {
+        int 'ID' -NotNull
+        varchar 'Name' -NotNull -Size 500
+        varchar 'ZipCode' -Size 10
+    }
+    Add-PrimaryKey @idempotent @farmers -ColumnName 'ID'
+
+    Add-Table @idempotent $crops.TableName {
+        int 'ID' -Identity
+        varchar 'Name' -Size 50
+        int 'FarmerID' -NotNull
+        varchar 'RemoveMe' -Size 5
+    }
+    Add-CheckConstraint @idempotent @crops -Name 'CK_Crops_AllowedCrops' -Expression 'Name = ''Strawberries'' or Name = ''Rasberries'''
+    Add-DefaultConstraint @idempotent @crops -ColumnName 'Name' -Expression '''Strawberries'''
+    Add-Description @idempotent @crops -ColumnName 'Name' 'Yumm!'
+    Add-ForeignKey @idempotent @crops -ColumnName 'FarmerID' `
+                   -ReferencesSchema $idempotent.SchemaName -References $farmers.TableName -ReferencedColumn 'ID'
+    Add-Index @idempotent @crops -ColumnName 'Name'
+    Add-UniqueKey @idempotent @crops 'Name'
+
+    Add-DataType @idempotent -Name 'GUID' -From 'uniqueidentifier'
+    Add-Synonym -Name 'Crop' @idempotent -TargetSchemaName $idempotent.SchemaName 'Crops'
+
+    Add-StoredProcedure 'GetFarmers' @idempotent -Definition 'AS select * from Crops'
+    Add-Trigger 'CropActivity' @idempotent -Definition "on idempotent.Crops after insert as return"
+    Add-UserDefinedFunction 'GetInteger' @idempotent -Definition '(@Number int) returns int as begin return @Number end'
+    Add-View 'FarmerCrops' @idempotent -Definition "as select Farmers.Name CropName, Crops.Name FarmersName from Crops join Farmers on Crops.FarmerID = Farmers.ID"
+
+    Add-Table @idempotent 'removeme' {
+        int 'ID' -Identity
+    }
+}
+
+function Pop-Migration
+{
+}
+'@ | New-Migration -Name 'AddOperations'
+
+    @'
+function Push-Migration
+{
+    $schema = @{ SchemaName = 'idempotent' }
+    $crops = @{ TableName = 'Crops' }
+    $farmers = @{ TableName = 'Farmers' }
+
+    Remove-CheckConstraint @schema @crops -Name 'CK_Crops_AllowedCrops'
+    Remove-Column @schema @farmers -Name 'RemoveMe'
+    Remove-DataType @schema -Name 'GUID'
+    Remove-DefaultConstraint @schema @crops -ColumnName 'Name'
+    Remove-Description @schema @crops -ColumnName 'Name'
+    Remove-ForeignKey @schema @crops -References $farmers.TableName -ReferencesSchema $schema.SchemaName
+    Remove-Index @schema @crops -ColumnName 'Name'
+    Remove-PrimaryKey @schema @crops -ColumnName 'FarmerID'
+    Remove-Row @schema @farmers -Where 'ID = 1'
+    Remove-Schema 'empty'
+    Remove-StoredProcedure @schema -Name 'GetFarmers'
+    Remove-Synonym @schema -Name 'Crop'
+    Remove-Table @schema -Name 'removeme'
+    Remove-Trigger @schema -Name 'CropActivity'
+    Remove-UniqueKey @schema @crops -ColumnName 'Name'
+    Remove-UserDefinedFunction @schema -Name 'GetInteger'
+    Remove-View @schema -Name 'FarmerCrops'
+}
+
+function Pop-Migration
+{
+}
+'@ | New-Migration -Name 'RemoveOperations'
+
+    & $convertRivetMigration -ConfigFilePath $RTConfigFilePath -OutputPath $outputDir
+
+    Assert-FileExists (Join-Path -Path $outputDir -ChildPath ('{0}.Schema.sql' -f $RTDatabaseName))
+    Assert-FileExists (Join-Path -Path $outputDir -ChildPath ('{0}.CodeObject.sql' -f $RTDatabaseName))
+    Assert-FileExists (Join-Path -Path $outputDir -ChildPath ('{0}.Data.sql' -f $RTDatabaseName))
+
+    Invoke-ConvertedScripts
+
+    $schema = @{ SchemaName = 'idempotent' }
+    $crops = @{ TableName = 'Crops' }
+    $farmers = @{ TableName = 'Farmers' }
+
+    Assert-False (Test-CheckConstraint -Name 'CK_Crops_Allowed_Crops')
+    Assert-False (Test-Column @schema @farmers -Name 'RemoveMe')
+    Assert-False (Test-DataType @schema -Name 'GUID')
+    Assert-False (Test-DefaultConstraint @schema @crops -ColumnName 'Name')
+    Assert-False (Test-ExtendedProperty @schema @crops -ColumnName 'Name' -Name 'MS_Description')
+    Assert-False (Test-ForeignKey @schema @crops -ReferencesSchema $schema.SchemaName -References $farmers.TableName)
+    Assert-False (Test-Index @schema @crops -ColumnName 'Name')
+    Assert-False (Test-PrimaryKey @schema @crops)
+    Assert-False (Test-Schema -Name 'empty')
+    Assert-False (Test-StoredProcedure @schema -Name 'GetFarmers')
+    Assert-False (Test-Synonym @schema -Name 'Crop')
+    Assert-False (Test-Table @schema -Name 'removeme')
+    Assert-False (Test-Trigger @schema -Name 'CropActivity')
+    Assert-False (Test-UniqueKey @schema @crops -ColumnName 'Name')
+    Assert-False (Test-UserDefinedFunction @schema -Name 'GetInteger')
+    Assert-False (Test-View @schema -Name 'FarmerCrops')
 }
 
 function Invoke-ConvertedScripts

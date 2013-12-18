@@ -1,11 +1,11 @@
 
-function Get-Trigger
+function Test-Trigger
 {
     <#
     .SYNOPSIS
-    Gets trigger for specified name, with a type of TR or TA.  Contains Trigger Definition
+    Tests if a trigger exists.
     #>
-
+    [CmdletBinding()]
     param(
         [string]
         # The schema of the trigger.
@@ -20,5 +20,5 @@ function Get-Trigger
     
     Set-StrictMode -Version Latest
 
-    Get-SysObject @PSBoundParameters -Type 'TR'
+    return ((Get-Trigger @PSBoundParameters) -ne $null)
 }

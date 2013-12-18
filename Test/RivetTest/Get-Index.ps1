@@ -7,11 +7,36 @@ function Get-Index
     #>
 
     param(
-        [Parameter(Mandatory=$true)]
-        $Name
+        [Parameter(ParameterSetName='ByTable')]
+        [string]
+        # The table's schema.  Default is `dbo`.
+        $SchemaName = 'dbo',
+
+        [Parameter(Mandatory=$true,ParameterSetName='ByTable')]
+        [string]
+        # The name of the table whose primary key to get.
+        $TableName,
+
+        [Parameter(ParameterSetName='ByTable')]
+        [string[]]
+        # Array of Column Names
+        $ColumnName,
+
+        [Parameter(Mandatory=$true,ParameterSetName='ByName')]
+        $Name,
+
+        [Switch]
+        # The index is unique.
+        $Unique
     )
     
     Set-StrictMode -Version Latest
+
+    if( $PSCmdlet.ParameterSetName -eq 'ByTable' )
+    {
+        $Name = New-ConstraintName @PSBoundParameters -Index
+        $Name = $Name.ToString()
+    }
 
     $query = @'
     select * 
@@ -19,6 +44,6 @@ function Get-Index
     where name = '{0}' and index_id > 0 and type in (1,2)
 '@ -f $Name
     
-    Invoke-RivetTestQuery -Query $query
-
+    $idx = Invoke-RivetTestQuery -Query $query
+    $idx | Get-IndexColumn
 }

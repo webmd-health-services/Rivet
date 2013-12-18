@@ -3,10 +3,15 @@ function Assert-UniqueKey
 {
     <#
     .SYNOPSIS
-    Tests that a unique Key exists for a particular column and table
+    Tests that a unique Key exists for a particular column and table.
     #>
-
+    [CmdletBinding()]
     param(
+        [Parameter()]
+        [string]
+        # The table's schema.  Default is `dbo`.
+        $SchemaName = 'dbo',
+
         [Parameter(Mandatory=$true)]
         [string]
         # The name of the table
@@ -16,73 +21,49 @@ function Assert-UniqueKey
         # Array of Column Names
         $ColumnName,
 
-        [Parameter()]
-        [string]
-        # The table's schema.  Default is `dbo`.
-        $SchemaName = 'dbo',
-
         [Switch]
         # Index Created Should be Clustered
-        $TestClustered,
+        $Clustered,
 
         [Int]
         # Index Created Should have a Fill Factor
-        $TestFillFactor,
+        $FillFactor,
 
         [Switch]
-        # Test that options are passed along in the query
-        $TestOption,
+        $IgnoreDupKey,
 
         [Switch]
-        # Test that all unique Keys have been removed
-        $TestNoUnique
-
+        $DenyRowLocks
     )
     
     Set-StrictMode -Version Latest
 
-    $key_Key = Get-UniqueKey -TableName 'AddUniqueKey'
-    $Name = New-ConstraintName -SchemaName $SchemaName -TableName $TableName -ColumnName $ColumnName -Unique
-    $id = Get-Index -Name $Name
+    $key = Get-UniqueKey -SchemaName $SchemaName -TableName $TableName -ColumnName $ColumnName
 
-    if ($TestNoUnique)
+    Assert-NotNull $key ('Unique key on {0}.{1}.{2} not found.' -f $SchemaName,$TableName,($ColumnName -join ','))
+
+    if( $Clustered )
     {
-        Assert-Null $key_Key ('There are unique Keys in the database')
-        Assert-Null $id ('Attempt to remove a unique Key did not result in an index removal')
+        Assert-Equal "CLUSTERED" $key.type_desc 
+        Assert-Equal 1 $key.type
     }
     else
     {
-        Assert-NotNull $key_Key ('There are no unique Keys in the database')
-        Assert-NotNull $id ('Attempt to create a unique Key did not result in an index')
+        Assert-Equal "NONCLUSTERED" $key.type_desc
+        Assert-Equal 2 $key.type
+    }
 
-        Assert-Equal (New-ConstraintName -ColumnName $ColumnName -TableName $TableName -SchemaName $SchemaName -Unique) $key_Key.name
-        Assert-Equal (New-ConstraintName -ColumnName $ColumnName -TableName $TableName -SchemaName $SchemaName -Unique) $id.name
-        
-        if ($TestClustered)
-        {
-            Assert-Equal "CLUSTERED" $id.type_desc 
-            Assert-Equal 1 $id.type
-        }
-        else
-        {
-            Assert-Equal "NONCLUSTERED" $id.type_desc
-            Assert-Equal 2 $id.type
-        }
+    if( $PSBoundParameters.ContainsKey('FillFactor') )
+    {
+        Assert-Equal $FillFactor $key.fill_factor
+    }
 
-        if ($TestFillFactor)
-        {
-            Assert-Equal $TestFillFactor $id.fill_factor
-        }
+    Assert-Equal $IgnoreDupKey $key.ignore_dup_key ('key {0} ignore_dup_key' -f $key.name)
+    Assert-Equal (-not $DenyRowLocks) $key.allow_row_locks ('key {0} allow_row_locks' -f $key.name)
 
-        if ($TestOption)
-        {
-            Assert-Equal $true $id.ignore_dup_key
-            Assert-Equal $false $id.allow_row_locks
-        }
-        else
-        {
-            Assert-Equal $false $id.ignore_dup_key
-            Assert-Equal $true $id.allow_row_locks
-        }
+    Assert-Equal $ColumnName.Length $key.Columns.Length
+    for( $idx = 0; $idx -lt $ColumnName.Length; ++$idx )
+    {
+        Assert-Equal $ColumnName[$idx] $key.Columns[$idx].column_name 
     }
 }

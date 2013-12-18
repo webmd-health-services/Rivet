@@ -37,7 +37,7 @@ function Pop-Migration()
     Assert-ForeignKey -TableName 'Source' -References 'Reference'
 
     Invoke-Rivet -Pop
-    Assert-ForeignKey -TableName 'Source' -References 'Reference' -TestRemoval
+    Assert-False (Test-ForeignKey -TableName 'Source' -References 'Reference')
 }
 
 function Test-ShouldQuoteForeignKeyName
@@ -66,7 +66,7 @@ function Pop-Migration()
     Assert-ForeignKey -TableName 'Remove-ForeignKey' -References 'Reference'
 
     Invoke-Rivet -Pop
-    Assert-ForeignKey -TableName 'Remove-ForeignKey' -References 'Reference' -TestRemoval
+    Assert-False (Test-ForeignKey -TableName 'Remove-ForeignKey' -References 'Reference')
 }
 
 function Test-ShouldRemoveForeignKeyWithOptionalName

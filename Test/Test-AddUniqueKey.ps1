@@ -78,7 +78,7 @@ function Pop-Migration()
 }
 '@ | New-Migration -Name 'AddUniqueKeyWithClustered'
     Invoke-Rivet -Push 'AddUniqueKeyWithClustered'
-    Assert-UniqueKey -TableName 'AddUniqueKey' -ColumnName 'UniqueKeyMe','UniqueKeyMe2' -TestClustered
+    Assert-UniqueKey -TableName 'AddUniqueKey' -ColumnName 'UniqueKeyMe','UniqueKeyMe2' -Clustered
 }
 
 function Test-ShouldAddUniqueKeyWithFillFactor
@@ -100,7 +100,7 @@ function Pop-Migration()
 }
 '@ | New-Migration -Name 'AddUniqueKeyWithFillFactor'
     Invoke-Rivet -Push 'AddUniqueKeyWithFillFactor'
-    Assert-UniqueKey -TableName 'AddUniqueKey' -ColumnName 'UniqueKeyMe','UniqueKeyMe2' -TestFillFactor 80 -TestOption
+    Assert-UniqueKey -TableName 'AddUniqueKey' -ColumnName 'UniqueKeyMe','UniqueKeyMe2' -FillFactor 80 -IgnoreDupKey -DenyRowLocks
 }
 
 function Test-ShouldAddUniqueKeyWithOptions
@@ -122,7 +122,7 @@ function Pop-Migration()
 }
 '@ | New-Migration -Name 'AddUniqueKeyWithOptions'
     Invoke-Rivet -Push 'AddUniqueKeyWithOptions'
-    Assert-UniqueKey -TableName 'AddUniqueKey' -ColumnName 'UniqueKeyMe','UniqueKeyMe2' -TestOption
+    Assert-UniqueKey -TableName 'AddUniqueKey' -ColumnName 'UniqueKeyMe','UniqueKeyMe2' -IgnoreDupKey -DenyRowLocks
 }
 
 function Test-ShouldAddUniqueKeyWithCustomFileGroup
