@@ -31,7 +31,7 @@ function Pop-Migration()
 }
 '@ | New-Migration -Name 'RemoveUniqueKey'
     Invoke-Rivet -Push 'RemoveUniqueKey'
-    Assert-UniqueKey -TableName 'RemoveUniqueKey' -ColumnName 'RemoveMyUniqueKey' -TestNoUnique
+    Assert-False (Test-UniqueKey -TableName 'RemoveUniqueKey' -ColumnName 'RemoveMyUniqueKey')
 
 }
 
@@ -53,7 +53,7 @@ function Pop-Migration()
 }
 '@ | New-Migration -Name 'RemoveUniqueKey'
     Invoke-Rivet -Push 'RemoveUniqueKey'
-    Assert-UniqueKey -TableName 'Remove-UniqueKey' -ColumnName 'RemoveMyUniqueKey' -TestNoUnique
+    Assert-False (Test-UniqueKey -TableName 'Remove-UniqueKey' -ColumnName 'RemoveMyUniqueKey')
 
 }
 

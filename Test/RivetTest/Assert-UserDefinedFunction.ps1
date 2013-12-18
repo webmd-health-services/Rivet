@@ -5,23 +5,23 @@ function Assert-UserDefinedFunction
     Tests that a user-defined function exists.
     #>
     param(
+        [string]
+        # The schema name of the user defined function.  Defaults to `dbo`.
+        $SchemaName = 'dbo',
+
         [Parameter(Mandatory=$true)]
         [string]
         # The name of the user defined function.
         $Name,
 
         [string]
-        # The schema name of the user defined function.  Defaults to `dbo`.
-        $SchemaName = 'dbo',
-
-        [string]
-        # The definition of the user defined function
+        # Asserts the definition of the function.
         $Definition
     )
     
     Set-StrictMode -Version Latest
 
-    $udf = Get-SysObject -SchemaName $SchemaName -Name $Name -Type 'FN'
+    $udf = Get-UserDefinedFunction -SchemaName $SchemaName -Name $Name
    
     Assert-NotNull $udf ('User Defined Function {0}.{1} not found.' -f $SchemaName,$Name)
     

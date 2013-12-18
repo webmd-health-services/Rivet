@@ -25,21 +25,12 @@ function Test-Column
         # The name of the table.
         $TableName,
 
+        [Alias('TableSchema')]
         [string]
         # The name of the table's schema. Default is `dbo`.
-        $TableSchema = 'dbo'
+        $SchemaName = 'dbo'
     )
 
-    $query = @'
-    select 
-        1
-    from sys.columns c join 
-        sys.tables t on c.object_id = t.object_id join 
-        sys.schemas s on t.schema_id = s.schema_id
-    where
-        s.name = '{0}' and t.name = '{1}' and c.name = '{2}'
-'@ -f $TableSchema, $TableName, $Name
-    $column = Invoke-RivetTestQuery -Query $query -Connection $RTDatabaseConnection -AsScalar
-    return ($column -eq 1)
-
+    $column = Get-Column @PSBoundParameters
+    return ($column -ne $null)
 }

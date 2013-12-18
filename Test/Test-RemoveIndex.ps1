@@ -36,7 +36,7 @@ function Pop-Migration()
     Assert-Index -TableName 'AddIndex' -ColumnName 'IndexMe'
 
     Invoke-Rivet -Pop
-    Assert-Index -TableName 'AddIndex' -ColumnName 'IndexMe' -TestNoIndex
+    Assert-False (Test-Index -TableName 'AddIndex' -ColumnName 'IndexMe')
 
 }
 
@@ -62,7 +62,7 @@ function Pop-Migration()
     Assert-Index -TableName 'Remove-Index' -ColumnName 'IndexMe'
 
     Invoke-Rivet -Pop
-    Assert-Index -TableName 'Remove-Index' -ColumnName 'IndexMe' -TestNoIndex
+    Assert-False (Test-Index -TableName 'Remove-Index' -ColumnName 'IndexMe')
 
 }
 
@@ -76,21 +76,22 @@ function Push-Migration()
     }
 
     Add-Index -TableName 'Add-Index' -ColumnName 'IndexMe' -Name 'Example'
-    Remove-Index -TableName 'Add-Index' -Name 'Example'
 }
 
 function Pop-Migration()
 {
+    Remove-Index -TableName 'Add-Index' -Name 'Example'
 }
 '@ | New-Migration -Name 'RemoveIndexWithOptionalName'
 
     Invoke-Rivet -Push 'RemoveIndexWithOptionalName'
+    Assert-Index -Name 'Example' -ColumnName 'IndexMe'
+    Assert-False (Test-Index -TableName 'Add-Index' -ColumnName 'IndexMe')
 
-    $Indexes = Invoke-RivetTestQuery -Query @'
-    select * from sys.indexes where object_id = OBJECT_ID('Add-Index')
-'@
-    
-    Assert-Null $Indexes[1]
+    Invoke-Rivet -Pop
+    Assert-False (Test-Index -Name 'Example')
+    Assert-False (Test-Index -TableName 'Add-Index' -ColumnName 'IndexMe')
+
 }
 
 function Test-ShouldRemoveUniqueIndex
@@ -115,8 +116,9 @@ function Pop-Migration()
     Invoke-Rivet -Push 'RemoveIndex'
     Assert-True (Test-Table 'AddIndex')
     Assert-True (Test-Column -Name 'IndexMe' -TableName 'AddIndex')
-    Assert-Index -TableName 'AddIndex' -ColumnName 'IndexMe' -TestUnique
+    Assert-Index -TableName 'AddIndex' -ColumnName 'IndexMe' -Unique
+    Assert-False (Test-Index -TableName 'AddIndex' -ColumnName 'IndexMe')
 
     Invoke-Rivet -Pop
-    Assert-Index -TableName 'AddIndex' -ColumnName 'IndexMe' -TestNoIndex
+    Assert-False (Test-Index -TableName 'AddIndex' -ColumnName 'IndexMe' -Unique)
 }

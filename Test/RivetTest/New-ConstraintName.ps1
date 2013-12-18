@@ -7,7 +7,10 @@ function New-ConstraintName
     #>
     [CmdletBinding(DefaultParameterSetName='DF')]
     param(
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory=$true,ParameterSetName='DF')]
+        [Parameter(Mandatory=$true,ParameterSetName='IX')]
+        [Parameter(Mandatory=$true,ParameterSetName='AK')]
+        [Parameter(Mandatory=$true,ParameterSetName='UIX')]
         [string[]]
         # The column name.
         $ColumnName,
@@ -22,7 +25,7 @@ function New-ConstraintName
         # The table's schema.  Default is `dbo`.
         $SchemaName = 'dbo',
 
-        [Parameter(ParameterSetName='DF')]
+        [Parameter(Mandatory=$true,ParameterSetName='DF')]
         [Switch]
         # Creates a default constraint name.
         $Default,
@@ -37,44 +40,41 @@ function New-ConstraintName
         # Creates an index name.
         $Index,
 
-        [Parameter(Mandatory=$true,ParameterSetName='AK')]
+        [Parameter(ParameterSetName='IX')]
         [Switch]
-        # Creates an 'unique' constraint name.
+        # For a unique index.
         $Unique,
 
-        [Parameter(Mandatory=$true,ParameterSetName='UIX')]
+        [Parameter(Mandatory=$true,ParameterSetName='AK')]
         [Switch]
-        # Creates an 'unique index' constraint name.
-        $UniqueIndex
+        # Creates an unique key/alternate key constraint name.
+        $UniqueKey
     )
 
     if ($PSCmdlet.ParameterSetName -eq "DF")
     {
         $op = New-Object 'Rivet.ConstraintName' $SchemaName, $TableName, $ColumnName, Default
-        $name = $op.Name
     }
 
     if ($PSCmdlet.ParameterSetName -eq "PK")
     {
-        $op = New-Object 'Rivet.ConstraintName' $SchemaName, $TableName, $ColumnName, PrimaryKey
-        $name = $op.Name
+        $op = New-Object 'Rivet.ConstraintName' $SchemaName, $TableName, $null, PrimaryKey
     }
     
     if ($PSCmdlet.ParameterSetName -eq "IX")
     {
-        $op = New-Object 'Rivet.ConstraintName' $SchemaName, $TableName, $ColumnName, Index
-        $name = $op.Name
+        $type = [Rivet.ConstraintType]::Index
+        if( $Unique )
+        {
+            $type = [Rivet.ConstraintType]::UniqueIndex
+        }
+        $op = New-Object 'Rivet.ConstraintName' $SchemaName, $TableName, $ColumnName, $type
     }
+
     if ($PSCmdlet.ParameterSetName -eq "AK")
     {
         $op = New-Object 'Rivet.ConstraintName' $SchemaName, $TableName, $ColumnName, UniqueKey
-        $name = $op.Name
-    }
-    if ($PSCmdlet.ParameterSetName -eq "UIX")
-    {
-        $op = New-Object 'Rivet.ConstraintName' $SchemaName, $TableName, $ColumnName, UniqueIndex
-        $name = $op.Name
     }
 
-    return $name
+    return $op.Name
 }

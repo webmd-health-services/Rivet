@@ -14,10 +14,7 @@ function Assert-CheckConstraint
         $Definition
     )
 
-    $query = @'
-select * from sys.check_constraints where name = '{0}'
-'@ -f $Name
-    $constraint = Invoke-RivetTestQuery -Query $query
+    $constraint = Get-CheckConstraint -Name $Name
 
     Assert-NotNull $constraint ('check constraint ''{0}'' not found' -f $Name)
 

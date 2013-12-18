@@ -1,8 +1,9 @@
+
 function Get-Synonym
 {
     <#
     .SYNOPSIS
-    Contains a row for each synonym object that is sys.objects.type = SN.
+    Gets a synonym.
     #>
     param(
         [Parameter(Mandatory=$true)]

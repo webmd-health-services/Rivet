@@ -23,7 +23,7 @@ function Assert-StoredProcedure
     
     Set-StrictMode -Version Latest
 
-    $sp = Get-SysObject -SchemaName $SchemaName -Name $Name -Type 'P'
+    $sp = Get-StoredProcedure -SchemaName $SchemaName -Name $Name
    
     Assert-NotNull $sp ('Stored Procedure {0}.{1} doesn''t exist.' -f $SchemaName,$Name)
 

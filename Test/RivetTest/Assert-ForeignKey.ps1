@@ -39,70 +39,48 @@ function Assert-ForeignKey
         [Parameter()]
         [switch]
         # Test Not For Replication
-        $NotForReplication,
-
-        [Parameter()]
-        [switch]
-        # Test for removal
-        $TestRemoval
-
+        $NotForReplication
     )
     
     Set-StrictMode -Version Latest
 
-    $fk = Get-ForeignKey
-    $fkc = Get-ForeignKeyColumns
+    $fk = Get-ForeignKey -SchemaName $SchemaName -TableName $TableName -ReferencesSchema $ReferencesSchema -References $References
 
-    if ($TestRemoval)
+    #Test for non-null objects
+    Assert-NotNull $fk ('foreign Key on table {0}.{1} doesn''t exist.' -f $SchemaName,$TableName)
+
+    foreach ($_ in $fk.Columns)
     {
-         #Test for null objects
-        Assert-Null $fk ('foreign Key on table {0}.{1} still exists.' -f $SchemaName,$TableName)
-        Assert-Null $fkc ('foreign Key on table {0}.{1} still exists.' -f $SchemaName,$TableName)
+        Assert-Equal $fk.object_id $_.constraint_object_id
+        Assert-Equal $fk.parent_object_id $_.parent_object_id
+        Assert-Equal $fk.referenced_object_id $_.referenced_object_id
+    }
+
+    if ($OnDelete)
+    {
+        Assert-Equal $OnDelete $fk.delete_referential_action_desc 
     }
     else
     {
-        #Test for non-null objects
-        Assert-NotNull $fk ('foreign Key on table {0}.{1} doesn''t exist.' -f $SchemaName,$TableName)
-        Assert-NotNull $fkc ('foreign Key on table {0}.{1} doesn''t exist.' -f $SchemaName,$TableName)
+        Assert-Equal "NO_ACTION" $fk.delete_referential_action_desc 
+    }
 
-        $name = New-ForeignKeyConstraintName -SourceSchema $SchemaName -SourceTable $TableName -TargetSchema $ReferencesSchema -TargetTable $References
-    
-        #Test for equal Constraint Name
-        Assert-Equal $name $fk.name
+    if ($OnUpdate)
+    {
+        Assert-Equal $OnUpdate $fk.update_referential_action_desc 
+    }
+    else
+    {
+        Assert-Equal "NO_ACTION" $fk.update_referential_action_desc 
+    }
 
-        foreach ($_ in $fkc)
-        {
-            Assert-Equal $fk.object_id $_.constraint_object_id
-            Assert-Equal $fk.parent_object_id $_.parent_object_id
-            Assert-Equal $fk.referenced_object_id $_.referenced_object_id
-        }
-
-        if ($OnDelete)
-        {
-            Assert-Equal $OnDelete $fk.delete_referential_action_desc 
-        }
-        else
-        {
-            Assert-Equal "NO_ACTION" $fk.delete_referential_action_desc 
-        }
-
-        if ($OnUpdate)
-        {
-            Assert-Equal $OnUpdate $fk.update_referential_action_desc 
-        }
-        else
-        {
-            Assert-Equal "NO_ACTION" $fk.update_referential_action_desc 
-        }
-
-        if ($NotForReplication)
-        {
-            Assert-Equal "True" $fk.is_not_for_replication
-        }
-        else
-        {
-           Assert-Equal "False" $fk.is_not_for_replication
-        }
+    if ($NotForReplication)
+    {
+        Assert-Equal "True" $fk.is_not_for_replication
+    }
+    else
+    {
+        Assert-Equal "False" $fk.is_not_for_replication
     }
     
 }

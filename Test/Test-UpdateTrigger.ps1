@@ -33,7 +33,7 @@ function Pop-Migration
 
     Invoke-Rivet -Push 'UpdateTrigger'
 
-    $triggers = Get-Trigger -TriggerName "TestTrigger"
+    $triggers = Get-Trigger -Name "TestTrigger"
     Assert-Table 'Person'
     Assert-True (Test-DatabaseObject -SQLTrigger -Name "TestTrigger")
     Assert-NotEqual "@{Column0=CREATE trigger [dbo].[TestTrigger] on dbo.Person after insert, update as raiserror ('Notify CEO', 16, 10);}" $triggers
@@ -65,7 +65,7 @@ function Pop-Migration
 
     Invoke-Rivet -Push 'UpdateTriggerinCustomSchema'
 
-    $triggers = Get-Trigger -TriggerName "TestTrigger"
+    $triggers = Get-Trigger -Name "TestTrigger"
     Assert-Table 'Person' -Schema 'fizz'
     Assert-True (Test-DatabaseObject -SQLTrigger -Name "TestTrigger" -Schema 'fizz')
     Assert-NotEqual "@{Column0=CREATE trigger [fizz].[TestTrigger] on fizz.Person after insert, update as raiserror ('Notify CEO', 16, 10);}" $triggers

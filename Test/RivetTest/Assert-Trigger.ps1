@@ -18,7 +18,7 @@ function Assert-Trigger
 
     Set-StrictMode -Version 'Latest'
 
-    $trigger = Get-SysObject -SchemaName $SchemaName -Name $Name -Type 'TR'
+    $trigger = Get-Trigger -SchemaName $SchemaName -Name $Name 
     Assert-NotNull $trigger ('Trigger ''{0}.{1}'' not found.' -f $SchemaName,$Name)
 
     if( $PSBoundParameters.ContainsKey('Definition') )
