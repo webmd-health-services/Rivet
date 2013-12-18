@@ -21,7 +21,7 @@ function Push-Migration
         BigInt 'id' -Identity
     } -Option 'data_compression = none'
 
-    Rename-Table 'AddTable' 'RenameTable'
+    Rename-Object 'AddTable' 'RenameTable'
 }
 
 function Pop-Migration
@@ -97,7 +97,7 @@ function Pop-Migration
     Assert-True (Test-Column -Name 'IndexMe' -TableName 'AddIndex')
 
     ##Assert Index
-    Assert-Index -TableName 'AddIndex' -ColumnName 'Renamed'
+    Assert-Index -Name 'IX_AddIndex_Renamed' -ColumnName 'IndexMe'
 
 }
 
@@ -117,7 +117,7 @@ function Push-Migration
 
     Add-PrimaryKey -TableName 'Reference' -ColumnName 'reference_id'
     Add-ForeignKey -TableName 'Source' -ColumnName 'source_id' -References 'Reference' -ReferencedColumn 'reference_id'
-    Rename-Constraint -Name 'FK_Source_Reference' -NewName 'FK_Reference_Source'
+    Rename-Object -Name 'FK_Source_Reference' -NewName 'FK_Reference_Source'
 }
 
 function Pop-Migration

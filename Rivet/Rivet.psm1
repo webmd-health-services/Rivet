@@ -87,7 +87,7 @@ $publicFunctions = @(
                         'Rename-Column',
                         'Rename-Constraint',
                         'Rename-Index',
-                        'Rename-Table',
+                        'Rename-Object',
                         'Set-StoredProcedure',
                         'Set-UserDefinedFunction',
                         'Set-View',
