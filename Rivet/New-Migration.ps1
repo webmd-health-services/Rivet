@@ -60,6 +60,4 @@ function Pop-Migration
 "@ -f $migrationPath,$importRivetPath 
 
     $template | Set-Content -Path $migrationPath
-
-    Write-Host ('ise "{0}"' -f $migrationPath)
 }
