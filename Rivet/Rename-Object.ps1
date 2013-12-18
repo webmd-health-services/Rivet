@@ -3,23 +3,23 @@ function Rename-Object
 {
     <#
     .SYNOPSIS
-    Renames a table.
+    Renames an objects.
     
     .DESCRIPTION
     SQL Server ships with a stored procedure which is used to rename certain objects.  This operation wraps that stored procedure.
     
     .EXAMPLE
-    Rename-Table -Name 'FooBar' -NewName 'BarFoo'
+    Rename-Object -Name 'FooBar' -NewName 'BarFoo'
     
     Changes the name of the `FooBar` table to `BarFoo`.
     
     .EXAMPLE
-    Rename-Table -SchemaName 'fizz' -Name 'Buzz' -NewName 'Baz'
+    Rename-Object -SchemaName 'fizz' -Name 'Buzz' -NewName 'Baz'
     
     Demonstrates how to rename a table that is in a schema other than `dbo`.
     
     .EXAMPLE
-    Rename-Table 'FooBar' 'BarFoo'
+    Rename-Object 'FooBar' 'BarFoo'
     
     Demonstrates how to use the short form to rename `FooBar` to `BarFoo`.
     #>
