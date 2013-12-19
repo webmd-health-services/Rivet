@@ -342,6 +342,39 @@ function Pop-Migration
     Assert-False (Test-View @schema -Name 'FarmerCrops')
 }
 
+function Test-ShouldMakeInsertUpdateQueriesIdempotent
+{
+    @'
+function Push-Migration
+{
+    Add-Schema 'idempotent'
+    
+    Add-Table -SchemaName 'idempotent' 'Idempotent' {
+        int 'ID' -NotNull
+        varchar 'Name' -Size 50 -NotNull
+        varchar 'Optional' -Size 50
+    }
+    Add-PrimaryKey -SchemaName 'idempotent' -TableName 'Idempotent' -Column 'ID'
+
+    Add-Row -SchemaName 'idempotent' -TableName 'Idempotent' -Column @{ ID = 1; Name = 'First' } 
+    Update-Row -SchemaName 'idempotent' -TableName 'Idempotent' -Column @{ Optional = 'Value' } -Where 'ID = 1'
+}
+
+function Pop-Migration
+{
+}
+'@ | New-Migration -Name 'DataOperations'
+
+    & $convertRivetMigration -ConfigFilePath $RTConfigFilePath -OutputPath $outputDir
+
+    Assert-FileExists (Join-Path -Path $outputDir -ChildPath ('{0}.Schema.sql' -f $RTDatabaseName))
+    Assert-FileExists (Join-Path -Path $outputDir -ChildPath ('{0}.Data.sql' -f $RTDatabaseName))
+
+    Invoke-ConvertedScripts
+
+    Assert-Row -SchemaName 'idempotent' -TableName 'Idempotent' -Column @{ ID = 1 ; Name = 'First' ; Optional = 'Value' } -Where 'ID = 1'
+}
+
 function Invoke-ConvertedScripts
 {
     $ranConvertedScripts = $false
