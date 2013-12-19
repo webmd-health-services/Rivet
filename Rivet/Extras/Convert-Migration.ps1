@@ -54,7 +54,60 @@ Get-Migration @getMigrationParams |
         $dataScriptPath = Join-Path -Path $OutputPath -ChildPath ('{0}.Data.sql' -f $migration.Database)
         $unknownScriptPath = Join-Path -Path $OutputPath -ChildPath ('{0}.Unknown.sql' -f $migration.Database)
 
-        $migration.PushOperations | ForEach-Object {
+        # Aggregate changes
+        $addTableOps = @{ }
+
+        $operations = $migration.PushOperations | ForEach-Object {
+            $op = $_
+            $opType = $op.GetType().Name
+            if( $opType -eq 'AddTableOperation' )
+            {
+                $key = '{0}.{1}' -f $op.SchemaName,$op.Name
+                $addTableOps[$key] = $op
+                return $_
+            }
+
+            if( $opType -eq 'UpdateTableOperation' )
+            {
+                $key = '{0}.{1}' -f $op.SchemaName,$op.Name
+                if( -not ($addTableOps.ContainsKey( $key )) )
+                {
+                    return $_
+                }
+
+                $addTableOp = $addTableOps[$key]
+                Invoke-Command {
+                            $op.AddColumns
+                            $op.UpdateColumns
+                        } | 
+                    ForEach-Object {
+                        $column = $_
+                        $columnIdx = $null
+                        for( $idx = 0; $idx -lt $addTableOp.Columns.Count; ++$idx )
+                        {
+                            if( $addTableOp.Columns[$idx].Name -eq $column.Name )
+                            {
+                                $columnIdx = $idx
+                            }
+                        }
+                        if( $columnIdx -eq $null )
+                        {
+                            $addTableOp.Columns.Add( $column )
+                        }
+                        else
+                        {
+                            $null = $addTableOp.Columns.RemoveAt( $columnIdx )
+                            $addTableOp.Columns.Insert( $columnIdx, $column )
+                        }
+                    }
+
+                return
+            }
+
+            return $_
+        }
+
+        $operations | ForEach-Object {
 
             $op = $_
             $path = switch -Regex ( $op.GetType() )
