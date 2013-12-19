@@ -101,15 +101,8 @@ function Pop-Migration
 }
 '@ | Set-Content -Path (Join-Path -Path $RTDatabasesRoot -ChildPath 'Wellmed\Migrations\00000000000001_A.ps1')
 
-    & $convertRivetMigration -ConfigFilePath $RTConfigFilePath -OutputPath $outputDir
-
-    Assert-FileExists (Join-Path -Path $outputDir -ChildPath 'Common.Schema.sql')
-    Assert-FileExists (Join-Path -Path $outputDir -ChildPath 'Common.CodeObject.sql')
-    Assert-FileExists (Join-Path -Path $outputDir -ChildPath 'Common.Data.sql')
-    Assert-FileExists (Join-Path -Path $outputDir -ChildPath 'Wellmed.Schema.sql')
-    Assert-FileExists (Join-Path -Path $outputDir -ChildPath 'Wellmed.CodeObject.sql')
-
-    Invoke-ConvertedScripts
+    Assert-ConvertMigration -DatabaseName 'Common' -Schema -CodeObject -Data
+    Assert-ConvertMigration -DatabaseName 'Wellmed' -Schema -CodeObject
 
     Assert-Table -Name 'T' -Description 'Umm, a table.'
     Assert-Column -TableName 'T' -Name 'ID' -DataType 'int' -NotNull -Increment 1 -Seed 1 -Description 'Umm, a column.'
@@ -198,6 +191,8 @@ function Pop-Migration
     Remove-Table @idempotent $farmers.TableName
 }
 '@ | New-Migration -Name 'AddOperations'
+
+    Assert-ConvertMigration -Schema -CodeObject -Data -Unknown
 
     $schema = @{ SchemaName = 'idempotent' }
     $crops = @{ TableName = 'Crops' }
@@ -306,13 +301,7 @@ function Pop-Migration
 }
 '@ | New-Migration -Name 'RemoveOperations'
 
-    & $convertRivetMigration -ConfigFilePath $RTConfigFilePath -OutputPath $outputDir
-
-    Assert-FileExists (Join-Path -Path $outputDir -ChildPath ('{0}.Schema.sql' -f $RTDatabaseName))
-    Assert-FileExists (Join-Path -Path $outputDir -ChildPath ('{0}.CodeObject.sql' -f $RTDatabaseName))
-    Assert-FileExists (Join-Path -Path $outputDir -ChildPath ('{0}.Data.sql' -f $RTDatabaseName))
-
-    Invoke-ConvertedScripts
+    Assert-ConvertMigration -Schema -CodeObject -Data
 
     $schema = @{ SchemaName = 'idempotent' }
     $crops = @{ TableName = 'Crops' }
@@ -359,12 +348,7 @@ function Pop-Migration
 }
 '@ | New-Migration -Name 'DataOperations'
 
-    & $convertRivetMigration -ConfigFilePath $RTConfigFilePath -OutputPath $outputDir
-
-    Assert-FileExists (Join-Path -Path $outputDir -ChildPath ('{0}.Schema.sql' -f $RTDatabaseName))
-    Assert-FileExists (Join-Path -Path $outputDir -ChildPath ('{0}.Data.sql' -f $RTDatabaseName))
-
-    Invoke-ConvertedScripts
+    Assert-ConvertMigration -Schema -Data
 
     Assert-Row -SchemaName 'idempotent' -TableName 'Idempotent' -Column @{ ID = 1 ; Name = 'First' ; Optional = 'Value' } -Where 'ID = 1'
 }
@@ -416,6 +400,9 @@ create table [aggregate].[Beta] (
 function Assert-ConvertMigration
 {
     param(
+        [string]
+        $DatabaseName = $RTDatabaseName,
+
         [Switch]
         $Schema,
 
@@ -433,7 +420,7 @@ function Assert-ConvertMigration
 
     ('Schema','CodeObject','Data','Unknown') | ForEach-Object {
         $shouldExist = Get-Variable -Name $_ -ValueOnly
-        $path = Join-Path -Path $outputDir -ChildPath ('{0}.{1}.sql' -f $RTDatabaseName,$_)
+        $path = Join-Path -Path $outputDir -ChildPath ('{0}.{1}.sql' -f $DatabaseName,$_)
         Assert-Equal $shouldExist (Test-Path -Path $path) ('test if output file ''{0}'' exists' -f $path)
     }
 
