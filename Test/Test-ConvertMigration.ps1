@@ -34,7 +34,7 @@ function Stop-TestFixture
                     Select-Object -ExpandProperty 'Name' |
                     Sort-Object
 
-    #Assert-Null $missingOps ("The following operations weren't tested:`n * {0}" -f ($missingOps -join "`n * "))
+    Assert-Null $missingOps ("The following operations weren't tested:`n * {0}" -f ($missingOps -join "`n * "))
 }
 
 function Test-ShouldCreateOutputPath
@@ -179,6 +179,8 @@ function Push-Migration
 
     Add-View 'FarmerCrops' @idempotent -Definition "as select Farmers.Name CropName, Crops.Name FarmersName from Crops join Farmers on Crops.FarmerID = Farmers.ID"
     Update-View 'FarmerCrops' @idempotent -Definition "as select Farmers.Name FarmerName, Crops.Name CropName from Crops join Farmers on Crops.FarmerID = Farmers.ID"
+
+    Invoke-Query 'select 1'
 }
 
 function Pop-Migration
@@ -202,6 +204,7 @@ function Pop-Migration
     Assert-FileExists (Join-Path -Path $outputDir -ChildPath ('{0}.Schema.sql' -f $RTDatabaseName))
     Assert-FileExists (Join-Path -Path $outputDir -ChildPath ('{0}.CodeObject.sql' -f $RTDatabaseName))
     Assert-FileExists (Join-Path -Path $outputDir -ChildPath ('{0}.Data.sql' -f $RTDatabaseName))
+    Assert-FileExists (Join-Path -Path $outputDir -ChildPath ('{0}.Unknown.sql' -f $RTDatabaseName))
 
     Invoke-ConvertedScripts
 
