@@ -162,6 +162,6 @@ Get-Migration @getMigrationParams |
             }
             $header | Add-Content -Path $path
             $op.ToIdempotentQuery() | Add-Content -Path $path
-            "GO`n" | Add-Content -Path $path
+            ("GO{0}" -f [Environment]::NewLine) | Add-Content -Path $path
         }
     }
