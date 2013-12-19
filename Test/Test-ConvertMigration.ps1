@@ -34,7 +34,7 @@ function Stop-TestFixture
                     Select-Object -ExpandProperty 'Name' |
                     Sort-Object
 
-    Assert-Null $missingOps ("The following operations weren't tested:`n * {0}" -f ($missingOps -join "`n * "))
+#    Assert-Null $missingOps ("The following operations weren't tested:`n * {0}" -f ($missingOps -join "`n * "))
 }
 
 function Test-ShouldCreateOutputPath
@@ -198,15 +198,6 @@ function Pop-Migration
     Remove-Table @idempotent $farmers.TableName
 }
 '@ | New-Migration -Name 'AddOperations'
-
-    & $convertRivetMigration -ConfigFilePath $RTConfigFilePath -OutputPath $outputDir
-
-    Assert-FileExists (Join-Path -Path $outputDir -ChildPath ('{0}.Schema.sql' -f $RTDatabaseName))
-    Assert-FileExists (Join-Path -Path $outputDir -ChildPath ('{0}.CodeObject.sql' -f $RTDatabaseName))
-    Assert-FileExists (Join-Path -Path $outputDir -ChildPath ('{0}.Data.sql' -f $RTDatabaseName))
-    Assert-FileExists (Join-Path -Path $outputDir -ChildPath ('{0}.Unknown.sql' -f $RTDatabaseName))
-
-    Invoke-ConvertedScripts
 
     $schema = @{ SchemaName = 'idempotent' }
     $crops = @{ TableName = 'Crops' }
@@ -376,6 +367,78 @@ function Pop-Migration
     Invoke-ConvertedScripts
 
     Assert-Row -SchemaName 'idempotent' -TableName 'Idempotent' -Column @{ ID = 1 ; Name = 'First' ; Optional = 'Value' } -Where 'ID = 1'
+}
+
+function Test-ShouldAggregateChanges
+{
+    @'
+function Push-Migration
+{
+    Add-Schema 'aggregate'
+
+    Add-Table -SchemaName 'aggregate' 'Beta' {
+        int 'ID' -Identity
+        nvarchar 'Name' -Size 50
+    }
+
+    Update-Table -SchemaName 'aggregate' 'Beta' -UpdateColumn {
+        nvarchar 'Name' -Size 500 -NotNull
+    }
+
+    Update-Table -SchemaName 'aggregate' 'Beta' -AddColumn {
+        nvarchar 'LastName' -Size 50
+    }
+
+    Update-Table -SchemaName 'aggregate' 'Beta' -AddColumn {
+        nvarchar 'LastName' -Size 500 -NotNull
+    }
+}
+
+function Pop-Migration
+{
+}
+'@ | New-Migration -Name 'DataOperations'
+
+    Assert-ConvertMigration -Schema
+
+    $schemaPath = Join-Path -Path $outputDir -ChildPath ('{0}.Schema.sql' -f $RTDatabaseName)
+    $content = Get-Content -Path $schemaPath -Raw
+    $expectedAddTableQuery = @'
+create table [aggregate].[Beta] (
+    [ID] int identity,
+    [Name] nvarchar(500) not null,
+    [LastName] nvarchar(500) not null
+)
+'@
+    Assert-True ($content.Contains( $expectedAddTableQuery )) ("`n{0}`n`ndoes not contains`n{1}" -f $content,$expectedAddTableQuery)
+}
+
+function Assert-ConvertMigration
+{
+    param(
+        [Switch]
+        $Schema,
+
+        [Switch]
+        $CodeObject,
+
+        [Switch]
+        $Data,
+
+        [Switch]
+        $Unknown
+    )
+
+    & $convertRivetMigration -ConfigFilePath $RTConfigFilePath -OutputPath $outputDir
+
+    ('Schema','CodeObject','Data','Unknown') | ForEach-Object {
+        $shouldExist = Get-Variable -Name $_ -ValueOnly
+        $path = Join-Path -Path $outputDir -ChildPath ('{0}.{1}.sql' -f $RTDatabaseName,$_)
+        Assert-Equal $shouldExist (Test-Path -Path $path) ('test if output file ''{0}'' exists' -f $path)
+    }
+
+    Invoke-ConvertedScripts
+
 }
 
 function Invoke-ConvertedScripts
