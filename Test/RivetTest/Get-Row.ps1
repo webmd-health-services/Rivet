@@ -22,7 +22,7 @@ function Get-Row
     {
         $whereClause = ' where {0}' -f $Where
     }
-    $query = "select * from [{0}]{1}" -f $TableName,$whereClause
+    $query = "select * from [{0}].[{1}]{2}" -f $SchemaName,$TableName,$whereClause
 
     Invoke-RivetTestQuery -Query $query -Connection $RTDatabaseConnection
 
