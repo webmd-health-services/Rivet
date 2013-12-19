@@ -410,7 +410,7 @@ create table [aggregate].[Beta] (
     [LastName] nvarchar(500) not null
 )
 '@
-    Assert-True ($content.Contains( $expectedAddTableQuery )) ("`n{0}`n`ndoes not contains`n{1}" -f $content,$expectedAddTableQuery)
+    Assert-True ($content.Contains( $expectedAddTableQuery )) ("`n{0}`ndoes not contain`n`n{1}" -f $content,$expectedAddTableQuery)
 }
 
 function Assert-ConvertMigration
