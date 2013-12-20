@@ -63,22 +63,29 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ColumnTestFixture.cs" />
+    <Compile Include="Operations\AddCheckConstraintOperationTestFixture.cs" />
+    <Compile Include="Operations\AddDataTypeOperationTestFixture.cs" />
+    <Compile Include="Operations\AddDefaultConstraintOperationTestFixture.cs" />
     <Compile Include="Operations\AddExtendedPropertyOperationTestFixture.cs" />
+    <Compile Include="Operations\AddForeignKeyOperationTestFixture.cs" />
     <Compile Include="Operations\AddIndexOperationTestFixture.cs" />
     <Compile Include="Operations\AddPrimaryKeyOperationTestFixture.cs" />
-    <Compile Include="Operations\AddRemoveSchemaOperationTestFixture.cs" />
-    <Compile Include="Operations\AddRemoveTableOperationTestFixture.cs" />
     <Compile Include="ConstraintNameTestFixture.cs" />
-    <Compile Include="Operations\AddRemoveDefaultConstraintOperationTestFixture.cs" />
     <Compile Include="Operations\AddRemoveUniqueKeyTestFixture.cs" />
-    <Compile Include="Operations\AddRemoveForeignKeyOperationTestFixture.cs" />
+    <Compile Include="Operations\AddSchemaOperationTestFixture.cs" />
+    <Compile Include="Operations\AddSynonymOperationTestFixture.cs" />
+    <Compile Include="Operations\AddTableOperationTestFixture.cs" />
     <Compile Include="Operations\AddTriggerOperationTestFixture.cs" />
     <Compile Include="Operations\AddRowOperationTestFixture.cs" />
-    <Compile Include="Operations\AddRemoveSynonymOperationTestFixture.cs" />
-    <Compile Include="Operations\AddRemoveDataTypeOperationTestFixture.cs" />
-    <Compile Include="Operations\AddRemoveCheckConstraintOperationTestFixture.cs" />
+    <Compile Include="Operations\RemoveCheckConstraintOperationTestFixture.cs" />
+    <Compile Include="Operations\RemoveDataTypeOperationTestFixture.cs" />
+    <Compile Include="Operations\RemoveDefaultConstraintOperationTestFixture.cs" />
+    <Compile Include="Operations\RemoveForeignKeyOperationTestFixture.cs" />
     <Compile Include="Operations\RemoveIndexOperationTestFixture.cs" />
     <Compile Include="Operations\RemovePrimaryKeyOperationTestFixture.cs" />
+    <Compile Include="Operations\RemoveSchemaOperationTestFixture.cs" />
+    <Compile Include="Operations\RemoveSynonymOperationTestFixture.cs" />
+    <Compile Include="Operations\RemoveTableOperationTestFixture.cs" />
     <Compile Include="Operations\RenameColumnOperationTestFixture.cs" />
     <Compile Include="Operations\RenameIndexOperationTestFixture.cs" />
     <Compile Include="Operations\UpdateTableOperationTestFixture.cs" />
