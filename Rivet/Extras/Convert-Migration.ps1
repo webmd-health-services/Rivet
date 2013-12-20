@@ -20,7 +20,11 @@ param(
     [Parameter()]
     [string]
     # The path to the rivet.json file to use.  By default, it will look in the current directory.
-    $ConfigFilePath
+    $ConfigFilePath,
+
+    [string[]]
+    # Any migrations/files to exclude.  Wildcards accepted.
+    $Exclude
 )
 
 Set-StrictMode -Version 'Latest'
@@ -41,7 +45,7 @@ if( $PSBoundParameters.ContainsKey( 'ConfigFilePath' ) )
 {
     $getMigrationParams.ConfigFilePath = $ConfigFilePath
 }
-Get-Migration @getMigrationParams |
+Get-Migration @getMigrationParams -Exclude $Exclude |
     ForEach-Object { 
         $migration = $_
 

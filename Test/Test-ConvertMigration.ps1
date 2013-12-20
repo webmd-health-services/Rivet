@@ -397,6 +397,36 @@ create table [aggregate].[Beta] (
     Assert-True ($content.Contains( $expectedAddTableQuery )) ("`n{0}`ndoes not contain`n`n{1}" -f $content,$expectedAddTableQuery)
 }
 
+function Test-ShouldExcludeMigrations
+{
+    @'
+function Push-Migration
+{
+    Add-Schema 'include'
+}
+
+function Pop-Migration
+{
+}
+'@ | New-Migration -Name 'Include'
+
+    @'
+function Push-Migration
+{
+    Add-Schema 'exclude'
+}
+
+function Pop-Migration
+{
+}
+'@ | New-Migration -Name 'Exclude'
+
+    Assert-ConvertMigration -Schema -Exclude '*Exc*'
+
+    Assert-Schema 'include'
+    Assert-False (Test-Schema 'exclude')
+}
+
 function Assert-ConvertMigration
 {
     param(
@@ -413,10 +443,13 @@ function Assert-ConvertMigration
         $Data,
 
         [Switch]
-        $Unknown
+        $Unknown,
+
+        [string[]]
+        $Exclude
     )
 
-    & $convertRivetMigration -ConfigFilePath $RTConfigFilePath -OutputPath $outputDir
+    & $convertRivetMigration -ConfigFilePath $RTConfigFilePath -OutputPath $outputDir -Exclude:$Exclude
 
     ('Schema','CodeObject','Data','Unknown') | ForEach-Object {
         $shouldExist = Get-Variable -Name $_ -ValueOnly

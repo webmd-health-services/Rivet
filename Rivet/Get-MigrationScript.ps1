@@ -10,19 +10,33 @@ function Get-MigrationScript
         [Parameter(Mandatory=$true,ValueFromPipeline=$true)]
         [string[]]
         # The path to the migration.
-        $Path
+        $Path,
+
+        [string[]]
+        # A list of migrations to exclude.  Wildcards accepted.
+        $Exclude,
+
+        [DateTime]
+        # Only get migrations before this date.  Default is all.
+        $Before,
+
+        [DateTime]
+        # Only get migrations after this date.  Default is all.
+        $After
     )
 
     process
     {
+        $excludeParam = @{ }
+
         $Path | ForEach-Object {
-            if( (Test-Path $_ -PathType Container) )
+            if( (Test-Path -Path $_ -PathType Container) )
             {
-                Get-ChildItem $_ '*_*.ps1'
+                Get-ChildItem -Path $_ -Filter '*_*.ps1'
             }
-            elseif( (Test-Path $_ -PathType Leaf) )
+            elseif( (Test-Path -Path $_ -PathType Leaf) )
             {
-                Get-Item $_
+                Get-Item -Path
             }
             else
             {
@@ -30,6 +44,15 @@ function Get-MigrationScript
             }
         
         } | 
+        Where-Object { 
+            $script = $_
+            if( $PSBoundParameters.ContainsKey( 'Exclude' ) )
+            {
+                $foundMatch = $Exclude | Where-Object { $script.BaseName -like $_ }
+                return -not $foundMatch
+            }
+            return $true
+        } |
         ForEach-Object {
             if( $_.BaseName -notmatch '^(\d{14})_(.+)' )
             {
