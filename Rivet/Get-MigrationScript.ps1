@@ -51,6 +51,7 @@ function Get-MigrationScript
                 $foundMatch = $Exclude | Where-Object { $script.BaseName -like $_ }
                 return -not $foundMatch
             }
+
             return $true
         } |
         ForEach-Object {
@@ -66,6 +67,26 @@ function Get-MigrationScript
             $_ | 
                 Add-Member -MemberType NoteProperty -Name 'MigrationID' -Value $id -PassThru |
                 Add-Member -MemberType NoteProperty -Name 'MigrationName' -Value $name -PassThru
+        } |
+        Where-Object {
+            if( $PSBoundParameters.ContainsKey( 'Before' ) )
+            {
+                $beforeTimestamp = [uint64]$Before.ToString('yyyyMMddHHmmss')
+                if( $_.MigrationID -gt $beforeTimestamp )
+                {
+                    return $false
+                }
+            }
+
+            if( $PSBoundParameters.ContainsKey( 'After' ) )
+            {
+                $afterTimestamp = [uint64]$After.ToString('yyyyMMddHHmmss')
+                if( $_.MigrationID -lt $afterTimestamp )
+                {
+                    return $false
+                }
+            }
+            return $true
         }
     }
 }

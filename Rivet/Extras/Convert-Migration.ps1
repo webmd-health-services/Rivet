@@ -24,7 +24,15 @@ param(
 
     [string[]]
     # Any migrations/files to exclude.  Wildcards accepted.
-    $Exclude
+    $Exclude,
+
+    [DateTime]
+    # Only get migrations before this date/time.
+    $Before,
+
+    [DateTime]
+    # Only get migrations after this date/time.
+    $After
 )
 
 Set-StrictMode -Version 'Latest'
@@ -41,11 +49,12 @@ else
 }
 
 $getMigrationParams = @{ }
-if( $PSBoundParameters.ContainsKey( 'ConfigFilePath' ) )
-{
-    $getMigrationParams.ConfigFilePath = $ConfigFilePath
-}
-Get-Migration @getMigrationParams -Exclude $Exclude |
+@( 'ConfigFilePath', 'Exclude', 'Before', 'After' ) |
+    Where-Object { $PSBoundParameters.ContainsKey( $_ ) } |
+    ForEach-Object { $getMigrationParams.$_ = Get-Variable -Name $_ -ValueOnly }
+
+Get-Migration @getMigrationParams |
+
     ForEach-Object { 
         $migration = $_
 

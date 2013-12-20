@@ -427,6 +427,73 @@ function Pop-Migration
     Assert-False (Test-Schema 'exclude')
 }
 
+function Test-ShouldExcludeMigrationsBeforeDate
+{
+    @'
+function Push-Migration
+{
+    Add-Schema 'include'
+}
+
+function Pop-Migration
+{
+}
+'@ | New-Migration -Name 'Include'
+
+    $before = Get-Date
+    Start-Sleep -Seconds 1
+
+
+    @'
+function Push-Migration
+{
+    Add-Schema 'exclude'
+}
+
+function Pop-Migration
+{
+}
+'@ | New-Migration -Name 'Exclude'
+
+    Assert-ConvertMigration -Schema -Before $before
+
+    Assert-Schema 'include'
+    Assert-False (Test-Schema 'exclude')
+}
+
+function Test-ShouldExcludeMigrationsAfterDate
+{
+    @'
+function Push-Migration
+{
+    Add-Schema 'exclude'
+}
+
+function Pop-Migration
+{
+}
+'@ | New-Migration -Name 'Exclude'
+
+    Start-Sleep -Seconds 1
+    $after = Get-Date
+
+    @'
+function Push-Migration
+{
+    Add-Schema 'include'
+}
+
+function Pop-Migration
+{
+}
+'@ | New-Migration -Name 'Include'
+
+    Assert-ConvertMigration -Schema -After $after
+
+    Assert-Schema 'include'
+    Assert-False (Test-Schema 'exclude')
+}
+
 function Assert-ConvertMigration
 {
     param(
@@ -446,10 +513,21 @@ function Assert-ConvertMigration
         $Unknown,
 
         [string[]]
-        $Exclude
+        $Exclude,
+
+        [DateTime]
+        $Before,
+
+        [DateTime]
+        $After
     )
 
-    & $convertRivetMigration -ConfigFilePath $RTConfigFilePath -OutputPath $outputDir -Exclude:$Exclude
+    $convertRivetMigrationParams = @{ }
+    @( 'Exclude', 'Before', 'After' ) |
+        Where-Object { $PSBoundParameters.ContainsKey( $_ ) } |
+        ForEach-Object { $convertRivetMigrationParams.$_ = Get-Variable -Name $_ -ValueOnly }
+
+    & $convertRivetMigration -ConfigFilePath $RTConfigFilePath -OutputPath $outputDir @convertRivetMigrationParams
 
     ('Schema','CodeObject','Data','Unknown') | ForEach-Object {
         $shouldExist = Get-Variable -Name $_ -ValueOnly
