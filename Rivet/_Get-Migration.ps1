@@ -32,7 +32,19 @@ function Get-Migration
         $Environment,
 
         [string]
-        $ConfigFilePath
+        $ConfigFilePath,
+
+        [string[]]
+        # Migrations to exclude.  Wildcards permitted.
+        $Exclude,
+
+        [DateTime]
+        # Only get migrations before this date.  Default is all.
+        $Before,
+
+        [DateTime]
+        # Only get migrations after this date.  Default is all.
+        $After
     )
 
     Set-StrictMode -Version Latest
@@ -44,6 +56,11 @@ function Get-Migration
             Remove-Item
     }
 
+    $getMigrationScriptParams = @{ }
+    @( 'Exclude', 'Before', 'After' ) |
+        Where-Object { $PSBoundParameters.ContainsKey( $_ ) } |
+        ForEach-Object { $getMigrationScriptParams.$_ = Get-Variable -Name $_ -ValueOnly }
+
     $settings = Get-RivetConfig -Database $Database -Path $ConfigFilePath -Environment $Environment
 
     $settings.Databases | ForEach-Object {
@@ -51,7 +68,7 @@ function Get-Migration
         $DBScriptRoot = $_.Root
         $DBMigrationsRoot = $_.MigrationsRoot
 
-        Get-MigrationScript -Path $_.MigrationsRoot | ForEach-Object {
+        Get-MigrationScript -Path $_.MigrationsRoot @getMigrationScriptParams | ForEach-Object {
 
             
             $m = New-Object Rivet.Migration $_.MigrationID,$_.MigrationName,$_.FullName,$dbName
