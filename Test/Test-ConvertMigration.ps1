@@ -364,7 +364,16 @@ function Push-Migration
         int 'ID' -Identity
         nvarchar 'Name' -Size 50
     }
+}
 
+function Pop-Migration
+{
+}
+'@ | New-Migration -Name 'AddTables'
+
+    @'
+function Push-Migration
+{
     Update-Table -SchemaName 'aggregate' 'Beta' -UpdateColumn {
         nvarchar 'Name' -Size 500 -NotNull
     }
@@ -373,7 +382,7 @@ function Push-Migration
         nvarchar 'LastName' -Size 50
     }
 
-    Update-Table -SchemaName 'aggregate' 'Beta' -AddColumn {
+    Update-Table -SchemaName 'aggregate' 'Beta' -UpdateColumn {
         nvarchar 'LastName' -Size 500 -NotNull
     }
 }
@@ -381,7 +390,7 @@ function Push-Migration
 function Pop-Migration
 {
 }
-'@ | New-Migration -Name 'DataOperations'
+'@ | New-Migration -Name 'UpdateTables'
 
     Assert-ConvertMigration -Schema
 
