@@ -4,7 +4,7 @@ using Rivet.Operations;
 namespace Rivet.Test.Operations
 {
 	[TestFixture]
-	public sealed class AddRemovePrimaryKeyOperationTestFixture
+	public sealed class RemovePrimaryKeyOperationTestFixture
 	{
 		[SetUp]
 		public void SetUp()

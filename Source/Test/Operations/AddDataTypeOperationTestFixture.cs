@@ -4,7 +4,7 @@ using Rivet.Operations;
 namespace Rivet.Test.Operations
 {
 	[TestFixture]
-	public sealed class AddRemoveDataTypeOperationTestFixture
+	public sealed class AddDataTypeOperationTestFixture
 	{
 
 		private const string SchemaName = "schemaName";
@@ -83,21 +83,6 @@ namespace Rivet.Test.Operations
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}
 
-		[Test]
-		public void ShouldSetPropertiesForRemoveDataTypeAlias()
-		{
-			var op = new RemoveDataTypeOperation(SchemaName, Name);
-			Assert.AreEqual(SchemaName, op.SchemaName);
-			Assert.AreEqual(Name, op.Name);
-		}
-
-		[Test]
-		public void ShouldWriteQueryForRemoveDataTypeAlias()
-		{
-			var op = new RemoveDataTypeOperation(SchemaName, Name);
-			var expectedQuery = "drop type [schemaName].[name]";
-			Assert.AreEqual(expectedQuery, op.ToQuery());
-		}
 	}
 
 }

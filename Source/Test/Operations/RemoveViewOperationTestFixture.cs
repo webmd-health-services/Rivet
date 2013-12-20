@@ -9,12 +9,6 @@ namespace Rivet.Test.Operations
 		const string SchemaName = "schemaName";
 		const string ViewName = "viewName";
 
-		[SetUp]
-		public void SetUp()
-		{
-
-		}
-
 		[Test]
 		public void ShouldSetPropertiesForRemoveViewOperation()
 		{
