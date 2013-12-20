@@ -4,12 +4,11 @@ namespace Rivet.Operations
 {
 	public sealed class RemovePrimaryKeyOperation : Operation
 	{
-		public RemovePrimaryKeyOperation(string schemaName, string tableName, string[] columnName)
+		public RemovePrimaryKeyOperation(string schemaName, string tableName)
 		{
-			Name = new ConstraintName(schemaName, tableName, columnName, ConstraintType.PrimaryKey);
+			Name = new ConstraintName(schemaName, tableName, null, ConstraintType.PrimaryKey);
 			SchemaName = schemaName;
 			TableName = tableName;
-			ColumnName = (string[])columnName.Clone();
 		}
 
 		public RemovePrimaryKeyOperation(string schemaName, string tableName, string name)
@@ -22,7 +21,6 @@ namespace Rivet.Operations
 		public ConstraintName Name { get; private set; }
 		public string SchemaName { get; private set; }
 		public string TableName { get; private set; }
-		public string[] ColumnName { get; private set; }
 
 		public override string ToIdempotentQuery()
 		{

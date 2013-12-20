@@ -4,7 +4,7 @@ using Rivet.Operations;
 namespace Rivet.Test.Operations
 {
 	[TestFixture]
-	public sealed class AddRemovePrimaryKeyOperationTestFixture
+	public sealed class AddPrimaryKeyOperationTestFixture
 	{
 		[SetUp]
 		public void SetUp()
@@ -98,57 +98,5 @@ namespace Rivet.Test.Operations
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}
 
-		[Test]
-		public void ShouldSetPropertiesForRemovePrimaryKey()
-		{
-			var schemaName = "schemaName";
-			var tableName = "tableName";
-			string[] columnName = new string[] { "column1", "column2" };
-			string[] smokeColumn = new string[] { "column1" };
-
-			var op = new RemovePrimaryKeyOperation(schemaName, tableName, columnName);
-			Assert.AreEqual(schemaName, op.SchemaName);
-			Assert.AreEqual(tableName, op.TableName);
-			Assert.AreEqual(columnName, op.ColumnName);
-			Assert.AreNotEqual(smokeColumn, op.ColumnName);
-		}
-
-		[Test]
-		public void ShouldSetPropertiesForRemovePrimaryKeyWithCustomName()
-		{
-			var schemaName = "schemaName";
-			var tableName = "tableName";
-			var customConstraintName = "customConstraintName";
-
-			var op = new RemovePrimaryKeyOperation(schemaName, tableName, customConstraintName);
-			Assert.AreEqual(schemaName, op.SchemaName);
-			Assert.AreEqual(tableName, op.TableName);
-			Assert.That(op.ColumnName, Is.Null);
-			Assert.AreEqual(customConstraintName, op.Name.ToString());
-		}
-
-		[Test]
-		public void ShouldWriteQueryForRemovePrimaryKey()
-		{
-			var schemaName = "schemaName";
-			var tableName = "tableName";
-			string[] columnName = new string[] { "column1", "column2" };
-
-			var op = new RemovePrimaryKeyOperation(schemaName, tableName, columnName);
-			var expectedQuery = "alter table [schemaName].[tableName] drop constraint [PK_schemaName_tableName]";
-			Assert.AreEqual(expectedQuery, op.ToQuery());
-		}
-
-		[Test]
-		public void ShouldWriteQueryForRemovePrimaryKeyWithCustomConstraintName()
-		{
-			var schemaName = "schemaName";
-			var tableName = "tableName";
-			var customConstraintName = "customConstraintName";
-
-			var op = new RemovePrimaryKeyOperation(schemaName, tableName, customConstraintName);
-			var expectedQuery = "alter table [schemaName].[tableName] drop constraint [customConstraintName]";
-			Assert.AreEqual(expectedQuery, op.ToQuery());
-		}
 	}
 }
