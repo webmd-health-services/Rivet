@@ -71,12 +71,12 @@
     <Compile Include="Operations\AddIndexOperationTestFixture.cs" />
     <Compile Include="Operations\AddPrimaryKeyOperationTestFixture.cs" />
     <Compile Include="ConstraintNameTestFixture.cs" />
-    <Compile Include="Operations\AddRemoveUniqueKeyTestFixture.cs" />
     <Compile Include="Operations\AddSchemaOperationTestFixture.cs" />
     <Compile Include="Operations\AddSynonymOperationTestFixture.cs" />
     <Compile Include="Operations\AddTableOperationTestFixture.cs" />
     <Compile Include="Operations\AddTriggerOperationTestFixture.cs" />
     <Compile Include="Operations\AddRowOperationTestFixture.cs" />
+    <Compile Include="Operations\AddUniqueKeyOperationTestFixture.cs" />
     <Compile Include="Operations\RemoveCheckConstraintOperationTestFixture.cs" />
     <Compile Include="Operations\RemoveDataTypeOperationTestFixture.cs" />
     <Compile Include="Operations\RemoveDefaultConstraintOperationTestFixture.cs" />
@@ -86,6 +86,7 @@
     <Compile Include="Operations\RemoveSchemaOperationTestFixture.cs" />
     <Compile Include="Operations\RemoveSynonymOperationTestFixture.cs" />
     <Compile Include="Operations\RemoveTableOperationTestFixture.cs" />
+    <Compile Include="Operations\RemoveUniqueKeyOperationTestFixture.cs" />
     <Compile Include="Operations\RenameColumnOperationTestFixture.cs" />
     <Compile Include="Operations\RenameIndexOperationTestFixture.cs" />
     <Compile Include="Operations\UpdateTableOperationTestFixture.cs" />
