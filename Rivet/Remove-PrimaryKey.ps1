@@ -1,4 +1,4 @@
-
+ps
 function Remove-PrimaryKey
 {
     <#
@@ -12,16 +12,16 @@ function Remove-PrimaryKey
     Remove-PrimaryKey
 
     .EXAMPLE
-    Remove-PrimaryKey -TableName Cars -ColumnName Year,Make,Model
+    Remove-PrimaryKey -TableName Cars 
 
-    Removes a primary key to the `Cars` table on the `Year`, `Make`, and `Model` columns.
+    Removes the primary key on the `Cars` table.
 
     .EXAMPLE
     Remove-PrimaryKey 'Cars' -Name 'Car_PK'
 
     Demonstrates how to remove a primary key whose name is different than the derived name Rivet creates for primary keys.
     #>
-    [CmdletBinding()]
+    [CmdletBinding(DefaultParameterSetName='ByDefaultName')]
     param(
         [Parameter(Mandatory=$true,Position=0)]
         [string]
@@ -32,11 +32,6 @@ function Remove-PrimaryKey
         [string]
         # The schema name of the table.  Defaults to `dbo`.
         $SchemaName = 'dbo',
-
-        [Parameter(Mandatory=$true,Position=1,ParameterSetName='ByDefaultName')]
-        [string[]]
-        # The column(s) that should be part of the primary key.
-        $ColumnName,
 
         [Parameter(Mandatory=$true,ParameterSetName='ByCustomName')]
         [string]
@@ -49,14 +44,12 @@ function Remove-PrimaryKey
     if ($PSBoundParameters.containskey("Name"))
     {
         $op = New-Object 'Rivet.Operations.RemovePrimaryKeyOperation' $SchemaName, $TableName, $Name
-        Write-Host (' {0}.{1} -{2}' -f $SchemaName,$TableName,$op.Name)
     }
     else 
     {
-        $columns = $ColumnName -join ','
-        $op = New-Object 'Rivet.Operations.RemovePrimaryKeyOperation' $SchemaName, $TableName, $ColumnName
-        Write-Host (' {0}.{1} -{2} ({3})' -f $SchemaName,$TableName,$op.Name,$columns)
+        $op = New-Object 'Rivet.Operations.RemovePrimaryKeyOperation' $SchemaName, $TableName
     }
+    Write-Host (' {0}.{1} -{2}' -f $SchemaName,$TableName,$op.Name)
 
     Invoke-MigrationOperation -Operation $op
 }

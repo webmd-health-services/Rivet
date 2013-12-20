@@ -25,7 +25,7 @@ function Push-Migration()
 
 function Pop-Migration()
 {
-    Remove-PrimaryKey -TableName 'PrimaryKey' -ColumnName 'id'
+    Remove-PrimaryKey -TableName 'PrimaryKey'
 }
 '@ | New-Migration -Name 'SetandRemovePrimaryKey'
     Invoke-Rivet -Push 'SetandRemovePrimaryKey'
@@ -50,7 +50,7 @@ function Push-Migration()
 
 function Pop-Migration()
 {
-    Remove-PrimaryKey -TableName 'Remove-PrimaryKey' -ColumnName 'id'
+    Remove-PrimaryKey -TableName 'Remove-PrimaryKey'
 }
 '@ | New-Migration -Name 'SetandRemovePrimaryKey'
     Invoke-Rivet -Push 'SetandRemovePrimaryKey'
