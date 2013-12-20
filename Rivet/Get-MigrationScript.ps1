@@ -13,7 +13,11 @@ function Get-MigrationScript
         $Path,
 
         [string[]]
-        # A list of migrations to exclude.  Wildcards accepted.
+        # A list of migrations to include. Only migrations that match are returned.  Wildcards permitted.
+        $Include,
+
+        [string[]]
+        # A list of migrations to exclude.  Wildcards permitted.
         $Exclude,
 
         [DateTime]
@@ -44,15 +48,26 @@ function Get-MigrationScript
             }
         
         } | 
-        Where-Object { 
+        Where-Object {
             $script = $_
-            if( $PSBoundParameters.ContainsKey( 'Exclude' ) )
+            if( -not ($PSBoundParameters.ContainsKey( 'Include' )) )
             {
-                $foundMatch = $Exclude | Where-Object { $script.BaseName -like $_ }
-                return -not $foundMatch
+                return $true
             }
 
-            return $true
+            $noMatch = $Include | Where-Object { $script.BaseName -notlike $_ }
+            return -not $noMatch
+        } |
+        Where-Object { 
+            $script = $_
+
+            if( -not ($PSBoundParameters.ContainsKey( 'Exclude' )) )
+            {
+                return $true
+            }
+
+            $foundMatch = $Exclude | Where-Object { $script.BaseName -like $_ }
+            return -not $foundMatch
         } |
         ForEach-Object {
             if( $_.BaseName -notmatch '^(\d{14})_(.+)' )
