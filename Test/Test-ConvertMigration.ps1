@@ -427,6 +427,36 @@ function Pop-Migration
     Assert-False (Test-Schema 'exclude')
 }
 
+function Test-ShouldIncludeMigrations
+{
+    @'
+function Push-Migration
+{
+    Add-Schema 'include'
+}
+
+function Pop-Migration
+{
+}
+'@ | New-Migration -Name 'Include'
+
+    @'
+function Push-Migration
+{
+    Add-Schema 'exclude'
+}
+
+function Pop-Migration
+{
+}
+'@ | New-Migration -Name 'Exclude'
+
+    Assert-ConvertMigration -Schema -Include '*Inc*'
+
+    Assert-Schema 'include'
+    Assert-False (Test-Schema 'exclude')
+}
+
 function Test-ShouldExcludeMigrationsBeforeDate
 {
     @'
@@ -513,6 +543,9 @@ function Assert-ConvertMigration
         $Unknown,
 
         [string[]]
+        $Include,
+
+        [string[]]
         $Exclude,
 
         [DateTime]
@@ -523,7 +556,7 @@ function Assert-ConvertMigration
     )
 
     $convertRivetMigrationParams = @{ }
-    @( 'Exclude', 'Before', 'After' ) |
+    @( 'Exclude', 'Include', 'Before', 'After' ) |
         Where-Object { $PSBoundParameters.ContainsKey( $_ ) } |
         ForEach-Object { $convertRivetMigrationParams.$_ = Get-Variable -Name $_ -ValueOnly }
 

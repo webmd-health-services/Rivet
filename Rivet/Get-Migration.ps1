@@ -35,6 +35,10 @@ function Get-Migration
         $ConfigFilePath,
 
         [string[]]
+        # A list of migrations to include. Only migrations that match are returned.  Wildcards permitted.
+        $Include,
+
+        [string[]]
         # Migrations to exclude.  Wildcards permitted.
         $Exclude,
 
@@ -57,7 +61,7 @@ function Get-Migration
     }
 
     $getMigrationScriptParams = @{ }
-    @( 'Exclude', 'Before', 'After' ) |
+    @( 'Exclude', 'Include', 'Before', 'After' ) |
         Where-Object { $PSBoundParameters.ContainsKey( $_ ) } |
         ForEach-Object { $getMigrationScriptParams.$_ = Get-Variable -Name $_ -ValueOnly }
 

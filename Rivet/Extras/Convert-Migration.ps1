@@ -23,6 +23,10 @@ param(
     $ConfigFilePath,
 
     [string[]]
+    # A list of migrations to include. Only migrations that match are returned.  Wildcards permitted.
+    $Include,
+
+    [string[]]
     # Any migrations/files to exclude.  Wildcards accepted.
     $Exclude,
 
@@ -49,7 +53,7 @@ else
 }
 
 $getMigrationParams = @{ }
-@( 'ConfigFilePath', 'Exclude', 'Before', 'After' ) |
+@( 'ConfigFilePath', 'Exclude', 'Include', 'Before', 'After' ) |
     Where-Object { $PSBoundParameters.ContainsKey( $_ ) } |
     ForEach-Object { $getMigrationParams.$_ = Get-Variable -Name $_ -ValueOnly }
 
