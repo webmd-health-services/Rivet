@@ -57,74 +57,88 @@ $getMigrationParams = @{ }
     Where-Object { $PSBoundParameters.ContainsKey( $_ ) } |
     ForEach-Object { $getMigrationParams.$_ = Get-Variable -Name $_ -ValueOnly }
 
-Get-Migration @getMigrationParams |
+$addTableOps = @{ }
 
+# Aggregate changes.
+$operations = 
+    Get-Migration @getMigrationParams |
     ForEach-Object { 
         $migration = $_
 
-        $header = @'
--- {0}_{1}
-'@ -f $migration.ID,$migration.Name
-
-        $schemaScriptPath = Join-Path -Path $OutputPath -ChildPath ('{0}.Schema.sql' -f $migration.Database)
-        $codeObjectScriptPath = Join-Path -Path $OutputPath -ChildPath ('{0}.CodeObject.sql' -f $migration.Database)
-        $dataScriptPath = Join-Path -Path $OutputPath -ChildPath ('{0}.Data.sql' -f $migration.Database)
-        $unknownScriptPath = Join-Path -Path $OutputPath -ChildPath ('{0}.Unknown.sql' -f $migration.Database)
-
-        # Aggregate changes
-        $addTableOps = @{ }
-
-        $operations = $migration.PushOperations | ForEach-Object {
-            $op = $_
-            $opType = $op.GetType().Name
-            if( $opType -eq 'AddTableOperation' )
-            {
-                $key = '{0}.{1}' -f $op.SchemaName,$op.Name
-                $addTableOps[$key] = $op
-                return $_
-            }
-
-            if( $opType -eq 'UpdateTableOperation' )
-            {
-                $key = '{0}.{1}' -f $op.SchemaName,$op.Name
-                if( -not ($addTableOps.ContainsKey( $key )) )
+        $migration.PushOperations |
+            Add-Member -MemberType NoteProperty -Name 'Migrations' -Value @() -PassThru |
+            Add-Member -MemberType NoteProperty -Name 'Database' -Value $migration.Database -PassThru |
+            ForEach-Object {
+                $op = $_
+                $migrationName = '{0}_{1}' -f $migration.ID,$migration.Name
+                $op.Migrations += $migrationName
+                $opType = $op.GetType().Name
+                if( $opType -eq 'AddTableOperation' )
                 {
-                    return $_
+                    $key = '{0}.{1}' -f $op.SchemaName,$op.Name
+                    $addTableOps[$key] = $op
+                    return $op
                 }
 
-                $addTableOp = $addTableOps[$key]
-                Invoke-Command {
-                            $op.AddColumns
-                            $op.UpdateColumns
-                        } | 
-                    ForEach-Object {
-                        $column = $_
-                        $columnIdx = $null
-                        for( $idx = 0; $idx -lt $addTableOp.Columns.Count; ++$idx )
-                        {
-                            if( $addTableOp.Columns[$idx].Name -eq $column.Name )
-                            {
-                                $columnIdx = $idx
-                            }
-                        }
-                        if( $columnIdx -eq $null )
-                        {
-                            $addTableOp.Columns.Add( $column )
-                        }
-                        else
-                        {
-                            $null = $addTableOp.Columns.RemoveAt( $columnIdx )
-                            $addTableOp.Columns.Insert( $columnIdx, $column )
-                        }
+                if( $opType -eq 'UpdateTableOperation' )
+                {
+                    $key = '{0}.{1}' -f $op.SchemaName,$op.Name
+                    if( -not ($addTableOps.ContainsKey( $key )) )
+                    {
+                        return $op
                     }
 
-                return
-            }
+                    $addTableOp = $addTableOps[$key]
+                    if( $addTableOp.Migrations -notcontains $migrationName )
+                    {
+                        $addTableOp.Migrations += $migrationName
+                    }
+                    Invoke-Command {
+                                $op.AddColumns
+                                $op.UpdateColumns
+                            } | 
+                        ForEach-Object {
+                            $column = $_
+                            $columnIdx = $null
+                            for( $idx = 0; $idx -lt $addTableOp.Columns.Count; ++$idx )
+                            {
+                                if( $addTableOp.Columns[$idx].Name -eq $column.Name )
+                                {
+                                    $columnIdx = $idx
+                                }
+                            }
+                            if( $columnIdx -eq $null )
+                            {
+                                $addTableOp.Columns.Add( $column )
+                            }
+                            else
+                            {
+                                $null = $addTableOp.Columns.RemoveAt( $columnIdx )
+                                $addTableOp.Columns.Insert( $columnIdx, $column )
+                            }
+                        }
 
-            return $_
-        }
+                    return
+                }
 
-        $operations | ForEach-Object {
+                return $op
+            } 
+    }
+    
+
+    # Now, output the cumulative changes.
+    $operations | ForEach-Object {
+
+        $op = $_
+
+        $schemaScriptPath = Join-Path -Path $OutputPath -ChildPath ('{0}.Schema.sql' -f $op.Database)
+        $codeObjectScriptPath = Join-Path -Path $OutputPath -ChildPath ('{0}.CodeObject.sql' -f $op.Database)
+        $dataScriptPath = Join-Path -Path $OutputPath -ChildPath ('{0}.Data.sql' -f $op.Database)
+        $unknownScriptPath = Join-Path -Path $OutputPath -ChildPath ('{0}.Unknown.sql' -f $op.Database)
+
+        $header = @'
+-- {0}
+'@ -f ($op.Migrations -join "`n-- ")
 
             $op = $_
             $path = switch -Regex ( $op.GetType() )
@@ -181,4 +195,3 @@ Get-Migration @getMigrationParams |
             $op.ToIdempotentQuery() | Add-Content -Path $path
             ("GO{0}" -f [Environment]::NewLine) | Add-Content -Path $path
         }
-    }
