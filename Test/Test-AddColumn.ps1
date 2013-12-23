@@ -1,7 +1,7 @@
 
 function Setup
 {
-    Import-Module -Name (Join-Path $TestDir 'RivetTest') -ArgumentList 'AddColumn' 
+    Import-Module -Name (Join-Path $TestDir 'RivetTest') -ArgumentList 'RivetTest' 
     Start-RivetTest
 }
 
@@ -13,6 +13,70 @@ function TearDown
 
 function Test-ShouldAddNullableColumnsNoDefaults
 {
+    @"
+function Push-Migration
+{
+    Invoke-Query -Query @'
+create xml schema collection EmptyXsd as 
+N'
+<xsd:schema targetNamespace="http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelManuInstructions" 
+   xmlns          ="http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelManuInstructions" 
+   elementFormDefault="qualified" 
+   attributeFormDefault="unqualified"
+   xmlns:xsd="http://www.w3.org/2001/XMLSchema" >
+
+	<xsd:element  name="root" />
+
+</xsd:schema>
+';
+'@
+
+    Add-Table AddColumnNoDefaultsAllNull {
+        int 'ID' -NotNull
+    }
+
+    Update-Table -Name 'AddColumnNoDefaultsAllNull' -AddColumn { 
+        VarChar 'varchar' -Size 20 -Description 'varchar(20) null'
+        VarChar 'varcharmax' -Max -Description 'varchar(max) null'
+        Char 'char' -Size 10 -Description 'char(10) null'
+        NChar 'nchar' -Size 35 -Description 'nchar(35) null'
+        NVarChar 'nvarchar' -Size 30 -Description 'nvarchar(30) null'
+        NVarChar 'nvarcharmax' -Max -Description 'nvarchar(max) null'
+        Binary 'binary' -Size 40 -Description 'binary(40) null'
+        VarBinary 'varbinary' -Size 45 -Description 'varbinary(45) null'
+        VarBinary 'varbinarymax' -Max -Description 'varbinary(max) null'
+        BigInt 'bigint' -Description 'bigint null'
+        Int 'int' -Description 'int null'
+        SmallInt 'smallint' -Description 'smallint null'
+        TinyInt 'tinyint' -Description 'tinyint null'
+        Decimal 'decimal' -Precision 4 -Description 'decimal(4) null'     
+        Decimal 'decimalwithscale' -Precision 5 -Scale 5 -Description 'decimal(5,5) null'
+        Bit 'bit' -Description 'bit null'
+        Money 'money' -Description 'money null'
+        SmallMoney 'smallmoney' -Description 'smallmoney null'
+        Float 'float' -Description 'float null'
+        Float 'floatwithprecision' -Precision 53 -Description 'float(53) null'
+        Real 'real' -Description 'real null'
+        Date 'date' -Description 'date null'
+        DateTime datetime -Description 'date null'
+        DateTime2 'datetime2' -Description 'datetime2 null'
+        DateTimeOffset 'datetimeoffset' -Description 'datetimeoffset null'
+        SmallDateTime 'smalldatetime' -Description 'smalldatetime null'
+        Time 'time' -Description 'time null'
+        UniqueIdentifier 'uniqueidentifier' -Description 'uniqueidentifier null'
+        Xml 'xml' -XmlSchemaCollection 'EmptyXsd' -Description 'xml null'
+        SqlVariant 'sql_variant' -Description 'sql_variant null'
+        HierarchyID 'hierarchyid' -Description 'hierarchyid null'
+        RowVersion 'timestamp' -Description 'timestamp'
+    }
+}
+
+function Pop-Migration
+{
+    Remove-Table 'AddColumnNoDefaultsAllNull'
+}
+"@ | New-Migration -Name 'AddColumnNoDefaultsAllNull'
+
     Invoke-Rivet -Push 'AddColumnNoDefaultsAllNull'
 
     Assert-True (Test-Table -Name 'AddColumnNoDefaultsAllNull')
@@ -54,6 +118,69 @@ function Test-ShouldAddNullableColumnsNoDefaults
 
 function Test-ShouldAddNotNullableColumnsWithDefaults
 {
+    @"
+function Push-Migration()
+{
+    Invoke-Query -Query @'
+create xml schema collection EmptyXsd as 
+N'
+<xsd:schema targetNamespace="http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelManuInstructions" 
+   xmlns          ="http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelManuInstructions" 
+   elementFormDefault="qualified" 
+   attributeFormDefault="unqualified"
+   xmlns:xsd="http://www.w3.org/2001/XMLSchema" >
+
+	<xsd:element  name="root" />
+
+</xsd:schema>
+';
+'@
+
+    Add-Table 'AddColumnDefaultsNotNull' {
+        int 'id' -NotNull
+    }
+
+    Update-Table -Name 'AddColumnDefaultsNotNull' -AddColumn { 
+        VarChar 'varchar' -Size 20 -NotNull -Default "'varchar'" -Description 'varchar(20) not null'
+        VarChar 'varcharmax' -Max -NotNull -Default "'varcharmax'" -Description 'varchar(max) not null'
+        Char 'char' -Size 10 -NotNull -Default "'char'" -Description 'char(10) not null'
+        NChar 'nchar' -Size 35 -NotNull -Default "'nchar'" -Description 'nchar(35) not null'
+        NVarChar 'nvarchar' -Size 30 -NotNull -Default "'nvarchar'" -Description 'nvarchar(30) not null'
+        NVarChar 'nvarcharmax' -Max -NotNull -Default "'nvarcharmax'" -Description 'nvarchar(max) not null'
+        Binary 'binary' -Size 40 -NotNull -Default 1 -Description 'binary(40) not null'
+        VarBinary 'varbinary' -Size 45 -NotNull -Default 2 -Description 'varbinary(45) not null'
+        VarBinary 'varbinarymax' -Max -NotNull -Default 3 -Description 'varbinary(max) not null'
+        BigInt 'bigint' -NotNull -Default ([int64]::MaxValue) -Description 'bigint not null'
+        Int 'int' -NotNull -Default ([int]::MaxValue) -Description 'int not null'
+        SmallInt 'smallint' -NotNull -Default ([int16]::MaxValue) -Description 'smallint not null'
+        TinyInt 'tinyint' -NotNull -Default ([byte]::MaxValue) -Description 'tinyint not null'
+        Decimal 'decimal' -Precision 4 -NotNull -Default '3.33' -Description 'decimal(4) not null'     
+        Decimal 'decimalwithscale' -Precision 5 -Scale 5 -NotNull -Default '4.44' -Description 'decimal(5,5) not null'
+        Bit 'bit' -NotNull -Default '1' -Description 'bit not null'
+        Money 'money' -NotNull -Default '6.66' -Description 'money not null'
+        SmallMoney 'smallmoney' -NotNull -Default '7.77' -Description 'smallmoney not null'
+        Float 'float' -NotNull -Default '8.88' -Description 'float not null'
+        Float 'floatwithprecision' -Precision 53 -NotNull -Default '9.99' -Description 'float(53) not null'
+        Real 'real' -NotNull -Default '10.10' -Description 'real not null'
+        Date 'date' -NotNull -Default 'getdate()' -Description 'date not null'
+        DateTime2 'datetime2' -NotNull -Default 'getdate()' -Description 'datetime2 not null'
+        DateTimeOffset 'datetimeoffset' -NotNull -Default 'getdate()' -Description 'datetimeoffset not null'
+        SmallDateTime 'smalldatetime' -NotNull -Default 'getdate()' -Description 'smalldatetime not null'
+        Time 'time' -NotNull -Default 'getdate()' -Description 'time not null'
+        UniqueIdentifier 'uniqueidentifier' -NotNull -Default 'newid()' -Description 'uniqueidentifier not null'
+        Xml 'xml' -XmlSchemaCollection 'EmptyXsd' -NotNull -Default "'<empty />'" -Description 'xml not null'
+        SqlVariant 'sql_variant' -NotNull -Default "'sql_variant'" -Description 'sql_variant not null'
+        HierarchyID 'hierarchyid' -NotNull -Default '0x11' -Description 'hierarchyid not null'
+    }
+}
+
+
+function Pop-Migration()
+{
+    Remove-Table 'AddColumnDefaultsNotNull'
+}
+"@ | New-Migration -Name 'AddColumnDefaultsNotNull'
+
     Invoke-Rivet -Push 'AddColumnDefaultsNotNull'
 
     Assert-True (Test-Table -Name 'AddColumnDefaultsNotNull')
@@ -93,6 +220,47 @@ function Test-ShouldAddNotNullableColumnsWithDefaults
 
 function Test-ShouldCreateIdentities
 {
+    @'
+
+function Push-Migration()
+{
+    Add-Table BigIntIdentity {
+        varchar 'name' -Max -NotNull
+    }
+
+    Add-Table IntIdentity {
+        varchar 'name' -notNull -Max
+    }
+
+    Add-Table SmallIntIdentity {
+        varchar 'name' -Max -NotNull
+    }
+
+    Add-Table TinyIntIdentity {
+        varchar 'name' -Max -NotNull
+    }
+
+    Add-Table DecimalIdentity {
+        varchar 'name' -Max -NotNull
+    }
+
+    Update-Table -Name 'BigIntIdentity' -AddColumn {  BigInt 'bigintidentity' -Identity 1 2  }
+    Update-Table -Name 'IntIdentity' -AddColumn {  Int 'intidentity' -Identity 3 5  }
+    Update-Table -Name 'SmallIntIdentity' -AddColumn {  SmallInt 'smallintidentity' -Identity 7 11  }
+    Update-Table -Name 'TinyIntIdentity' -AddColumn {  TinyInt 'tinyintidentity' -Identity 13 17  }
+    Update-Table -Name 'DecimalIdentity' -AddColumn {  Decimal 'decimalidentity' -Precision 5 -Identity -Seed 37 -Increment 41  }
+}
+
+function Pop-Migration()
+{
+    Remove-Table 'BigIntIdentity'
+    Remove-Table 'IntIdentity'
+    Remove-Table 'SmallIntIdentity'
+    Remove-Table 'TinyIntIdentity'
+    Remove-Table 'DecimalIdentity'
+}
+'@ | New-Migration -Name 'AddColumnIdentityTables'
+
     Invoke-Rivet -Push 'AddColumnIdentityTables'
 
     Assert-Table 'BigIntIdentity'
@@ -113,6 +281,22 @@ function Test-ShouldCreateIdentities
 
 function Test-ShouldCreateRowGuidCol
 {
+    @'
+function Push-Migration()
+{
+    Add-Table 'WithRowGuidCol' {
+        varchar 'name' -Max -NotNull
+    }
+    
+    Update-Table -Name 'WithRowGuidCol' -AddColumn {  UniqueIdentifier 'uniqueidentiferasrowguidcol' -RowGuidCol  }
+}
+
+function Pop-Migration()
+{
+    Remove-Table 'WithRowGuidCol'
+}
+'@ | New-Migration -Name 'AddColumnRowGuidCol'
+
     Invoke-Rivet -Push 'AddColumnRowGuidCol'
 
     Assert-Table 'WithRowGuidCol'
@@ -122,6 +306,36 @@ function Test-ShouldCreateRowGuidCol
 
 function Test-ShouldSupportXmlDocument
 {
+    @"
+function Push-Migration()
+{
+    Invoke-Query -Query @'
+create xml schema collection EmptyXsd as 
+N'
+<xsd:schema targetNamespace="http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelManuInstructions" 
+   xmlns          ="http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelManuInstructions" 
+   elementFormDefault="qualified" 
+   attributeFormDefault="unqualified"
+   xmlns:xsd="http://www.w3.org/2001/XMLSchema" >
+
+	<xsd:element  name="root" />
+
+</xsd:schema>
+';
+'@
+    Add-Table 'WithXmlDocument' {
+        varchar 'name' -max -notnull
+    }
+    
+    Update-Table -Name 'WithXmlDocument' -AddColumn {  Xml 'xmlasdocument' -Document -XmlSchemaCollection 'EmptyXsd'  }
+}
+
+function Pop-Migration()
+{
+    Remove-Table 'WithXmlDocument'
+}
+"@ | New-Migration -Name 'AddColumnXmlDocument'
+
     Invoke-Rivet -Push 'AddColumnXmlDocument'
 
     Assert-Table 'WithXmlDocument'
@@ -132,6 +346,24 @@ function Test-ShouldSupportXmlDocument
 # This test won't work unless file streams are setup.  Don't know how to do that so ignoring this test for now.
 function Ignore-ShouldSupportFileStream
 {
+    @"
+function Push-Migration()
+{
+    Add-Table 'WithVarBinaryFileStream' {
+        varchar 'name' -Max -NotNull
+        varbinary 'firstvarbinary' -Max -Filestream
+        uniqueidentifier 'rowguidcol' -NotNull -RowGuidCol
+    } -FileStream "default"
+    Add-PrimaryKey 'WithVarBinaryFileStream' 'rowguidcol'
+'@
+    Update-Table -Name 'WithVarBinaryFileStream' {  VarBinary 'filestreamvarbinary' -FileStream }
+}
+
+function Pop-Migration()
+{
+    Remove-Table 'WithVarBinaryFileStream'
+}
+"@ | New-Migration -Name 'AddColumnVarBinaryFileStream'
     Invoke-Rivet -Push 'AddColumnVarBinaryFileStream'
 
     Assert-Table 'WithVarBinaryFileStream'
@@ -141,6 +373,28 @@ function Ignore-ShouldSupportFileStream
 
 function Test-ShouldSupportCollation
 {
+    @"
+
+function Push-Migration()
+{
+    Add-Table 'WithCustomCollation' {
+        varchar 'name' -NotNull -Max
+    }
+
+    Update-Table -Name 'WithCustomCollation' -AddColumn {
+        Char 'char' 15 -Collation 'Japanese_BIN'
+        NChar 'nchar' 15 -Collation 'Korean_Wansung_BIN'
+        VarChar 'varchar' -Max -Collation 'Chinese_Taiwan_Stroke_BIN'
+        NVarChar 'nvarchar' -Max -Collation 'Thai_BIN'
+    }
+}
+
+function Pop-Migration()
+{
+    Remove-Table 'WithCustomCollation'
+}
+"@ | New-Migration -Name 'AddColumnCollation'
+
     Invoke-Rivet -Push 'AddColumnCollation'
 
     Assert-Table 'WithCustomCollation'
@@ -154,6 +408,70 @@ function Test-ShouldSupportCollation
 
 function Test-ShouldAddSparseColumns
 {
+    @"
+function Push-Migration()
+{
+    Invoke-Query -Query @'
+create xml schema collection EmptyXsd as 
+N'
+<xsd:schema targetNamespace="http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelManuInstructions" 
+   xmlns          ="http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelManuInstructions" 
+   elementFormDefault="qualified" 
+   attributeFormDefault="unqualified"
+   xmlns:xsd="http://www.w3.org/2001/XMLSchema" >
+
+	<xsd:element  name="root" />
+
+</xsd:schema>
+';
+'@
+
+    Add-Table 'WithSparseColumns' {
+        varchar 'name' -Max -NotNull
+    }
+
+    Update-Table -Name 'WithSparseColumns' -AddColumn { 
+        VarChar 'varchar' -Size 20 -Sparse -Description 'varchar(20) sparse'
+        VarChar 'varcharmax' -Max -Sparse -Description 'varchar(max) sparse'
+        Char 'char' -Size 10 -Sparse -Description 'char(10) sparse'
+        NChar 'nchar' -Size 35 -Sparse -Description 'nchar(35) sparse'
+        NVarChar 'nvarchar' -Size 30 -Sparse -Description 'nvarchar(30) sparse'
+        NVarChar 'nvarcharmax' -Max -Sparse -Description 'nvarchar(max) sparse'
+        Binary 'binary' -Size 40 -Sparse -Description 'binary(40) sparse'
+        VarBinary 'varbinary' -Size 45 -Sparse -Description 'varbinary(45) sparse'
+        VarBinary 'varbinarymax' -Max -Sparse -Description 'varbinary(max) sparse'
+        BigInt 'bigint' -Sparse -Description 'bigint sparse'
+        Int 'int' -Sparse -Description 'int sparse'
+        SmallInt 'smallint' -Sparse -Description 'smallint sparse'
+        TinyInt 'tinyint' -Sparse -Description 'tinyint sparse'
+        Decimal 'decimal' -Precision 4 -Sparse -Description 'decimal(4) sparse'     
+        Decimal 'decimalwithscale' -Precision 5 -Scale 5 -Sparse -Description 'decimal(5,5) sparse'
+        Bit 'bit' -Sparse -Description 'bit sparse'
+        Money 'money' -Sparse -Description 'money sparse'
+        SmallMoney 'smallmoney' -Sparse -Description 'smallmoney sparse'
+        Float 'float' -Sparse -Description 'float sparse'
+        Float 'floatwithprecision' -Precision 53 -Sparse -Description 'float(53) sparse'
+        Real 'real' -Sparse -Description 'real sparse'
+        Date 'date' -Sparse -Description 'date sparse'
+        DateTime datetime -Sparse -Description 'date sparse'
+        DateTime2 'datetime2' -Sparse -Description 'datetime2 sparse'
+        DateTimeOffset 'datetimeoffset' -Sparse -Description 'datetimeoffset sparse'
+        SmallDateTime 'smalldatetime' -Sparse -Description 'smalldatetime sparse'
+        Time 'time' -Sparse -Description 'time sparse'
+        UniqueIdentifier 'uniqueidentifier' -Sparse -Description 'uniqueidentifier sparse'
+        Xml 'xml' -XmlSchemaCollection 'EmptyXsd' -Sparse -Description 'xml sparse'
+        SqlVariant 'sql_variant' -Sparse -Description 'sql_variant sparse'
+        HierarchyID 'hierarchyid' -Sparse -Description 'hierarchyid sparse'
+    }
+}
+
+function Pop-Migration()
+{
+    RemoveTable 'WithSparseColumns'
+}
+
+"@ | New-Migration -Name 'AddColumnSparse'
+
     Invoke-Rivet -Push 'AddColumnSparse'
 
     Assert-Table -Name 'WithSparseColumns'
@@ -194,6 +512,46 @@ function Test-ShouldAddSparseColumns
 
 function Test-ShouldCreateIdentitiesNotForReplication
 {
+    @"
+function Push-Migration()
+{
+    Add-Table BigIntIdentity {
+        varchar 'name' -Max -NotNull
+    }
+
+    Add-Table IntIdentity {
+        varchar 'name' -notNull -Max
+    }
+
+    Add-Table SmallIntIdentity {
+        varchar 'name' -Max -NotNull
+    }
+
+    Add-Table TinyIntIdentity {
+        varchar 'name' -Max -NotNull
+    }
+
+    Add-Table DecimalIdentity {
+        varchar 'name' -Max -NotNull
+    }
+    
+    Update-Table -Name 'BigIntIdentity' -AddColumn {  BigInt 'bigintidentity' -Identity 1 2 -NotForReplication  }
+    Update-Table -Name 'IntIdentity' -AddColumn {  Int 'intidentity' -Identity 3 5 -NotForReplication  }
+    Update-Table -Name 'SmallIntIdentity' -AddColumn {  SmallInt 'smallintidentity' -Identity 7 11 -NotForReplication  }
+    Update-Table -Name 'TinyIntIdentity' -AddColumn {  TinyInt 'tinyintidentity' -Identity 13 17 -NotForReplication  }
+    Update-Table -Name 'DecimalIdentity' -AddColumn {  Decimal 'decimalidentity' -Precision 5 -Identity -Seed 37 -Increment 41 -NotForReplication  }
+}
+
+function Pop-Migration()
+{
+    Remove-Table 'BigIntIdentity'
+    Remove-Table 'IntIdentity'
+    Remove-Table 'SmallIntIdentity'
+    Remove-Table 'TinyIntIdentity'
+    Remove-Table 'DecimalIdentity'
+}
+"@ | New-Migration -Name 'AddColumnNotForReplication'
+
     Invoke-Rivet -Push 'AddColumnNotForReplication'
 
     Assert-Table 'BigIntIdentity'

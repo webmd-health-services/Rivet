@@ -284,7 +284,7 @@ function Push-Migration
     $farmers = @{ TableName = 'Farmers' }
 
     Remove-CheckConstraint @schema @crops -Name 'CK_Crops_AllowedCrops'
-    Remove-Column @schema @farmers -Name 'RemoveMe'
+    Update-Table @schema -Name $farmers.TableName -Remove 'RemoveMe'
     Remove-DataType @schema -Name 'GUID'
     Remove-DefaultConstraint @schema @crops -ColumnName 'Name'
     Remove-Description @schema @crops -ColumnName 'Name'
@@ -369,6 +369,7 @@ function Push-Migration
     Add-Table -SchemaName 'aggregate' 'Beta' {
         int 'ID' -NotNull
         nvarchar 'Name' -Size 50
+        nvarchar 'RemoveMe' -Size 10
     }
 
     Add-PrimaryKey -SchemaName 'aggregate' -TableName 'Beta' -ColumnName 'ID'
@@ -396,6 +397,8 @@ function Push-Migration
     Update-Table -SchemaName 'aggregate' 'Beta' -UpdateColumn {
         nvarchar 'LastName' -Size 500 -NotNull
     }
+
+    Update-Table -SchemaName 'aggregate' 'Beta' -RemoveColumn 'RemoveMe'
 }
 
 function Pop-Migration

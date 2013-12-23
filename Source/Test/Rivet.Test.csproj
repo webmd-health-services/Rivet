@@ -106,7 +106,6 @@
     <Compile Include="Operations\RemoveViewOperationTestFixture.cs" />
     <Compile Include="Operations\RemoveUserDefinedFunctionOperationTestFixture.cs" />
     <Compile Include="Operations\RemoveStoredProcedureOperationTestFixture.cs" />
-    <Compile Include="Operations\RemoveColumnOperationTestFixture.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -81,7 +81,6 @@
     <Compile Include="Operations\RemoveStoredProcedureOperation.cs" />
     <Compile Include="Operations\RemoveUserDefinedFunctionOperation.cs" />
     <Compile Include="Operations\RemoveViewOperation.cs" />
-    <Compile Include="Operations\RemoveColumnOperation.cs" />
     <Compile Include="Operations\RemoveExtendedPropertyOperation.cs" />
     <Compile Include="Operations\RemoveSchemaOperation.cs" />
     <Compile Include="Operations\Operation.cs" />
