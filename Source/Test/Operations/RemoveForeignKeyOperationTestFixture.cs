@@ -19,6 +19,7 @@ namespace Rivet.Test.Operations
 			Assert.AreEqual(tableName, op.TableName);
 			Assert.AreEqual(referencesSchemaName, op.ReferencesSchemaName);
 			Assert.AreEqual(referencesTableName, op.ReferencesTableName);
+			Assert.That(op.ObjectName, Is.EqualTo(string.Format("{0}.{1}.FK_{0}_{1}_{2}_{3}", schemaName, tableName, referencesSchemaName, referencesTableName)));
 		}
 
 		[Test]

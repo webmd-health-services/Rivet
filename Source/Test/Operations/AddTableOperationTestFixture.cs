@@ -7,12 +7,6 @@ namespace Rivet.Test.Operations
 	[TestFixture]
 	public sealed class AddTableOperationTestFixture
 	{
-		[SetUp]
-		public void SetUp()
-		{
-
-		}
-
 		[Test]
 		public void ShouldSetPropertiesForAddTable()
 		{
@@ -43,6 +37,7 @@ namespace Rivet.Test.Operations
 			Assert.That(op.Options.Contains("option2"));
 			Assert.That(op.Options.Count, Is.EqualTo(2));
 			Assert.That(op.Description, Is.EqualTo(description));
+			Assert.That(op.ObjectName, Is.EqualTo(string.Format("{0}.{1}", schemaName, tableName)));
 		}
 
 		[Test]

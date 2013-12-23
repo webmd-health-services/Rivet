@@ -2,19 +2,16 @@
 
 namespace Rivet.Operations
 {
-	public sealed class AddSynonymOperation : Operation
+	public sealed class AddSynonymOperation : ObjectOperation
 	{
 		public AddSynonymOperation(string schemaName, string name, string targetSchemaName, string targetDatabaseName, string targetObjectName)
+			: base(schemaName, name)
 		{
-			SchemaName = schemaName;
-			Name = name;
 			TargetSchemaName = targetSchemaName;
 			TargetDatabaseName = targetDatabaseName;
 			TargetObjectName = targetObjectName;
 		}
 
-		public string SchemaName { get; private set; }
-		public string Name { get; private set; }
 		public string TargetSchemaName { get; private set; }
 		public string TargetDatabaseName { get; private set; }
 		public string TargetObjectName { get; private set; }

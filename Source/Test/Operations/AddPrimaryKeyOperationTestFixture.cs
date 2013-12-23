@@ -6,12 +6,6 @@ namespace Rivet.Test.Operations
 	[TestFixture]
 	public sealed class AddPrimaryKeyOperationTestFixture
 	{
-		[SetUp]
-		public void SetUp()
-		{
-
-		}
-
 		[Test]
 		public void ShouldSetPropertiesForAddPrimaryKey()
 		{
@@ -31,6 +25,7 @@ namespace Rivet.Test.Operations
 			Assert.AreEqual(nonClustered, op.NonClustered);
 			Assert.AreEqual(options, op.Options);
 			Assert.AreNotEqual(smokeoptions, op.Options);
+			Assert.That(op.ObjectName, Is.EqualTo(string.Format("{0}.{1}.PK_{0}_{1}", schemaName, tableName)));
 		}
 
 		[Test]

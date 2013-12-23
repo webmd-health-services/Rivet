@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using System;
+using NUnit.Framework;
 using Rivet.Operations;
 
 namespace Rivet.Test.Operations
@@ -6,12 +7,6 @@ namespace Rivet.Test.Operations
 	[TestFixture]
 	public sealed class AddIndexOperationTestFixture
 	{
-		[SetUp]
-		public void SetUp()
-		{
-
-		}
-
 		[Test]
 		public void ShouldSetPropertiesForAddIndex()
 		{
@@ -39,6 +34,7 @@ namespace Rivet.Test.Operations
 			Assert.AreEqual(whereString, op.Where);
 			Assert.AreEqual(onString, op.On);
 			Assert.AreEqual(filestreamonString, op.FileStreamOn);
+			Assert.That(op.ObjectName, Is.EqualTo(string.Format("{0}.{1}.UIX_{0}_{1}_{2}", schemaName, tableName, String.Join("_", columnName))));
 		}
 
 		[Test]
@@ -194,6 +190,7 @@ namespace Rivet.Test.Operations
 			var op = new AddIndexOperation(schemaName, tableName, columnName, descending, unique, clustered, options, whereString, onString, filestreamonString);
 			const string expectedQuery = "create  index [IX_schemaName_tableName_column1] on [schemaName].[tableName] ([column1])";
 			Assert.AreEqual(expectedQuery, op.ToQuery());
+			Assert.That(op.ObjectName, Is.EqualTo(string.Format("{0}.{1}.IX_{0}_{1}_{2}", schemaName, tableName, String.Join("_", columnName))));
 		}
 
 

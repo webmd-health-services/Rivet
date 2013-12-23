@@ -15,6 +15,7 @@ namespace Rivet.Test.Operations
 			var op = new RemoveUserDefinedFunctionOperation(SchemaName, FunctionName);
 			Assert.AreEqual(SchemaName, op.SchemaName);
 			Assert.AreEqual(FunctionName, op.Name);
+			Assert.That(op.ObjectName, Is.EqualTo(string.Format("{0}.{1}", SchemaName, FunctionName)));
 		}
 
 		[Test]

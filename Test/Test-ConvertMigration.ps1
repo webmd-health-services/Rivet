@@ -21,6 +21,7 @@ function Stop-Test
 
     Remove-Item -Path $outputDir -Recurse
     Stop-RivetTest
+    Remove-Module 'RivetTest'
 }
  
 function Stop-TestFixture
@@ -221,7 +222,7 @@ function Pop-Migration
 
 function Test-ShouldCreateIdempotentQueriesForRemoveOperations
 {
-    @'
+    $migration = @'
 function Push-Migration
 {
     $idempotent = @{ SchemaName = 'idempotent' }
@@ -270,6 +271,11 @@ function Pop-Migration
 }
 '@ | New-Migration -Name 'AddOperations'
 
+    Invoke-Rivet -Push 'AddOperations'
+
+    Assert-Table -SchemaName 'idempotent' -Name 'removeme'
+    $migration | Remove-Item
+
     @'
 function Push-Migration
 {
@@ -284,7 +290,7 @@ function Push-Migration
     Remove-Description @schema @crops -ColumnName 'Name'
     Remove-ForeignKey @schema @crops -References $farmers.TableName -ReferencesSchema $schema.SchemaName
     Remove-Index @schema @crops -ColumnName 'Name'
-    Remove-PrimaryKey @schema @crops -ColumnName 'FarmerID'
+    Remove-PrimaryKey @schema @crops
     Remove-Row @schema @farmers -Where 'ID = 1'
     Remove-Schema 'empty'
     Remove-StoredProcedure @schema -Name 'GetFarmers'
@@ -361,9 +367,11 @@ function Push-Migration
     Add-Schema 'aggregate'
 
     Add-Table -SchemaName 'aggregate' 'Beta' {
-        int 'ID' -Identity
+        int 'ID' -NotNull
         nvarchar 'Name' -Size 50
     }
+
+    Add-PrimaryKey -SchemaName 'aggregate' -TableName 'Beta' -ColumnName 'ID'
 }
 
 function Pop-Migration
@@ -374,6 +382,9 @@ function Pop-Migration
     @'
 function Push-Migration
 {
+    Remove-PrimaryKey -SchemaName 'aggregate' -TableName 'Beta'
+    Add-PrimaryKey -SchemaName 'aggregate' -TableName 'Beta' -ColumnName 'Name'
+
     Update-Table -SchemaName 'aggregate' 'Beta' -UpdateColumn {
         nvarchar 'Name' -Size 500 -NotNull
     }
@@ -396,14 +407,20 @@ function Pop-Migration
 
     $schemaPath = Join-Path -Path $outputDir -ChildPath ('{0}.Schema.sql' -f $RTDatabaseName)
     $content = Get-Content -Path $schemaPath -Raw
-    $expectedAddTableQuery = @'
+    $expectedQuery = @'
 create table [aggregate].[Beta] (
-    [ID] int identity,
+    [ID] int not null,
     [Name] nvarchar(500) not null,
     [LastName] nvarchar(500) not null
 )
 '@
-    Assert-True ($content.Contains( $expectedAddTableQuery )) ("`n{0}`ndoes not contain`n`n{1}" -f $content,$expectedAddTableQuery)
+    Assert-True ($content.Contains( $expectedQuery )) ("`n{0}`ndoes not contain`n`n{1}" -f $content,$expectedQuery)
+
+    Assert-PrimaryKey -SchemaName 'aggregate' -TableName 'Beta' -ColumnName 'Name'
+    $expectedQuery = 'alter table [aggregate].[Beta] add constraint [PK_aggregate_Beta] primary key clustered ([Name])'
+    Assert-True ($content.Contains( $expectedQuery )) ("`n{0}`ndoes not contain`n`n{1}" -f $content,$expectedQuery)
+    $expectedQuery = 'alter table [aggregate].[Beta] add constraint [PK_aggregate_Beta] primary key clustered ([ID])'
+    Assert-False ($content.Contains( $expectedQuery )) ("`n{0}`ncontains`n`n{1}" -f $content,$expectedQuery)
 }
 
 function Test-ShouldExcludeMigrations

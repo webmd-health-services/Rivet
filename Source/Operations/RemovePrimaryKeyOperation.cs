@@ -2,25 +2,17 @@
 
 namespace Rivet.Operations
 {
-	public sealed class RemovePrimaryKeyOperation : Operation
+	public sealed class RemovePrimaryKeyOperation : TableObjectOperation
 	{
 		public RemovePrimaryKeyOperation(string schemaName, string tableName)
+			: base(schemaName, tableName, new ConstraintName(schemaName, tableName, null, ConstraintType.PrimaryKey).ToString())
 		{
-			Name = new ConstraintName(schemaName, tableName, null, ConstraintType.PrimaryKey);
-			SchemaName = schemaName;
-			TableName = tableName;
 		}
 
 		public RemovePrimaryKeyOperation(string schemaName, string tableName, string name)
+			: base(schemaName, tableName, name)
 		{
-			Name = new ConstraintName(name);
-			SchemaName = schemaName;
-			TableName = tableName;
 		}
-
-		public ConstraintName Name { get; private set; }
-		public string SchemaName { get; private set; }
-		public string TableName { get; private set; }
 
 		public override string ToIdempotentQuery()
 		{

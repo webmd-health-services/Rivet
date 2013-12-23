@@ -15,6 +15,7 @@ namespace Rivet.Test.Operations
 			var op = new RemoveTriggerOperation(SchemaName, TriggerName);
 			Assert.AreEqual(SchemaName, op.SchemaName);
 			Assert.AreEqual(TriggerName, op.Name);
+			Assert.That(op.ObjectName, Is.EqualTo(string.Format("{0}.{1}", SchemaName, TriggerName)));
 		}
 
 		[Test]

@@ -18,12 +18,6 @@ namespace Rivet.Test.Operations
 		static Column[] AsTable = { column1, column2 };
 		string[] TableConstraint = { "constraint1", "constraint2" };
 
-		[SetUp]
-		public void SetUp()
-		{
-
-		}
-
 		[Test]
 		public void ShouldSetPropertiesForAddDataTypeAlias()
 		{
@@ -32,6 +26,7 @@ namespace Rivet.Test.Operations
 			Assert.AreEqual(SchemaName, op.SchemaName);
 			Assert.AreEqual(Name, op.Name);
 			Assert.AreEqual(From, op.From);
+			Assert.That(op.ObjectName, Is.EqualTo(SchemaName + "." + Name));
 		}
 
 		[Test]

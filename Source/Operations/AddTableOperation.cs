@@ -3,13 +3,12 @@ using System.Collections.Generic;
 
 namespace Rivet.Operations
 {
-	public sealed class AddTableOperation : Operation
+	public sealed class AddTableOperation : ObjectOperation
 	{
 		public AddTableOperation(string schemaName, string name, Column[] columns, bool fileTable, string fileGroup,
 		                         string textImageFileGroup, string fileStreamFileGroup, string[] options, string description)
+			: base(schemaName, name)
 		{
-			SchemaName = schemaName;
-			Name = name;
 			Columns = new List<Column>(columns ?? new Column[0]);
 			FileTable = fileTable;
 			FileGroup = fileGroup;
@@ -19,8 +18,11 @@ namespace Rivet.Operations
 			Description = description;
 		}
 
-		public string SchemaName { get; private set; }
-		public string Name { get; private set; }
+		public override string ObjectName
+		{
+			get { return string.Format("{0}.{1}", SchemaName, Name); }
+		}
+
 		public List<Column> Columns { get; private set; }
 		public bool FileTable { get; private set; }
 		public string FileGroup { get; private set; }

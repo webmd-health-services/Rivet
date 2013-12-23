@@ -29,6 +29,7 @@ namespace Rivet.Test.Operations
 			Assert.AreEqual(options, op.Options);
 			Assert.AreNotEqual(smokeOptions, op.Options);
 			Assert.AreEqual(fileGroup, op.FileGroup);
+			Assert.That(op.ObjectName, Is.EqualTo(string.Format("{0}.{1}.AK_{0}_{1}_{2}", schemaName, tableName, string.Join("_", columnName))));
 		}
 
 		[Test]

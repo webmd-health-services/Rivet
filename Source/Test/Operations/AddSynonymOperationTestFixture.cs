@@ -21,6 +21,7 @@ namespace Rivet.Test.Operations
 			Assert.AreEqual(TargetSchemaName, op.TargetSchemaName);
 			Assert.AreEqual(TargetDatabaseName, op.TargetDatabaseName);
 			Assert.AreEqual(TargetObjectName, op.TargetObjectName);
+			Assert.That(op.ObjectName, Is.EqualTo(string.Format("{0}.{1}", SchemaName, Name)));
 		}
 
 		[Test]

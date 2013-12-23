@@ -2,17 +2,14 @@
 
 namespace Rivet.Operations
 {
-	public sealed class AddTriggerOperation : Operation
+	public sealed class AddTriggerOperation : ObjectOperation
 	{
 		public AddTriggerOperation(string schemaName, string name, string definition)
+			: base(schemaName, name)
 		{
-			SchemaName = schemaName;
-			Name = name;
 			Definition = definition;
 		}
 
-		public string SchemaName { get; private set; }
-		public string Name { get; private set; }
 		public string Definition { get; private set; }
 
 		public override string ToIdempotentQuery()

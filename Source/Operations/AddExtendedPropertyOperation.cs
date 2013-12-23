@@ -2,47 +2,29 @@
 
 namespace Rivet.Operations
 {
-	public sealed class AddExtendedPropertyOperation : Operation
+	public sealed class AddExtendedPropertyOperation : ExtendedPropertyOperation
 	{
 		// Schema
-		public AddExtendedPropertyOperation(string schemaName, string name, object value)
+		public AddExtendedPropertyOperation(string schemaName, string name, object value) : base(schemaName, name)
 		{
-			ForSchema = true;
-			SchemaName = schemaName;
-			Name = name;
 			Value = (value == null) ? null : value.ToString();
 		}
 
 		// Table or View
-		public AddExtendedPropertyOperation(string schemaName, string tableViewName, string name, object value, bool forView) : this(schemaName, name, value)
+		public AddExtendedPropertyOperation(string schemaName, string tableViewName, string name, object value, bool forView)
+			: base(schemaName, tableViewName, name, forView)
 		{
-			if (forView)
-			{
-				ForView = true;
-			}
-			else
-			{
-				ForTable = true;
-			}
-			TableViewName = tableViewName;
+			Value = (value == null) ? null : value.ToString();
 		}
 
 		// Column
-		public AddExtendedPropertyOperation(string schemaName, string tableViewName, string columnName, string name, object value, bool forView) : this(schemaName, tableViewName, name, value, forView)
+		public AddExtendedPropertyOperation(string schemaName, string tableViewName, string columnName, string name, object value, bool forView) 
+			: base(schemaName, tableViewName, columnName, name, forView)
 		{
-			ForColumn = true;
-			ColumnName = columnName;
+			Value = (value == null) ? null : value.ToString();
 		}
 
-		public bool ForSchema { get; private set; }
-		public bool ForTable { get; private set; }
-		public bool ForView { get; private set; }
-		public bool ForColumn { get; private set; }
-		public string SchemaName { get; private set; }
-		public string TableViewName { get; private set; }
-		public string ColumnName { get; private set; }
 		public string Value { get; private set; }
-		public string Name { get; private set; }
 
 		public override string ToIdempotentQuery()
 		{

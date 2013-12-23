@@ -7,12 +7,6 @@ namespace Rivet.Test.Operations
 	[TestFixture]
 	public sealed class AddCheckConstraintOperationTestFixture
 	{
-		[SetUp]
-		public void SetUp()
-		{
-
-		}
-
 		[Test]
 		public void ShouldSetPropertiesForAddDefaultConstraint()
 		{
@@ -28,6 +22,7 @@ namespace Rivet.Test.Operations
 			Assert.AreEqual(name, op.Name);
 			Assert.AreEqual(expression, op.Expression);
 			Assert.AreEqual(notForReplication, op.NotForReplication);
+			Assert.That(op.ObjectName, Is.EqualTo(string.Format("{0}.{1}.{2}", schemaName, tableName, name)));
 		}
 
 		[Test]

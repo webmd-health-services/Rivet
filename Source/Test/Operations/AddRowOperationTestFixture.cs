@@ -30,12 +30,6 @@ namespace Rivet.Test.Operations
 
 		public Hashtable[] ArrayofHashtables = {NewYork, LosAngeles};
 
-		[SetUp]
-		public void SetUp()
-		{
-
-		}
-
 		[Test]
 		public void ShouldSetPropertiesForAddRow()
 		{

@@ -25,6 +25,7 @@ namespace Rivet.Test.Operations
 			Assert.AreEqual(SchemaName, op.SchemaName);
 			Assert.AreEqual(Name, op.Name);
 			Assert.AreEqual(Value, op.Value);
+			Assert.That(op.ObjectName, Is.EqualTo(SchemaName + ".@" + Name));
 		}
 
 		[Test]
@@ -37,6 +38,7 @@ namespace Rivet.Test.Operations
 			Assert.AreEqual(TableName, op.TableViewName);
 			Assert.AreEqual(Name, op.Name);
 			Assert.AreEqual(Value, op.Value);
+			Assert.That(op.ObjectName, Is.EqualTo(SchemaName + "." + TableName + ".@" + Name));
 		}
 
 		[Test]
@@ -49,6 +51,7 @@ namespace Rivet.Test.Operations
 			Assert.AreEqual(ViewName, op.TableViewName);
 			Assert.AreEqual(Name, op.Name);
 			Assert.AreEqual(Value, op.Value);
+			Assert.That(op.ObjectName, Is.EqualTo(SchemaName + "." + ViewName + ".@" + Name));
 		}
 
 		[Test]
@@ -62,6 +65,7 @@ namespace Rivet.Test.Operations
 			Assert.AreEqual(ColumnName, op.ColumnName);
 			Assert.AreEqual(Name, op.Name);
 			Assert.AreEqual(Value, op.Value);
+			Assert.That(op.ObjectName, Is.EqualTo(SchemaName + "." + TableName + "." + ColumnName + ".@" + Name));
 		}
 
 		[Test]

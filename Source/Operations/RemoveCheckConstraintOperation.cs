@@ -2,19 +2,12 @@
 
 namespace Rivet.Operations
 {
-	public sealed class RemoveCheckConstraintOperation : Operation
+	public sealed class RemoveCheckConstraintOperation : TableObjectOperation
 	{
 		public RemoveCheckConstraintOperation(string schemaName, string tableName, string name)
+			: base(schemaName, tableName, name)
 		{
-
-			SchemaName = schemaName;
-			TableName = tableName;
-			Name = name;
 		}
-
-		public string SchemaName { get; private set; }
-		public string TableName { get; private set; }
-		public string Name { get; private set; }
 
 		public override string ToIdempotentQuery()
 		{

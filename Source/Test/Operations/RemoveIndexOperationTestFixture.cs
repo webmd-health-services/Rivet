@@ -20,6 +20,7 @@ namespace Rivet.Test.Operations
 			Assert.AreEqual(tableName, op.TableName);
 			Assert.AreEqual(columnName, op.ColumnName);
 			Assert.AreNotEqual(smokeColumnName, op.ColumnName);
+			Assert.That(op.ObjectName, Is.EqualTo(string.Format("{0}.{1}.IX_{0}_{1}_{2}", schemaName, tableName, string.Join("_", columnName))));
 		}
 
 		[Test]
@@ -68,8 +69,8 @@ namespace Rivet.Test.Operations
 			var columnName = "foo";
 
 			var op = new RemoveIndexOperation(schemaName, tableName, new[] {columnName}, ConstraintType.UniqueIndex);
-			Assert.That(op.Name.Type, Is.EqualTo(ConstraintType.UniqueIndex));
-			Assert.That(op.Name.ToString(), Is.EqualTo("UIX_blah_bar_foo"));
+			Assert.That(op.Name, Is.EqualTo("UIX_blah_bar_foo"));
+			Assert.That(op.ObjectName, Is.EqualTo(string.Format("{0}.{1}.UIX_{0}_{1}_{2}", schemaName, tableName, string.Join("_", columnName))));
 		}
 
 	}

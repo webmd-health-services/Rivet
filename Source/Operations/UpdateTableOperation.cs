@@ -5,18 +5,15 @@ using System.Text;
 namespace Rivet.Operations
 {
 
-	public sealed class UpdateTableOperation : Operation
+	public sealed class UpdateTableOperation : ObjectOperation
 	{
 		public UpdateTableOperation(string schemaName, string name, Column[] addColumns, Column[] updateColumns)
+			: base(schemaName, name)
 		{
-			SchemaName = schemaName;
-			Name = name;
 			AddColumns = new List<Column>(addColumns ?? new Column[0]);
 			UpdateColumns = new List<Column>(updateColumns ?? new Column[0]);
 		}
 
-		public string SchemaName { get; private set; }
-		public string Name { get; private set; }
 		public List<Column> AddColumns { get; private set; }
 		public List<Column> UpdateColumns { get; private set; }
 

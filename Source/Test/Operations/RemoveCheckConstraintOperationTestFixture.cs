@@ -19,10 +19,11 @@ namespace Rivet.Test.Operations
 			Assert.AreEqual(schemaName, op.SchemaName);
 			Assert.AreEqual(tableName, op.TableName);
 			Assert.AreEqual(constraintName, op.Name);
+			Assert.That(op.ObjectName, Is.EqualTo(string.Format("{0}.{1}.{2}", schemaName, tableName, constraintName)));
 		}
 
 		[Test]
-		public void ShouldWriteQueryForRemoveCheckConstrait()
+		public void ShouldWriteQueryForRemoveCheckConstraint()
 		{
 			var schemaName = "schemaName";
 			var tableName = "tableName";

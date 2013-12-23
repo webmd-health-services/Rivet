@@ -16,6 +16,7 @@ namespace Rivet.Test.Operations
 			var op = new RemoveDataTypeOperation(SchemaName, Name);
 			Assert.AreEqual(SchemaName, op.SchemaName);
 			Assert.AreEqual(Name, op.Name);
+			Assert.That(op.ObjectName, Is.EqualTo(string.Format("{0}.{1}", SchemaName, Name)));
 		}
 
 		[Test]
