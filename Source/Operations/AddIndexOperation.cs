@@ -1,25 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 
 namespace Rivet.Operations
 {
-	public sealed class AddIndexOperation : Operation
+	public sealed class AddIndexOperation : TableObjectOperation
 	{
 		// All Columns ASC
-		public AddIndexOperation(string schemaName, string tableName, string[] columnName, bool unique, bool clustered,
-								 string[] options, string where, string on, string fileStreamOn)
+		public AddIndexOperation(string schemaName, string tableName, string[] columnName, bool unique, bool clustered, string[] options, string where, string on, string fileStreamOn)
+			: base(schemaName, tableName, new ConstraintName(schemaName, tableName, columnName, (unique) ? ConstraintType.UniqueIndex : ConstraintType.Index).ToString())
 		{
-			if (unique)
-			{
-				Name = new ConstraintName(schemaName, tableName, columnName, ConstraintType.UniqueIndex);
-			}
-			else
-			{
-				Name = new ConstraintName(schemaName, tableName, columnName, ConstraintType.Index);
-			}
-			SchemaName = schemaName;
-			TableName = tableName;
 			ColumnName = new List<string>(columnName ?? new string[0]);
 			Unique = unique;
 			Clustered = clustered;
@@ -34,7 +23,7 @@ namespace Rivet.Operations
 		public AddIndexOperation(string schemaName, string tableName, string[] columnName, string name, bool unique, bool clustered, string[] options, string where, string on, string fileStreamOn) 
 			: this(schemaName, tableName, columnName, unique, clustered, options, where, on, fileStreamOn)
 		{
-			Name = new ConstraintName(name);
+			Name = name;
 		}
 		
 		// Some Columns DESC
@@ -51,9 +40,6 @@ namespace Rivet.Operations
 			Descending = descending ?? new bool[0];
 		}
 
-		public ConstraintName Name { get; private set; }
-		public string SchemaName { get; private set; }
-		public string TableName { get; private set; }
 		public List<string> ColumnName { get; private set; }
 		public bool [] Descending { get; private set; }
 		public bool Unique { get; private set; }

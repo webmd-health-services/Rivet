@@ -2,15 +2,12 @@
 
 namespace Rivet.Operations
 {
-	public sealed class AddPrimaryKeyOperation : Operation
+	public sealed class AddPrimaryKeyOperation : TableObjectOperation
 	{
 		//System Generated Constraint Name
-		public AddPrimaryKeyOperation(string schemaName, string tableName, string [] columnName, bool nonClustered,
-		                              string[] options)
+		public AddPrimaryKeyOperation(string schemaName, string tableName, string [] columnName, bool nonClustered, string[] options)
+			: base(schemaName, tableName, new ConstraintName(schemaName, tableName, columnName, ConstraintType.PrimaryKey).ToString())
 		{
-			Name = new ConstraintName(schemaName, tableName, columnName, ConstraintType.PrimaryKey);
-			SchemaName = schemaName;
-			TableName = tableName;
 			ColumnName = (string[])columnName.Clone();
 			NonClustered = nonClustered;
 			if (options != null)
@@ -24,12 +21,9 @@ namespace Rivet.Operations
 		}
 
 		//Custom Constraint Name
-		public AddPrimaryKeyOperation(string schemaName, string tableName, string[] columnName, string customConstraintName, bool nonClustered,
-							  string[] options)
+		public AddPrimaryKeyOperation(string schemaName, string tableName, string[] columnName, string customConstraintName, bool nonClustered, string[] options)
+			: base(schemaName, tableName, customConstraintName)
 		{
-			Name = new ConstraintName(customConstraintName);
-			SchemaName = schemaName;
-			TableName = tableName;
 			ColumnName = (string[])columnName.Clone();
 			NonClustered = nonClustered;
 			if (options != null)
@@ -42,9 +36,6 @@ namespace Rivet.Operations
 			}
 		}
 
-		public ConstraintName Name { get; private set; }
-		public string SchemaName { get; private set; }
-		public string TableName { get; private set; }
 		public string[] ColumnName { get; private set; }
 		public bool NonClustered { get; private set; }
 		public string[] Options { get; private set; }

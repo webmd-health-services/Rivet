@@ -27,6 +27,7 @@ namespace Rivet.Test.Operations
 			Assert.AreEqual(columnName, op.ColumnName);
 			Assert.AreEqual(expression, op.Expression);
 			Assert.AreEqual(withValues, op.WithValues);
+			Assert.That(op.ObjectName, Is.EqualTo(string.Format("{0}.{1}.DF_{0}_{1}_{2}", schemaName, tableName, columnName)));
 		}
 
 		[Test]

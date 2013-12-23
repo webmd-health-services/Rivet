@@ -57,77 +57,81 @@ $getMigrationParams = @{ }
     Where-Object { $PSBoundParameters.ContainsKey( $_ ) } |
     ForEach-Object { $getMigrationParams.$_ = Get-Variable -Name $_ -ValueOnly }
 
-$addTableOps = @{ }
+$operations = New-Object 'Collections.ArrayList'
+$opIdx = @{ }
 
-# Aggregate changes.
-$operations = 
-    Get-Migration @getMigrationParams |
+Get-Migration @getMigrationParams |
     ForEach-Object { 
         $migration = $_
+        $migrationName = '{0}_{1}' -f $migration.ID,$migration.Name
 
         $migration.PushOperations |
             Add-Member -MemberType NoteProperty -Name 'Migrations' -Value @() -PassThru |
             Add-Member -MemberType NoteProperty -Name 'Database' -Value $migration.Database -PassThru |
             ForEach-Object {
                 $op = $_
-                $migrationName = '{0}_{1}' -f $migration.ID,$migration.Name
                 $op.Migrations += $migrationName
-                $opType = $op.GetType().Name
-                if( $opType -eq 'AddTableOperation' )
+
+                if( $op -isnot [Rivet.Operations.ObjectOperation] )
                 {
-                    $key = '{0}.{1}' -f $op.SchemaName,$op.Name
-                    $addTableOps[$key] = $op
-                    return $op
-                }
-
-                if( $opType -eq 'UpdateTableOperation' )
-                {
-                    $key = '{0}.{1}' -f $op.SchemaName,$op.Name
-                    if( -not ($addTableOps.ContainsKey( $key )) )
-                    {
-                        return $op
-                    }
-
-                    $addTableOp = $addTableOps[$key]
-                    if( $addTableOp.Migrations -notcontains $migrationName )
-                    {
-                        $addTableOp.Migrations += $migrationName
-                    }
-                    Invoke-Command {
-                                $op.AddColumns
-                                $op.UpdateColumns
-                            } | 
-                        ForEach-Object {
-                            $column = $_
-                            $columnIdx = $null
-                            for( $idx = 0; $idx -lt $addTableOp.Columns.Count; ++$idx )
-                            {
-                                if( $addTableOp.Columns[$idx].Name -eq $column.Name )
-                                {
-                                    $columnIdx = $idx
-                                }
-                            }
-                            if( $columnIdx -eq $null )
-                            {
-                                $addTableOp.Columns.Add( $column )
-                            }
-                            else
-                            {
-                                $null = $addTableOp.Columns.RemoveAt( $columnIdx )
-                                $addTableOp.Columns.Insert( $columnIdx, $column )
-                            }
-                        }
-
+                    $null = $operations.Add( $op )
                     return
                 }
 
-                return $op
+                if( $opIdx.ContainsKey( $op.ObjectName ) )
+                {
+                    $idx = $opIdx[$op.ObjectName]
+                    $existingOp = $operations[$idx]
+
+                    $opTypeName = $op.GetType().Name
+                    if( $opTypeName -like 'Remove*' )
+                    {
+                        $operations[$idx] = $null
+                        return
+                    }
+                    elseif( $opTypeName -eq 'UpdateTableOperation' )
+                    {
+                        $addTableOp = $existingOp
+                        if( $addTableOp.Migrations -notcontains $migrationName )
+                        {
+                            $addTableOp.Migrations += $migrationName
+                        }
+                        Invoke-Command {
+                                    $op.AddColumns
+                                    $op.UpdateColumns
+                                } | 
+                            ForEach-Object {
+                                $column = $_
+                                $columnIdx = $null
+                                for( $idx = 0; $idx -lt $addTableOp.Columns.Count; ++$idx )
+                                {
+                                    if( $addTableOp.Columns[$idx].Name -eq $column.Name )
+                                    {
+                                        $columnIdx = $idx
+                                    }
+                                }
+                                if( $columnIdx -eq $null )
+                                {
+                                    $addTableOp.Columns.Add( $column )
+                                }
+                                else
+                                {
+                                    $null = $addTableOp.Columns.RemoveAt( $columnIdx )
+                                    $addTableOp.Columns.Insert( $columnIdx, $column )
+                                }
+                            }
+                        return
+                    }
+                }
+
+                $null = $operations.Add( $op )
+                $opIdx[$op.ObjectName] = $operations.Count - 1
             } 
     }
     
 
     # Now, output the cumulative changes.
-    $operations | ForEach-Object {
+    $operations | Where-Object { $_ } | ForEach-Object {
 
         $op = $_
 

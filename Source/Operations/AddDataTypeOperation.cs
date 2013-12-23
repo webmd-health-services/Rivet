@@ -10,46 +10,41 @@ namespace Rivet.Operations
 		Table
 	}
 	
-	public sealed class AddDataTypeOperation : Operation
+	public sealed class AddDataTypeOperation : ObjectOperation
 	{
 		// Create an alias type
 		public AddDataTypeOperation(string schemaName, string name, string from)
+			: base(schemaName, name)
 		{
 			Type = DatatypeOperation.From;
-			SchemaName = schemaName;
-			Name = name;
 			From = from;
 		}
 		 
 		// Create a user-defined type
 		public AddDataTypeOperation(string schemaName, string name, string assemblyName, string className)
+			: base(schemaName, name)
 		{
 			Type = DatatypeOperation.Assembly;
-			SchemaName = schemaName;
-			Name = name;
 			AssemblyName = assemblyName;
 			ClassName = className;
 		}
 
 		// Create a user-defined table type
 		public AddDataTypeOperation(string schemaName, string name, Column[] asTable, string[] tableConstraint)
+			: base(schemaName, name)
 		{
 			Type = DatatypeOperation.Table;
-			SchemaName = schemaName;
-			Name = name;
 			AsTable = new List<Column>(asTable ?? new Column[0]);
 			TableConstraint = new List<string>(tableConstraint ?? new string[0]);
 		}
 
 
-		private DatatypeOperation Type { get; set; }
-		public string SchemaName { get; private set; }
-		public string Name { get; private set; }
-		public string From { get; private set; }
 		public string AssemblyName { get; private set; }
-		public string ClassName { get; private set; }
 		public List<Column> AsTable { get; private set; }
+		public string ClassName { get; private set; }
+		public string From { get; private set; }
 		public List<string> TableConstraint { get; private set; }
+		private DatatypeOperation Type { get; set; }
 
 		public override string ToIdempotentQuery()
 		{

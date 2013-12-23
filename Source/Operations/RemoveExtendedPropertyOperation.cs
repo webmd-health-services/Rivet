@@ -2,50 +2,21 @@
 
 namespace Rivet.Operations
 {
-	public sealed class RemoveExtendedPropertyOperation : Operation
+	public sealed class RemoveExtendedPropertyOperation : ExtendedPropertyOperation
 	{
-		// Schema
-		public RemoveExtendedPropertyOperation(string schemaName, string name)
+		public RemoveExtendedPropertyOperation(string schemaName, string name) : base(schemaName, name)
 		{
-			ForSchema = true;
-			SchemaName = schemaName;
-			Name = name;
 		}
 
-		// Table or View
 		public RemoveExtendedPropertyOperation(string schemaName, string tableViewName, string name, bool forView)
+			: base(schemaName, tableViewName, name, forView)
 		{
-			if (forView)
-				ForView = true;
-			else
-				ForTable = true;
-			SchemaName = schemaName;
-			TableViewName = tableViewName;
-			Name = name;
 		}
 
-		// Column
-		public RemoveExtendedPropertyOperation(string schemaName, string tableViewName, string columnName, string name, bool forView)
+		public RemoveExtendedPropertyOperation(string schemaName, string tableViewName, string columnName, string name, bool forView) 
+			: base(schemaName, tableViewName, columnName, name, forView)
 		{
-			if (forView)
-				ForView = true;
-			else
-				ForTable = true;
-			ForColumn = true;
-			SchemaName = schemaName;
-			TableViewName = tableViewName;
-			ColumnName = columnName;
-			Name = name;
 		}
-
-		public bool ForSchema { get; private set; }
-		public bool ForTable { get; private set; }
-		public bool ForView { get; private set; }
-		public bool ForColumn { get; private set; }
-		public string SchemaName { get; private set; }
-		public string TableViewName { get; private set; }
-		public string ColumnName { get; private set; }
-		public string Name { get; private set; }
 
 		public override string ToIdempotentQuery()
 		{

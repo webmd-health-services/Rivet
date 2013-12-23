@@ -53,6 +53,7 @@ namespace Rivet.Test.Operations
 			Assert.AreEqual(SchemaName, op.SchemaName);
 			Assert.AreEqual(Name, op.Name);
 			Assert.AreEqual(Value, op.Value);
+			Assert.That(op.ObjectName, Is.EqualTo(SchemaName + ".@" + Name));
 
 			//For Table
 			op = new UpdateExtendedPropertyOperation(SchemaName, TableName, Name, Value, false);
@@ -61,6 +62,7 @@ namespace Rivet.Test.Operations
 			Assert.AreEqual(TableName, op.TableViewName);
 			Assert.AreEqual(Name, op.Name);
 			Assert.AreEqual(Value, op.Value);
+			Assert.That(op.ObjectName, Is.EqualTo(SchemaName + "." + TableName + ".@" + Name));
 
 			//For View
 			op = new UpdateExtendedPropertyOperation(SchemaName, ViewName, Name, Value, true);
@@ -69,6 +71,7 @@ namespace Rivet.Test.Operations
 			Assert.AreEqual(ViewName, op.TableViewName);
 			Assert.AreEqual(Name, op.Name);
 			Assert.AreEqual(Value, op.Value);
+			Assert.That(op.ObjectName, Is.EqualTo(SchemaName + "." + ViewName + ".@" + Name));
 
 			//For Column
 			op = new UpdateExtendedPropertyOperation(SchemaName, TableName, ColumnName, Name, Value, false);
@@ -78,6 +81,7 @@ namespace Rivet.Test.Operations
 			Assert.AreEqual(ColumnName, op.ColumnName);
 			Assert.AreEqual(Name, op.Name);
 			Assert.AreEqual(Value, op.Value);
+			Assert.That(op.ObjectName, Is.EqualTo(SchemaName + "." + TableName + "." + ColumnName + ".@" + Name));
 		}
 
 		[Test]

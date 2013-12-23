@@ -2,37 +2,26 @@
 
 namespace Rivet.Operations
 {
-	public sealed class AddDefaultConstraintOperation : Operation
+	public sealed class AddDefaultConstraintOperation : TableObjectOperation
 	{
-		//System Generated Constraint Name
 		public AddDefaultConstraintOperation(string schemaName, string tableName, string expression, string columnName,
 		                                     bool withValues)
+			: base(schemaName, tableName, new ConstraintName(schemaName, tableName, new[]{columnName}, ConstraintType.Default).ToString())
 		{
-			Name = new ConstraintName(schemaName, tableName, new[]{columnName}, ConstraintType.Default);
-			SchemaName = schemaName;
-			TableName = tableName;
 			Expression = expression;
 			ColumnName = columnName;
 			WithValues = withValues;
 		}
 
-		//Custom Constraint Name
 		public AddDefaultConstraintOperation(string schemaName, string tableName, string expression, string columnName, string name,
 									 bool withValues)
+			: this(schemaName, tableName, expression, columnName, withValues)
 		{
-			Name = new ConstraintName(name);
-			SchemaName = schemaName;
-			TableName = tableName;
-			Expression = expression;
-			ColumnName = columnName;
-			WithValues = withValues;
+			Name = name;
 		}
 
-		public ConstraintName Name { get; private set; }
-		public string SchemaName { get; private set; }
-		public string TableName { get; private set; }
-		public string Expression { get; private set; }
 		public string ColumnName { get; private set; }
+		public string Expression { get; private set; }
 		public bool WithValues { get; private set; }
 
 		public override string ToIdempotentQuery()

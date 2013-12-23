@@ -2,16 +2,14 @@
 
 namespace Rivet.Operations
 {
-	public sealed class AddForeignKeyOperation : Operation
+	public sealed class AddForeignKeyOperation : TableObjectOperation
 	{
 		// System Generated Constraint Name
 		public AddForeignKeyOperation(string schemaName, string tableName, string[] columnName, string referencesSchemaName,
 		                              string referencesTableName, string[] referencesColumnName, string onDelete,
 		                              string onUpdate, bool notForReplication)
+			: base(schemaName, tableName, new ForeignKeyConstraintName(schemaName, tableName, referencesSchemaName, referencesTableName).ToString())
 		{
-			Name = new ForeignKeyConstraintName(schemaName, tableName, referencesSchemaName, referencesTableName);
-			SchemaName = schemaName;
-			TableName = tableName;
 			ColumnName = (string[])columnName.Clone();
 			ReferencesSchemaName = referencesSchemaName;
 			ReferencesTableName = referencesTableName;
@@ -25,10 +23,8 @@ namespace Rivet.Operations
 		public AddForeignKeyOperation(string schemaName, string tableName, string[] columnName, string referencesSchemaName,
 							  string referencesTableName, string[] referencesColumnName, string name, string onDelete,
 							  string onUpdate, bool notForReplication)
+			: base(schemaName, tableName, name)
 		{
-			Name = new ForeignKeyConstraintName(name);
-			SchemaName = schemaName;
-			TableName = tableName;
 			ColumnName = (string[])columnName.Clone();
 			ReferencesSchemaName = referencesSchemaName;
 			ReferencesTableName = referencesTableName;
@@ -38,9 +34,6 @@ namespace Rivet.Operations
 			NotForReplication = notForReplication;
 		}
 
-		public ForeignKeyConstraintName Name { get; private set; }
-		public string SchemaName { get; private set; }
-		public string TableName { get; private set; }
 		public string[] ColumnName { get; private set; }
 		public string ReferencesSchemaName { get; private set; }
 		public string ReferencesTableName { get; private set; }

@@ -2,16 +2,12 @@
 
 namespace Rivet.Operations
 {
-	public sealed class RemoveSynonymOperation : Operation
+	public sealed class RemoveSynonymOperation : ObjectOperation
 	{
 		public RemoveSynonymOperation(string schemaName, string name)
+			: base(schemaName, name)
 		{
-			SchemaName = schemaName;
-			Name = name;
 		}
-
-		public string SchemaName { get; private set; }
-		public string Name { get; private set; }
 
 		public override string ToIdempotentQuery()
 		{

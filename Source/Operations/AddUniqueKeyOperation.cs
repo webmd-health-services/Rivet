@@ -3,15 +3,13 @@ using System.Collections.Generic;
 
 namespace Rivet.Operations
 {
-	public sealed class AddUniqueKeyOperation : Operation
+	public sealed class AddUniqueKeyOperation : TableObjectOperation
 	{
 		//System Generated Constraint Name
 		public AddUniqueKeyOperation(string schemaName, string tableName, string[] columnName, bool clustered,
 		                                    int fillFactor, string[] options, string filegroup)
+			: base(schemaName, tableName, new ConstraintName(schemaName, tableName, columnName, ConstraintType.UniqueKey).ToString())
 		{
-			Name = new ConstraintName(schemaName, tableName, columnName, ConstraintType.UniqueKey);
-			SchemaName = schemaName;
-			TableName = tableName;
 			ColumnName = (string[])columnName.Clone();
 			Clustered = clustered;
 			FillFactor = fillFactor;
@@ -26,27 +24,11 @@ namespace Rivet.Operations
 		//Custom Constraint Name
 		public AddUniqueKeyOperation(string schemaName, string tableName, string[] columnName, string customConstraintName, bool clustered,
 									int fillFactor, string[] options, string filegroup)
+			: this(schemaName, tableName, columnName, clustered, fillFactor, options, filegroup)
 		{
-			Name = new ConstraintName(customConstraintName);
-			SchemaName = schemaName;
-			TableName = tableName;
-			ColumnName = (string[])columnName.Clone();
-			Clustered = clustered;
-			FillFactor = fillFactor;
-			if (options != null)
-			{
-				Options = (string[])options.Clone();
-			}
-			else
-			{
-				Options = null;
-			}
-			FileGroup = filegroup;
+			Name = customConstraintName;
 		}
 
-		public ConstraintName Name { get; private set; }
-		public string SchemaName { get; private set; }
-		public string TableName { get; private set; }
 		public string[] ColumnName { get; private set; }
 		public bool Clustered { get; private set; }
 		public int FillFactor { get; private set; }

@@ -2,16 +2,12 @@
 
 namespace Rivet.Operations
 {
-	public sealed class RemoveDataTypeOperation : Operation
+	public sealed class RemoveDataTypeOperation : ObjectOperation
 	{
 		public RemoveDataTypeOperation(string schemaName, string name)
+			: base(schemaName, name)
 		{
-			SchemaName = schemaName;
-			Name = name;
 		}
-
-		public string SchemaName { get; private set; }
-		public string Name { get; private set; }
 
 		public override string ToIdempotentQuery()
 		{

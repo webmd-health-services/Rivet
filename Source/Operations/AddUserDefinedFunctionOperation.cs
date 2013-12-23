@@ -2,17 +2,14 @@
 
 namespace Rivet.Operations
 {
-	public sealed class AddUserDefinedFunctionOperation : Operation
+	public sealed class AddUserDefinedFunctionOperation : ObjectOperation
 	{
 		public AddUserDefinedFunctionOperation(string schemaName, string name, string definition)
+			: base(schemaName, name)
 		{
-			SchemaName = schemaName;
-			Name = name;
 			Definition = definition;
 		}
 
-		public string SchemaName { get; private set; }
-		public string Name { get; private set; }
 		public string Definition { get; private set; }
 
 		public override string ToIdempotentQuery()

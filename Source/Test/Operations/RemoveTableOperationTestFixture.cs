@@ -17,6 +17,7 @@ namespace Rivet.Test.Operations
 
 			Assert.AreEqual(schemaName, op.SchemaName);
 			Assert.AreEqual(tableName, op.Name);
+			Assert.That(op.ObjectName, Is.EqualTo(string.Format("{0}.{1}", schemaName, tableName)));
 		}
 
 		[Test]

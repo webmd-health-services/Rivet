@@ -19,6 +19,7 @@ namespace Rivet.Test.Operations
 			Assert.AreEqual(tableName, op.TableName);
 			Assert.AreEqual(columnName, op.ColumnName);
 			Assert.AreNotEqual(smokeColumnName, op.ColumnName);
+			Assert.That(op.ObjectName, Is.EqualTo(string.Format("{0}.{1}.AK_{0}_{1}_{2}", schemaName, tableName, string.Join("_", columnName))));
 		}
 
 		[Test]

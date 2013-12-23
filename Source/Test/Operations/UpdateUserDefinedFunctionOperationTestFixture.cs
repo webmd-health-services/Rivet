@@ -10,12 +10,6 @@ namespace Rivet.Test.Operations
 		const string FunctionName = "functionName";
 		const string Definition = "as definition";
 
-		[SetUp]
-		public void SetUp()
-		{
-
-		}
-
 		[Test]
 		public void ShouldSetPropertiesForUpdateUserDefinedFunction()
 		{
@@ -23,6 +17,7 @@ namespace Rivet.Test.Operations
 			Assert.AreEqual(SchemaName, op.SchemaName);
 			Assert.AreEqual(FunctionName, op.Name);
 			Assert.AreEqual(Definition, op.Definition);
+			Assert.That(op.ObjectName, Is.EqualTo(string.Format("{0}.{1}", SchemaName, FunctionName)));
 		}
 
 		[Test]

@@ -6,12 +6,6 @@ namespace Rivet.Test.Operations
 	[TestFixture]
 	public sealed class AddForeignKeyConstraintTestFixture
 	{
-		[SetUp]
-		public void SetUp()
-		{
-
-		}
-
 		[Test]
 		public void ShouldSetPropertiesForAddForeignKey()
 		{
@@ -39,6 +33,7 @@ namespace Rivet.Test.Operations
 			Assert.AreEqual(onDelete, op.OnDelete);
 			Assert.AreEqual(onUpdate, op.OnUpdate);
 			Assert.AreEqual(notForReplication, op.NotForReplication);
+			Assert.That(op.ObjectName, Is.EqualTo(string.Format("{0}.{1}.FK_{0}_{1}_{2}_{3}", schemaName, tableName, referencesSchemaName, referencesTableName)));
 		}
 
 		[Test]

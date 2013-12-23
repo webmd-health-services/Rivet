@@ -6,12 +6,6 @@ namespace Rivet.Test.Operations
 	[TestFixture]
 	public sealed class RemovePrimaryKeyOperationTestFixture
 	{
-		[SetUp]
-		public void SetUp()
-		{
-
-		}
-
 		[Test]
 		public void ShouldSetPropertiesForRemovePrimaryKey()
 		{
@@ -21,6 +15,7 @@ namespace Rivet.Test.Operations
 			var op = new RemovePrimaryKeyOperation(schemaName, tableName);
 			Assert.AreEqual(schemaName, op.SchemaName);
 			Assert.AreEqual(tableName, op.TableName);
+			Assert.That(op.ObjectName, Is.EqualTo(string.Format("{0}.{1}.PK_{0}_{1}", schemaName, tableName)));
 		}
 
 		[Test]

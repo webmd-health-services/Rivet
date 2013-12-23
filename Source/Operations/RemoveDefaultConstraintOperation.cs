@@ -2,27 +2,20 @@
 
 namespace Rivet.Operations
 {
-	public sealed class RemoveDefaultConstraintOperation : Operation
+	public sealed class RemoveDefaultConstraintOperation : TableObjectOperation
 	{
 		public RemoveDefaultConstraintOperation(string schemaName, string tableName, string columnName)
+			: base(schemaName, tableName, new ConstraintName(schemaName, tableName, new[] { columnName }, ConstraintType.Default).ToString())
 		{
-			Name = new ConstraintName(schemaName, tableName, new[] { columnName }, ConstraintType.Default);
-			SchemaName = schemaName;
-			TableName = tableName;
 			ColumnName = columnName;
 		}
 
 		public RemoveDefaultConstraintOperation(string schemaName, string tableName, string columnName, string name)
+			: this(schemaName, tableName, columnName)
 		{
-			Name = new ConstraintName(name);
-			SchemaName = schemaName;
-			TableName = tableName;
-			ColumnName = columnName;
+			Name = new ConstraintName(name).ToString();
 		}
 
-		public ConstraintName Name { get; private set; }
-		public string SchemaName { get; private set; }
-		public string TableName { get; private set; }
 		public string ColumnName { get; private set; }
 
 		public override string ToIdempotentQuery()

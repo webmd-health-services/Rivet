@@ -17,12 +17,6 @@ namespace Rivet.Test.Operations
 		private Column[] addColumnList = { column1, column2 };
 		private Column[] updateColumnList = {column2, column1};
 
-		[SetUp]
-		public void SetUp()
-		{
-
-		}
-
 		[Test]
 		public void ShouldSetPropertiesForUpdateTable()
 		{
@@ -32,6 +26,7 @@ namespace Rivet.Test.Operations
 			Assert.AreEqual(Name, op.Name);
 			Assert.AreEqual(addColumnList, op.AddColumns);
 			Assert.AreEqual(updateColumnList, op.UpdateColumns);
+			Assert.That(op.ObjectName, Is.EqualTo(string.Format("{0}.{1}", SchemaName, Name)));
 		}
 
 		[Test]

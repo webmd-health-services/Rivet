@@ -2,26 +2,19 @@
 
 namespace Rivet.Operations
 {
-	public sealed class RemoveUniqueKeyOperation : Operation
+	public sealed class RemoveUniqueKeyOperation : TableObjectOperation
 	{
 		public RemoveUniqueKeyOperation(string schemaName, string tableName, string[] columnName)
+			: base(schemaName, tableName, new ConstraintName(schemaName, tableName, columnName, ConstraintType.UniqueKey).ToString())
 		{
-			Name = new ConstraintName(schemaName, tableName, columnName, ConstraintType.UniqueKey);
-			SchemaName = schemaName;
-			TableName = tableName;
 			ColumnName = (string[])columnName.Clone();
 		}
 
 		public RemoveUniqueKeyOperation(string schemaName, string tableName, string name)
+			: base(schemaName, tableName, name)
 		{
-			Name = new ConstraintName(name);
-			SchemaName = schemaName;
-			TableName = tableName;
 		}
 
-		public ConstraintName Name { get; private set; }
-		public string SchemaName { get; private set; }
-		public string TableName { get; private set; }
 		public string[] ColumnName { get; private set; }
 
 		public override string ToIdempotentQuery()

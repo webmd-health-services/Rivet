@@ -2,20 +2,15 @@
 
 namespace Rivet.Operations
 {
-	public sealed class AddCheckConstraintOperation : Operation
+	public sealed class AddCheckConstraintOperation : TableObjectOperation
 	{
-		public AddCheckConstraintOperation(string schemaName, string tableName, string name, string expression, bool notForReplication)
+		public AddCheckConstraintOperation(string schemaName, string tableName, string name, string expression, bool notForReplication) 
+			:base(schemaName, tableName, name)
 		{
-			Name = name;
-			SchemaName = schemaName;
-			TableName = tableName;
 			Expression = expression;
 			NotForReplication = notForReplication;
 		}
 
-		public string Name { get; private set; }
-		public string SchemaName { get; private set; }
-		public string TableName { get; private set; }
 		public string Expression { get; private set; }
 		public bool NotForReplication { get; private set; }
 
