@@ -198,5 +198,5 @@ function Push-Migration
 
     $row = $rows[0]
     Assert-NotNull $row.LastVisit
-    Assert-True ($row.LastVisit.AddSeconds(-1) -le (Get-Date).ToUniversalTime())
+    Assert-True ($row.LastVisit.AddSeconds(-5) -le (Get-Date).ToUniversalTime())
 }
