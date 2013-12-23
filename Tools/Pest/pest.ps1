@@ -42,9 +42,9 @@ param(
     # The paths to search for tests.  All files matching Test-*.ps1 will be run.
     $Path,
     
-    [string]
+    [string[]]
     # The individual test in the script to run.  Defaults to all tests.
-    $Test = $null,
+    $Test,
     
     [Switch]
     # Return objects for each test run.
@@ -260,16 +260,16 @@ $testScripts |
         
         $testModuleName =  [System.IO.Path]::GetFileNameWithoutExtension($testCase)
 
-        $functions = Get-FunctionsInFile $testCase.FullName
-        
-        if( $functions -contains "Test-$Test" )
-        {
-            $functions = @( "Test-$Test" )
-        }
-        elseif( $functions -contains "Ignore-$Test" )
-        {
-            $functions = @( "Ignore-$Test" )
-        }
+        $functions = Get-FunctionsInFile $testCase.FullName |
+                        Where-Object { $_ -match '^Test-(.*)$' } |
+                        Where-Object { 
+                            if( $PSBoundParameters.ContainsKey('Test') )
+                            {
+                                return $Test | Where-Object { $Matches[1] -like $_ } 
+                            }
+
+                            return $true
+                        }
         
         . $testCase.FullName
         try
