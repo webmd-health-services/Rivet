@@ -96,6 +96,9 @@ Get-Migration @getMigrationParams |
                         {
                             $addTableOp.Migrations += $migrationName
                         }
+                        $colIdx = @{ }
+                        $idx = 0
+                        $addTableOp.Columns | ForEach-Object { $colIdx[$_.Name] = $idx++ }
                         Invoke-Command {
                                     $op.AddColumns
                                     $op.UpdateColumns
@@ -103,13 +106,11 @@ Get-Migration @getMigrationParams |
                             ForEach-Object {
                                 $column = $_
                                 $columnIdx = $null
-                                for( $idx = 0; $idx -lt $addTableOp.Columns.Count; ++$idx )
+                                if( $colIdx.ContainsKey( $column.Name ) )
                                 {
-                                    if( $addTableOp.Columns[$idx].Name -eq $column.Name )
-                                    {
-                                        $columnIdx = $idx
-                                    }
+                                    $columnIdx = $colIdx[$column.Name]
                                 }
+
                                 if( $columnIdx -eq $null )
                                 {
                                     $addTableOp.Columns.Add( $column )
@@ -120,6 +121,9 @@ Get-Migration @getMigrationParams |
                                     $addTableOp.Columns.Insert( $columnIdx, $column )
                                 }
                             }
+                        $op.RemoveColumns | 
+                            Where-Object { $colIdx.ContainsKey( $_ ) } |
+                            ForEach-Object { $null = $addTableOp.Columns.RemoveAt( $colIdx[$_] ) }
                         return
                     }
                 }

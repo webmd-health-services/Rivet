@@ -26,6 +26,11 @@ function Update-Table
     Update-Table -Name 'Ties' -UpdateColumn { VarChar 'Color' 100 -NotNull }
     
     Demonstrates how to change the definition of an existing column.
+
+    .EXAMPLE
+    Update-Table -Name 'Ties' -RemoveColumn 'Pattern','Manufacturer'
+
+    Demonstrates how to remove columns from a table.
     #>
     [CmdletBinding()]
     param(
@@ -47,8 +52,15 @@ function Update-Table
         [Alias('Alter')]
         [ScriptBlock]
         # A script block that returns new column definitions for existing columns
-        $UpdateColumn
+        $UpdateColumn,
+
+        [Alias('Remove')]
+        [string[]]
+        # Columns to remove.
+        $RemoveColumn
     )
+
+    Set-StrictMode -Version 'Latest'
 
     $newColumns = @()
     if ($AddColumn)
@@ -72,8 +84,13 @@ function Update-Table
         Write-Host (' {0}.{1} ={2}' -f $SchemaName,$Name,$i.GetColumnDefinition($Name,$SchemaName,$false))
     }
 
+    foreach ($i in $RemoveColumn)
+    {
+        Write-Host (' {0}.{1} -{2}' -f $SchemaName,$Name,$i)
+    }
 
-    $op = New-Object 'Rivet.Operations.UpdateTableOperation' $SchemaName,$Name,$newColumns,$updatedColumns
+    $op = New-Object 'Rivet.Operations.UpdateTableOperation' $SchemaName,$Name,$newColumns,$updatedColumns,$RemoveColumn
+
     Invoke-MigrationOperation -Operation $op
 
     foreach ($i in $newColumns)
