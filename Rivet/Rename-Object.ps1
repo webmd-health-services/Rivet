@@ -3,10 +3,26 @@ function Rename-Object
 {
     <#
     .SYNOPSIS
-    Renames an objects.
+    Renames objects (e.g. tables, constraints, keys).
     
     .DESCRIPTION
-    SQL Server ships with a stored procedure which is used to rename certain objects.  This operation wraps that stored procedure.
+    This function wraps the `sp_rename` stored procedure, and can be used to rename objects tracked in `sys.objects`:
+
+     * Tables
+     * Functions
+     * Synonyms
+     * Constraints/keys
+     * Views
+     * Stored procedures
+     * Triggers
+
+    Use `Rename-Index` to rename an index.  Use `Rename-Column` to rename a column.
+
+    .LINK
+    Rename-Index
+
+    .LINK
+    Rename-Column
     
     .EXAMPLE
     Rename-Object -Name 'FooBar' -NewName 'BarFoo'
@@ -19,9 +35,9 @@ function Rename-Object
     Demonstrates how to rename a table that is in a schema other than `dbo`.
     
     .EXAMPLE
-    Rename-Object 'FooBar' 'BarFoo'
+    Rename-Object 'FK_Foo_Bar' 'FK_Bar_Foo'
     
-    Demonstrates how to use the short form to rename `FooBar` to `BarFoo`.
+    Demonstrates how to use `Rename-Object` without explicit parameters, and how to rename a foreign key.
     #>
 
     [CmdletBinding()]
