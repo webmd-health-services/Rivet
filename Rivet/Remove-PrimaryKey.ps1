@@ -1,4 +1,4 @@
-ps
+
 function Remove-PrimaryKey
 {
     <#
