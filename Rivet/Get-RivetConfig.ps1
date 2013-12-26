@@ -188,7 +188,7 @@ function Get-RivetConfig
     ## If there is no $Path defined set $Path to current directory
     if( -not $Path )
     {
-        $Path = Get-Location
+        $Path = Get-Location | Select-Object -ExpandProperty 'ProviderPath'
         $Path = Join-Path -Path $Path -ChildPath 'rivet.json'
     }
 
