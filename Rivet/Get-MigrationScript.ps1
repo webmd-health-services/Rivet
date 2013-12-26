@@ -55,8 +55,7 @@ function Get-MigrationScript
                 return $true
             }
 
-            $noMatch = $Include | Where-Object { $script.BaseName -notlike $_ }
-            return -not $noMatch
+            $Include | Where-Object { $script.BaseName -like $_ }
         } |
         Where-Object { 
             $script = $_
