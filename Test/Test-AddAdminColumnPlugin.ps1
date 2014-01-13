@@ -38,3 +38,25 @@ function Pop-Migration
     Assert-Column -Name RowGuid -DataType uniqueidentifier -NotNull -RowGuidCol -TableName "Foobar"
     Assert-Column -Name SkipBit -DataType bit -TableName "Foobar"
 }
+
+function Test-ShouldSkipRowGuid
+{
+    @'
+function Push-Migration
+{
+    Add-Table Foobar {
+        uniqueidentifier guid -RowGuidCol
+    }
+}
+
+function Pop-Migration
+{
+    Remove-Table Foobar
+}
+'@ | New-Migration -Name 'SkipRowGuid'
+
+    Invoke-Rivet -Push 'SkipRowGuid'
+
+    Assert-Column -Name guid -DataType uniqueidentifier -RowGuidCol -TableName "Foobar"
+    Assert-False (Test-Column -TableName 'Foobar' -Name 'rowguid')
+}
