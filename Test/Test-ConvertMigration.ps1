@@ -102,7 +102,7 @@ function Pop-Migration
 }
 '@ | Set-Content -Path (Join-Path -Path $RTDatabasesRoot -ChildPath 'Wellmed\Migrations\00000000000001_A.ps1')
 
-    Assert-ConvertMigration -DatabaseName 'Common' -Schema -CodeObject -Data
+    Assert-ConvertMigration -DatabaseName 'Common' -Schema -CodeObject -Data -ExtendedProperty
     Assert-ConvertMigration -DatabaseName 'Wellmed' -Schema -CodeObject
 
     Assert-Table -Name 'T' -Description 'Umm, a table.'
@@ -193,7 +193,7 @@ function Pop-Migration
 }
 '@ | New-Migration -Name 'AddOperations'
 
-    Assert-ConvertMigration -Schema -CodeObject -Data -Unknown
+    Assert-ConvertMigration -Schema -CodeObject -Data -ExtendedProperty -Unknown
 
     $schema = @{ SchemaName = 'idempotent' }
     $crops = @{ TableName = 'Crops' }
@@ -307,7 +307,7 @@ function Pop-Migration
 }
 '@ | New-Migration -Name 'RemoveOperations'
 
-    Assert-ConvertMigration -Schema -CodeObject -Data
+    Assert-ConvertMigration -Schema -CodeObject -Data -DependentObject -ExtendedProperty
 
     $schema = @{ SchemaName = 'idempotent' }
     $crops = @{ TableName = 'Crops' }
@@ -330,6 +330,7 @@ function Pop-Migration
     Assert-False (Test-UserDefinedFunction @schema -Name 'GetInteger')
     Assert-False (Test-View @schema -Name 'FarmerCrops')
 }
+
 
 function Test-ShouldMakeInsertUpdateQueriesIdempotent
 {
@@ -417,13 +418,70 @@ create table [aggregate].[Beta] (
     [LastName] nvarchar(500) not null
 )
 '@
-    Assert-True ($content.Contains( $expectedQuery )) ("`n{0}`ndoes not contain`n`n{1}" -f $content,$expectedQuery)
+    Assert-Query -Schema -ExpectedQuery $expectedQuery
+
+    $expectedQuery = 'alter table [aggregate].[Beta] add constraint [PK_aggregate_Beta] primary key clustered ([Name])'
+    Assert-Query -Schema -ExpectedQuery $expectedQuery 
+
+    $expectedQuery = 'alter table [aggregate].[Beta] add constraint [PK_aggregate_Beta] primary key clustered ([ID])'
+    Assert-Query -Schema -ExpectedQuery $expectedQuery -NotExists
 
     Assert-PrimaryKey -SchemaName 'aggregate' -TableName 'Beta' -ColumnName 'Name'
-    $expectedQuery = 'alter table [aggregate].[Beta] add constraint [PK_aggregate_Beta] primary key clustered ([Name])'
-    Assert-True ($content.Contains( $expectedQuery )) ("`n{0}`ndoes not contain`n`n{1}" -f $content,$expectedQuery)
-    $expectedQuery = 'alter table [aggregate].[Beta] add constraint [PK_aggregate_Beta] primary key clustered ([ID])'
-    Assert-False ($content.Contains( $expectedQuery )) ("`n{0}`ncontains`n`n{1}" -f $content,$expectedQuery)
+}
+
+function Test-ShouldAggregateMultipleTableUpdates
+{
+    $migration = @'
+function Push-Migration
+{
+    Add-Table 'FeedbackLog' {
+        int 'ID' -NotNull
+        varchar 'Feedback' -NotNull -Size 1008
+    }
+    Add-PrimaryKey 'FeedbackLog' -ColumnName 'ID'
+}
+
+function Pop-Migration
+{
+}
+'@ | New-Migration -Name 'AddOperations'
+
+    Invoke-Rivet -Push 'AddOperations'
+
+    Assert-Table -Name 'FeedbackLog'
+    $migration | Remove-Item
+
+    @'
+function Push-Migration
+{
+    Update-Table -Name 'FeedbackLog' -AddColumn {
+        varchar 'ToBeIncreased' -Size 50 -NotNull
+        varchar 'ToBeRemoved' -Size 100 -NotNull
+    }
+
+    # Yes.  Keep these separate.  That's what we're testing.
+    Update-Table -Name 'FeedbackLog' -UpdateColumn { 
+        VarChar 'Feedback' -Size 3000 
+        varchar 'ToBeIncreased' -Size 200
+    }
+
+    Update-Table -Name 'FeedbackLog' -RemoveColumn 'ToBeRemoved'
+
+}
+
+function Pop-Migration
+{
+    Update-Table -Name 'FeedbackLog' -UpdateColumn { VarChar 'Feedback' 1008 }
+    Update-Table -Name 'FeedbackCategories' -RemoveColumn 'ToBeIncreased','ToBERemoved'
+}
+'@ | New-Migration -Name 'RemoveOperations'
+
+    Assert-ConvertMigration -Schema
+
+    Assert-Query -Schema -ExpectedQuery 'alter table [dbo].[FeedbackLog] add [ToBeIncreased] varchar(200)'
+    Assert-Query -Schema -ExpectedQuery 'alter table [dbo].[FeedbackLog] alter column [Feedback] varchar(3000)'
+    Assert-Query -Schema -ExpectedQuery '[ToBeRemoved]' -NotExists
+    Assert-Query -Schema -NotExists -ExpectedQuery "alter table [dbo].[FeedbackLog] alter column [ToBeIncreased] varchar(200)`r`nGO"
 }
 
 function Test-ShouldExcludeMigrations
@@ -563,7 +621,13 @@ function Assert-ConvertMigration
         $Schema,
 
         [Switch]
+        $DependentObject,
+
+        [Switch]
         $CodeObject,
+
+        [Switch]
+        $ExtendedProperty,
 
         [Switch]
         $Data,
@@ -591,7 +655,7 @@ function Assert-ConvertMigration
 
     & $convertRivetMigration -ConfigFilePath $RTConfigFilePath -OutputPath $outputDir @convertRivetMigrationParams
 
-    ('Schema','CodeObject','Data','Unknown') | ForEach-Object {
+    ('Schema','DependentObject','ExtendedProperty','CodeObject','Data','Unknown') | ForEach-Object {
         $shouldExist = Get-Variable -Name $_ -ValueOnly
         $path = Join-Path -Path $outputDir -ChildPath ('{0}.{1}.sql' -f $DatabaseName,$_)
         Assert-Equal $shouldExist (Test-Path -Path $path) ('test if output file ''{0}'' exists' -f $path)
@@ -601,12 +665,45 @@ function Assert-ConvertMigration
 
 }
 
+function Assert-Query
+{
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]
+        # The query.
+        $ExpectedQuery,
+
+        [Parameter(Mandatory=$true,ParameterSetName='Schema')]
+        [Switch]
+        # Assert the query is in the schema file.
+        $Schema,
+
+        [Switch]
+        # Check that the query *doesn't* exist.
+        $NotExists
+    )
+
+    $scriptPath = Join-Path -Path $outputDir -ChildPath ('{0}.{1}.sql' -f $RTDatabaseName,$PSCmdlet.ParameterSetName)
+    $content = Get-Content -Path $scriptPath -Raw
+    $contains = $content.Contains( $ExpectedQuery )
+    if( $NotExists )
+    {
+        Assert-False $contains ("`nIn {0}:`n{1}`ncontains`n`n{2}" -f $scriptPath,$content,$ExpectedQuery)
+    }
+    else
+    {
+        Assert-True $contains ("`nIn {0}:`n{1}`ndoes not contain`n`n{2}" -f $scriptPath,$content,$ExpectedQuery)
+    }
+}
+
 function Invoke-ConvertedScripts
 {
     $ranConvertedScripts = $false
     Invoke-Command {
             Get-ChildItem -Path $outputDir -Filter '*.Schema.sql'
+            Get-ChildItem -Path $outputDir -Filter '*.DependentObject.sql'
             Get-ChildItem -Path $outputDir -Filter '*.CodeObject.sql'
+            Get-ChildItem -Path $outputDir -Filter '*.ExtendedProperty.sql'
             Get-ChildItem -Path $outputDir -Filter '*.Data.sql'
         } |
         ForEach-Object {

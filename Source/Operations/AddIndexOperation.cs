@@ -62,13 +62,13 @@ namespace Rivet.Operations
 			var uniqueClause = "";
 			if (Unique)
 			{
-				uniqueClause = "unique ";
+				uniqueClause = " unique";
 			}
 
 			var clusteredClause = "";
 			if (Clustered)
 			{
-				clusteredClause = "clustered";
+				clusteredClause = " clustered";
 			}
 
 			var optionsClause = "";
@@ -108,7 +108,7 @@ namespace Rivet.Operations
 
 			var columnClause = string.Join(", ", ColumnName.ToArray());
 
-			var query = string.Format("create {0}{1} index [{2}] on [{3}].[{4}] ({5}){6}{7}{8}{9}",
+			var query = string.Format("create{0}{1} index [{2}] on [{3}].[{4}] ({5}){6}{7}{8}{9}",
 				uniqueClause, clusteredClause, Name, SchemaName, TableName, columnClause, optionsClause, whereClause,
 				onClause, fileStreamClause);
 			return query;

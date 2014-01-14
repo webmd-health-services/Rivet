@@ -41,6 +41,109 @@ param(
 
 Set-StrictMode -Version 'Latest'
 
+function Get-ColumnIndex
+{
+    param(
+        [Parameter(Mandatory=$true,ValueFromPipeline=$true)]
+        [string]
+        # The column to check for.
+        $Name,
+
+        [Parameter(Mandatory=$true)]
+        [Collections.Generic.List[Rivet.Column]]
+        [AllowEmptyCollection()]
+        # The column collection to modify
+        $List
+    )
+
+    $columnIdx = $null
+    for( $idx = 0; $idx -lt $List.Count; ++$idx )
+    {
+        if( $List[$idx].Name -eq $Name )
+        {
+            return $idx
+        }
+    }
+}
+
+filter Add-Column
+{
+    param(
+        [Parameter(Mandatory=$true,ValueFromPipeline=$true)]
+        [Rivet.Column]
+        # The column to check for.
+        $Column,
+
+        [Parameter(Mandatory=$true)]
+        [Collections.Generic.List[Rivet.Column]]
+        [AllowEmptyCollection()]
+        # The column collection to modify
+        $List,
+
+        [Switch]
+        # Replace only, don't add.
+        $ReplaceOnly,
+
+        [Switch]
+        # Return columns that aren't found.
+        $PassThru
+    )
+
+    $columnIdx = Get-ColumnIndex -Name $Column.Name -List $List
+    if( $columnIdx -eq $null )
+    {
+        if( $ReplaceOnly )
+        {
+            if( $PassThru )
+            {
+                return $Column
+            }
+        }
+        else
+        {
+            [void] $List.Add( $column )
+        }
+    }
+    else
+    {
+        $null = $List.RemoveAt( $columnIdx )
+        $List.Insert( $columnIdx, $column )
+    }
+}
+
+filter Remove-Column
+{
+    param(
+        [Parameter(Mandatory=$true,ValueFromPipeline=$true)]
+        [string]
+        # The column to check for.
+        $Name,
+
+        [Parameter(Mandatory=$true)]
+        [Collections.Generic.List[Rivet.Column]]
+        [AllowEmptyCollection()]
+        # The column collection to modify
+        $List,
+
+        [Switch]
+        # Return the column name if it *wasn't* removed.
+        $PassThru
+    )
+
+    $columnIdx = Get-ColumnIndex -Name $Name -List $List
+    if( $columnIdx -ne $null )
+    {
+        [void] $List.RemoveAt( $columnIdx )
+    }
+    else
+    {
+        if( $PassThru )
+        {
+            return $Name
+        }
+    }
+}
+
 & (Join-Path -Path $PSScriptRoot -ChildPath '..\Import-Rivet.ps1' -Resolve)
 
 if( -not (Test-Path -Path $OutputPath -PathType Container) )
@@ -58,6 +161,7 @@ $getMigrationParams = @{ }
     ForEach-Object { $getMigrationParams.$_ = Get-Variable -Name $_ -ValueOnly }
 
 $operations = New-Object 'Collections.ArrayList'
+$newTables = New-Object 'Collections.Generic.HashSet[string]'
 $opIdx = @{ }
 
 Get-Migration @getMigrationParams |
@@ -71,6 +175,11 @@ Get-Migration @getMigrationParams |
             ForEach-Object {
                 $op = $_
                 $op.Migrations += $migrationName
+
+                if( $op -is [Rivet.Operations.AddTableOperation] )
+                {
+                    [void] $newTables.Add( $op.ObjectName )
+                }
 
                 if( $op -isnot [Rivet.Operations.ObjectOperation] )
                 {
@@ -91,39 +200,37 @@ Get-Migration @getMigrationParams |
                     }
                     elseif( $opTypeName -eq 'UpdateTableOperation' )
                     {
-                        $addTableOp = $existingOp
-                        if( $addTableOp.Migrations -notcontains $migrationName )
+                        if( $existingOp.Migrations -notcontains $migrationName )
                         {
-                            $addTableOp.Migrations += $migrationName
+                            $existingOp.Migrations += $migrationName
                         }
-                        $colIdx = @{ }
-                        $idx = 0
-                        $addTableOp.Columns | ForEach-Object { $colIdx[$_.Name] = $idx++ }
-                        Invoke-Command {
-                                    $op.AddColumns
-                                    $op.UpdateColumns
-                                } | 
-                            ForEach-Object {
-                                $column = $_
-                                $columnIdx = $null
-                                if( $colIdx.ContainsKey( $column.Name ) )
-                                {
-                                    $columnIdx = $colIdx[$column.Name]
-                                }
 
-                                if( $columnIdx -eq $null )
-                                {
-                                    $addTableOp.Columns.Add( $column )
-                                }
-                                else
-                                {
-                                    $null = $addTableOp.Columns.RemoveAt( $columnIdx )
-                                    $addTableOp.Columns.Insert( $columnIdx, $column )
-                                }
-                            }
-                        $op.RemoveColumns | 
-                            Where-Object { $colIdx.ContainsKey( $_ ) } |
-                            ForEach-Object { $null = $addTableOp.Columns.RemoveAt( $colIdx[$_] ) }
+                        if( $existingOp -is [Rivet.Operations.AddTableOperation] )
+                        {
+                            $op.AddColumns | Add-Column -List $existingOp.Columns
+                            $op.UpdateColumns | Add-Column -List $existingOp.Columns
+                            $op.RemoveColumns | Remove-Column -List $existingOp.Columns
+                        }
+                        elseif( $existingOp -is [Rivet.Operations.UpdateTableOperation] )
+                        {
+                            # Add new columns to the original operation
+                            $op.AddColumns | Add-Column -List $existingOp.AddColumns
+
+                            # Replace existing column definitions
+                            $op.UpdateColumns | 
+                                Add-Column -List $existingOp.AddColumns -ReplaceOnly -PassThru |
+                                Add-Column -List $existingOp.UpdateColumns
+
+                            # Remove collumsn
+                            $op.RemoveColumns | 
+                                Remove-Column -List $existingOp.AddColumns -PassThru |
+                                Remove-Column -List $existingOp.UpdateColumns -PassThru |
+                                ForEach-Object { [void] $existingOp.RemoveColumns.Add( $_ )  }
+                        }
+                        else
+                        {
+                            Write-Error ('Unhandled operation of type ''{0}''.' -f $existingOp.GetType())
+                        }                        
                         return
                     }
                 }
@@ -140,6 +247,8 @@ Get-Migration @getMigrationParams |
         $op = $_
 
         $schemaScriptPath = Join-Path -Path $OutputPath -ChildPath ('{0}.Schema.sql' -f $op.Database)
+        $dependentObjectScriptPath = Join-Path -Path $OutputPath -ChildPath ('{0}.DependentObject.sql' -f $op.Database)
+        $extendedPropertyScriptPath = Join-Path -Path $OutputPath -ChildPath ('{0}.ExtendedProperty.sql' -f $op.Database)
         $codeObjectScriptPath = Join-Path -Path $OutputPath -ChildPath ('{0}.CodeObject.sql' -f $op.Database)
         $dataScriptPath = Join-Path -Path $OutputPath -ChildPath ('{0}.Data.sql' -f $op.Database)
         $unknownScriptPath = Join-Path -Path $OutputPath -ChildPath ('{0}.Unknown.sql' -f $op.Database)
@@ -151,15 +260,28 @@ Get-Migration @getMigrationParams |
             $op = $_
             $path = switch -Regex ( $op.GetType() )
             {
-                '(Add|Remove|Update)(CheckConstraint|DataType|DefaultConstraint|ExtendedProperty|ForeignKey|Index|PrimaryKey|Schema|Table|Trigger|UniqueKey|Column)'
+                '(Add|Remove|Update)ExtendedProperty'
                 {
-                    if( $Matches[2] -eq 'ExtendedProperty' -and $op.ForView )
+                    $extendedPropertyScriptPath
+                    break
+                }
+
+                '(Add|Remove|Update)(DataType|Schema|Table|Trigger)'
+                {
+                    $schemaScriptPath
+                    break
+                }
+
+                '(Add|Remove|Update)(CheckConstraint|DefaultConstraint|ForeignKey|Index|PrimaryKey|UniqueKey)'
+                {
+                    $tableName = '{0}.{1}' -f $op.SchemaName,$op.TableName
+                    if( $newTables.Contains( $tableName ) )
                     {
-                        $codeObjectScriptPath
+                        $schemaScriptPath
                     }
                     else
                     {
-                        $schemaScriptPath
+                        $dependentObjectScriptPath
                     }
                     break
                 }
