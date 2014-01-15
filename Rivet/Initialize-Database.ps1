@@ -12,96 +12,88 @@ function Initialize-Database
 
     try
     {
-        if( -not (Test-Schema -Name $RivetSchemaName) )
-        {
-            Add-Schema -Name $RivetSchemaName -Quiet
-        }
-    
-        $oldRivetSchemaName = 'pstep'
-        if( (Test-Table -Name $RivetMigrationsTableName -SchemaName $oldRivetSchemaName) )
-        {
-            Invoke-Query ('alter schema {0} transfer {1}.Migrations' -f $RivetSchemaName,$oldRivetSchemaName)
-        }
+        $query = @'
+if not exists (select * from sys.schemas where name = 'rivet')
+    exec sp_executesql N'create schema [rivet]'
 
-        if( (Test-Table -Name $RivetActivityTableName -SchemaName $oldRivetSchemaName) )
-        {
-            Invoke-Query ('alter schema {0} transfer {1}.Activity' -f $RivetSchemaName,$oldRivetSchemaName)
-        }
+if object_id('pstep.Migrations', 'U') is not null
+    alter schema [rivet] transfer [pstep].[Migrations]
 
-        if( (Test-Schema -Name $oldRivetSchemaName) )
-        {
-            Remove-Schema -Name $oldRivetSchemaName -Quiet
-        }
-    
-        if( (Test-Table -Name $RivetMigrationsTableName -SchemaName $RivetSchemaName) )
-        {
-            $query = @'
-                select 
-                    ty.name 
-                from 
-                    sys.tables t 
-                    join sys.schemas s on t.schema_id = s.schema_id
-                    join sys.columns c on t.object_id = c.object_id 
-                    join sys.types ty on c.system_type_id = ty.system_type_id AND C.user_type_id = ty.user_type_id 
-                where 
-                    s.name = '{0}' and t.name = '{1}' and c.name = 'AtUtc'
-'@ -f $RivetSchemaName,$RivetMigrationsTableName
-            $atUtcType = Invoke-Query $query -AsScalar
-            if( $atUtcType -eq 'datetime' )
-            {
-                Write-Host (' {0}.{1}.AtUtc datetime -> datetime2' -f $RivetSchemaName,$RivetMigrationsTableName)
-                $query = @'
-                alter table {0}.{1} drop constraint AtUtcDefault
-                alter table {0}.{1} alter column AtUtc datetime2 not null
-                alter table {0}.{1} add constraint AtUtcDefault default (GetUtcDate()) for AtUtc
-'@ -f $RivetSchemaName,$RivetMigrationsTableName
-                Invoke-Query $query
-            }
-        }
-        else
-        {
-            Add-Table -Name $RivetMigrationsTableName -SchemaName $RivetSchemaName -Column {
-                BigInt ID -NotNull 
-                NVarChar 'Name' -Size 50 -NotNull
-                NVarChar 'Who' -Size 50  -NotNull
-                NVarChar 'ComputerName' -Size 50 -NotNull
-                DateTime2 'AtUtc' -NotNull
-            } -Quiet
+if exists (select * from sys.schemas where name = 'pstep')
+    drop schema [pstep]
 
+if object_id('rivet.Migrations', 'U') is null
+begin
+    create table [rivet].[Migrations] (
+        [ID] bigint not null,
+        [Name] nvarchar(50) not null,
+        [Who] nvarchar(50) not null,
+        [ComputerName] nvarchar(50) not null,
+        [AtUtc] datetime not null
+    )
+
+    alter table [rivet].[Migrations] add constraint [MigrationsPK] primary key ( [ID] ) 
+
+    alter table [rivet].[Migrations] add constraint [AtUtcDefault]  default (getutcdate()) for [AtUtc]
+end
+
+if object_id('rivet.AtUtcDefault', 'D') is not null and object_id('rivet.DF_Migrations_AtUtc', 'D') is null
+begin
+    exec sp_rename 'rivet.AtUtcDefault', 'DF_rivet_Migrations_AtUtc', 'OBJECT'
+end
+
+if exists (select * from sys.columns c join 
+						sys.tables t on c.object_id = t.object_id join 
+						sys.types y on c.system_type_id = y.system_type_id 
+					where 
+						schema_name(t.schema_id) = 'rivet' and 
+						t.name = 'Migrations' and 
+						c.name = 'AtUtc' and 
+						y.name = 'datetime') 
+begin
+    alter table [rivet].[Migrations] drop constraint [DF_rivet_Migrations_AtUtc]
+    alter table [rivet].[Migrations] alter column [AtUtc] datetime2(7) not null
+    alter table [rivet].[Migrations] add constraint [DF_rivet_Migrations_AtUtc] default (GetUtcDate()) for [AtUtc]
+end
+
+if object_id('rivet.MigrationsPK', 'PK') is not null and object_id('rivet.PK_rivet_Migrations', 'PK') is null
+begin
+    exec sp_rename 'rivet.MigrationsPK', 'PK_rivet_Migrations', 'OBJECT'
+end
+
+if object_id('rivet.Activity', 'U') is null
+begin
+    create table [rivet].[Activity] (
+        [ID] int identity,
+        [Operation] nvarchar(4) not null,
+        [MigrationID] bigint not null,
+        [Name] nvarchar(50) not null,
+        [Who] nvarchar(50) not null,
+        [ComputerName] nvarchar(50) not null,
+        [AtUtc] datetime2(7) not null
+    )
+
+    alter table [rivet].[Activity] add constraint [PK_rivet_Activity_ID] primary key ([ID])
+
+    alter table [rivet].[Activity] add constraint [DF_rivet_Activity_AtUtc]  DEFAULT (getutcdate()) FOR [AtUtc]
+
+    alter table [rivet].[Activity] with check add constraint [CK_rivet_Activity_Operation] CHECK  (([Operation]='Push' OR [Operation]='Pop'))
+end
+
+if object_id('rivet.PK_rivet_Activity_ID', 'PK') is not null and object_id('rivet.PK_rivet_Activity', 'PK') is null
+begin
+    exec sp_rename 'rivet.PK_rivet_Activity_ID', 'PK_rivet_Activity', 'OBJECT'
+end
+'@
+
+        Invoke-Query -Query $query -NonQuery
             
-            $query = @'
-                alter table {0} add constraint MigrationsPK primary key (ID)
-                alter table {0} add constraint AtUtcDefault default (GetUtcDate()) for AtUtc
-'@ -f $RivetMigrationsTableFullName
-            
-
-            Invoke-Query -Query $query
-        }
-
-        if( -not (Test-Table -Name $RivetActivityTableName -SchemaName $RivetSchemaName) )
-        {
-            Add-Table -SchemaName $RivetSchemaName $RivetActivityTableName {
-                int 'ID' -Identity
-                nvarchar 'Operation' -Size 4 -NotNull
-                bigint 'MigrationID' -NotNull
-                nvarchar 'Name' -Size 50 -NotNull
-                nvarchar 'Who' -Size 50 -NotNull
-                nvarchar 'ComputerName' -Size 50 -NotNull
-                datetime2 'AtUtc' -NotNull
-            } -Quiet
-            
-            Add-PrimaryKey -SchemaName $RivetSchemaName $RivetActivityTableName -ColumnName 'ID' -Quiet
-            Add-DefaultConstraint -SchemaName $RivetSchemaName $RivetActivityTableName -ColumnName 'AtUtc' -Expression 'getutcdate()' -Quiet
-            Add-CheckConstraint -SchemaName $RivetSchemaName -TableName $RivetActivityTableName -Name 'CK_rivet_Activity_Operation' -Expression 'Operation = ''Push'' or Operation = ''Pop''' -Quiet
-        }
-
         $Connection.Transaction.Commit()
     }
     catch
     {
         $Connection.Transaction.Rollback()
             
-         Write-RivetError -Message ('Migration {0} failed' -f $migrationInfo.FullName) -CategoryInfo $_.CategoryInfo.Category -ErrorID $_.FullyQualifiedErrorID -Exception $_.Exception -CallStack ($_.ScriptStackTrace)
+         Write-RivetError -Message 'Failed to initialize database so it can be migrated by Rivet.' -CategoryInfo $_.CategoryInfo.Category -ErrorID $_.FullyQualifiedErrorID -Exception $_.Exception -CallStack ($_.ScriptStackTrace)
     }
-
 }

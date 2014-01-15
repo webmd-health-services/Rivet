@@ -34,9 +34,15 @@ function Invoke-MigrationOperation
         $CommandTimeout = 30
     )
 
+    if( (Test-Path -Path 'function:Start-MigrationOperation') )
+    {
+        # Protect ourself from poorly written plug-ins that return things.
+        $null = Start-MigrationOperation -Operation $Operation
+    }
+
     $query = $Operation.ToQuery()
 
-    $cmd = New-Object Data.SqlClient.SqlCommand ($query,$Connection,$Connection.Transaction)
+    $cmd = New-Object 'Data.SqlClient.SqlCommand' ($query,$Connection,$Connection.Transaction)
     $cmd.CommandTimeout = $CommandTimeout
 
     try
@@ -54,29 +60,27 @@ function Invoke-MigrationOperation
             $cmdReader = $cmd.ExecuteReader()
             try
             {
-                if( -not $cmdReader.HasRows )
-                {
-                    return
-                }
-                
-                while( $cmdReader.Read() )
-                {
-                    $row = @{ }
-                    for ($i= 0; $i -lt $cmdReader.FieldCount; $i++) 
-                    { 
-                        $name = $cmdReader.GetName( $i )
-                        if( -not $name )
-                        {
-                            $name = 'Column{0}' -f $i
+                if( $cmdReader.HasRows )
+                {                
+                    while( $cmdReader.Read() )
+                    {
+                        $row = @{ }
+                        for ($i= 0; $i -lt $cmdReader.FieldCount; $i++) 
+                        { 
+                            $name = $cmdReader.GetName( $i )
+                            if( -not $name )
+                            {
+                                $name = 'Column{0}' -f $i
+                            }
+                            $value = $cmdReader.GetValue($i)
+                            if( $cmdReader.IsDBNull($i) )
+                            {
+                                $value = $null
+                            }
+                            $row[$name] = $value
                         }
-                        $value = $cmdReader.GetValue($i)
-                        if( $cmdReader.IsDBNull($i) )
-                        {
-                            $value = $null
-                        }
-                        $row[$name] = $value
+                        New-Object PsObject -Property $row
                     }
-                    New-Object PsObject -Property $row
                 }
             }
             finally
@@ -95,6 +99,12 @@ function Invoke-MigrationOperation
     finally
     {
         $cmd.Dispose()
+    }
+
+    if( (Test-Path -Path 'function:Complete-MigrationOperation') )
+    {
+        # Protect ourself from poorly written plug-ins that return things.
+        $null = Complete-MigrationOperation -Operation $Operation
     }
 
 }
