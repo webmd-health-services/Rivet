@@ -146,9 +146,9 @@ function Update-Database
                 Pop-Migration
                 Remove-Item -Path $popFuntionPath -Confirm:$false
 
-                Remove-Row -SchemaName $RivetSchemaName $RivetMigrationsTableName -Quiet -Where ('ID = {0}' -f $migrationInfo.MigrationID)
+                Remove-Row -SchemaName $RivetSchemaName $RivetMigrationsTableName -Quiet -Where ('ID = {0}' -f $migrationInfo.MigrationID) -Verbose:$false
                 $who = '{0}\{1}' -f $env:USERDOMAIN,$env:USERNAME
-                Add-Row -SchemaName $RivetSchemaName $RivetActivityTableName -Quiet -Column @{
+                Add-Row -SchemaName $RivetSchemaName $RivetActivityTableName -Quiet -Verbose:$false -Column @{
                                                                             Operation = 'Pop';
                                                                             MigrationID = $migrationInfo.MigrationID;
                                                                             Name = $migrationInfo.MigrationName;
@@ -171,14 +171,14 @@ function Update-Database
 
                 $who = '{0}\{1}' -f $env:USERDOMAIN,$env:USERNAME
 
-                Add-Row -SchemaName $RivetSchemaName $RivetMigrationsTableName -Quiet -Column @{
+                Add-Row -SchemaName $RivetSchemaName $RivetMigrationsTableName -Quiet -Verbose:$false -Column @{
                                                                                 ID = $migrationInfo.MigrationID;
                                                                                 Name = $migrationInfo.MigrationName;
                                                                                 Who = $who;
                                                                                 ComputerName = $env:COMPUTERNAME;
                                                                             }
 
-                Add-Row -SchemaName $RivetSchemaName $RivetActivityTableName -Quiet -Column @{
+                Add-Row -SchemaName $RivetSchemaName $RivetActivityTableName -Quiet -Verbose:$false -Column @{
                                                                                 Operation = 'Push';
                                                                                 MigrationID = $migrationInfo.MigrationID;
                                                                                 Name = $migrationInfo.MigrationName;

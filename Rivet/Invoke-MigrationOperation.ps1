@@ -42,6 +42,7 @@ function Invoke-MigrationOperation
 
     $query = $Operation.ToQuery()
 
+    Write-Verbose $query
     $cmd = New-Object 'Data.SqlClient.SqlCommand' ($query,$Connection,$Connection.Transaction)
     $cmd.CommandTimeout = $CommandTimeout
 
@@ -85,7 +86,6 @@ function Invoke-MigrationOperation
             }
             finally
             {
-                Write-Verbose $query
                 $cmdReader.Close()
             }
         }
