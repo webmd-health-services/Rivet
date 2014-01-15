@@ -71,17 +71,7 @@ function Invoke-Rivet
     # Load our plugins.
     if( $settings.PluginsRoot )
     {
-        $knownPlugins = @( 'Start-MigrationOperation', 'Complete-MigrationOperation' )
-
-        $knownPlugins | 
-            ForEach-Object { Join-Path -Path 'function:' -ChildPath $_ } |
-            Where-Object { Test-Path -Path $_ } |
-            Remove-Item
-
-        $knownPlugins |
-            ForEach-Object { Join-Path -Path $settings.PluginsRoot -ChildPath ('{0}.ps1' -f $_) } |
-            Where-Object { Test-Path -Path $_ -PathType Leaf } |
-            ForEach-Object { . $_ }
+        Import-Plugin -Path $settings.PluginsRoot
     }
 
     $settings.Databases | ForEach-Object {

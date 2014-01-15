@@ -2,11 +2,14 @@
 $convertRivetMigration = Join-Path -Path $PSScriptRoot -ChildPath '..\Rivet\Extras\Convert-Migration.ps1' -Resolve
 $outputDir = $null
 $testedOperations = @{ }
+$pluginsPath = $null
 
 function Start-Test
 {
-    Import-Module -Name (Join-Path $TestDir 'RivetTest') -ArgumentList 'ConvertMigration' 
-    Start-RivetTest
+    $databaseName = 'ConvertMigration'
+    $pluginsPath = New-TempDir -Prefix $databaseName
+    Import-Module -Name (Join-Path $TestDir 'RivetTest') -ArgumentList $databaseName
+    Start-RivetTest -PluginPath $pluginsPath
 
     & (Join-Path -Path $PSScriptRoot -ChildPath '..\Tools\SqlPS\Import-SqlPS.ps1' -Resolve)
 
@@ -22,6 +25,7 @@ function Stop-Test
     Remove-Item -Path $outputDir -Recurse
     Stop-RivetTest
     Remove-Module 'RivetTest'
+    Remove-Item $pluginsPath -Recurse
 }
  
 function Stop-TestFixture
@@ -358,6 +362,36 @@ function Pop-Migration
     Assert-ConvertMigration -Schema -Data
 
     Assert-Row -SchemaName 'idempotent' -TableName 'Idempotent' -Column @{ ID = 1 ; Name = 'First' ; Optional = 'Value' } -Where 'ID = 1'
+}
+
+
+function Test-ShouldRunPlugins
+{
+    Get-Item -Path (Join-Path -Path $TestDir -ChildPath '..\Rivet\Extras\*-MigrationOperation.ps1') |
+        Copy-Item -Destination $pluginsPath
+    
+    @'
+function Push-Migration
+{
+    Add-Table 'NeedsPluginStuff' {
+        int 'ID' -NotNull
+    }
+}
+
+function Pop-Migration
+{
+}
+'@ | New-Migration -Name 'ShouldRunPlugins'
+
+    Assert-ConvertMigration -Schema
+
+    Assert-Table 'NeedsPluginStuff'
+    Assert-Column -TableName 'NeedsPluginStuff' -Name 'CreateDate' -DataType 'smalldatetime' -NotNull
+    Assert-Column -TableName 'NeedsPluginStuff' -Name 'LastUpdated' -DataType 'datetime' -NotNull
+    Assert-Column -TableName 'NeedsPluginStuff' -Name 'rowguid' -DataType 'uniqueIdentifier' -NotNull -RowGuidCol
+    Assert-Column -TableName 'NeedsPluginStuff' -Name 'SkipBit' -DataType 'bit'
+    Assert-Trigger 'trNeedsPluginStuff_Activity'
+    Assert-Index -TableName 'NeedsPluginStuff' -ColumnName 'rowguid' -Unique
 }
 
 function Test-ShouldAggregateChanges
