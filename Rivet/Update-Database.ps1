@@ -70,6 +70,12 @@ function Update-Database
         
         $id = [UInt64]$matches[1]
         $name = $matches[2]
+
+        if( $name.Length -gt 50 )
+        {
+            Write-Error ('Migration {0}''s name is too long: ''{1}'' is {2} characters long but is limited to 50 or fewer characters.' -f $_.FullName,$name,$name.Length)
+            return
+        }
         
         $_ | 
             Add-Member -MemberType NoteProperty -Name 'MigrationID' -Value $id -PassThru |
