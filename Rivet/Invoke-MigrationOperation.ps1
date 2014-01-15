@@ -1,5 +1,5 @@
 
-function Invoke-Migration
+function Invoke-MigrationOperation
 {
     <#
     .SYNOPSIS
@@ -98,5 +98,3 @@ function Invoke-Migration
     }
 
 }
-
-Set-Alias -Name Invoke-MigrationOperation -Value Invoke-Migration
