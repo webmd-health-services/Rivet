@@ -29,7 +29,7 @@ function Import-Plugin
         Remove-Item
 
     Get-ChildItem -Path $Path -Filter '*.ps1' -File |
-        Tee-Object -Variable 'expectedFunction' |
+        Tee-Object -Variable 'expectedFunctions' |
         ForEach-Object { 
             . $_.FullName 
             Join-Path -Path 'function:' -ChildPath $_.BaseName
@@ -48,4 +48,13 @@ $($_.Definition)
 }
 "@
         }
+
+        $expectedFunctions |
+            ForEach-Object { 
+                $functionPath = Join-Path -Path 'function:' -ChildPath $_.BaseName
+                if( -not (Test-Path -Path $functionPath) )
+                {
+                    Write-Error ('Plugin ''{0}'' not found. Expected file ''{1}'' to implement function ''{0}''.' -f $_.BaseName,$_.FullName)
+                }
+            }
 }
