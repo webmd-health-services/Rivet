@@ -22,6 +22,11 @@ param(
     # The path to the rivet.json file to use.  By default, it will look in the current directory.
     $ConfigFilePath,
 
+    [Parameter()]
+    [Hashtable]
+    # Mapping of migration base name (e.g. `20130115142433_CreateTable`) to the person's name who created it.
+    $Author,
+
     [string[]]
     # A list of migrations to include. Only migrations that match are returned.  Wildcards permitted.
     $Include,
@@ -253,75 +258,82 @@ Get-Migration @getMigrationParams |
         $dataScriptPath = Join-Path -Path $OutputPath -ChildPath ('{0}.Data.sql' -f $op.Database)
         $unknownScriptPath = Join-Path -Path $OutputPath -ChildPath ('{0}.Unknown.sql' -f $op.Database)
 
-        $header = @'
--- {0}
-'@ -f ($op.Migrations -join "`n-- ")
-
-            $op = $_
-            $path = switch -Regex ( $op.GetType() )
+        $header = $op.Migrations | ForEach-Object {
+            $name = $_
+            $by = ''
+            if( $Author -and $Author.ContainsKey( $name ) )
             {
-                '(Add|Remove|Update)ExtendedProperty'
-                {
-                    $extendedPropertyScriptPath
-                    break
-                }
+                $by = ': {0}' -f $Author[$name]
+            }
+            '-- {0}{1}' -f $name,$by
+        } 
+        $header = $header -join ([Environment]::NewLine)
+        
+        $op = $_
+        $path = switch -Regex ( $op.GetType() )
+        {
+            '(Add|Remove|Update)ExtendedProperty'
+            {
+                $extendedPropertyScriptPath
+                break
+            }
 
-                '(Add|Remove|Update)(DataType|Schema|Table|Trigger)'
-                {
-                    $schemaScriptPath
-                    break
-                }
+            '(Add|Remove|Update)(DataType|Schema|Table|Trigger)'
+            {
+                $schemaScriptPath
+                break
+            }
 
-                '(Add|Remove|Update)(CheckConstraint|DefaultConstraint|ForeignKey|Index|PrimaryKey|UniqueKey)'
-                {
-                    $tableName = '{0}.{1}' -f $op.SchemaName,$op.TableName
-                    if( $newTables.Contains( $tableName ) )
-                    {
-                        $schemaScriptPath
-                    }
-                    else
-                    {
-                        $dependentObjectScriptPath
-                    }
-                    break
-                }
-
-                'Rename(Column|Constraint|Index)?Operation'
+            '(Add|Remove|Update)(CheckConstraint|DefaultConstraint|ForeignKey|Index|PrimaryKey|UniqueKey)'
+            {
+                $tableName = '{0}.{1}' -f $op.SchemaName,$op.TableName
+                if( $newTables.Contains( $tableName ) )
                 {
                     $schemaScriptPath
                 }
-
-                '(Add|Remove|Update)(StoredProcedure|Synonym|UserDefinedFunction|View)'
+                else
                 {
-                    $codeObjectScriptPath
-                    break
+                    $dependentObjectScriptPath
                 }
-
-                '(Add|Remove|Update)Row'
-                {
-                    $dataScriptPath
-                    break
-                }
-
-                'RawQuery'
-                {
-                    Write-Warning ('Generic migration operation found in ''{0}''.' -f $migration.Path)
-                    $unknownScriptPath
-                    break
-                }
-
-                default
-                {
-                    Write-Error ('Unknown migration operation ''{0}'' in ''{1}''.' -f $op.GetType(),$migration.Path)
-                    return
-                }
+                break
             }
 
-            if( -not (Test-Path -Path $path -PathType Leaf) )
+            'Rename(Column|Constraint|Index)?Operation'
             {
-                $null = New-Item -Path $path -ItemType 'File' -Force
+                $schemaScriptPath
             }
-            $header | Add-Content -Path $path
-            $op.ToIdempotentQuery() | Add-Content -Path $path
-            ("GO{0}" -f [Environment]::NewLine) | Add-Content -Path $path
+
+            '(Add|Remove|Update)(StoredProcedure|Synonym|UserDefinedFunction|View)'
+            {
+                $codeObjectScriptPath
+                break
+            }
+
+            '(Add|Remove|Update)Row'
+            {
+                $dataScriptPath
+                break
+            }
+
+            'RawQuery'
+            {
+                Write-Warning ('Generic migration operation found in ''{0}''.' -f $migration.Path)
+                $unknownScriptPath
+                break
+            }
+
+            default
+            {
+                Write-Error ('Unknown migration operation ''{0}'' in ''{1}''.' -f $op.GetType(),$migration.Path)
+                return
+            }
         }
+
+        if( -not (Test-Path -Path $path -PathType Leaf) )
+        {
+            $null = New-Item -Path $path -ItemType 'File' -Force
+        }
+        $header | Add-Content -Path $path
+        $op.ToIdempotentQuery() | Add-Content -Path $path
+        ("GO{0}" -f [Environment]::NewLine) | Add-Content -Path $path
+    }
