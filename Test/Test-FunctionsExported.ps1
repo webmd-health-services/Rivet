@@ -18,8 +18,7 @@ function Test-FunctionsExported
                             'Get-RivetConfig' = $true;
                             'Import-Rivet' = $true;
                             'Initialize-Database' = $true;
-                            'Invoke-Migration' = $true;
-                            'Invoke-MigrationEvent' = $true;
+                            'Invoke-MigrationOperation' = $true;
                             'New-Migration' = $true;
                             'New-MigrationObject' = $true;
                             'Resolve-ObjectScriptPath' = $true;
@@ -28,7 +27,6 @@ function Test-FunctionsExported
                             'Test-Table' = $true;
                             'Update-Database' = $true;
                             'Write-RivetError' = $true;
-                            '_Get-Migration' = $true;
                          }
 
     $private = Get-ChildItem -Path (Join-Path -Path $TestDir -ChildPath ..\Rivet) *-*.ps1 |
