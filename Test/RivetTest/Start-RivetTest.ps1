@@ -38,7 +38,7 @@ function Start-RivetTest
     $PluginPathClause = ''
     if ($PluginPath)
     {
-        $PluginPathClause = ",PluginsRoot: '{0}\\Plugins'" -f $PluginPath
+        $PluginPathClause = ",PluginsRoot: '{0}'" -f $PluginPath
         $PluginPathClause = $PluginPathClause.Replace('\','\\')
     }
 

@@ -2,9 +2,8 @@ function Setup
 {
     Import-Module -Name (Join-Path $TestDir 'RivetTest') -ArgumentList 'AddAdminColumnPlugin'
     $tempPluginsPath = New-TempDir -Prefix 'AddAdminColumnPlugin'
-    New-Item -Path (Join-Path -Path $tempPluginsPath -ChildPath '\Plugins\') -ItemType directory
     $pluginPath = Join-Path -Path $TestDir -ChildPath '..\Rivet\Extras\*-MigrationOperation.ps1' -Resolve
-    Copy-Item -Path $pluginPath -Destination $tempPluginsPath\Plugins\ 
+    Copy-Item -Path $pluginPath -Destination $tempPluginsPath
     Start-RivetTest -PluginPath $tempPluginsPath
 }
 

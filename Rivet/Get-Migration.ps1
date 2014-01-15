@@ -67,6 +67,11 @@ function Get-Migration
 
     $settings = Get-RivetConfig -Database $Database -Path $ConfigFilePath -Environment $Environment
 
+    if( $settings.PluginsRoot )
+    {
+        Import-Plugin -Path $settings.PluginsRoot
+    }
+
     $settings.Databases | ForEach-Object {
         $dbName = $_.Name
         $DBScriptRoot = $_.Root
@@ -75,10 +80,10 @@ function Get-Migration
         Get-MigrationScript -Path $_.MigrationsRoot @getMigrationScriptParams | ForEach-Object {
 
             
-            $m = New-Object Rivet.Migration $_.MigrationID,$_.MigrationName,$_.FullName,$dbName
+            $m = New-Object 'Rivet.Migration' $_.MigrationID,$_.MigrationName,$_.FullName,$dbName
             $currentOp = 'Push'
 
-            function Invoke-Migration
+            function Invoke-MigrationOperation
             {
                 param(
                     [Parameter(Mandatory=$true)]
@@ -89,6 +94,12 @@ function Get-Migration
                     [Parameter(ValueFromRemainingArguments=$true)]
                     $Garbage
                 )
+
+                if( (Test-Path -Path 'function:Start-MigrationOperation') )
+                {
+                    # Protect ourself from poorly written plug-ins that return things.
+                    $null = Start-MigrationOperation -Operation $Operation
+                }
 
                 switch ($currentOp)
                 {
@@ -101,6 +112,13 @@ function Get-Migration
                         $m.PopOperations.Add( $Operation )
                     }
                 }
+
+                if( (Test-Path -Path 'function:Complete-MigrationOperation') )
+                {
+                    # Protect ourself from poorly written plug-ins that return things.
+                    $null = Complete-MigrationOperation -Operation $Operation
+                }
+
             }
 
             . $_.FullName
@@ -112,6 +130,7 @@ function Get-Migration
             Pop-Migration
 
             $m
+
         }
     }
 }
