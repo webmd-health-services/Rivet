@@ -20,7 +20,19 @@ function New-Migration
         $Path
     )
 
-    $id = (Get-Date).ToString('yyyyMMddHHmmss')
+    $id = $null
+    do
+    {
+        $id = (Get-Date).ToString('yyyyMMddHHmmss')
+        if( -not (Test-Path -Path $Path -PathType Container) -or `
+            -not (Get-ChildItem -Path $Path -Filter ('{0}*' -f $id) ) )
+        {
+            break
+        }
+        Start-Sleep -Milliseconds 500
+    }
+    while( $true )
+
     $filename = '{0}_{1}.ps1' -f $id,$Name
 
     $importRivetPath = Join-Path -Path $PSScriptRoot -ChildPath 'Import-Rivet.ps1' -Resolve

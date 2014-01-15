@@ -107,3 +107,18 @@ function Test-ShouldCreateDatabaseDirectoryIfItDoesNotExist
                         Where-Object { $_.FullName -notlike "*\NewDatabase\Migrations\*" }
     Assert-Null $otherMigrations
 }
+
+function Test-ShouldCreateMigrationsWithUniqueIDs
+{
+    $m1 = ' ' | New-Migration -Name 'First'
+    $m2 = ' ' | New-Migration -Name 'Second'
+
+    Assert-True ($m1.BaseName -match '^(\d+)')
+    $id1 = $Matches[1]
+
+    Assert-True ($m2.BaseName -match '^(\d+)')
+    $id2 = $Matches[1]
+
+    Assert-NotEqual $id1 $id2
+
+}
