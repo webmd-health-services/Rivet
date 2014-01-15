@@ -394,6 +394,40 @@ function Pop-Migration
     Assert-Index -TableName 'NeedsPluginStuff' -ColumnName 'rowguid' -Unique
 }
 
+function Test-ShouldIncludeAuthorInOutputScripts
+{
+   $migrationOne = @'
+function Push-Migration
+{
+    Add-Table 'TableOne' {
+        int 'ID' -NotNull
+    }
+}
+
+function Pop-Migration
+{
+}
+'@ | New-Migration -Name 'CreateTableOne'
+
+   $migrationTwo = @'
+function Push-Migration
+{
+    Add-Table 'TableTwo' {
+        int 'ID' -NotNull
+    }
+}
+
+function Pop-Migration
+{
+}
+'@ | New-Migration -Name 'CreateTableTwo'
+
+    Assert-ConvertMigration -Schema -Author @{ $migrationOne.BaseName = 'Joe Cool' }
+
+    Assert-Table 'TableOne'
+    Assert-Table 'TableTwo'
+}
+
 function Test-ShouldAggregateChanges
 {
     @'
@@ -679,7 +713,10 @@ function Assert-ConvertMigration
         $Before,
 
         [DateTime]
-        $After
+        $After,
+
+        [Hashtable]
+        $Author
     )
 
     $convertRivetMigrationParams = @{ }
@@ -687,12 +724,25 @@ function Assert-ConvertMigration
         Where-Object { $PSBoundParameters.ContainsKey( $_ ) } |
         ForEach-Object { $convertRivetMigrationParams.$_ = Get-Variable -Name $_ -ValueOnly }
 
+    if( $Author )
+    {
+        $convertRivetMigrationParams.Author = $Author
+    }
+
     & $convertRivetMigration -ConfigFilePath $RTConfigFilePath -OutputPath $outputDir @convertRivetMigrationParams
 
     ('Schema','DependentObject','ExtendedProperty','CodeObject','Data','Unknown') | ForEach-Object {
         $shouldExist = Get-Variable -Name $_ -ValueOnly
         $path = Join-Path -Path $outputDir -ChildPath ('{0}.{1}.sql' -f $DatabaseName,$_)
         Assert-Equal $shouldExist (Test-Path -Path $path) ('test if output file ''{0}'' exists' -f $path)
+        if( $shouldExist -and $Author )
+        {
+            $content = Get-Content -Path $path -Raw
+            $Author.Keys | ForEach-Object {
+                $signature = '*-- {0}: {1}*' -f $_,$Author[$_]
+                Assert-Like $content $signature ('''{0}'' missing author signature ''{1}''' -f $path,$signature)
+            }
+        }
     }
 
     Invoke-ConvertedScripts

@@ -27,7 +27,8 @@ function Import-Plugin
         ForEach-Object { Join-Path -Path 'function:' -ChildPath $_ } |
         Where-Object { Test-Path -Path $_ } |
         Remove-Item
-
+    
+    $expectedFunctions = @()
     Get-ChildItem -Path $Path -Filter '*.ps1' -File |
         Tee-Object -Variable 'expectedFunctions' |
         ForEach-Object { 
