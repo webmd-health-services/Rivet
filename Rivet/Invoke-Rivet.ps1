@@ -69,9 +69,9 @@ function Invoke-Rivet
     }
 
     # Load our plugins.
-    if( $settings.PluginsRoot )
+    if( $PSCmdlet.ParameterSetName -ne 'New' -and $settings.PluginsRoot )
     {
-        Import-Plugin -Path $settings.PluginsRoot
+        Import-Plugin -Path $settings.PluginsRoot 
     }
 
     $settings.Databases | ForEach-Object {
