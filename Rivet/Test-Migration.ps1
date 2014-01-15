@@ -20,6 +20,6 @@ function Test-Migration
     )
     
     $query = 'select count(*) as Count from {0} where ID={1}' -f $RivetMigrationsTableFullName,$ID
-    $migrationCount = Invoke-Query -Query $query -AsScalar
+    $migrationCount = Invoke-Query -Query $query -AsScalar -Verbose:$false
     return ( $migrationCount -gt 0 )
 }
