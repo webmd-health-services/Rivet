@@ -10,7 +10,7 @@
 
 		public string Name { get; protected set; }
 
-		public virtual new string ObjectName
+		public virtual string ObjectName
 		{
 			get { return string.Format("{0}.{1}", SchemaName, Name); }
 		}

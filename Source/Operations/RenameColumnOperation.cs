@@ -5,7 +5,7 @@ namespace Rivet.Operations
 	public sealed class RenameColumnOperation : RenameOperation
 	{
 		public RenameColumnOperation(string schemaName, string tableName, string name, string newName)
-			: base(schemaName, name, newName)
+			: base(schemaName, name, newName, "COLUMN")
 		{
 			TableName = tableName;
 		}
@@ -20,9 +20,9 @@ namespace Rivet.Operations
 					SchemaName, TableName, Name, NewName, Environment.NewLine, ToQuery());
 		}
 
-		protected override string GetRenameArguments()
+		protected override string GetObjectName()
 		{
-			return String.Format("'{0}.{1}.{2}', '{3}', 'COLUMN'", SchemaName, TableName, Name, NewName);
+			return String.Format("{0}.{1}.{2}", SchemaName, TableName, Name);
 		}
 
 	}

@@ -7,6 +7,20 @@ function Rename-Column
     .DESCRIPTION
     SQL Server ships with a stored procedure which is used to rename certain objects.  This operation wraps that stored procedure.
     
+    Use `Rename-DataType` to rename a data type.  Use `Rename-Index` to rename an index.  Use `Rename-Object` to rename an object.
+
+    .LINK
+    http://technet.microsoft.com/en-us/library/ms188351.aspx
+
+    .LINK
+    Rename-DataType
+
+    .LINK
+    Rename-Index
+    
+    .LINK
+    Rename-Object
+    
     .EXAMPLE
     Rename-Column -TableName 'FooBar' -Name 'Fizz' -NewName 'Buzz'
     

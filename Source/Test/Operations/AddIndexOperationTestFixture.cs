@@ -188,7 +188,7 @@ namespace Rivet.Test.Operations
 			const string filestreamonString = "";
 			
 			var op = new AddIndexOperation(schemaName, tableName, columnName, descending, unique, clustered, options, whereString, onString, filestreamonString);
-			const string expectedQuery = "create  index [IX_schemaName_tableName_column1] on [schemaName].[tableName] ([column1])";
+			const string expectedQuery = "create index [IX_schemaName_tableName_column1] on [schemaName].[tableName] ([column1])";
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 			Assert.That(op.ObjectName, Is.EqualTo(string.Format("{0}.{1}.IX_{0}_{1}_{2}", schemaName, tableName, String.Join("_", columnName))));
 		}

@@ -16,14 +16,20 @@ function Rename-Object
      * Stored procedures
      * Triggers
 
-    Use `Rename-Index` to rename an index.  Use `Rename-Column` to rename a column.
+    Use `Rename-Index` to rename an index.  Use `Rename-Column` to rename a column.  Use `Rename-DataType` to rename a data type.
 
     .LINK
-    Rename-Index
+    http://technet.microsoft.com/en-us/library/ms188351.aspx
 
     .LINK
     Rename-Column
     
+    .LINK
+    Rename-DataType
+    
+    .LINK
+    Rename-Index
+
     .EXAMPLE
     Rename-Object -Name 'FooBar' -NewName 'BarFoo'
     
@@ -42,6 +48,11 @@ function Rename-Object
 
     [CmdletBinding()]
     param(
+        [Parameter()]
+        [string]
+        # The schema of the table.  Default is `dbo`.
+        $SchemaName = "dbo",
+
         [Parameter(Mandatory=$true,Position=0)]
         [string]
         # The current name of the table.
@@ -50,21 +61,16 @@ function Rename-Object
         [Parameter(Mandatory=$true,Position=1)]
         [string]
         # The new name of the table.
-        $NewName,
-        
-        [Parameter()]
-        [string]
-        # The schema of the table.  Default is `dbo`.
-        $SchemaName = "dbo"
+        $NewName
     )
 
-    $op = New-Object 'Rivet.Operations.RenameOperation' $SchemaName, $Name, $NewName
+    $op = New-Object 'Rivet.Operations.RenameOperation' $SchemaName, $Name, $NewName, 'OBJECT'
     Write-Host (' {0}.{1} -> {0}.{2}' -f $SchemaName,$Name,$NewName)
     [int]$result = Invoke-MigrationOperation -Operation $op -AsScalar
     
     if ($result -ne 0)
     {
-        throw ("Failed to rename {0}.{1} to {0}.{2}: error code {3}" -f $SchemaName,$Name,$NewName,$result)
+        throw ("Failed to rename object {0}.{1} to {0}.{2}: error code {3}" -f $SchemaName,$Name,$NewName,$result)
     }
 
 }
