@@ -303,7 +303,7 @@ Get-Migration @getMigrationParams |
                 $schemaScriptPath
             }
 
-            '(Add|Remove|Update)(StoredProcedure|Synonym|UserDefinedFunction|View)'
+            '(Add|Remove|Update)(CodeObjectMetadata|StoredProcedure|Synonym|UserDefinedFunction|View)'
             {
                 $codeObjectScriptPath
                 break
