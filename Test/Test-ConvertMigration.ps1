@@ -559,6 +559,38 @@ function Pop-Migration
     Assert-Query -Schema -NotExists -ExpectedQuery "alter table [dbo].[FeedbackLog] alter column [ToBeIncreased] varchar(200)`r`nGO"
 }
 
+function Test-ShouldAggregateTableAndColumnRenames
+{
+    @'
+function Push-Migration
+{
+    Add-Table 'T1' {
+        int 'C1' -NotNull
+        varchar 'C2' -NotNull -Size 1008
+    }
+
+    Rename-Column 'T1' 'C1' 'C1New'
+    Rename-Column 'T1' 'C2' 'C2New'
+    Rename-Object 'T1' 'T1New'
+}
+
+function Pop-Migration
+{
+}
+'@ | New-Migration -Name 'AddT1'
+
+    Invoke-Rivet -Push 'AddT1'
+
+    Assert-Table -Name 'T1New'
+
+    Assert-ConvertMigration -Schema
+
+    Assert-Query -Schema -ExpectedQuery 'create table [dbo].[T1New]'
+    Assert-Query -Schema -ExpectedQuery '[C1New] int not null'
+    Assert-Query -Schema -ExpectedQuery '[C2New] varchar(1008) not null'
+    Assert-Query -Schema -NotExists -ExpectedQuery "sp_rename"
+}
+
 function Test-ShouldExcludeMigrations
 {
     @'
