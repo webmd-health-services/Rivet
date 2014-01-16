@@ -8,7 +8,7 @@
 			Name = name;
 		}
 
-		public string Name { get; protected set; }
+		public string Name { get; set; }
 
 		public virtual string ObjectName
 		{

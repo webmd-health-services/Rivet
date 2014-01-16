@@ -25,7 +25,7 @@ param(
     [Parameter()]
     [Hashtable]
     # Mapping of migration base name (e.g. `20130115142433_CreateTable`) to the person's name who created it.
-    $Author,
+    $Author = @{ },
 
     [string[]]
     # A list of migrations to include. Only migrations that match are returned.  Wildcards permitted.
@@ -173,6 +173,12 @@ Get-Migration @getMigrationParams |
     ForEach-Object { 
         $migration = $_
         $migrationName = '{0}_{1}' -f $migration.ID,$migration.Name
+        $authorMsg = ''
+        if( $Author.ContainsKey( $migrationName ) )
+        {
+            $authorMsg = ' by {0}' -f $Author[$migrationName]
+        }
+        Write-Verbose ('{0}{1}' -f $migrationName,$authorMsg)
 
         $migration.PushOperations |
             Add-Member -MemberType NoteProperty -Name 'Migrations' -Value @() -PassThru |
@@ -184,6 +190,38 @@ Get-Migration @getMigrationParams |
                 if( $op -is [Rivet.Operations.AddTableOperation] )
                 {
                     [void] $newTables.Add( $op.ObjectName )
+                }
+
+                if( $op -is [Rivet.Operations.RenameColumnOperation] )
+                {
+                    $tableName = '{0}.{1}' -f $op.SchemaName,$op.TableName
+                    if( $opIdx.ContainsKey( $tableName ) )
+                    {
+                        $tableOp = $operations[$opIdx[$tableName]]
+                        if( $tableOp -is [Rivet.Operations.AddTableOperation] )
+                        {
+                            $originalColumn = $tableOp.Columns | Where-Object { $_.Name -eq $op.Name }
+                            if( $originalColumn )
+                            {
+                                $originalColumn.Name = $op.NewName
+                                return
+                            }
+                        }
+                    }
+                }
+
+                if( $op -is [Rivet.Operations.RenameOperation] )
+                {
+                    $objectName = '{0}.{1}' -f $op.SchemaName,$op.Name
+                    if( $opIdx.ContainsKey( $objectName ) )
+                    {
+                        $existingOp = $operations[$opIdx[$objectName]]
+                        if( $existingOp -is [Rivet.Operations.AddTableOperation] )
+                        {
+                            $existingOp.Name = $op.NewName
+                            return
+                        }
+                    }
                 }
 
                 if( $op -isnot [Rivet.Operations.ObjectOperation] )
