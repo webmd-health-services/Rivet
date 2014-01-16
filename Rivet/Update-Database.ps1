@@ -109,13 +109,13 @@ function Update-Database
         $pushFunctionPath = 'function:Push-Migration'
         if( (Test-Path -Path $pushFunctionPath) )
         {
-            Remove-Item -Path $pushFunctionPath -Confirm:$false
+            Remove-Item -Path $pushFunctionPath -Confirm:$false -WhatIf:$false
         }
         
         $popFuntionPath = 'function:Pop-Migration'
         if( (Test-Path -Path $popFuntionPath) )
         {
-            Remove-Item -Path $popFuntionPath -Confirm:$false
+            Remove-Item -Path $popFuntionPath -Confirm:$false -WhatIf:$false
         }
         
         . $migrationInfo.FullName
@@ -144,7 +144,7 @@ function Update-Database
                 
                 Write-Host $hostOutput
                 Pop-Migration
-                Remove-Item -Path $popFuntionPath -Confirm:$false
+                Remove-Item -Path $popFuntionPath -Confirm:$false -WhatIf:$false
 
                 Remove-Row -SchemaName $RivetSchemaName $RivetMigrationsTableName -Quiet -Where ('ID = {0}' -f $migrationInfo.MigrationID) -Verbose:$false
                 $who = '{0}\{1}' -f $env:USERDOMAIN,$env:USERNAME
@@ -167,7 +167,7 @@ function Update-Database
                 
                 Write-Host $hostOutput
                 Push-Migration
-                Remove-Item -Path $pushFunctionPath -Confirm:$False
+                Remove-Item -Path $pushFunctionPath -Confirm:$False -WhatIf:$false
 
                 $who = '{0}\{1}' -f $env:USERDOMAIN,$env:USERNAME
 
