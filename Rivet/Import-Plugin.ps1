@@ -26,12 +26,12 @@ function Import-Plugin
     $knownPlugins | 
         ForEach-Object { Join-Path -Path 'function:' -ChildPath $_ } |
         Where-Object { Test-Path -Path $_ } |
-        Remove-Item
+        Remove-Item -WhatIf:$false
     
     $expectedFunctions = @()
     Get-ChildItem -Path $Path -Filter '*.ps1' -File |
-        Tee-Object -Variable 'expectedFunctions' |
         ForEach-Object { 
+            $expectedFunctions += $_
             . $_.FullName 
             Join-Path -Path 'function:' -ChildPath $_.BaseName
         } |
@@ -39,7 +39,7 @@ function Import-Plugin
         Get-Item |
         ForEach-Object {
 
-            $_ | Remove-Item
+            $_ | Remove-Item -WhatIf:$false
 
             # Re-create the function in script scope.
             Invoke-Expression -Command @"
