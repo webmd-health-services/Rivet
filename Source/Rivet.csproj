@@ -64,6 +64,7 @@
     <Compile Include="Operations\RenameColumnOperation.cs" />
     <Compile Include="Operations\RenameIndexOperation.cs" />
     <Compile Include="Operations\TableObjectOperation.cs" />
+    <Compile Include="Operations\UpdateCodeObjectMetadataOperation.cs" />
     <Compile Include="Operations\UpdateTableOperation.cs" />
     <Compile Include="Operations\RemoveDataTypeOperation.cs" />
     <Compile Include="Operations\RemoveSynonymOperation.cs" />

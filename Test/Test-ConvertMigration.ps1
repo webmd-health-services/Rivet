@@ -3,6 +3,7 @@ $convertRivetMigration = Join-Path -Path $PSScriptRoot -ChildPath '..\Rivet\Extr
 $outputDir = $null
 $testedOperations = @{ }
 $pluginsPath = $null
+$testsRun = 0
 
 function Start-Test
 {
@@ -14,6 +15,7 @@ function Start-Test
     & (Join-Path -Path $PSScriptRoot -ChildPath '..\Tools\SqlPS\Import-SqlPS.ps1' -Resolve)
 
     $outputDir = New-TempDir -Prefix 'Test-ConvertMigration'
+    ++$testsRun
 }
 
 function Stop-Test
@@ -39,7 +41,10 @@ function Stop-TestFixture
                     Select-Object -ExpandProperty 'Name' |
                     Sort-Object
 
-#    Assert-Null $missingOps ("The following operations weren't tested:`n * {0}" -f ($missingOps -join "`n * "))
+    if( $testsRun -gt 1 )
+    {
+        Assert-Null $missingOps ("The following operations weren't tested:`n * {0}" -f ($missingOps -join "`n * "))
+    }
 }
 
 function Test-ShouldCreateOutputPath
@@ -179,6 +184,8 @@ function Push-Migration
     Update-View 'FarmerCrops' @idempotent -Definition "as select Farmers.Name FarmerName, Crops.Name CropName from Crops join Farmers on Crops.FarmerID = Farmers.ID"
 
     Invoke-Query 'select 1'
+
+    Update-CodeObjectMetadata @idempotent 'FarmerCrops'
 }
 
 function Pop-Migration
