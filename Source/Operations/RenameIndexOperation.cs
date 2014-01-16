@@ -5,7 +5,7 @@ namespace Rivet.Operations
 	public sealed class RenameIndexOperation : RenameOperation
 	{
 		public RenameIndexOperation(string schemaName, string tableName, string name, string newName)
-			: base(schemaName, name, newName)
+			: base(schemaName, name, newName, "INDEX")
 		{
 			TableName = tableName;
 		}
@@ -20,9 +20,9 @@ namespace Rivet.Operations
 					SchemaName, TableName, Name, NewName, Environment.NewLine, ToQuery());
 		}
 
-		protected override string GetRenameArguments()
+		protected override string GetObjectName()
 		{
-			return String.Format("'{0}.{1}.{2}', '{3}', 'INDEX'", SchemaName, TableName, Name, NewName);
+			return String.Format("{0}.{1}.{2}", SchemaName, TableName, Name);
 		}
 	}
 }

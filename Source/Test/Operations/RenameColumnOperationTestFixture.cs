@@ -25,7 +25,7 @@ namespace Rivet.Test.Operations
 		public void ShouldWriteQueryForRenameColumnOperation()
 		{
 			var op = new RenameColumnOperation(SchemaName, TableName, CurrentName, NewName);
-			Assert.That(op.ToQuery(), Contains.Substring("'schemaName.tableName.currentName', 'newName', 'COLUMN'"));
+			Assert.That(op.ToQuery(), Contains.Substring("@objname = 'schemaName.tableName.currentName', @newname = 'newName', @objtype = 'COLUMN'"));
 		}
 
 	}

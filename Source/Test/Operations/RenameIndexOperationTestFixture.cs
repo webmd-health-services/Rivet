@@ -20,7 +20,7 @@ namespace Rivet.Test.Operations
 			Assert.That(op.Name, Is.EqualTo(CurrentName));
 			Assert.That(op.NewName, Is.EqualTo(NewName));
 			Assert.That(op.TableName, Is.EqualTo(TableName));
-			Assert.That(op.ToQuery(), Contains.Substring("'schemaName.tableName.currentName', 'newName', 'INDEX'"));
+			Assert.That(op.ToQuery(), Contains.Substring("@objname = 'schemaName.tableName.currentName', @newname = 'newName', @objtype = 'INDEX'"));
 		}
 	}
 }

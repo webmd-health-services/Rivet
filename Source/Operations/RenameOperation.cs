@@ -4,20 +4,25 @@ namespace Rivet.Operations
 {
 	public class RenameOperation : Operation
 	{
-		public RenameOperation(string schemaName, string name, string newName)
+		public RenameOperation(string schemaName, string name, string newName, string type)
 		{
 			SchemaName = schemaName;
 			Name = name;
 			NewName = newName;
+		    Type = type;
 		}
 
 		public string SchemaName { get; private set; }
+
 		public string Name { get; private set; }
+
 		public string NewName { get; private set; }
 
-		protected virtual string GetRenameArguments()
+        public string Type { get; private set; }
+
+		protected virtual string GetObjectName()
 		{
-			return string.Format("'{0}.{1}', '{2}', 'OBJECT'", SchemaName, Name, NewName);
+			return string.Format("{0}.{1}", SchemaName, Name);
 		}
 
 		public override string ToIdempotentQuery()
@@ -27,7 +32,7 @@ namespace Rivet.Operations
 
 		public override string ToQuery()
 		{
-			return string.Format("declare @result{0} int{1}exec @result{0} = sp_rename {2}{1}select @result{0}", Guid.NewGuid().ToString("N"), Environment.NewLine, GetRenameArguments());
+			return string.Format("declare @result{0} int{1}exec @result{0} = sp_rename @objname = '{2}', @newname = '{3}', @objtype = '{4}'{1}select @result{0}", Guid.NewGuid().ToString("N"), Environment.NewLine, GetObjectName(), NewName, Type);
 		}
 	}
 }
