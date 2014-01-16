@@ -86,7 +86,7 @@ begin
 end
 '@
 
-        Invoke-Query -Query $query -NonQuery -Verbose:$false
+        $null = Invoke-Query -Query $query -NonQuery -Verbose:$false
             
         $Connection.Transaction.Commit()
     }
