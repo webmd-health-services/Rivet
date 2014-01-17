@@ -124,9 +124,5 @@ function Pop-Migration()
 '@ | New-Migration -Name 'AddDefaultConstraintOptionalParameterNames'
 
     Invoke-Rivet -Push 'AddDefaultConstraintOptionalParameterNames'
-    
-    $DefaultConstraints = Get-DefaultConstraint
-
-    Assert-Equal 'Optional' $DefaultConstraints.name[1]
-
+    Assert-DefaultConstraint -TableName 'AddDefaultConstraint' -ColumnName 'DefaultConstraintMe' -Name 'Optional'
 }
