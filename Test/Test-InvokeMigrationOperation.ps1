@@ -61,3 +61,171 @@ function Pop-Migration
     Assert-Column -Name guid -DataType uniqueidentifier -RowGuidCol -TableName "Foobar"
     Assert-False (Test-Column -TableName 'Foobar' -Name 'rowguid')
 }
+
+function Test-ShouldRejectTriggersWithoutNotForReplication
+{
+    @'
+function Push-Migration
+{
+    Add-Table Foobar {
+        int ID -Identity
+    }
+    
+    $trigger = @"
+ON [dbo].[Foobar]
+FOR UPDATE
+AS
+    RETURN
+"@
+
+    Add-Trigger 'trFoobar_Nothing' -Definition $trigger
+}
+
+function Pop-Migration
+{
+}
+'@ | New-Migration -Name 'ValidateMigrations'
+
+    $Error.Clear()
+    Invoke-Rivet -Push 'ValidateMigrations' -ErrorAction SilentlyContinue
+    Assert-False (Test-Trigger -Name 'trFoobar_Nothing')
+    Assert-Equal 3 $Error.Count
+    Assert-LIke $Error[2].Exception.Message '*not for replication*'
+}
+
+function Test-ShouldRejectBigIntIdentities
+{
+    @'
+function Push-Migration
+{
+    Add-Table Foobar {
+        bigint ID -Identity
+    }
+}
+
+function Pop-Migration
+{
+}
+'@ | New-Migration -Name 'ValidateMigrations'
+
+    $Error.Clear()
+    Invoke-Rivet -Push 'ValidateMigrations' -ErrorAction SilentlyContinue
+    Assert-Equal 1 $Error.Count
+    Assert-LIke $Error[0].Exception.Message '*can''t be identity columns*'
+}
+
+function Test-ShouldRejectSmallIntIdentities
+{
+    @'
+function Push-Migration
+{
+    Add-Table Foobar {
+        smallint ID -Identity
+    }
+}
+
+function Pop-Migration
+{
+}
+'@ | New-Migration -Name 'ValidateMigrations'
+
+    $Error.Clear()
+    Invoke-Rivet -Push 'ValidateMigrations' -ErrorAction SilentlyContinue
+    Assert-Equal 1 $Error.Count
+    Assert-LIke $Error[0].Exception.Message '*can''t be identity columns*'
+}
+
+function Test-ShouldRejectTinyIntIdentities
+{
+    @'
+function Push-Migration
+{
+    Add-Table Foobar {
+        tinyint ID -Identity
+    }
+}
+
+function Pop-Migration
+{
+}
+'@ | New-Migration -Name 'ValidateMigrations'
+
+    $Error.Clear()
+    Invoke-Rivet -Push 'ValidateMigrations' -ErrorAction SilentlyContinue
+    Assert-Equal 1 $Error.Count
+    Assert-LIke $Error[0].Exception.Message '*can''t be identity columns*'
+}
+
+function Test-ShouldMakeIdentitiesNotForReplication
+{
+    @'
+function Push-Migration
+{
+    Add-Table Foobar {
+        int ID -Identity
+    }
+}
+
+function Pop-Migration
+{
+}
+'@ | New-Migration -Name 'ValidateMigrations'
+
+    Invoke-Rivet -Push 'ValidateMigrations' -ErrorAction SilentlyContinue
+
+    Assert-Table 'Foobar'
+    Assert-Column -TableName 'FooBar' -Name 'ID' -DataType 'int' -Seed 1 -Increment 1 -NotForReplication -NotNull
+}
+
+function Test-ShouldMakeForeignKeyNotForReplication
+{
+    @'
+function Push-Migration
+{
+    Add-Table Foo {
+        int ID -Identity
+    }
+    Add-PrimaryKey 'Foo' 'ID'
+
+    Add-Table Bar {
+        int ID -Identity
+    }
+    Add-PrimaryKey 'Bar' 'ID'
+
+    Add-ForeignKey -TableName 'Foo' -ColumnName 'ID' -References 'Bar' -ReferencedColumn 'ID'
+}
+
+function Pop-Migration
+{
+}
+'@ | New-Migration -Name 'ValidateMigrations'
+
+    Invoke-Rivet -Push 'ValidateMigrations'
+
+    Assert-Table 'Foo'
+    Assert-Table 'Bar'
+    Assert-ForeignKey -TableName 'Foo' -References 'Bar'  -NotForReplication
+}
+
+function Test-ShouldMakeCheckConstraintsNotForReplication
+{
+   @'
+function Push-Migration
+{
+    Add-Table Foo {
+        varchar Name -Size '50' -NotNull
+    }
+
+    Add-CheckConstraint 'Foo' 'CK_Foo_Name' -Expression 'Name = ''Bono'' or Name = ''The Edge'''
+}
+
+function Pop-Migration
+{
+}
+'@ | New-Migration -Name 'ValidateMigrations'
+
+    Invoke-Rivet -Push 'ValidateMigrations'
+
+    Assert-Table 'Foo'
+    Assert-CheckConstraint 'CK_Foo_Name' '([Name]=''Bono'' or [Name]=''The Edge'')' -NotForReplication
+}
