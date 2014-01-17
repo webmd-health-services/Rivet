@@ -14,7 +14,24 @@ function Initialize-Database
     {
         $query = @'
 if not exists (select * from sys.schemas where name = 'rivet')
-    exec sp_executesql N'create schema [rivet]'
+    exec sp_executesql N'create schema [rivet] authorization [dbo]'
+
+if not exists (select * from 
+                            sys.schemas s join 
+                            sys.database_principals dp on s.principal_id = dp.principal_id 
+                        where 
+                            s.name = 'rivet' and 
+                            dp.name = 'dbo')
+    alter authorization on schema::[rivet] to [dbo]
+
+if not exists (select * from 
+                            sys.database_permissions dbperms join 
+                            sys.schemas s on dbperms.major_id=s.schema_id join 
+                            sys.database_principals dbid on dbperms.grantee_principal_id = dbid.principal_id 
+                        where 
+                            s.name = 'rivet' and 
+                            dbid.name = 'public')
+    grant control on schema::[rivet] to [public]
 
 if object_id('pstep.Migrations', 'U') is not null
     alter schema [rivet] transfer [pstep].[Migrations]
