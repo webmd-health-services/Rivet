@@ -5,7 +5,7 @@
 		public const int DefaultSeed = 1;
 		public const int DefaultIncrement = 1;
 
-		private bool _defaultIdentity = true;
+		private readonly bool _defaultIdentity = true;
 
 		public Identity() 
 		{
@@ -33,9 +33,9 @@
 			_defaultIdentity = false;
 		}
 
-		public int Seed { get; private set; }
-		public int Increment { get; private set; }
-		public bool NotForReplication { get; private set; }
+		public int Seed { get; set; }
+		public int Increment { get; set; }
+		public bool NotForReplication { get; set; }
 
 		public override string ToString()
 		{

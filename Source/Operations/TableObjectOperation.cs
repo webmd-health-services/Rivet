@@ -8,6 +8,6 @@
 		}
 
 		public override string ObjectName { get { return string.Format("{0}.{1}.{2}", SchemaName, TableName, Name); } }
-		public string TableName { get; private set; }
+		public string TableName { get; set; }
 	}
 }

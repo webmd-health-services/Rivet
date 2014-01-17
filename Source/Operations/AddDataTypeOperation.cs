@@ -39,10 +39,10 @@ namespace Rivet.Operations
 		}
 
 
-		public string AssemblyName { get; private set; }
+		public string AssemblyName { get; set; }
 		public List<Column> AsTable { get; private set; }
-		public string ClassName { get; private set; }
-		public string From { get; private set; }
+		public string ClassName { get; set; }
+		public string From { get; set; }
 		public List<string> TableConstraint { get; private set; }
 		private DatatypeOperation Type { get; set; }
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Rivet.Operations
 {
@@ -10,10 +11,10 @@ namespace Rivet.Operations
 		                              string onUpdate, bool notForReplication)
 			: base(schemaName, tableName, new ForeignKeyConstraintName(schemaName, tableName, referencesSchemaName, referencesTableName).ToString())
 		{
-			ColumnName = (string[])columnName.Clone();
+            ColumnName = new List<string>(columnName);
 			ReferencesSchemaName = referencesSchemaName;
 			ReferencesTableName = referencesTableName;
-			ReferencesColumnName = (string[])referencesColumnName.Clone();
+            ReferencesColumnName = new List<string>(referencesColumnName);
 			OnDelete = onDelete;
 			OnUpdate = onUpdate;
 			NotForReplication = notForReplication;
@@ -25,22 +26,22 @@ namespace Rivet.Operations
 							  string onUpdate, bool notForReplication)
 			: base(schemaName, tableName, name)
 		{
-			ColumnName = (string[])columnName.Clone();
+			ColumnName = new List<string>(columnName);
 			ReferencesSchemaName = referencesSchemaName;
 			ReferencesTableName = referencesTableName;
-			ReferencesColumnName = (string[])referencesColumnName.Clone();
+			ReferencesColumnName = new List<string>(referencesColumnName);
 			OnDelete = onDelete;
 			OnUpdate = onUpdate;
 			NotForReplication = notForReplication;
 		}
 
-		public string[] ColumnName { get; private set; }
-		public string ReferencesSchemaName { get; private set; }
-		public string ReferencesTableName { get; private set; }
-		public string[] ReferencesColumnName { get; private set; }
-		public string OnDelete { get; private set; }
-		public string OnUpdate { get; private set; }
-		public bool NotForReplication { get; private set; }
+		public List<string> ColumnName { get; private set; }
+		public string ReferencesSchemaName { get; set; }
+		public string ReferencesTableName { get; set; }
+		public List<string> ReferencesColumnName { get; private set; }
+		public string OnDelete { get; set; }
+		public string OnUpdate { get; set; }
+		public bool NotForReplication { get; set; }
 
 		public override string ToIdempotentQuery()
 		{
@@ -49,8 +50,8 @@ namespace Rivet.Operations
 
 		public override string ToQuery()
 		{
-			var sourceColumns = string.Join("],[", ColumnName);
-			var refColumns = string.Join("],[", ReferencesColumnName);
+			var sourceColumns = string.Join("],[", ColumnName.ToArray());
+			var refColumns = string.Join("],[", ReferencesColumnName.ToArray());
 
 			var onDeleteClause = "";
 			if (!string.IsNullOrEmpty(OnDelete))

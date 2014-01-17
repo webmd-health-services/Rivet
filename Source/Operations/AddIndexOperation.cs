@@ -41,13 +41,13 @@ namespace Rivet.Operations
 		}
 
 		public List<string> ColumnName { get; private set; }
-		public bool [] Descending { get; private set; }
-		public bool Unique { get; private set; }
-		public bool Clustered { get; private set; }
+		public bool [] Descending { get; set; }
+		public bool Unique { get; set; }
+		public bool Clustered { get; set; }
 		public List<string> Options { get; private set; }
-		public string Where { get; private set; }
-		public string On { get; private set; }
-		public string FileStreamOn { get; private set; }
+		public string Where { get; set; }
+		public string On { get; set; }
+		public string FileStreamOn { get; set; }
 
 		public override string ToIdempotentQuery()
 		{

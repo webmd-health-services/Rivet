@@ -34,11 +34,11 @@ namespace Rivet.Operations
 			ColumnName = columnName;
 		}
 
-		public string ColumnName { get; private set; }
-		public bool ForSchema { get; private set; }
-		public bool ForTable { get; private set; }
-		public bool ForView { get; private set; }
-		public bool ForColumn { get; private set; }
+		public string ColumnName { get; set; }
+		public bool ForSchema { get; set; }
+		public bool ForTable { get; set; }
+		public bool ForView { get; set; }
+		public bool ForColumn { get; set; }
 
 		public override string ObjectName
 		{
@@ -62,6 +62,6 @@ namespace Rivet.Operations
 			}
 		}
 
-		public string TableViewName { get; private set; }
+		public string TableViewName { get; set; }
 	}
 }

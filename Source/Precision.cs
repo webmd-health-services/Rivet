@@ -19,9 +19,9 @@ namespace Rivet
 			_hasScale = true;
 		}
 
-		public int Precision { get; private set; }
+		public int Precision { get; set; }
 
-		public int Scale { get; private set; }
+		public int Scale { get; set; }
 
 		public override string ToString()
 		{
@@ -46,7 +46,7 @@ namespace Rivet
 			IsMax = true;
 		}
 
-		public bool IsMax { get; private set; }
+		public bool IsMax { get; set; }
 
 		public override string ToString()
 		{
@@ -68,14 +68,14 @@ namespace Rivet
 			XmlSchemaCollection = xmlSchemaCollection;
 		}
 
-		public bool Content { get; private set; }
+		public bool Content { get; set; }
 		public bool Document
 		{
 			get { return !Content; } 
 			set { Content = !value; }
 		}
 
-		public string XmlSchemaCollection { get; private set; }
+		public string XmlSchemaCollection { get; set; }
 
 		public override string ToString()
 		{

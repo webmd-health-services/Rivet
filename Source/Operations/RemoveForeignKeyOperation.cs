@@ -8,8 +8,6 @@ namespace Rivet.Operations
 		public RemoveForeignKeyOperation(string schemaName, string tableName, string referencesSchemaName, string referencesTableName)
 			: base(schemaName, tableName, new ForeignKeyConstraintName(schemaName, tableName, referencesSchemaName, referencesTableName).ToString())
 		{
- 			ReferencesSchemaName = referencesSchemaName;
-			ReferencesTableName = referencesTableName;
 		}
 
 		// Custom Constraint Name
@@ -17,9 +15,6 @@ namespace Rivet.Operations
 			: base(schemaName, tableName, name)
 		{
 		}
-
-		public string ReferencesSchemaName { get; private set; }
-		public string ReferencesTableName { get; private set; }
 
 		public override string ToIdempotentQuery()
 		{

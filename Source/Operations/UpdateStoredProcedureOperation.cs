@@ -8,7 +8,7 @@
 			Definition = definition;
 		}
 
-		public string Definition { get; private set; }
+		public string Definition { get; set; }
 
 		public override string ToIdempotentQuery()
 		{

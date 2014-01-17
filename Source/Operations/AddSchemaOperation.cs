@@ -10,8 +10,8 @@ namespace Rivet.Operations
 			Owner = owner;
 		}
 
-		public string Name { get; private set; }
-		public string Owner { get; private set; }
+		public string Name { get; set; }
+		public string Owner { get; set; }
 
 		public override string ToIdempotentQuery()
 		{

@@ -10,7 +10,7 @@ namespace Rivet.Operations
 			TableName = tableName;
 		}
 
-		public string TableName { get; private set; }
+		public string TableName { get; set; }
 
 		public override string ToIdempotentQuery()
 		{

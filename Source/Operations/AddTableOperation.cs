@@ -24,12 +24,12 @@ namespace Rivet.Operations
 		}
 
 		public List<Column> Columns { get; private set; }
-		public bool FileTable { get; private set; }
-		public string FileGroup { get; private set; }
-		public string TextImageFileGroup { get; private set; }
-		public string FileStreamFileGroup { get; private set; }
+		public bool FileTable { get; set; }
+		public string FileGroup { get; set; }
+		public string TextImageFileGroup { get; set; }
+		public string FileStreamFileGroup { get; set; }
 		public List<string> Options { get; private set; }
-		public string Description { get; private set; }
+		public string Description { get; set; }
 
 		public override string ToIdempotentQuery()
 		{

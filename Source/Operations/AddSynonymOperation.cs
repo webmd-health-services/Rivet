@@ -12,9 +12,9 @@ namespace Rivet.Operations
 			TargetObjectName = targetObjectName;
 		}
 
-		public string TargetSchemaName { get; private set; }
-		public string TargetDatabaseName { get; private set; }
-		public string TargetObjectName { get; private set; }
+		public string TargetSchemaName { get; set; }
+		public string TargetDatabaseName { get; set; }
+		public string TargetObjectName { get; set; }
 
 		public override string ToIdempotentQuery()
 		{
