@@ -21,6 +21,8 @@ function Test-ShouldCreateRivetObjectsInDatabase
     Assert-True (Test-Schema -Name 'rivet') 'rivet schema not created'   
     Assert-True (Test-Table -Name 'Migrations' -SchemaName 'rivet') 'rivet migrations table not created'
     Assert-True (Test-Table -Name 'Activity' -SchemaName 'rivet') 'rivet activity table not created'
+    Assert-True (Test-StoredProcedure -SchemaName 'rivet' -Name 'InsertMigration') 'rivet.InsertMigration stored procedure missing'
+    Assert-True (Test-StoredProcedure -SchemaName 'rivet' -Name 'RemoveMigration') 'rivet.RemoveMigration stored procedure missing'
 }
 
 function Test-ShouldRenamePstepSchemaToRivet
@@ -34,7 +36,9 @@ function Test-ShouldRenamePstepSchemaToRivet
 
     Invoke-RivetTestQuery -Query ('alter schema {0} transfer {1}.Migrations' -f $oldSchemaName,$RivetSchemaName)
 
-    Invoke-RivetTestQuery -Query ('alter schema {0} transfer {1}.Activity' -f $oldSchemaName,$RivetSchemaName)
+    Invoke-RivetTestQuery -Query ('drop table [{0}].[Activity]' -f $RivetSchemaName)
+    Invoke-RivetTestQuery -Query ('drop procedure [{0}].[InsertMigration]' -f $RivetSchemaName)
+    Invoke-RivetTestQuery -Query ('drop procedure [{0}].[RemoveMigration]' -f $RivetSchemaName)
 
     Invoke-RivetTestQuery -Query ('drop schema {0}' -f $RivetSchemaName)
 

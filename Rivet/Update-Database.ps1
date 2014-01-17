@@ -68,7 +68,7 @@ function Update-Database
             return
         }
         
-        $id = [UInt64]$matches[1]
+        $id = [Int64]$matches[1]
         $name = $matches[2]
 
         if( $name.Length -gt 50 )
@@ -134,6 +134,12 @@ function Update-Database
             $DBScriptRoot = $DBScriptsPath
             $DBMigrationsRoot = Join-Path -Path $DBScriptsPath -ChildPath Migrations
 
+            $parameters = @{
+                                ID = [int64]$migrationInfo.MigrationID; 
+                                Name = $migrationInfo.MigrationName;
+                                Who = ('{0}\{1}' -f $env:USERDOMAIN,$env:USERNAME);
+                                ComputerName = $env:COMPUTERNAME
+                            }
             if( $Pop -or $Force )
             {
                 if( -not (Test-Path $popFuntionPath) )
@@ -146,16 +152,8 @@ function Update-Database
                 Pop-Migration
                 Remove-Item -Path $popFuntionPath -Confirm:$false -WhatIf:$false
 
-                Remove-Row -SchemaName $RivetSchemaName $RivetMigrationsTableName -Quiet -Where ('ID = {0}' -f $migrationInfo.MigrationID) -Verbose:$false
-                $who = '{0}\{1}' -f $env:USERDOMAIN,$env:USERNAME
-                Add-Row -SchemaName $RivetSchemaName $RivetActivityTableName -Quiet -Verbose:$false -Column @{
-                                                                            Operation = 'Pop';
-                                                                            MigrationID = $migrationInfo.MigrationID;
-                                                                            Name = $migrationInfo.MigrationName;
-                                                                            Who = $who;
-                                                                            ComputerName = $env:COMPUTERNAME;
-                                                                          }
-
+                $query = 'exec [rivet].[RemoveMigration] @ID = @ID, @Name = @Name, @Who = @Who, @ComputerName = @ComputerName'
+                Invoke-Query -Query $query -NonQuery -Parameter $parameters  | Out-Null
             }
             else
             {
@@ -169,23 +167,8 @@ function Update-Database
                 Push-Migration
                 Remove-Item -Path $pushFunctionPath -Confirm:$False -WhatIf:$false
 
-                $who = '{0}\{1}' -f $env:USERDOMAIN,$env:USERNAME
-
-                Add-Row -SchemaName $RivetSchemaName $RivetMigrationsTableName -Quiet -Verbose:$false -Column @{
-                                                                                ID = $migrationInfo.MigrationID;
-                                                                                Name = $migrationInfo.MigrationName;
-                                                                                Who = $who;
-                                                                                ComputerName = $env:COMPUTERNAME;
-                                                                            }
-
-                Add-Row -SchemaName $RivetSchemaName $RivetActivityTableName -Quiet -Verbose:$false -Column @{
-                                                                                Operation = 'Push';
-                                                                                MigrationID = $migrationInfo.MigrationID;
-                                                                                Name = $migrationInfo.MigrationName;
-                                                                                Who = $who;
-                                                                                ComputerName = $env:COMPUTERNAME;
-                                                                          }
-
+                $query = 'exec [rivet].[InsertMigration] @ID = @ID, @Name = @Name, @Who = @Who, @ComputerName = @ComputerName'
+                Invoke-Query -Query $query -NonQuery -Parameter $parameters | Out-Null
             }
 
             $target = '{0}.{1}' -f $Connection.DataSource,$Connection.Database
