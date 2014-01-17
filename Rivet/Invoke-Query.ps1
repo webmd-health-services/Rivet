@@ -31,6 +31,10 @@ filter Invoke-Query
         [string]
         $Query,
         
+        [Parameter()]
+        [Hashtable]
+        $Parameter,
+
         [Parameter(Mandatory=$true,ParameterSetName='ExecuteScalar')]
         [Switch]
         $AsScalar,
@@ -46,6 +50,12 @@ filter Invoke-Query
 
     $invokeMigrationParams = @{
                               }
+
+    if( $PSBoundParameters.ContainsKey( 'Parameter' ) )
+    {
+        $invokeMigrationParams.Parameter = $Parameter
+    }
+    
     if( $PSBoundParameters.ContainsKey( 'AsScalar' ) )
     {
         $invokeMigrationParams.AsScalar = $true

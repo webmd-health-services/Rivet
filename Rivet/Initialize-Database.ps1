@@ -36,9 +36,6 @@ if not exists (select * from
 if object_id('pstep.Migrations', 'U') is not null
     alter schema [rivet] transfer [pstep].[Migrations]
 
-if object_id('pstep.Activity', 'U') is not null
-    alter schema [rivet] transfer [pstep].[Activity]
-
 if exists (select * from sys.schemas where name = 'pstep')
     drop schema [pstep]
 
@@ -104,6 +101,40 @@ if object_id('rivet.PK_rivet_Activity_ID', 'PK') is not null and object_id('rive
 begin
     exec sp_rename 'rivet.PK_rivet_Activity_ID', 'PK_rivet_Activity', 'OBJECT'
 end
+
+if object_id('rivet.InsertMigration', 'P') is null and object_id('rivet.InsertMigration', 'PC') is null
+    exec sp_executesql N'
+        create procedure [rivet].[InsertMigration]
+	        @ID bigint,
+	        @Name varchar(50),
+	        @Who varchar(50),
+	        @ComputerName varchar(50)
+        as
+        begin
+	        declare @AtUtc datetime2(7)
+
+	        select @AtUtc = getutcdate()
+
+	        insert into [rivet].[Migrations] ([ID],[Name],[Who],[ComputerName],[AtUtc]) values (@ID,@Name,@Who,@ComputerName,@AtUtc)
+
+	        insert into [rivet].[Activity] ([Operation],[MigrationID],[Name],[Who],[ComputerName],[AtUtc]) values (''Push'',@ID,@Name,@Who,@ComputerName,@AtUtc)
+        end
+    '
+
+if object_id('rivet.RemoveMigration', 'P') is null and object_id('rivet.RemoveMigration', 'PC') is null
+    exec sp_executesql N'
+        create procedure [rivet].[RemoveMigration]
+	        @ID bigint,
+            @Name varchar(50),
+            @Who varchar(50),
+            @ComputerName varchar(50)
+        as
+        begin
+	        delete from [rivet].[Migrations] where [ID] = @ID
+
+	        insert into [rivet].[Activity] ([Operation],[MigrationID],[Name],[Who],[ComputerName],[AtUtc]) values (''Pop'',@ID,@Name,@Who,@ComputerName,getutcdate())
+        end
+    '
 '@
 
         $null = Invoke-Query -Query $query -NonQuery -Verbose:$false

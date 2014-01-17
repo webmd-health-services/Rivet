@@ -20,6 +20,10 @@ function Invoke-MigrationOperation
         [Rivet.Operations.Operation]
         # The migration object to invoke.
         $Operation,
+
+        [Hashtable]
+        # Any parameters to use in the query.
+        $Parameter,
         
         [Parameter(Mandatory=$true,ParameterSetName='ExecuteScalar')]
         [Switch]
@@ -45,6 +49,19 @@ function Invoke-MigrationOperation
     Write-Verbose $query
     $cmd = New-Object 'Data.SqlClient.SqlCommand' ($query,$Connection,$Connection.Transaction)
     $cmd.CommandTimeout = $CommandTimeout
+
+    if( $Parameter )
+    {
+        $Parameter.Keys | ForEach-Object { 
+            $name = $_
+            $value = $Parameter[$name]
+            if( -not $name.StartsWith( '@' ) )
+            {
+                $name = '@{0}' -f $name
+            }
+            [void] $cmd.Parameters.AddWithValue( $name, $value )
+       }
+    }
 
     try
     {
