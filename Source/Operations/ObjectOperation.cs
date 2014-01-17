@@ -15,6 +15,6 @@
 			get { return string.Format("{0}.{1}", SchemaName, Name); }
 		}
 
-		public string SchemaName { get; private set; }
+		public string SchemaName { get; set; }
 	}
 }

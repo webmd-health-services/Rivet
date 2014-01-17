@@ -27,18 +27,17 @@ namespace Rivet.Operations
 			UseRawValues = useRawValues;
 		}
 
-		public string SchemaName { get; private set; }
-		public string TableName { get; private set; }
-		public Hashtable Column { get; private set; }
-		public string Where { get; private set; }
-		public bool All { get; private set; }
-		public bool UseRawValues { get; private set; }
+		public string SchemaName { get; set; }
+		public string TableName { get; set; }
+		public Hashtable Column { get; set; }
+		public string Where { get; set; }
+		public bool All { get; set; }
+		public bool UseRawValues { get; set; }
 
 		public override string ToIdempotentQuery()
 		{
 			return ToQuery();
 		}
-
 
 		public override string ToQuery()
 		{

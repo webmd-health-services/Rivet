@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Rivet.Operations
 {
@@ -8,11 +9,11 @@ namespace Rivet.Operations
 		public AddPrimaryKeyOperation(string schemaName, string tableName, string [] columnName, bool nonClustered, string[] options)
 			: base(schemaName, tableName, new ConstraintName(schemaName, tableName, columnName, ConstraintType.PrimaryKey).ToString())
 		{
-			ColumnName = (string[])columnName.Clone();
+		    ColumnName = new List<string>(columnName);
 			NonClustered = nonClustered;
 			if (options != null)
 			{
-				Options = (string[])options.Clone();
+			    Options = new List<string>(options);
 			}
 			else
 			{
@@ -24,11 +25,11 @@ namespace Rivet.Operations
 		public AddPrimaryKeyOperation(string schemaName, string tableName, string[] columnName, string customConstraintName, bool nonClustered, string[] options)
 			: base(schemaName, tableName, customConstraintName)
 		{
-			ColumnName = (string[])columnName.Clone();
+            ColumnName = new List<string>(columnName);
 			NonClustered = nonClustered;
 			if (options != null)
 			{
-				Options = (string[])options.Clone();
+                Options = new List<string>(options);
 			}
 			else
 			{
@@ -36,9 +37,9 @@ namespace Rivet.Operations
 			}
 		}
 
-		public string[] ColumnName { get; private set; }
-		public bool NonClustered { get; private set; }
-		public string[] Options { get; private set; }
+		public List<string> ColumnName { get; set; }
+		public bool NonClustered { get; set; }
+        public List<string> Options { get; set; }
 
 		public override string ToIdempotentQuery()
 		{
@@ -57,13 +58,13 @@ namespace Rivet.Operations
 			}
 
 			var optionClause = "";
-			if (!(Options == null || Options.Length == 0))
+			if (!(Options == null || Options.Count == 0))
 			{
-				optionClause = string.Join(", ", Options);
+				optionClause = string.Join(", ", Options.ToArray());
 				optionClause = string.Format(" with ( {0} )", optionClause);
 			}
 
-			var columnClause = string.Join("], [", ColumnName);
+			var columnClause = string.Join("], [", ColumnName.ToArray());
 
 			return string.Format("alter table [{0}].[{1}] add constraint [{2}] primary key {3} ([{4}]){5}", 
 				SchemaName, TableName, Name, clusteredClause, columnClause, optionClause);

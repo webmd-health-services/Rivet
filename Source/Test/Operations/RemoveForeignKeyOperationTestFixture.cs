@@ -17,8 +17,6 @@ namespace Rivet.Test.Operations
 			var op = new RemoveForeignKeyOperation(schemaName, tableName, referencesSchemaName, referencesTableName);
 			Assert.AreEqual(schemaName, op.SchemaName);
 			Assert.AreEqual(tableName, op.TableName);
-			Assert.AreEqual(referencesSchemaName, op.ReferencesSchemaName);
-			Assert.AreEqual(referencesTableName, op.ReferencesTableName);
 			Assert.That(op.ObjectName, Is.EqualTo(string.Format("{0}.{1}.FK_{0}_{1}_{2}_{3}", schemaName, tableName, referencesSchemaName, referencesTableName)));
 		}
 
@@ -32,8 +30,6 @@ namespace Rivet.Test.Operations
 			var op = new RemoveForeignKeyOperation(schemaName, tableName, optionalConstraintName);
 			Assert.AreEqual(schemaName, op.SchemaName);
 			Assert.AreEqual(tableName, op.TableName);
-			Assert.That(op.ReferencesTableName, Is.Null);
-			Assert.That(op.ReferencesSchemaName, Is.Null);
 			Assert.AreEqual(optionalConstraintName, op.Name.ToString());
 		}
 

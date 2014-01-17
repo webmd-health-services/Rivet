@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace Rivet.Operations
 {
@@ -10,14 +11,10 @@ namespace Rivet.Operations
 		                                    int fillFactor, string[] options, string filegroup)
 			: base(schemaName, tableName, new ConstraintName(schemaName, tableName, columnName, ConstraintType.UniqueKey).ToString())
 		{
-			ColumnName = (string[])columnName.Clone();
+		    ColumnName = new List<string>(columnName);
 			Clustered = clustered;
 			FillFactor = fillFactor;
-			if (options != null) {
-				Options = (string[])options.Clone();
-			} else {
-				Options = null;
-			}
+			Options = new List<string>(options ?? new string[0]);
 			FileGroup = filegroup;
 		}
 
@@ -29,11 +26,11 @@ namespace Rivet.Operations
 			Name = customConstraintName;
 		}
 
-		public string[] ColumnName { get; private set; }
-		public bool Clustered { get; private set; }
-		public int FillFactor { get; private set; }
-		public string[] Options { get; private set; }
-		public string FileGroup { get; private set; }
+		public List<string> ColumnName { get; private set; }
+		public bool Clustered { get; set; }
+		public int FillFactor { get; set; }
+        public List<string> Options { get; private set; }
+		public string FileGroup { get; set; }
 
 		public override string ToIdempotentQuery()
 		{
@@ -48,40 +45,27 @@ namespace Rivet.Operations
 				clusteredClause = " clustered";
 			}
 
-			var fillFactorClause = "";
-			var optionClause = "";		// (1)
+		    var allOptions = new List<string>(Options);
+		    if (FillFactor > 0)
+		    {
+		        allOptions.Add(string.Format("fillfactor = {0}", FillFactor));
+		    }
 
-			if (Options != null && FillFactor == 0) //Options, but no FillFactor (2)
-			{
-				optionClause = string.Join(", ", Options);
-				optionClause = string.Format("with ({0})", optionClause);
-			}
-
-			if (Options == null && FillFactor > 0) //No Options, but with FillFactor (3)
-			{
-				fillFactorClause = string.Format("fillfactor = {0}", FillFactor);
-				optionClause = string.Format("with ({0})", fillFactorClause);
-			}
-
-			if (Options != null && FillFactor > 0) //Options and FillFactor (4)
-			{
-				fillFactorClause = string.Format("fillfactor = {0}", FillFactor);
-				List<string> optionsList = new List<string>(Options);
-				optionsList.Add(fillFactorClause);
-				Options = optionsList.ToArray();
-				optionClause = string.Join(", ", Options);
-				optionClause = string.Format("with ({0})", optionClause);
-			}
+            var optionClause = "";
+            if (Options.Count > 0)
+		    {
+		        optionClause = string.Format(" with ({0})", string.Join(", ", allOptions.ToArray()));
+		    }
 
 			var fileGroupClause = "";
 			if (!string.IsNullOrEmpty(FileGroup))
 			{
-				fileGroupClause = string.Format("on {0}", FileGroup);
+				fileGroupClause = string.Format(" on {0}", FileGroup);
 			}
 
-			var columnClause = string.Join("], [", ColumnName);
+			var columnClause = string.Join("], [", ColumnName.ToArray());
 
-			return string.Format("alter table [{0}].[{1}] add constraint [{2}] unique{3} ([{4}]) {5} {6}", 
+			return string.Format("alter table [{0}].[{1}] add constraint [{2}] unique{3} ([{4}]){5}{6}", 
 				SchemaName, TableName, Name, clusteredClause, columnClause, optionClause, fileGroupClause);
 
 		}

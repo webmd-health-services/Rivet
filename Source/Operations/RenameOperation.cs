@@ -12,13 +12,13 @@ namespace Rivet.Operations
 		    Type = type;
 		}
 
-		public string SchemaName { get; private set; }
+		public string SchemaName { get; set; }
 
-		public string Name { get; private set; }
+		public string Name { get; set; }
 
-		public string NewName { get; private set; }
+		public string NewName { get; set; }
 
-        public string Type { get; private set; }
+        public string Type { get; set; }
 
 		protected virtual string GetObjectName()
 		{

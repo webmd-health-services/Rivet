@@ -9,7 +9,7 @@ namespace Rivet.Operations
 			Query = query;
 		}
 
-		public string Query { get; private set; }
+		public string Query { get; set; }
 
 		public override string ToIdempotentQuery()
 		{

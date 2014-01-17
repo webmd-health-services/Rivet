@@ -16,7 +16,7 @@ namespace Rivet.Operations
 			Name = new ConstraintName(name).ToString();
 		}
 
-		public string ColumnName { get; private set; }
+		public string ColumnName { get; set; }
 
 		public override string ToIdempotentQuery()
 		{

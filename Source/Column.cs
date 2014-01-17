@@ -102,17 +102,17 @@
 			Nullable = nullable;
 		}
 
-		public string Collation { get; private set; }
+		public string Collation { get; set; }
 
-		public DataType DataType { get; private set; }
+		public DataType DataType { get; set; }
 
-		public string CustomDefinition { get; private set; }
+		public string CustomDefinition { get; set; }
 
-		public string DefaultExpression { get; private set; }
+		public string DefaultExpression { get; set; }
 
-		public string Description { get; private set; }
+		public string Description { get; set; }
 
-		public bool FileStream { get; private set; }
+		public bool FileStream { get; set; }
 
 		public Identity Identity { get; private set; }
 
@@ -128,11 +128,11 @@
 			get { return Nullable == Nullable.Null || Nullable == Nullable.Sparse; }
 		}
 
-		public Nullable Nullable { get; private set; }
+		public Nullable Nullable { get; set; }
 
-		public PrecisionScale Size { get; private set; }
+		public PrecisionScale Size { get; set; }
 
-		public bool RowGuidCol { get; private set; }
+		public bool RowGuidCol { get; set; }
 
 		public bool Sparse
 		{

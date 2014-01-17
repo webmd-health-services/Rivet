@@ -19,10 +19,10 @@ namespace Rivet
 			_name = name;
 		}
 
-		public string SchemaName { get; private set; }
-		public string TableName { get; private set; }
-		public string ReferencesSchemaName { get; private set; }
-		public string ReferencesTableName { get; private set; }
+		public string SchemaName { get; set; }
+		public string TableName { get; set; }
+		public string ReferencesSchemaName { get; set; }
+		public string ReferencesTableName { get; set; }
 		public string Name { get { return ToString();  } }
 
 		public override string ToString()

@@ -20,9 +20,9 @@ namespace Rivet.Operations
 			Name = name;
 		}
 
-		public string ColumnName { get; private set; }
-		public string Expression { get; private set; }
-		public bool WithValues { get; private set; }
+		public string ColumnName { get; set; }
+		public string Expression { get; set; }
+		public bool WithValues { get; set; }
 
 		public override string ToIdempotentQuery()
 		{

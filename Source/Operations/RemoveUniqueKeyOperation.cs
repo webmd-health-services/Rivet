@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Rivet.Operations
 {
@@ -7,7 +8,7 @@ namespace Rivet.Operations
 		public RemoveUniqueKeyOperation(string schemaName, string tableName, string[] columnName)
 			: base(schemaName, tableName, new ConstraintName(schemaName, tableName, columnName, ConstraintType.UniqueKey).ToString())
 		{
-			ColumnName = (string[])columnName.Clone();
+		    ColumnName = new List<string>(columnName);
 		}
 
 		public RemoveUniqueKeyOperation(string schemaName, string tableName, string name)
@@ -15,7 +16,7 @@ namespace Rivet.Operations
 		{
 		}
 
-		public string[] ColumnName { get; private set; }
+		public List<string> ColumnName { get; private set; }
 
 		public override string ToIdempotentQuery()
 		{

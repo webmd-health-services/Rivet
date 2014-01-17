@@ -10,7 +10,7 @@ namespace Rivet.Operations
             Namespace = triggerNamespace;
         }
 
-        public string Namespace { get; private set; }
+        public string Namespace { get; set; }
 
         public override string ToQuery()
         {

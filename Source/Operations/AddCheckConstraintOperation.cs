@@ -11,8 +11,8 @@ namespace Rivet.Operations
 			NotForReplication = notForReplication;
 		}
 
-		public string Expression { get; private set; }
-		public bool NotForReplication { get; private set; }
+		public string Expression { get; set; }
+		public bool NotForReplication { get; set; }
 
 		public override string ToIdempotentQuery()
 		{

@@ -22,11 +22,11 @@ namespace Rivet.Operations
 			Truncate = truncate;
 		}
 
-		public string SchemaName { get; private set; }
-		public string TableName { get; private set; }
-		public string Where { get; private set; }
-		public bool All { get; private set; }
-		public bool Truncate { get; private set; }
+		public string SchemaName { get; set; }
+		public string TableName { get; set; }
+		public string Where { get; set; }
+		public bool All { get; set; }
+		public bool Truncate { get; set; }
 
 		public override string ToIdempotentQuery()
 		{

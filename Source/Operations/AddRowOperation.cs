@@ -23,10 +23,10 @@ namespace Rivet.Operations
 			IdentityInsert = identityInsert;
 		}
 
-		public string SchemaName { get; private set; }
-		public string TableName { get; private set; }
+		public string SchemaName { get; set; }
+		public string TableName { get; set; }
 		public Hashtable[] Column { get; private set; }
-		public bool IdentityInsert { get; private set; }
+		public bool IdentityInsert { get; set; }
 
 		public int Count
 		{
