@@ -24,7 +24,7 @@ function Complete-MigrationOperation
 
     $trigger = @'
 ON [{0}].[{1}]
-FOR INSERT, UPDATE
+FOR UPDATE
 NOT FOR REPLICATION
 AS
 IF @@ROWCOUNT = 0
