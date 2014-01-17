@@ -36,6 +36,9 @@ if not exists (select * from
 if object_id('pstep.Migrations', 'U') is not null
     alter schema [rivet] transfer [pstep].[Migrations]
 
+if object_id('pstep.Activity', 'U') is not null
+    alter schema [rivet] transfer [pstep].[Activity]
+
 if exists (select * from sys.schemas where name = 'pstep')
     drop schema [pstep]
 

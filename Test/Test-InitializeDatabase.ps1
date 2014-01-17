@@ -63,15 +63,15 @@ function Test-ShouldChangeAtUtcToDatetime2
     $assertColumnParams = @{ 
                                 TableName = $migrationsTableName ; 
                                 SchemaName = $rivetSchemaName ; 
-                                Name = 'Atutc' ;
+                                Name = 'AtUtc' ;
                                 NotNull = $true ;
                            }
     Assert-Column -DataType 'datetime2' @assertColumnParams
 
     $query = @'
-        alter table {0}.{1} drop constraint AtUtcDefault
+        alter table {0}.{1} drop constraint DF_rivet_Migrations_AtUtc
         alter table {0}.{1} alter column Atutc datetime not null
-        alter table {0}.{1} add constraint AtUtcDefault default (GetUtcDate()) for Atutc
+        alter table {0}.{1} add constraint AtUtcDefault default (GetUtcDate()) for AtUtc
 '@ -f $rivetSchemaName,$migrationsTableName
     Invoke-RivetTestQuery -Query $query
     Assert-Column -DataType 'datetime' @assertColumnParams
