@@ -1,8 +1,52 @@
 
 function Setup
 {
-    Import-Module -Name (Join-Path $TestDir 'RivetTest') -ArgumentList 'RivetTest' 
+    Import-Module -Name (Join-Path $TestDir 'RivetTest') -ArgumentList 'PopMigration' 
     Start-RivetTest
+
+    @'
+function Push-Migration
+{
+    Add-Table 'Migration1' { int ID -Identity }
+}
+function Pop-Migration 
+{
+    Remove-Table 'Migration1'
+}
+'@ | New-Migration -Name 'Migration1'
+
+    @'
+function Push-Migration
+{
+    Add-Table 'Migration2' { int ID -Identity }
+}
+function Pop-Migration 
+{
+    Remove-Table 'Migration2'
+}
+'@ | New-Migration -Name 'Migration2'
+
+    @'
+function Push-Migration
+{
+    Add-Table 'Migration3' { int ID -Identity }
+}
+function Pop-Migration 
+{
+    Remove-Table 'Migration3'
+}
+'@ | New-Migration -Name 'Migration3'
+
+    @'
+function Push-Migration
+{
+    Add-Table 'Migration4' { int ID -Identity }
+}
+function Pop-Migration 
+{
+    Remove-Table 'Migration4'
+}
+'@ | New-Migration -Name 'Migration4'
 
     Invoke-Rivet -Push
     
@@ -32,13 +76,6 @@ function Test-ShouldPopAllMigrations
         
         Assert-False (Test-Table -Name $name)
     }
-    
-    Assert-False (Test-Table -Name 'InvokeQuery')
-    Assert-False (Test-Table -Name 'SecondTable')
-    Assert-False (Test-DatabaseObject -StoredProcedure 'RivetTestSproc')
-    Assert-False (Test-DatabaseObject -ScalarFunction 'RivetTestFunction') 'user-defined function not dropped'
-    Assert-False (Test-DatabaseObject -View 'Migrators') 'view not dropped'
-    Assert-False (Test-DatabaseObject -ScalarFunction 'MiscellaneousObject') 'the miscellaneous function not dropped'
 }
 
 function Test-ShouldWriteToActivityTableOnPop
@@ -46,7 +83,7 @@ function Test-ShouldWriteToActivityTableOnPop
     $migrationCount = Measure-Migration
     Assert-True ($migrationCount -gt 1)
 
-    Invoke-Rivet -Pop 1
+    Invoke-Rivet -Pop
     Assert-LastProcessSucceeded
 
     Assert-Equal ($migrationCount-1) (Measure-Migration)
@@ -54,7 +91,7 @@ function Test-ShouldWriteToActivityTableOnPop
     $rows = Get-ActivityInfo
 
     Assert-Equal 'Pop' $rows[4].Operation
-    Assert-Equal 'CreateObjectInCustomDirectory' $rows[4].Name
+    Assert-Equal 'Migration4' $rows[4].Name
     Assert-Equal 5 $rows[4].ID
 }
 
@@ -113,26 +150,32 @@ function Test-ShouldSupportPoppingMoreThanAvailableMigrations
 
 function Test-ShouldStopPoppingMigrationsIfOneGivesAnError
 {
-    $script = Get-MigrationScript | Select-Object -First 1
-    $migrationDir = Split-Path -Parent -Path $script.FullName
-    Copy-Item -Path (Join-Path $migrationDir Extras\*.ps1) -Destination $migrationDir
-    Remove-Item -Path (Join-Path $migrationDir *_TableWithoutColumns.ps1)
+    @'
+function Push-Migration
+{
+    Add-Table 'Migration5' {
+        int 'ID' -Identity
+    }
+}
+
+function Pop-Migration
+{
+    Remove-Table 'Migration38'
+}
+'@ | New-Migration -Name 'PopFails'
     
     Invoke-Rivet -Push
     Assert-LastProcessSucceeded
     Assert-True ($error.Count -eq 0)
     
-    ('SecondTable','PushSucceedsPopFails','FourthTable') | ForEach-Object {
-        Assert-True (Test-Table -Name $_)
-    }
-
     Invoke-Rivet -Pop (Measure-Migration) -ErrorAction SilentlyContinue -ErrorVariable rivetError
 
     Assert-NotNull $rivetError
     Assert-Like $rivetError[0] '*cannot drop the table*'
     
-    Assert-True (Test-Table -Name 'SecondTable')
-    Assert-True (Test-Table -Name 'PushSucceedsPopFails')
-    Assert-False (Test-Table -Name 'FourthTable')
-        
+    Assert-True (Test-Table -Name 'Migration5')
+    Assert-True (Test-Table -Name 'Migration4')
+    Assert-True (Test-Table -Name 'Migration3')
+    Assert-True (Test-Table -Name 'Migration2')
+    Assert-True (Test-Table -Name 'Migration1')
 }
