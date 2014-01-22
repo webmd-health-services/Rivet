@@ -270,6 +270,10 @@ $testScripts |
 
                             return $true
                         }
+        @('Start-TestFixture','Start-Test','Setup','TearDown','Stop-Test','Stop-TestFixture') |
+            ForEach-Object { Join-Path -Path 'function:' -ChildPath $_ } |
+            Where-Object { Test-Path -Path $_ } |
+            Remove-Item
         
         . $testCase.FullName
         try
