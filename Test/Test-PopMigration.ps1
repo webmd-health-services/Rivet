@@ -1,10 +1,14 @@
+$migration1 = $null
+$migration2 = $null
+$migration3 = $null
+$migration4 = $null
 
 function Setup
 {
     Import-Module -Name (Join-Path $TestDir 'RivetTest') -ArgumentList 'PopMigration' 
     Start-RivetTest
 
-    @'
+    $migration1 = @'
 function Push-Migration
 {
     Add-Table 'Migration1' { int ID -Identity }
@@ -15,7 +19,7 @@ function Pop-Migration
 }
 '@ | New-Migration -Name 'Migration1'
 
-    @'
+    $migration2 = @'
 function Push-Migration
 {
     Add-Table 'Migration2' { int ID -Identity }
@@ -26,7 +30,7 @@ function Pop-Migration
 }
 '@ | New-Migration -Name 'Migration2'
 
-    @'
+    $migration3 = @'
 function Push-Migration
 {
     Add-Table 'Migration3' { int ID -Identity }
@@ -37,7 +41,7 @@ function Pop-Migration
 }
 '@ | New-Migration -Name 'Migration3'
 
-    @'
+    $migration4 = @'
 function Push-Migration
 {
     Add-Table 'Migration4' { int ID -Identity }
@@ -178,4 +182,58 @@ function Pop-Migration
     Assert-True (Test-Table -Name 'Migration3')
     Assert-True (Test-Table -Name 'Migration2')
     Assert-True (Test-Table -Name 'Migration1')
+}
+
+function Test-ShouldPopByName
+{
+    Invoke-Rivet -Pop 'Migration1'
+
+    Assert-True (Test-Table -Name 'Migration4')
+    Assert-True (Test-Table -Name 'Migration3')
+    Assert-True (Test-Table -Name 'Migration2')
+    Assert-False (Test-Table -Name 'Migration1')
+}
+
+function Test-ShouldPopByNameWithWildcard
+{
+    Invoke-Rivet -Pop 'Migration*'
+
+    Assert-False (Test-Table -Name 'Migration4')
+    Assert-False (Test-Table -Name 'Migration3')
+    Assert-False (Test-Table -Name 'Migration2')
+    Assert-False (Test-Table -Name 'Migration1')
+}
+
+
+function Test-ShouldPopByNameWithNoMatch
+{
+    $Error.Clear()
+    Invoke-Rivet -Pop 'Blah' -ErrorAction SilentlyContinue
+    Assert-Equal 1 $Error.Count
+    Assert-Like $Error[0].Exception.Message '*not found*'
+
+    Assert-True (Test-Table -Name 'Migration4')
+    Assert-True (Test-Table -Name 'Migration3')
+    Assert-True (Test-Table -Name 'Migration2')
+    Assert-True (Test-Table -Name 'Migration1')
+}
+
+function Test-ShouldPopByID
+{
+    $name = $migration1.BaseName.Substring(0,14)
+    Invoke-Rivet -Pop $name
+    Assert-Table -Name 'Migration4'
+    Assert-Table -Name 'Migration3'
+    Assert-Table -Name 'Migration2'
+    Assert-False (Test-Table -Name 'Migration1')
+}
+
+function Test-ShouldPopByIDWithWildcard
+{
+    $name = '{0:yyyyMMdd}*' -f (Get-Date)
+    Invoke-Rivet -Pop $name
+    Assert-False (Test-Table -Name 'Migration4')
+    Assert-False (Test-Table -Name 'Migration3')
+    Assert-False (Test-Table -Name 'Migration2')
+    Assert-False (Test-Table -Name 'Migration1')
 }

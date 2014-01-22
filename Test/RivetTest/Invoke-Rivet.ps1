@@ -7,18 +7,21 @@ function Invoke-Rivet
         [Switch]
         $Push,
 
-        [Parameter(Position=1,ParameterSetName='Push')]
-        [string]
-        # The name of the migration to push/pop.
-        $Name,
-
         [Parameter(Mandatory=$true,ParameterSetName='Pop')]
+        [Parameter(Mandatory=$true,ParameterSetName='PopByName')]
+        [Parameter(Mandatory=$true,ParameterSetName='PopByCount')]
         [Parameter(Mandatory=$true,ParameterSetName='PopAll')]
         [Switch]
         $Pop,
         
-        [Parameter(Position=1,ParameterSetName='Pop')]
-        [UInt32]
+        [Parameter(Position=1,ParameterSetName='Push')]
+        [Parameter(Mandatory=$true,Position=1,ParameterSetName='PopByName')]
+        [string]
+        # The name of the migration to push/pop.
+        $Name,
+
+        [Parameter(Mandatory=$true,Position=1,ParameterSetName='PopByCount')]
+        [int]
         $Count = 1,
 
         [Parameter(Mandatory=$true,ParameterSetName='PopAll')]

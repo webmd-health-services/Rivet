@@ -1,8 +1,10 @@
+$floog = ''
 
 function Setup
 {
     & (Join-Path $TestDir RivetTest\Import-RivetTest.ps1 -Resolve) -DatabaseName 'AddRemoveSchema'
     Start-RivetTest
+    $floog = 'blarg'
 }
 
 function TearDown

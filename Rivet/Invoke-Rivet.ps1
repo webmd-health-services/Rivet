@@ -14,6 +14,8 @@ function Invoke-Rivet
         $Push,
     
         [Parameter(Mandatory=$true,ParameterSetName='Pop')]
+        [Parameter(Mandatory=$true,ParameterSetName='PopByCount')]
+        [Parameter(Mandatory=$true,ParameterSetName='PopByName')]
         [Parameter(Mandatory=$true,ParameterSetName='PopAll')]
         [Switch]
         # Reverts migrations.
@@ -26,35 +28,50 @@ function Invoke-Rivet
 
         [Parameter(Mandatory=$true,ParameterSetName='New',Position=1)]
         [Parameter(ParameterSetName='Push',Position=1)]
+        [Parameter(Mandatory=$true,ParameterSetName='PopByName',Position=1)]
         [string]
         # The name of the migration to create/push.  Wildcards accepted when pushing.
         $Name,
     
-        [Parameter(ParameterSetName='Pop',Position=1)]
+        [Parameter(Mandatory=$true,ParameterSetName='PopByCount',Position=1)]
         [UInt32]
         # The number of migrations to pop. Default is 1.
         $Count = 1,
 
         [Parameter(Mandatory=$true,ParameterSetName='PopAll')]
         [Switch]
-        # The number of migrations to pop. Default is 1.
+        # Pop all migrations
         $Force,
 
         [Parameter(ParameterSetName='New',Position=2)]
         [Parameter(ParameterSetName='Push')]
         [Parameter(ParameterSetName='Pop')]
+        [Parameter(ParameterSetName='PopByCount')]
+        [Parameter(ParameterSetName='PopByName')]
         [Parameter(ParameterSetName='PopAll')]
         [Parameter(ParameterSetName='Redo')]
         [string[]]
         # The database(s) to migrate. Optional.  Will operate on all databases otherwise.
         $Database,
 
-        [Parameter()]
+        [Parameter(ParameterSetName='New')]
+        [Parameter(ParameterSetName='Push')]
+        [Parameter(ParameterSetName='Pop')]
+        [Parameter(ParameterSetName='PopByCount')]
+        [Parameter(ParameterSetName='PopByName')]
+        [Parameter(ParameterSetName='PopAll')]
+        [Parameter(ParameterSetName='Redo')]
         [string]
         # The environment you're working in.  Controls which settings Rivet loads from the `rivet.json` configuration file.
         $Environment,
 
-        [Parameter()]
+        [Parameter(ParameterSetName='New')]
+        [Parameter(ParameterSetName='Push')]
+        [Parameter(ParameterSetName='Pop')]
+        [Parameter(ParameterSetName='PopByCount')]
+        [Parameter(ParameterSetName='PopByName')]
+        [Parameter(ParameterSetName='PopAll')]
+        [Parameter(ParameterSetName='Redo')]
         [string]
         # The path to the Rivet configuration file.  Default behavior is to look in the current directory for a `rivet.json` file.  See `about_Rivet_Configuration` for more information.
         $ConfigFilePath
@@ -107,11 +124,11 @@ function Invoke-Rivet
                 return
             }
             
-            if( $Name )
+            if( $PSBoundParameters.ContainsKey('Name') )
             {
-                $updateParams.Path = Join-Path $dbMigrationsPath ("*_{0}.ps1" -f $Name)
+                $updateParams.Name = $Name    # Join-Path $dbMigrationsPath ("*_{0}.ps1" -f $Name)
             }
-            
+
             Write-Host ('# {0}.{1}' -f $Connection.DataSource,$Connection.Database)
             
             if( $pscmdlet.ParameterSetName -eq 'Push' )
@@ -120,7 +137,15 @@ function Invoke-Rivet
             }
             elseif( $pscmdlet.ParameterSetName -eq 'Pop' )
             {
-                Update-Database -Pop $Count @updateParams
+                Update-Database -Pop -Count 1 @updateParams
+            }
+            elseif( $pscmdlet.ParameterSetName -eq 'PopByName' )
+            {
+                Update-Database -Pop @updateParams
+            }
+            elseif( $pscmdlet.ParameterSetName -eq 'PopByCount' )
+            {
+                Update-Database -Pop -Count $Count @updateParams
             }
             elseif ( $pscmdlet.ParameterSetName -eq 'PopAll' )
             {
@@ -128,7 +153,7 @@ function Invoke-Rivet
             }
             elseif( $pscmdlet.ParameterSetName -eq 'Redo' )
             {
-                Update-Database -Pop 1 @updateParams
+                Update-Database -Pop -Count 1 @updateParams
                 Update-Database @updateParams
             }
         }
