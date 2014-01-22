@@ -46,6 +46,11 @@ rivet.ps1 -Pop 5
 Demonstrates how to revert multiple migrations.
 
 .EXAMPLE
+rivet.ps1 -Pop 'AddTable'
+
+Demonstrates how to pop a specific migration.  Wildcards supported.  Will match either the migration's name or ID.
+
+.EXAMPLE
 rivet.ps1 -Redo
 
 Reverts the last migration script, then reapplies its.  Equivalent to 
@@ -72,6 +77,8 @@ param(
     $Push,
     
     [Parameter(Mandatory=$true,ParameterSetName='Pop')]
+    [Parameter(Mandatory=$true,ParameterSetName='PopByCount')]
+    [Parameter(Mandatory=$true,ParameterSetName='PopByName')]
     [Parameter(Mandatory=$true,ParameterSetName='PopAll')]
     [Switch]
     # Reverts migrations.
@@ -84,11 +91,12 @@ param(
 
     [Parameter(Mandatory=$true,ParameterSetName='New',Position=1)]
     [Parameter(ParameterSetName='Push',Position=1)]
+    [Parameter(Mandatory=$true,ParameterSetName='PopByName',Position=1)]
     [string]
-    # The name of the migration to create/push.  Wildcards accepted when pushing.
+    # The name of the migration to create, push, or pop.  Wildcards accepted when pushing/popping, which will match either the migration name or ID.
     $Name,
     
-    [Parameter(ParameterSetName='Pop',Position=1)]
+    [Parameter(Mandatory=$true,ParameterSetName='PopByCount',Position=1)]
     [UInt32]
     # The number of migrations to pop. Default is 1.
     $Count = 1,
@@ -101,6 +109,8 @@ param(
     [Parameter(ParameterSetName='New',Position=2)]
     [Parameter(ParameterSetName='Push')]
     [Parameter(ParameterSetName='Pop')]
+    [Parameter(ParameterSetName='PopByCount')]
+    [Parameter(ParameterSetName='PopByName')]
     [Parameter(ParameterSetName='PopAll')]
     [Parameter(ParameterSetName='Redo')]
     [string[]]
@@ -110,6 +120,8 @@ param(
     [Parameter(ParameterSetName='New')]
     [Parameter(ParameterSetName='Push')]
     [Parameter(ParameterSetName='Pop')]
+    [Parameter(ParameterSetName='PopByCount')]
+    [Parameter(ParameterSetName='PopByName')]
     [Parameter(ParameterSetName='PopAll')]
     [Parameter(ParameterSetName='Redo')]
     [string]
@@ -119,12 +131,13 @@ param(
     [Parameter(ParameterSetName='New')]
     [Parameter(ParameterSetName='Push')]
     [Parameter(ParameterSetName='Pop')]
+    [Parameter(ParameterSetName='PopByCount')]
+    [Parameter(ParameterSetName='PopByName')]
     [Parameter(ParameterSetName='PopAll')]
     [Parameter(ParameterSetName='Redo')]
     [string]
     # The path to the Rivet configuration file.  Default behavior is to look in the current directory for a `rivet.json` file.  See `about_Rivet_Configuration` for more information.
     $ConfigFilePath
-
 )
 
 Set-StrictMode -Version Latest

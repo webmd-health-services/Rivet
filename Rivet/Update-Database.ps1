@@ -31,9 +31,21 @@ function Update-Database
         $DBScriptsPath,
         
         [Parameter(Mandatory=$true,ParameterSetName='Pop')]
-        [UInt32]
+        [Parameter(Mandatory=$true,ParameterSetName='PopByName')]
+        [Parameter(Mandatory=$true,ParameterSetName='PopByCount')]
+        [Switch]
         # Reverse the given migration(s).
         $Pop,
+
+        [Parameter(ParameterSetName='Push')]
+        [Parameter(Mandatory=$true,ParameterSetName='PopByName')]
+        [string]
+        $Name,
+
+        [Parameter(Mandatory=$true,ParameterSetName='PopByCount')]
+        [UInt32]
+        # Reverse the given migration(s).
+        $Count,
 
         [Parameter(ParameterSetName='PopAll')]
         [Switch]
@@ -43,8 +55,10 @@ function Update-Database
     
     $stopMigrating = $false
     
-    $popping = ($pscmdlet.ParameterSetName -eq 'Pop' -or $pscmdlet.ParameterSetName -eq 'PopAll')
+    $popping = ($pscmdlet.ParameterSetName -like 'Pop*')
     $numPopped = 0
+
+    $numRun = 0
 
     $Path | ForEach-Object {
         if( (Test-Path $_ -PathType Container) )
@@ -68,24 +82,32 @@ function Update-Database
             return
         }
         
-        $id = [Int64]$matches[1]
-        $name = $matches[2]
+        $migrationID = [Int64]$matches[1]
+        $migrationName = $matches[2]
 
-        if( $name.Length -gt 50 )
+        if( $migrationName.Length -gt 50 )
         {
-            Write-Error ('Migration {0}''s name is too long: ''{1}'' is {2} characters long but is limited to 50 or fewer characters.' -f $_.FullName,$name,$name.Length)
+            Write-Error ('Migration {0}''s name is too long: ''{1}'' is {2} characters long but is limited to 50 or fewer characters.' -f $_.FullName,$migrationName,$name.Length)
             return
         }
         
         $_ | 
-            Add-Member -MemberType NoteProperty -Name 'MigrationID' -Value $id -PassThru |
-            Add-Member -MemberType NoteProperty -Name 'MigrationName' -Value $name -PassThru
+            Add-Member -MemberType NoteProperty -Name 'MigrationID' -Value $migrationID -PassThru |
+            Add-Member -MemberType NoteProperty -Name 'MigrationName' -Value $migrationName -PassThru
     } |
     Sort-Object -Property MigrationID -Descending:$popping |
     Where-Object { 
+        if( -not $PSBoundParameters.ContainsKey('Name') )
+        {
+            return $true
+        }
+
+        return ( $_.MigrationName -like $Name -or $_.MigrationID -like $Name )
+    } |
+    Where-Object { 
         if( $popping )
         {
-            if( -not $Force -and $numPopped -ge $Pop )
+            if( $pscmdlet.ParameterSetName -eq 'PopByCount' -and $numPopped -ge $Count )
             {
                 return $false
             }
@@ -104,6 +126,8 @@ function Update-Database
             return
         }
         
+        $numRun++
+
         $migrationInfo = $_
         
         $pushFunctionPath = 'function:Push-Migration'
@@ -199,5 +223,10 @@ function Update-Database
         {
             $Connection.Transaction = $null
         }
+    }
+
+    if( -not $numRun -and $PSBoundParameters.ContainsKey('Name') )
+    {
+        Write-Error ('Migration ''{0}'' not found.' -f $Name)
     }
 }
