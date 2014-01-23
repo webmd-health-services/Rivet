@@ -58,7 +58,7 @@ function Update-Database
     $popping = ($pscmdlet.ParameterSetName -like 'Pop*')
     $numPopped = 0
 
-    $numRun = 0
+    $foundNameMatch = $false
 
     $Path | ForEach-Object {
         if( (Test-Path $_ -PathType Container) )
@@ -102,7 +102,9 @@ function Update-Database
             return $true
         }
 
-        return ( $_.MigrationName -like $Name -or $_.MigrationID -like $Name )
+        $matchesName =  ( $_.MigrationName -like $Name -or $_.MigrationID -like $Name )
+        $foundNameMatch = $foundNameMatch -or $matchesName
+        return $matchesName
     } |
     Where-Object { 
         if( $popping )
@@ -126,8 +128,6 @@ function Update-Database
             return
         }
         
-        $numRun++
-
         $migrationInfo = $_
         
         $pushFunctionPath = 'function:Push-Migration'
@@ -225,7 +225,7 @@ function Update-Database
         }
     }
 
-    if( -not $numRun -and $PSBoundParameters.ContainsKey('Name') )
+    if( $PSBoundParameters.ContainsKey('Name') -and -not $foundNameMatch )
     {
         Write-Error ('Migration ''{0}'' not found.' -f $Name)
     }
