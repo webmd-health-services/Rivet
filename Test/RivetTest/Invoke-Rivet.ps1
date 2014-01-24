@@ -26,6 +26,13 @@ function Invoke-Rivet
 
         [Parameter(Mandatory=$true,ParameterSetName='PopAll')]
         [Switch]
+        $All,
+
+        [Parameter(ParameterSetName='Pop')]
+        [Parameter(ParameterSetName='PopByName')]
+        [Parameter(ParameterSetName='PopByCount')]
+        [Parameter(ParameterSetName='PopAll')]
+        [Switch]
         $Force,
 
         [Parameter(ParameterSetName='Redo')]

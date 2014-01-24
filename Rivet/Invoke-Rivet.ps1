@@ -41,6 +41,14 @@ function Invoke-Rivet
         [Parameter(Mandatory=$true,ParameterSetName='PopAll')]
         [Switch]
         # Pop all migrations
+        $All,
+
+        [Parameter(ParameterSetName='Pop')]
+        [Parameter(ParameterSetName='PopByCount')]
+        [Parameter(ParameterSetName='PopByName')]
+        [Parameter(ParameterSetName='PopAll')]
+        [Switch]
+        # Force popping a migration you didn't apply or that is old.
         $Force,
 
         [Parameter(ParameterSetName='New',Position=2)]
@@ -137,19 +145,19 @@ function Invoke-Rivet
             }
             elseif( $pscmdlet.ParameterSetName -eq 'Pop' )
             {
-                Update-Database -Pop -Count 1 @updateParams
+                Update-Database -Pop -Count 1 -Force:$Force @updateParams
             }
             elseif( $pscmdlet.ParameterSetName -eq 'PopByName' )
             {
-                Update-Database -Pop @updateParams
+                Update-Database -Pop -Force:$Force @updateParams
             }
             elseif( $pscmdlet.ParameterSetName -eq 'PopByCount' )
             {
-                Update-Database -Pop -Count $Count @updateParams
+                Update-Database -Pop -Count $Count -Force:$Force @updateParams
             }
             elseif ( $pscmdlet.ParameterSetName -eq 'PopAll' )
             {
-                Update-Database -Force @updateParams
+                Update-Database -Pop -All -Force:$Force @updateParams
             }
             elseif( $pscmdlet.ParameterSetName -eq 'Redo' )
             {

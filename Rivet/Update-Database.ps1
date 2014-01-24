@@ -33,6 +33,7 @@ function Update-Database
         [Parameter(Mandatory=$true,ParameterSetName='Pop')]
         [Parameter(Mandatory=$true,ParameterSetName='PopByName')]
         [Parameter(Mandatory=$true,ParameterSetName='PopByCount')]
+        [Parameter(Mandatory=$true,ParameterSetName='PopAll')]
         [Switch]
         # Reverse the given migration(s).
         $Pop,
@@ -47,18 +48,82 @@ function Update-Database
         # Reverse the given migration(s).
         $Count,
 
-        [Parameter(ParameterSetName='PopAll')]
+        [Parameter(Mandatory=$true,ParameterSetName='PopAll')]
         [Switch]
         # Reverse the given migration(s).
+        $All,
+
+        [Parameter(ParameterSetName='Pop')]
+        [Parameter(ParameterSetName='PopByCount')]
+        [Parameter(ParameterSetName='PopByName')]
+        [Parameter(ParameterSetName='PopAll')]
+        [Switch]
+        # Force popping a migration you didn't apply or that is old.
         $Force
     )
-    
+
+    Set-StrictMode -Version 'Latest'
+
+    function ConvertTo-RelativeTime
+    {
+        param(
+            [Parameter(Mandatory=$true)]
+            [DateTime]
+            # The date time to convert to a relative time string.
+            $DateTime
+        )
+
+        [TimeSpan]$howLongAgo = (Get-Date) - $DateTime
+        $howLongAgoMsg = New-Object 'Text.StringBuilder'
+        if( $howLongAgo.Days )
+        {
+            [void] $howLongAgoMsg.AppendFormat('{0} day', $howLongAgo.Days)
+            if( $howLongAgo.Days -ne 1 )
+            {
+                [void] $howLongAgoMsg.Append('s')
+            }
+            [void] $howLongAgoMsg.Append(', ')
+        }
+
+        if( $howLongAgo.Days -or $howLongAgo.Hours )
+        {
+            [void] $howLongAgoMsg.AppendFormat('{0} hour', $howLongAgo.Hours)
+            if( $howLongAgo.Hours -ne 1 )
+            {
+                [void] $howLongAgoMsg.Append('s')
+            }
+            [void] $howLongAgoMsg.Append(', ')
+        }
+
+        if( $howLongAgo.Days -or $howLongAgo.Hours -or $howLongAgo.Minutes )
+        {
+            [void] $howLongAgoMsg.AppendFormat('{0} minute', $howLongAgo.Minutes)
+            if( $howLongAgo.Minutes -ne 1 )
+            {
+                [void] $howLongAgoMsg.Append('s')
+            }
+            [void] $howLongAgoMsg.Append(', ')
+        }
+
+        [void] $howLongAgoMsg.AppendFormat('{0} second', $howLongAgo.Seconds)
+        if( $howLongAgo.Minutes -ne 1 )
+        {
+            [void] $howLongAgoMsg.Append('s')
+        }
+
+        [void] $howLongAgoMsg.Append( ' ago' )
+
+        return $howLongAgoMsg.ToString()
+    }
+
     $stopMigrating = $false
     
-    $popping = ($pscmdlet.ParameterSetName -like 'Pop*')
+    $popping = ($PSCmdlet.ParameterSetName -like 'Pop*')
     $numPopped = 0
 
     $foundNameMatch = $false
+    $who = ('{0}\{1}' -f $env:USERDOMAIN,$env:USERNAME);
+
 
     $Path | ForEach-Object {
         if( (Test-Path $_ -PathType Container) )
@@ -107,18 +172,31 @@ function Update-Database
         return $matchesName
     } |
     Where-Object { 
+        $migration = Test-Migration -ID $_.MigrationID -PassThru
         if( $popping )
         {
-            if( $pscmdlet.ParameterSetName -eq 'PopByCount' -and $numPopped -ge $Count )
+            if( $PSCmdlet.ParameterSetName -eq 'PopByCount' -and $numPopped -ge $Count )
             {
                 return $false
             }
             $numPopped++
-            Test-Migration -ID $_.MigrationID
+
+            $youngerThan = ((Get-Date).ToUniversalTime()) - (New-TimeSpan -Minutes 20)
+            if( $migration -and ($migration.Who -ne $who -or $migration.AtUtc -lt $youngerThan) )
+            {
+                $howLongAgo = ConvertTo-RelativeTime -DateTime ($migration.AtUtc.ToLocalTime())
+                $confirmQuery = "Are you sure you want to pop migration {0} from database {1} on {2} applied by {3} {4}?" -f $_.BaseName,$Connection.Database,$Connection.DataSource,$migration.Who,$howLongAgo
+                $confirmCaption = "Pop Migration {2}?" -f $Connection.DataSource,$Connection.Database,$_.BaseName
+                if( -not $Force -and -not $PSCmdlet.ShouldContinue( $confirmQuery, $confirmCaption ) )
+                {
+                    return $false
+                }
+            }
+            $migration
         }
         else
         {
-            -not (Test-Migration -ID $_.MigrationID)
+            -not ($migration)
         }
     } |
     ForEach-Object {
@@ -146,7 +224,7 @@ function Update-Database
         
         
         $action = '+'
-        if( $Pop -or $Force)
+        if( $Pop )
         {
             $action = '-'
         }
@@ -161,10 +239,10 @@ function Update-Database
             $parameters = @{
                                 ID = [int64]$migrationInfo.MigrationID; 
                                 Name = $migrationInfo.MigrationName;
-                                Who = ('{0}\{1}' -f $env:USERDOMAIN,$env:USERNAME);
-                                ComputerName = $env:COMPUTERNAME
+                                Who = $who;
+                                ComputerName = $env:COMPUTERNAME;
                             }
-            if( $Pop -or $Force )
+            if( $Pop )
             {
                 if( -not (Test-Path $popFuntionPath) )
                 {

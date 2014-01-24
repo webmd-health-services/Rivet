@@ -43,7 +43,7 @@ Reverts the last migration script.
 .EXAMPLE
 rivet.ps1 -Pop 5
 
-Demonstrates how to revert multiple migrations.
+Demonstrates how to revert multiple migrations.  The last `-Count` migrations will be popped.
 
 .EXAMPLE
 rivet.ps1 -Pop 'AddTable'
@@ -104,6 +104,14 @@ param(
     [Parameter(Mandatory=$true,ParameterSetName='PopAll')]
     [Switch]
     # Pop all migrations
+    $All,
+
+    [Parameter(ParameterSetName='Pop')]
+    [Parameter(ParameterSetName='PopByCount')]
+    [Parameter(ParameterSetName='PopByName')]
+    [Parameter(ParameterSetName='PopAll')]
+    [Switch]
+    # Force popping a migration you didn't apply or that is old.
     $Force,
 
     [Parameter(ParameterSetName='New',Position=2)]
