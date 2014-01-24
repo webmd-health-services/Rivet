@@ -11,6 +11,12 @@ function Start-MigrationOperation
     $problems = $false
     if( ($Operation -is [Rivet.Operations.AddTableOperation]) )
     {
+        if( -not $Operation.Description )
+        {
+            Write-Error ('Table {0}''s description not found.  Please pass a value to the `Add-Table` function''s `-Description` parameter.' -f $Operation.Name)
+            $problems = $true
+        }
+
         Invoke-Command {
             smalldatetime 'CreateDate' -NotNull -Default 'getdate()' -Description 'Record created date'
             datetime 'LastUpdated' -NotNull -Default 'getdate()' -Description 'Date this record was last updated' 
@@ -32,23 +38,30 @@ function Start-MigrationOperation
 
     if( ($Operation -is [Rivet.Operations.AddTableOperation]) -or ($Operation -is [Rivet.Operations.UpdateTableOperation]) )
     {
-        Invoke-Command {
-            ('Columns','AddColumns','UpdateColumns') | 
-                Where-Object { $Operation | Get-Member $_ } |
-                ForEach-Object { $Operation | Select-Object -ExpandProperty $_ } |
-                ForEach-Object {
-                    if( $_.Identity )
-                    {
-                        if( $_.DataType -ne [Rivet.DataType]::Int )
-                        {
-                            Write-Error ('Table {0}: column {1}: {2} columns can''t be identity columns.  Please remove the identity specification or change the column type to int.' -f $Operation.Name,$_.Name,$_.DataType)
-                            $problems = $true
-                        }
+        ('Columns','AddColumns') | 
+            Where-Object { $Operation | Get-Member $_ } |
+            ForEach-Object { $Operation | Select-Object -ExpandProperty $_ } |
+            Where-Object { -not $_.Description } |
+            ForEach-Object {
+                Write-Error ('Table {0}: column {1}''s description not found.  Please supply a value to the {2} function''s `-Description` parameter.' -f $Operation.Name,$_.Name,$_.DataType.ToString().ToLowerInvariant())
+                $problems = $true
+            }
 
-                        $_.Identity.NotForReplication = $true
+        ('Columns','AddColumns','UpdateColumns') | 
+            Where-Object { $Operation | Get-Member $_ } |
+            ForEach-Object { $Operation | Select-Object -ExpandProperty $_ } |
+            ForEach-Object {
+                if( $_.Identity )
+                {
+                    if( $_.DataType -ne [Rivet.DataType]::Int )
+                    {
+                        Write-Error ('Table {0}: column {1}: {2} columns can''t be identity columns.  Please remove the identity specification or change the column type to int.' -f $Operation.Name,$_.Name,$_.DataType)
+                        $problems = $true
                     }
+
+                    $_.Identity.NotForReplication = $true
                 }
-        }
+            }
     }
 
     if( $Operation -is [Rivet.Operations.AddForeignKeyOperation] -or $Operation -is [Rivet.Operations.AddCheckConstraintOperation] )

@@ -18,8 +18,8 @@ function Test-ShouldRunPlugins
     @'
 function Push-Migration
 {
-    Add-Table Foobar {
-        BigInt ID
+    Add-Table Foobar -Description 'Test' {
+        BigInt ID -Description 'Test'
     }
 }
 
@@ -45,8 +45,8 @@ function Test-PluginsShouldSkipRowGuid
     @'
 function Push-Migration
 {
-    Add-Table Foobar {
-        uniqueidentifier guid -RowGuidCol
+    Add-Table Foobar -Description 'Test' {
+        uniqueidentifier guid -RowGuidCol -Description 'Test'
     }
 }
 
@@ -67,8 +67,8 @@ function Test-ShouldRejectTriggersWithoutNotForReplication
     @'
 function Push-Migration
 {
-    Add-Table Foobar {
-        int ID -Identity
+    Add-Table Foobar -Description 'Test' {
+        int ID -Identity -Description 'Test'
     }
     
     $trigger = @"
@@ -98,8 +98,8 @@ function Test-ShouldRejectBigIntIdentities
     @'
 function Push-Migration
 {
-    Add-Table Foobar {
-        bigint ID -Identity
+    Add-Table Foobar -Description 'Test' {
+        bigint ID -Identity -Description 'Test'
     }
 }
 
@@ -110,8 +110,8 @@ function Pop-Migration
 
     $Error.Clear()
     Invoke-Rivet -Push 'ValidateMigrations' -ErrorAction SilentlyContinue
-    Assert-Equal 1 $Error.Count
-    Assert-LIke $Error[0].Exception.Message '*can''t be identity columns*'
+    Assert-GreaterThan $Error.Count 0
+    Assert-LIke $Error[-1].Exception.Message '*can''t be identity columns*'
 }
 
 function Test-ShouldRejectSmallIntIdentities
@@ -119,8 +119,8 @@ function Test-ShouldRejectSmallIntIdentities
     @'
 function Push-Migration
 {
-    Add-Table Foobar {
-        smallint ID -Identity
+    Add-Table Foobar -Description 'Test' {
+        smallint ID -Identity -Description 'Test'
     }
 }
 
@@ -131,8 +131,8 @@ function Pop-Migration
 
     $Error.Clear()
     Invoke-Rivet -Push 'ValidateMigrations' -ErrorAction SilentlyContinue
-    Assert-Equal 1 $Error.Count
-    Assert-LIke $Error[0].Exception.Message '*can''t be identity columns*'
+    Assert-GreaterThan $Error.Count 0
+    Assert-LIke $Error[-1].Exception.Message '*can''t be identity columns*'
 }
 
 function Test-ShouldRejectTinyIntIdentities
@@ -140,8 +140,8 @@ function Test-ShouldRejectTinyIntIdentities
     @'
 function Push-Migration
 {
-    Add-Table Foobar {
-        tinyint ID -Identity
+    Add-Table Foobar -Description 'Test' {
+        tinyint ID -Identity -Description 'Test'
     }
 }
 
@@ -152,8 +152,8 @@ function Pop-Migration
 
     $Error.Clear()
     Invoke-Rivet -Push 'ValidateMigrations' -ErrorAction SilentlyContinue
-    Assert-Equal 1 $Error.Count
-    Assert-LIke $Error[0].Exception.Message '*can''t be identity columns*'
+    Assert-GreaterThan $Error.Count 0
+    Assert-LIke $Error[-1].Exception.Message '*can''t be identity columns*'
 }
 
 function Test-ShouldMakeIdentitiesNotForReplication
@@ -161,8 +161,8 @@ function Test-ShouldMakeIdentitiesNotForReplication
     @'
 function Push-Migration
 {
-    Add-Table Foobar {
-        int ID -Identity
+    Add-Table Foobar -Description 'Test' {
+        int ID -Identity -Description 'Test'
     }
 }
 
@@ -182,13 +182,13 @@ function Test-ShouldMakeForeignKeyNotForReplication
     @'
 function Push-Migration
 {
-    Add-Table Foo {
-        int ID -Identity
+    Add-Table Foo -Description 'Test' {
+        int ID -Identity -Description 'Test'
     }
     Add-PrimaryKey 'Foo' 'ID'
 
-    Add-Table Bar {
-        int ID -Identity
+    Add-Table Bar -Description 'Test' {
+        int ID -Identity -Description 'Test'
     }
     Add-PrimaryKey 'Bar' 'ID'
 
@@ -212,8 +212,8 @@ function Test-ShouldMakeCheckConstraintsNotForReplication
    @'
 function Push-Migration
 {
-    Add-Table Foo {
-        varchar Name -Size '50' -NotNull
+    Add-Table Foo -Description 'Test' {
+        varchar Name -Size '50' -NotNull -Description 'Test'
     }
 
     Add-CheckConstraint 'Foo' 'CK_Foo_Name' -Expression 'Name = ''Bono'' or Name = ''The Edge'''
@@ -228,4 +228,83 @@ function Pop-Migration
 
     Assert-Table 'Foo'
     Assert-CheckConstraint 'CK_Foo_Name' '([Name]=''Bono'' or [Name]=''The Edge'')' -NotForReplication
+}
+
+function Test-ShouldRequireDescriptionOnNewTables
+{
+   @'
+function Push-Migration
+{
+    Add-Table Foo {
+        varchar Name -Size '50' -NotNull -Description 'Test'
+    }
+}
+
+function Pop-Migration
+{
+}
+'@ | New-Migration -Name 'ValidateMigrations'
+
+    $Error.Clear()
+    Invoke-Rivet -Push 'ValidateMigrations' -ErrorAction SilentlyContinue
+
+    Assert-GreaterThan $Error.Count 0 'no errors'
+    Assert-Like $Error[-1].Exception.Message '*Foo*-Description*'
+
+    Assert-False (Test-Table 'Foo')
+    
+}
+
+function Test-ShouldRequireDescriptionOnNewTableColumns
+{
+   @'
+function Push-Migration
+{
+    Add-Table Foo -Description 'Test' {
+        varchar Name -Size '50' -NotNull
+    }
+}
+
+function Pop-Migration
+{
+}
+'@ | New-Migration -Name 'ValidateMigrations'
+
+    $Error.Clear()
+    Invoke-Rivet -Push 'ValidateMigrations' -ErrorAction SilentlyContinue
+
+    Assert-GreaterThan $Error.Count 0 'no errors'
+    Assert-Like $Error[-1].Exception.Message '*Name*-Description*'
+
+    Assert-False (Test-Table 'Foo')
+    
+}
+
+function Test-ShouldRequireDescriptionOnExistingTableNewColumns
+{
+   @'
+function Push-Migration
+{
+    Add-Table Foo -Description 'Test' {
+        varchar Name -Size '50' -NotNull -Description 'Test'
+    }
+
+    Update-Table Foo -AddColumn {
+        varchar LastName -Size 100
+    }
+}
+
+function Pop-Migration
+{
+}
+'@ | New-Migration -Name 'ValidateMigrations'
+
+    $Error.Clear()
+    Invoke-Rivet -Push 'ValidateMigrations' -ErrorAction SilentlyContinue
+
+    Assert-GreaterThan $Error.Count 0 'no errors'
+    Assert-Like $Error[-1].Exception.Message '*LastName*-Description*'
+
+    Assert-False (Test-Table 'Foo')
+    
 }
