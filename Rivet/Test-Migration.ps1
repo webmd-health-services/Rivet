@@ -15,11 +15,23 @@ function Test-Migration
     #>
     param(
         [Parameter(Mandatory=$true)]
-        [UInt64]
-        $ID
+        [Int64]
+        $ID,
+
+        [Switch]
+        # Returns the migration info.
+        $PassThru
     )
     
-    $query = 'select count(*) as Count from {0} where ID={1}' -f $RivetMigrationsTableFullName,$ID
-    $migrationCount = Invoke-Query -Query $query -AsScalar -Verbose:$false
-    return ( $migrationCount -gt 0 )
+    $query = 'select * from {0} where ID=@ID' -f $RivetMigrationsTableFullName,$ID
+    $info = Invoke-Query -Query $query -Parameter @{ ID = $ID } -Verbose:$false
+    if( $info )
+    {
+        if( $PassThru )
+        {
+            return $info
+        }
+        return $true
+    }
+    return $false
 }

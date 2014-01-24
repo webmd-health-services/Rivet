@@ -237,3 +237,34 @@ function Test-ShouldPopByIDWithWildcard
     Assert-False (Test-Table -Name 'Migration2')
     Assert-False (Test-Table -Name 'Migration1')
 }
+
+function Test-ShouldPopAll
+{
+    Invoke-Rivet -Pop -All
+    Assert-False (Test-Table -Name 'Migration4')
+    Assert-False (Test-Table -Name 'Migration3')
+    Assert-False (Test-Table -Name 'Migration2')
+    Assert-False (Test-Table -Name 'Migration1')
+}
+
+function Test-ShouldConfirmPoppingAnothersMigration
+{
+    Invoke-RivetTestQuery -Query 'update [rivet].[Migrations] set Who = ''LittleLionMan'''
+
+    Invoke-Rivet -Pop -All -Force
+    Assert-False (Test-Table 'Migration4')
+    Assert-False (Test-Table 'Migration3')
+    Assert-False (Test-Table 'Migration2')
+    Assert-False (Test-Table 'Migration1')
+}
+
+function Test-ShouldConfirmPoppingOldMigrations
+{
+    Invoke-RivetTestQuery -Query 'update [rivet].[Migrations] set AtUtc = dateadd(minute, -21, AtUtc)'
+
+    Invoke-Rivet -Pop -All -Force
+    Assert-False (Test-Table 'Migration4')
+    Assert-False (Test-Table 'Migration3')
+    Assert-False (Test-Table 'Migration2')
+    Assert-False (Test-Table 'Migration1')
+}
