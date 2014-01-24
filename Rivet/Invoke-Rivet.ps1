@@ -87,9 +87,20 @@ function Invoke-Rivet
 
     $settings = Get-RivetConfig -Database $Database -Path $ConfigFilePath -Environment $Environment
 
+    $ignored = $Database | 
+                    Where-Object { $settings.IgnoreDatabases -contains $_ } |
+                    ForEach-Object { 
+                        Write-Error ('Can''t use database ''{0}'' because it is on the ignore list in ''{1}''.  Please remove it from the ignore list or choose a different database.' -f $_,$settings.ConfigFilePath)
+                        $_
+                 }
+    if( $ignored )
+    {
+        return
+    }
+
     if( -not $settings.Databases )
     {
-        Write-Error ('There are not database directories in ''{0}''.  Please create a database directory there or supply an explicit database name with the `Database` parameter.' -f $settings.DatabasesRoot)
+        Write-Error ('There are no database directories in ''{0}''.  Please create a database directory there or supply an explicit database name with the `Database` parameter.' -f $settings.DatabasesRoot)
         return
     }
 

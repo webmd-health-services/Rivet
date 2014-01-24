@@ -211,6 +211,7 @@ function Get-RivetConfig
     # Defaults
     $properties = @{
                         ConnectionTimeout = 15;
+                        ConfigFilePath = $Path;
                         CommandTimeout = 30;
                         Databases = @();
                         PluginsRoot = @();
