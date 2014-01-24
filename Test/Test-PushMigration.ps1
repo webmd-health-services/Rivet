@@ -237,7 +237,7 @@ function Test-ShouldStopPushingMigrationsIfOneGivesAnError
 function Test-ShouldFailIfMigrationNameDoesNotExist
 {
     $Error.Clear()
-    Invoke-Rivet -Push 'AMigrationWhichDoesNotExist' #-ErrorAction SilentlyContinue
+    Invoke-Rivet -Push 'AMigrationWhichDoesNotExist' -ErrorAction SilentlyContinue
 
     Assert-GreaterThan $Error.Count 0
     Assert-Like $Error[0] '*not found*'
