@@ -5,7 +5,10 @@ function Start-RivetTest
     param(
         [string]
         # Optional Parameter to specify a plugin Path
-        $PluginPath
+        $PluginPath,
+
+        [string[]]
+        $IgnoredDatabase
     )
     
     Set-StrictMode -Version Latest
@@ -42,11 +45,18 @@ function Start-RivetTest
         $PluginPathClause = $PluginPathClause.Replace('\','\\')
     }
 
+    $IgnoreClause = ''
+    if( $IgnoredDatabase )
+    {
+        $IgnoreClause = ',IgnoreDatabases: [ "{0}" ]' -f ($IgnoredDatabase -join '", "')
+    }
+
     @"
 {
     SqlServerName: '$($RTServer.Replace('\', '\\'))',
     DatabasesRoot: '$($RTDatabasesRoot.Replace('\','\\'))'
     $PluginPathClause
+    $IgnoreClause
 }
 "@ | Set-Content -Path $RTConfigFilePath
 }
