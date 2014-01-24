@@ -48,7 +48,7 @@ function Push-Migration()
         Int 'DoNotUniqueKeyMe' -NotNull
     }
 
-    Add-UniqueKey -TableName 'AddUniqueKey' -ColumnName 'UniqueKeyMe','UniqueKeyMe2'
+    Add-UniqueKey 'AddUniqueKey' 'UniqueKeyMe','UniqueKeyMe2'
 }
 
 function Pop-Migration()
