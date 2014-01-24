@@ -261,11 +261,18 @@ $testScripts |
         $testModuleName =  [System.IO.Path]::GetFileNameWithoutExtension($testCase)
 
         $functions = Get-FunctionsInFile $testCase.FullName |
-                        Where-Object { $_ -match '^Test-(.*)$' } |
+                        Where-Object { $_ -match '^(Test|Ignore)-(.*)$' } |
                         Where-Object { 
                             if( $PSBoundParameters.ContainsKey('Test') )
                             {
-                                return $Test | Where-Object { $Matches[1] -like $_ } 
+                                return $Test | Where-Object { $Matches[2] -like $_ } 
+                            }
+
+                            if( $Matches[1] -eq 'Ignore' )
+                            {
+                                Write-Warning ("Skipping ignored test '{0}'." -f $_)
+                                $testsIgnored++
+                                return $false
                             }
 
                             return $true
@@ -287,20 +294,6 @@ $testScripts |
             {
 
                 if( -not (Test-Path function:$function) )
-                {
-                    continue
-                }
-                
-                if( $function -like 'Ignore-*' )
-                {
-                    if( $function -ne "Ignore-$Test" )
-                    {
-                        Write-Warning "Skipping ignored test '$function'."
-                        $testsIgnored++
-                        continue
-                    }
-                }
-                elseif( $function -notlike 'Test-*' )
                 {
                     continue
                 }
