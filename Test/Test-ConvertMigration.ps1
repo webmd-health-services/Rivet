@@ -380,8 +380,8 @@ function Test-ShouldRunPlugins
     @'
 function Push-Migration
 {
-    Add-Table 'NeedsPluginStuff' {
-        int 'ID' -NotNull
+    Add-Table 'NeedsPluginStuff' -Description "test" {
+        int 'ID' -NotNull -Description "test"
     }
 }
 
@@ -390,7 +390,7 @@ function Pop-Migration
 }
 '@ | New-Migration -Name 'ShouldRunPlugins'
 
-    Assert-ConvertMigration -Schema
+    Assert-ConvertMigration -Schema -ExtendedProperty
 
     Assert-Table 'NeedsPluginStuff'
     Assert-Column -TableName 'NeedsPluginStuff' -Name 'CreateDate' -DataType 'smalldatetime' -NotNull
