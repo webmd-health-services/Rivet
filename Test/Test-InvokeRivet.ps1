@@ -14,7 +14,7 @@ function Stop-Test
 function Test-ShouldHandleNewMigrationForIgnoredDatabase
 {
     $Error.Clear()
-    ' ' | New-Migration -Name 'Migration' -Database 'Ignored'
+    ' ' | New-Migration -Name 'Migration' -Database 'Ignored' -ErrorAction SilentlyContinue
     Assert-GreaterThan $Error.Count 0 'no errors'
     Assert-Like $Error[-1].Exception.Message '*ignored*'
 }

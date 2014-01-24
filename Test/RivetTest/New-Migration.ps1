@@ -19,7 +19,7 @@ function New-Migration
     )
 
     $rivetPath = Join-Path -Path $PSScriptRoot -ChildPath '..\..\Rivet\rivet.ps1' -Resolve
-    $migration = & $rivetPath -New -Name $Name -Database $DatabaseName -ConfigFilePath $RTConfigFilePath
+    $migration = & $rivetPath -New -Name $Name -Database $DatabaseName -ConfigFilePath $RTConfigFilePath -ErrorAction $ErrorActionPreference
     if( $migration )
     {
         $InputObject | Set-Content -Path $migration
