@@ -72,7 +72,10 @@ function Test-ShouldAddDataTypeByTable
     @'
 function Push-Migration
 {
-    Add-DataType 'U s e r s' -AsTable { varchar 'Name' 50 } -TableConstraint 'primary key'
+    Add-DataType 'U s e r s' -AsTable { 
+        varchar 'Name' 50 
+        varchar 'Email' 255
+   } -TableConstraint 'primary key'
 }
 
 function Pop-Migration
@@ -82,7 +85,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'ByTable'
 
-    Invoke-Rivet -Push 'ByTable'
+    Invoke-Rivet -Push 'ByTable' -Verbose
 
     Assert-DataType -Name 'U s e r s' -UserDefined -TableType -NotNull
 }
