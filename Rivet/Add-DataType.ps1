@@ -78,8 +78,8 @@ function Add-DataType
     if ($PsCmdlet.ParameterSetName -eq 'AsTable')
     {
         # Process Column Scriptblock -> Rivet.Column[]
-        $columns = & $AsTable
-        $op = New-Object 'Rivet.Operations.AddDataTypeOperation' $SchemaName, $Name, $columns, $TableConstraint
+        [Rivet.Column[]]$columns = & $AsTable
+        $op = New-Object 'Rivet.Operations.AddDataTypeOperation' $SchemaName, $Name, $columns, ([string[]]$TableConstraint)
     }
 
     Write-Host (' +{0}.{1}' -f $SchemaName,$Name)
