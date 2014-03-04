@@ -1,6 +1,6 @@
 function Setup
 {
-    Import-Module -Name (Join-Path $TestDir 'RivetTest') -ArgumentList 'RivetTest' 
+    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve) -DatabaseName 'RivetTest' 
     Start-RivetTest
 
     # yes, on PowerShell 2 these tests need a breather.  Not sure why.
@@ -13,7 +13,6 @@ function Setup
 function TearDown
 {
     Stop-RivetTest
-    Remove-Module RivetTest
 }
 
 function Test-ShouldAddUniqueKeyToOneColumn
@@ -141,10 +140,8 @@ function Pop-Migration()
 {
 }
 '@ | New-Migration -Name 'AddUniqueKeyWithCustomFileGroup'
-    $Error.Clear()
     Invoke-Rivet -Push 'AddUniqueKeyWithCustomFileGroup' -ErrorAction SilentlyContinue
-    Assert-True (0 -lt $Error.Count)
-    Assert-Like $Error[1].Exception.Message '*Invalid filegroup*'
+    Assert-Error 1 'Invalid filegroup'
 }
 
 function Test-ShouldQuoteUniqueKeyName

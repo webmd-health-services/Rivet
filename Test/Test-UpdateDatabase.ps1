@@ -1,13 +1,12 @@
 function Start-Test
 {
-    Import-Module -Name (Join-Path $TestDir 'RivetTest') -ArgumentList 'UpdateDatabase'
+    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve) -DatabaseName 'UpdateDatabase' 
     Start-RivetTest
 }
 
 function Stop-Test
 {
     Stop-RivetTest
-    Remove-Module RivetTest
 }
 
 function Test-ShouldRejectMigrationsWithNamesThatAreTooLong
@@ -28,9 +27,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name $name
 
-    $Error.Clear()
     Invoke-Rivet -Push -ErrorAction SilentlyContinue
     Assert-False (Test-Table 'Foobar')
-    Assert-Equal 1 $Error.Count
-    Assert-Like $Error[0].Exception.Message '*too long*'
+    Assert-Error -Last 'too long'
 }

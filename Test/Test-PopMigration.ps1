@@ -5,7 +5,7 @@ $migration4 = $null
 
 function Setup
 {
-    Import-Module -Name (Join-Path $TestDir 'RivetTest') -ArgumentList 'PopMigration' 
+    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve) -DatabaseName 'PopMigration' 
     Start-RivetTest
 
     $migration1 = @'
@@ -61,7 +61,6 @@ function Pop-Migration
 function TearDown
 {
     Stop-RivetTest
-    Remove-Module RivetTest
 }
 
 function Test-ShouldPopAllMigrations
@@ -128,17 +127,17 @@ function Test-ShouldNotRePopMigrations
     $originalMigrationCount = Measure-Migration
     Invoke-Rivet -Pop
     Assert-LastProcessSucceeded
-    Assert-Equal 0 ($error.Count)
+    Assert-NoError
     Assert-Equal ($originalMigrationCount - 1) (Measure-Migration)
     
     Invoke-Rivet -Pop 2
     Assert-LastProcessSucceeded
-    Assert-Equal 0 ($error.Count)
+    Assert-NoError
     Assert-Equal ($originalMigrationCount - 2) (Measure-Migration)
     
     Invoke-Rivet -Pop 2
     Assert-LastProcessSucceeded
-    Assert-Equal 0 ($error.Count)
+    Assert-NoError
     Assert-Equal ($originalMigrationCount - 2) (Measure-Migration)
 }
 
@@ -147,7 +146,7 @@ function Test-ShouldSupportPoppingMoreThanAvailableMigrations
     $migrationCount = Measure-Migration
     Invoke-Rivet -Pop ($migrationCount * 2) 
     Assert-LastProcessSucceeded
-    Assert-Equal 0 ($error.Count)
+    Assert-NoError
     Assert-Equal 0 (Measure-Migration)
 }
 
@@ -170,7 +169,7 @@ function Pop-Migration
     
     Invoke-Rivet -Push
     Assert-LastProcessSucceeded
-    Assert-True ($error.Count -eq 0)
+    Assert-NoError
     
     Invoke-Rivet -Pop (Measure-Migration) -ErrorAction SilentlyContinue -ErrorVariable rivetError
 
@@ -207,10 +206,8 @@ function Test-ShouldPopByNameWithWildcard
 
 function Test-ShouldPopByNameWithNoMatch
 {
-    $Error.Clear()
     Invoke-Rivet -Pop 'Blah' -ErrorAction SilentlyContinue
-    Assert-Equal 1 $Error.Count
-    Assert-Like $Error[0].Exception.Message '*not found*'
+    Assert-Error -Last 'not found'
 
     Assert-True (Test-Table -Name 'Migration4')
     Assert-True (Test-Table -Name 'Migration3')

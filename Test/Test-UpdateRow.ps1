@@ -1,13 +1,12 @@
 function Start-Test
 {
-    Import-Module -Name (Join-Path $TestDir 'RivetTest') -ArgumentList 'RivetTest' 
+    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve) -DatabaseName 'RivetTest' 
     Start-RivetTest
 }
 
 function Stop-Test
 {
     Stop-RivetTest
-    Remove-Module RivetTest
 }
 
 function Test-ShouldUpdateSpecificRows
@@ -165,7 +164,7 @@ function Push-Migration
     Assert-Equal ([DateTime]'10/18/2013 10:44:00') $row.LastVisit
     Assert-Equal ([TimeSpan]'00:44:00') $row.LastStayDuration
     Assert-Equal $true $row.IsActive
-    Assert-Null $row.Description
+    Assert-Null $row.Comments
 }
 
 function Test-ShouldAllowSqlExpressionForColumnValue

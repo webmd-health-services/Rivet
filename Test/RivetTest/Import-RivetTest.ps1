@@ -10,12 +10,12 @@ param(
     $DatabaseName
 )
 
-Set-StrictMode -Version Latest
-$PSScriptRoot = Split-Path -Parent -Path $MyInvocation.MyCommand.Definition
+#Requires -Version 3
+Set-StrictMode -Version 'Latest'
 
-if( (Get-Module RivetTest) )
+if( (Get-Module 'RivetTest') )
 {
-    Remove-Module RivetTest
+    Remove-Module 'RivetTest' -Verbose:$false
 }
 
-Import-Module (Join-Path $PSScriptRoot RivetTest.psd1 -Resolve) -ArgumentList $DatabaseName -ErrorAction Stop
+Import-Module (Join-Path $PSScriptRoot 'RivetTest.psd1' -Resolve) -ArgumentList $DatabaseName -ErrorAction Stop -Verbose:$false
