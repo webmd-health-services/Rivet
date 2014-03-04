@@ -15,10 +15,10 @@ function Start-RivetTest
     
     $tempDir = New-TempDir -Prefix 'RivetTest'
 
-    $global:RTDatabasesRoot = Join-Path $tempDir (Split-Path -Leaf $RTDatabasesSourcePath)
-    $global:RTDatabaseName = '{0}{1}' -f $RTDatabaseSourceName,(get-date).ToString('yyyyMMddHHmmss')
-    $global:RTDatabaseRoot = Join-Path $RTDatabasesRoot $RTDatabaseName
-    $global:RTDatabaseMigrationRoot = Join-Path -Path $RTDatabaseRoot -ChildPath 'Migrations'
+    $script:RTDatabasesRoot = Join-Path $tempDir (Split-Path -Leaf $RTDatabasesSourcePath)
+    $script:RTDatabaseName = '{0}{1}' -f $RTDatabaseSourceName,(get-date).ToString('yyyyMMddHHmmss')
+    $script:RTDatabaseRoot = Join-Path $RTDatabasesRoot $RTDatabaseName
+    $script:RTDatabaseMigrationRoot = Join-Path -Path $RTDatabaseRoot -ChildPath 'Migrations'
 
     if( (Test-Path -Path (Join-Path -Path $RTDatabasesSourcePath -ChildPath $RTDatabaseSourceName) -PathType Container) )
     {
@@ -34,9 +34,9 @@ function Start-RivetTest
 
     New-Database
 
-    $global:RTDatabaseConnection = New-SqlConnection 
+    $script:RTDatabaseConnection = New-SqlConnection 
 
-    $global:RTConfigFilePath = Join-Path -Path $tempDir -ChildPath 'rivet.json'
+    $script:RTConfigFilePath = Join-Path -Path $tempDir -ChildPath 'rivet.json'
 
     $PluginPathClause = ''
     if ($PluginPath)

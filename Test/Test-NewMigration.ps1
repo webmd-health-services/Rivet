@@ -90,16 +90,13 @@ function Test-ShouldRequireDatabaseNameIfNewDatabase
         Where-Object { $_.PsIsContainer } |
         Remove-Item -Recurse
 
-    $Error.Clear()
     & $rivetPath -New -Name 'ShouldCreateMigrationAcrossAllDatabases' -ConfigFilePath $RTConfigFilePath -ErrorAction SilentlyContinue
     Assert-LastProcessFailed
-    Assert-Equal 1 $Error.Count
-    Assert-Like $Error[0].Exception.Message '*explicit database name*'
+    Assert-Error -Last 'explicit database name'
 }
 
 function Test-ShouldCreateDatabaseDirectoryIfItDoesNotExist
 {
-    $Error.Clear()
     & $rivetPath -New -Name 'ShouldCreateMigrationForNewDatabase' -Database 'NewDatabase' -ConfigFilePath $RTConfigFilePath
     Assert-LastProcessSucceeded
     Assert-FileExists (Join-Path $RTDatabasesRoot 'NewDatabase\Migrations\*_ShouldCreateMigrationForNewDatabase.ps1')

@@ -9,7 +9,7 @@ function Start-Test
 {
     $databaseName = 'ConvertMigration'
     $pluginsPath = New-TempDir -Prefix $databaseName
-    Import-Module -Name (Join-Path $TestDir 'RivetTest') -ArgumentList $databaseName
+    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve) -DatabaseName $databaseName
     Start-RivetTest -PluginPath $pluginsPath
 
     & (Join-Path -Path $PSScriptRoot -ChildPath '..\Tools\SqlPS\Import-SqlPS.ps1' -Resolve)
@@ -26,7 +26,6 @@ function Stop-Test
 
     Remove-Item -Path $outputDir -Recurse
     Stop-RivetTest
-    Remove-Module 'RivetTest'
     Remove-Item $pluginsPath -Recurse
 }
  
@@ -49,11 +48,10 @@ function Stop-TestFixture
 
 function Test-ShouldCreateOutputPath
 {
-    $Error.Clear()
     $outputPath = Join-Path -Path $env:TEMP -ChildPath ([IO.Path]::GetRandomFileName())
     Assert-DirectoryDoesNotExist $outputPath
     & $convertRivetMigration -OutputPath $outputPath -ConfigFilePath $RTConfigFilePath
-    Assert-Equal 0 $Error.Count
+    Assert-NoError
     Assert-DirectoryExists $outputPath
 }
 

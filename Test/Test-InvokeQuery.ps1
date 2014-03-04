@@ -1,13 +1,12 @@
 function Start-Test
 {
-    Import-Module -Name (Join-Path $TestDir 'RivetTest') -ArgumentList 'AddBigIntColumn' 
+    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve) -DatabaseName 'RivetTest' 
     Start-RivetTest
 }
 
 function Stop-Test
 {
     Stop-RivetTest
-    Remove-Module RivetTest
 }
 
 function Test-ShouldInvokeQuery
@@ -74,9 +73,8 @@ function Pop-Migration
 
 "@ | New-Migration -Name 'CreateInvokeQueryFunction'
 
-    $Error.Clear()
     Invoke-Rivet -Push 'CreateInvokeQueryFunction' -ErrorAction SilentlyContinue
-    Assert-GreaterThan $ERror.Count 0
+    Assert-Error
 
     Assert-False (Test-DatabaseObject -ScalarFunction -Name 'InvokeQuery')
     Assert-False (Test-Schema 'Invoke-Query')
@@ -124,7 +122,6 @@ function Pop-Migration
 
 "@ | New-Migration -Name 'CreateInvokeQueryFunction'
 
-    $Error.Clear()
     Invoke-Rivet -Push 'CreateInvokeQueryFunction' -ErrorAction SilentlyContinue
 
     Assert-True (Test-DatabaseObject -StoredProcedure -Name 'RivetTestSproc')

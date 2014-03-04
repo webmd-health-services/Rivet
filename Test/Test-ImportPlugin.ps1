@@ -3,7 +3,7 @@ $pluginsPath = $null
 
 function Start-Test
 {
-    Import-Module -Name (Join-Path $TestDir 'RivetTest') -ArgumentList 'ImportPlugin'
+    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve) -DatabaseName 'ImportPlugin' 
     $pluginsPath = New-TempDir -Prefix 'ImportPlugin'
     @'
 function Add-MyTable
@@ -20,7 +20,6 @@ function Add-MyTable
 function Stop-Test
 {
     Stop-RivetTest
-    Remove-Module RivetTest
     Remove-Item -Path $pluginsPath -Recurse
 }
 
@@ -55,9 +54,7 @@ function Push-Migration
 }
 '@ | New-Migration -Name 'AddMyTable'
 
-    $Error.Clear()
     Invoke-Rivet -Push -ErrorAction SilentlyContinue
-    Assert-Equal 1 $Error[0].Count
-    Assert-Like $Error[0].Exception.Message 'not found'
+    Assert-Error -Last 'not found'
 }
 

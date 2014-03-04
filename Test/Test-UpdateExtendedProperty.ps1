@@ -1,13 +1,12 @@
 function Setup
 {
-    Import-Module -Name (Join-Path $TestDir 'RivetTest') -ArgumentList 'UpdateExtendedProperty' 
+    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve) -DatabaseName 'UpdateExtendedProperty' 
     Start-RivetTest
 }
 
 function TearDown
 {
     Stop-RivetTest
-    Remove-Module RivetTest
 }
 
 function Test-ShouldUpdateExtendedPropertyToSchema

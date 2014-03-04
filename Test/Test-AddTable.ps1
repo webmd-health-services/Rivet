@@ -1,14 +1,13 @@
 
 function Setup
 {
-    Import-Module -Name (Join-Path $TestDir 'RivetTest') -ArgumentList 'AddTable' 
+    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve) -DatabaseName 'AddTable' 
     Start-RivetTest
 }
 
 function TearDown
 {
     Stop-RivetTest
-    Remove-Module RivetTest
 }
 
 function Test-ShouldCreateTable
@@ -34,39 +33,32 @@ function Test-ShouldCreateTableInCustomSchema
 
 function Test-ShouldCreateWithCustomFileGroup
 {
-    $Error.Clear()
     Invoke-Rivet -Push 'CreateTableWithCustomFileGroup' -ErrorAction SilentlyContinue
-    Assert-True (0 -lt $Error.Count)
-    Assert-Like $Error[1].Exception.Message '*Invalid filegroup*'
+    Assert-Error 1 'Invalid filegroup'
     Assert-False (Test-Table -Name 'CustomFileGroup')
 }
 
 function Test-ShouldCreateWithCustomTextImageFileGroup
 {
-    $Error.Clear()
     Invoke-Rivet -Push 'CreateTableWithCustomTextImageFileGroup' -ErrorAction SilentlyContinue
-    Assert-True (0 -lt $Error.Count)
-    Assert-Like $Error[1].Exception.Message '*Cannot use TEXTIMAGE_ON*'
+    Assert-Error 1 'Cannot use TEXTIMAGE_ON'
     Assert-False (Test-Table -Name 'CustomTextImageFileGroup')
 }
 
 function Test-ShouldCreateWithCustomFileStreamFileGroup
 {
-    $Error.Clear()
     Invoke-Rivet -Push 'CreateTableWithCustomFileStreamFileGroup' -ErrorAction SilentlyContinue
-    Assert-True (0 -lt $Error.Count)
-    Assert-Like $Error[1].Exception.Message '*FILESTREAM_ON cannot be specified*'
+    Assert-Error 1 'FILESTREAM_ON cannot be specified'
     Assert-False (Test-Table -Name 'CustomFileStreamFileGroup')
 }
 
 function Test-ShouldCreateTableWithOptions
 {
-    $Error.Clear()
     Invoke-Rivet -Push 'CreateTableWithOption' -ErrorAction SilentlyContinue
     
-    if( $Error )
+    if( $Global:Error )
     {
-        $bingo = $Error | Where-Object { $_ -like '*Cannot enable compression for object ''AddTableWithOption''*' }
+        $bingo = $Global:Error | Where-Object { $_ -like '*Cannot enable compression for object ''AddTableWithOption''*' }
         Assert-NotNull $bingo 'Unable to find error that indicates options were added to create table sql'
     }
     else

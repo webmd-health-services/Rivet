@@ -1,14 +1,13 @@
 
 function Start-Test
 {
-    Import-Module -Name (Join-Path $TestDir 'RivetTest') -ArgumentList 'RivetTest' 
+    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve) -DatabaseName 'RivetTest' 
     Start-RivetTest
 }
 
 function Stop-Test
 {
     Stop-RivetTest
-    Remove-Module RivetTest
 }
 
 function Test-ShouldAddDefaultConstraint
@@ -52,10 +51,9 @@ function Pop-Migration()
 }
 '@ | New-Migration -Name 'AddDefaultConstraintWithValues'
 
-    $Error.Clear()
     Invoke-Rivet -Push 'AddDefaultConstraintWithValues'
     Assert-DefaultConstraint -TableName 'AddDefaultConstraint' -ColumnName 'DefaultConstraintMe'
-    Assert-Equal 0 $Error.Count
+    Assert-NoError
 }
 
 

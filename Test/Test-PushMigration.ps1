@@ -1,14 +1,13 @@
 
 function Start-Test
 {
-    Import-Module -Name (Join-Path $TestDir 'RivetTest') -ArgumentList 'RivetTest' 
+    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve) -DatabaseName 'RivetTest' 
     Start-RivetTest
 }
 
 function Stop-Test
 {
     Stop-RivetTest
-    Remove-Module RivetTest
 }
 
 function Test-ShouldPushMigrations
@@ -236,11 +235,8 @@ function Test-ShouldStopPushingMigrationsIfOneGivesAnError
 
 function Test-ShouldFailIfMigrationNameDoesNotExist
 {
-    $Error.Clear()
     Invoke-Rivet -Push 'AMigrationWhichDoesNotExist' -ErrorAction SilentlyContinue
-
-    Assert-GreaterThan $Error.Count 0
-    Assert-Like $Error[0] '*not found*'
+    Assert-Error -Last 'not found'
 }
 
 function Get-SqlServerUtcDate
