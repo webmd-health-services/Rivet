@@ -1,6 +1,6 @@
 function Setup
 {
-    Import-Module -Name (Join-Path $TestDir 'RivetTest') -ArgumentList 'AddAdminColumnPlugin'
+    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve) -DatabaseName 'AddAdminColumnPlugin' 
     $tempPluginsPath = New-TempDir -Prefix 'AddAdminColumnPlugin'
     $pluginPath = Join-Path -Path $TestDir -ChildPath '..\Rivet\Extras\*-MigrationOperation.ps1' -Resolve
     Copy-Item -Path $pluginPath -Destination $tempPluginsPath
@@ -10,7 +10,6 @@ function Setup
 function TearDown
 {
     Stop-RivetTest
-    Remove-Module RivetTest
 }
 
 function Test-ShouldRunPlugins
@@ -86,11 +85,9 @@ function Pop-Migration
 }
 '@ | New-Migration -Name 'ValidateMigrations'
 
-    $Error.Clear()
     Invoke-Rivet -Push 'ValidateMigrations' -ErrorAction SilentlyContinue
     Assert-False (Test-Trigger -Name 'trFoobar_Nothing')
-    Assert-Equal 3 $Error.Count
-    Assert-LIke $Error[2].Exception.Message '*not for replication*'
+    Assert-Error 2 'not for replication'
 }
 
 function Test-ShouldRejectBigIntIdentities
@@ -108,10 +105,8 @@ function Pop-Migration
 }
 '@ | New-Migration -Name 'ValidateMigrations'
 
-    $Error.Clear()
     Invoke-Rivet -Push 'ValidateMigrations' -ErrorAction SilentlyContinue
-    Assert-GreaterThan $Error.Count 0
-    Assert-LIke $Error[-1].Exception.Message '*can''t be identity columns*'
+    Assert-Error -First 'can''t be identity columns'
 }
 
 function Test-ShouldRejectSmallIntIdentities
@@ -129,10 +124,8 @@ function Pop-Migration
 }
 '@ | New-Migration -Name 'ValidateMigrations'
 
-    $Error.Clear()
     Invoke-Rivet -Push 'ValidateMigrations' -ErrorAction SilentlyContinue
-    Assert-GreaterThan $Error.Count 0
-    Assert-LIke $Error[-1].Exception.Message '*can''t be identity columns*'
+    Assert-Error -First 'can''t be identity columns'
 }
 
 function Test-ShouldRejectTinyIntIdentities
@@ -150,10 +143,8 @@ function Pop-Migration
 }
 '@ | New-Migration -Name 'ValidateMigrations'
 
-    $Error.Clear()
     Invoke-Rivet -Push 'ValidateMigrations' -ErrorAction SilentlyContinue
-    Assert-GreaterThan $Error.Count 0
-    Assert-LIke $Error[-1].Exception.Message '*can''t be identity columns*'
+    Assert-Error -First 'can''t be identity columns'
 }
 
 function Test-ShouldMakeIdentitiesNotForReplication
@@ -245,11 +236,9 @@ function Pop-Migration
 }
 '@ | New-Migration -Name 'ValidateMigrations'
 
-    $Error.Clear()
     Invoke-Rivet -Push 'ValidateMigrations' -ErrorAction SilentlyContinue
 
-    Assert-GreaterThan $Error.Count 0 'no errors'
-    Assert-Like $Error[-1].Exception.Message '*Foo*-Description*'
+    Assert-Error -First 'Foo.*-Description'
 
     Assert-False (Test-Table 'Foo')
     
@@ -270,11 +259,9 @@ function Pop-Migration
 }
 '@ | New-Migration -Name 'ValidateMigrations'
 
-    $Error.Clear()
     Invoke-Rivet -Push 'ValidateMigrations' -ErrorAction SilentlyContinue
 
-    Assert-GreaterThan $Error.Count 0 'no errors'
-    Assert-Like $Error[-1].Exception.Message '*Name*-Description*'
+    Assert-Error -First 'Name.*-Description'
 
     Assert-False (Test-Table 'Foo')
     
@@ -299,11 +286,9 @@ function Pop-Migration
 }
 '@ | New-Migration -Name 'ValidateMigrations'
 
-    $Error.Clear()
     Invoke-Rivet -Push 'ValidateMigrations' -ErrorAction SilentlyContinue
 
-    Assert-GreaterThan $Error.Count 0 'no errors'
-    Assert-Like $Error[-1].Exception.Message '*LastName*-Description*'
+    Assert-Error -First 'LastName.*-Description'
 
     Assert-False (Test-Table 'Foo')
     
