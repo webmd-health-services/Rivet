@@ -86,22 +86,18 @@ function Test-ShouldValidateDatabasesDirectoryExists
 {
     Remove-Item -Path (Join-Path -Path $tempDir -ChildPath 'Databases') -Recurse
 
-    $Error.Clear()
     $config = Get-RivetConfig -Path $rivetConfigPath -ErrorAction SilentlyContinue
     Assert-Null $config
-    Assert-Equal 1 $Error.Count
-    Assert-Like $Error[0].Exception.Message '*not found*'
+    Assert-LastError 'not found'
 }
 
 function Test-ShouldValidatePluginDirectoryExists
 {
     Remove-Item -Path (Join-Path -Path $tempDir -ChildPath 'Plugins') -Recurse
 
-    $Error.Clear()
     $config = Get-RivetConfig -Path $rivetConfigPath -ErrorAction SilentlyContinue
     Assert-Null $config
-    Assert-Equal 1 $Error.Count
-    Assert-Like $Error[0].Exception.Message '*not found*'
+    Assert-LastError 'not found'
 }
 
 function Test-ShouldRequireDatabaseScriptsRoot
@@ -112,11 +108,9 @@ function Test-ShouldRequireDatabaseScriptsRoot
 }
 '@ | Set-RivetConfig
 
-    $Error.Clear()
     $config = Get-RivetConfig -Path $rivetConfigPath -ErrorAction SilentlyContinue
     Assert-Null $config
-    Assert-Equal 1 $Error.Count
-    Assert-Like $Error[0].Exception.Message '*missing*'
+    Assert-LastError 'missing'
 }
 
 function Test-ShouldRequireSqlServerName
@@ -127,11 +121,9 @@ function Test-ShouldRequireSqlServerName
 }
 '@ | Set-RivetConfig
 
-    $Error.Clear()
     $config = Get-RivetConfig -Path $rivetConfigPath -ErrorAction SilentlyContinue
     Assert-Null $config
-    Assert-Equal 1 $Error.Count
-    Assert-Like $Error[0].Exception.Message '*missing*'
+    Assert-LastError 'missing'
 }
 
 function Test-ShouldParseSqlServerName
@@ -174,11 +166,9 @@ function Test-ShouldValidateConnectionTimeout
 }
 "@ | Set-RivetConfig
 
-    $Error.Clear()
     $config = Get-RivetConfig -Path $rivetConfigPath -ErrorAction SilentlyContinue
     Assert-Null $config
-    Assert-Equal 1 $Error.Count
-    Assert-Like $Error[0].Exception.Message '*invalid*'
+    Assert-LastError 'invalid'
 }
 
 function Test-ShouldParseCommandTimeout
@@ -206,11 +196,9 @@ function Test-ShouldValidateCommandTimeout
 }
 "@ | Set-RivetConfig
 
-    $Error.Clear()
     $config = Get-RivetConfig -Path $rivetConfigPath -ErrorAction SilentlyContinue
     Assert-Null $config
-    Assert-Equal 1 $Error.Count
-    Assert-Like $Error[0].Exception.Message '*invalid*'
+    Assert-LastError 'invalid'
 }
 
 function Test-ShouldParseRivetConfigInCurrentDirectory
@@ -377,11 +365,9 @@ function Test-ShouldFailIfEnvironmentMissing
     $dbName = [Guid]::NewGuid().ToString()
     $dbName | New-DatabaseDirectory
 
-    $Error.Clear()
     $config = Get-RivetConfig -Path $rivetConfigPath -Environment 'IDoNotExist' -ErrorAction SilentlyContinue
     Assert-Null $config
-    Assert-Equal 1 $Error.Count
-    Assert-Like $Error[0].Exception.Message '*Environment ''IDoNotExist'' not found*'
+    Assert-LastError 'Environment ''IDoNotExist'' not found'
 }
 
 function Set-RivetConfig

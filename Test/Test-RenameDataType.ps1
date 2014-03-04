@@ -1,14 +1,13 @@
 
 function Start-Test
 {
-    Import-Module -Name (Join-Path $TestDir 'RivetTest') -ArgumentList 'RenameDataType' 
+    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve) -DatabaseName 'RenameDataType' 
     Start-RivetTest
 }
 
 function Stop-Test
 {
     Stop-RivetTest
-    Remove-Module RivetTest
 }
 
 function Test-ShouldUpdateMetadata

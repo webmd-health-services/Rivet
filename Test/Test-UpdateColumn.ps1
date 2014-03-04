@@ -1,13 +1,12 @@
 function Setup
 {
-    Import-Module -Name (Join-Path $TestDir 'RivetTest') -ArgumentList 'UpdateColumn' 
+    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve) -DatabaseName 'UpdateColumn' 
     Start-RivetTest
 }
 
 function TearDown
 {
     Stop-RivetTest
-    Remove-Module RivetTest
 }
 
 function Test-ShouldUpdateColumnFromInttoBigIntWithDescription

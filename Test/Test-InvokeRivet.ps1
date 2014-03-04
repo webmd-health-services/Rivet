@@ -2,7 +2,7 @@
 
 function Start-Test
 {
-    Import-Module -Name (Join-Path $TestDir 'RivetTest') -ArgumentList 'InvokeRivet'
+    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve) -DatabaseName 'InvokeRivet' 
     Start-RivetTest -IgnoredDatabase 'Ignored'
 }
 
@@ -13,8 +13,6 @@ function Stop-Test
 
 function Test-ShouldHandleNewMigrationForIgnoredDatabase
 {
-    $Error.Clear()
     ' ' | New-Migration -Name 'Migration' -Database 'Ignored' -ErrorAction SilentlyContinue
-    Assert-GreaterThan $Error.Count 0 'no errors'
-    Assert-Like $Error[-1].Exception.Message '*ignored*'
+    Assert-Error -First 'ignored'
 }

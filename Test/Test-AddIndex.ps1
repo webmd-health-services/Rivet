@@ -1,14 +1,13 @@
 
 function Start-Test
 {
-    Import-Module -Name (Join-Path $TestDir 'RivetTest') -ArgumentList 'RivetTest' 
+    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve) -DatabaseName 'RivetTest' 
     Start-RivetTest
 }
 
 function Stop-Test
 {
     Stop-RivetTest
-    Remove-Module RivetTest
 }
 
 function Test-ShouldAddIndexWithOneColumn
@@ -216,11 +215,8 @@ function Pop-Migration()
 }
 '@ | New-Migration -Name 'CreateIndexOnCustomFileGroup'
 
-    $Error.Clear()
     Invoke-Rivet -Push 'CreateIndexOnCustomFileGroup' -ErrorAction SilentlyContinue
-    Assert-True (0 -lt $Error.Count)
-    Assert-Like $Error[1].Exception.Message '*Invalid filegroup*'
-
+    Assert-Error 1 'Invalid filegroup'
 }
 
 
@@ -245,10 +241,8 @@ function Pop-Migration()
 }
 '@ | New-Migration -Name 'CreateIndexOnCustomFileStream'
 
-    $Error.Clear()
     Invoke-Rivet -Push 'CreateIndexOnCustomFileStream' -ErrorAction SilentlyContinue
-    Assert-True (0 -lt $Error.Count)
-    Assert-Like $Error[1].Exception.Message '*FILESTREAM_ON cannot be specified*'
+    Assert-Error 1 'FILESTREAM_ON cannot be specified'
 }
 
 function Test-ShouldCreateIndexWithDescending

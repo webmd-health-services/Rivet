@@ -1,7 +1,7 @@
 
 function Stop-RivetTest
 {
-    $RTDatabaseConnection.Close()
+    $Script:RTDatabaseConnection.Close()
 
     Remove-RivetTestDatabase
 

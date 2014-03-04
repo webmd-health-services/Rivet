@@ -1,13 +1,12 @@
 function Start-Test
 {
-    Import-Module -Name (Join-Path $TestDir 'RivetTest') -ArgumentList 'AddSmallIntColumn' 
+    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve) -DatabaseName 'AddSmallIntColumn' 
     Start-RivetTest
 }
 
 function Stop-Test
 {
     Stop-RivetTest
-    Remove-Module RivetTest
 }
 
 function Test-ShouldCreateSmallIntWithNullable
