@@ -17,7 +17,8 @@ function Test-ShouldRunPlugins
     @'
 function Push-Migration
 {
-    Add-Table Foobar -Description 'Test' {
+    Add-Schema 'fubar'
+    Add-Table -SchemaName 'fubar' Foobar -Description 'Test' {
         BigInt ID -Description 'Test'
     }
 }
@@ -31,12 +32,12 @@ function Pop-Migration
 
     Invoke-Rivet -Push 'CompleteAdminPlugin'
 
-    Assert-Column -Name CreateDate -DataType smalldatetime -NotNull -TableName "Foobar"
-    Assert-Column -Name LastUpdated -DataType datetime -NotNull -TableName "Foobar"
-    Assert-Column -Name RowGuid -DataType uniqueidentifier -NotNull -RowGuidCol -TableName "Foobar"
-    Assert-Column -Name SkipBit -DataType bit -TableName "Foobar"
-    Assert-Index -TableName 'Foobar' -ColumnName 'rowguid' -Unique
-    Assert-Trigger -Name 'trFoobar_Activity'
+    Assert-Column -Name CreateDate -DataType smalldatetime -NotNull -TableName "Foobar" -SchemaName 'fubar'
+    Assert-Column -Name LastUpdated -DataType datetime -NotNull -TableName "Foobar" -SchemaName 'fubar'
+    Assert-Column -Name RowGuid -DataType uniqueidentifier -NotNull -RowGuidCol -TableName "Foobar" -SchemaName 'fubar'
+    Assert-Column -Name SkipBit -DataType bit -TableName "Foobar" -SchemaName 'fubar'
+    Assert-Index -TableName 'Foobar' -ColumnName 'rowguid' -Unique -SchemaName 'fubar'
+    Assert-Trigger -Name 'trFoobar_Activity' -SchemaName 'fubar'
 }
 
 function Test-PluginsShouldSkipRowGuid
