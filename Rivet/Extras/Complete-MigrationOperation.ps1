@@ -46,5 +46,5 @@ BEGIN
 END
 '@ -f $Operation.SchemaName,$Operation.Name
 
-    Add-Trigger ('tr{0}_Activity' -f $Operation.Name) -Definition $trigger
+    Add-Trigger -SchemaName $Operation.SchemaName -Name ('tr{0}_Activity' -f $Operation.Name) -Definition $trigger
 }
