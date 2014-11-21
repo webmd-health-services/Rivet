@@ -73,6 +73,17 @@ begin
     alter table [rivet].[Migrations] add constraint [DF_rivet_Migrations_AtUtc] default (GetUtcDate()) for [AtUtc]
 end
 
+declare @maxLength INT;
+select @maxLength = character_maximum_length
+from information_schema.columns
+join sys.schemas s on s.name = 'rivet'
+where table_name = 'Migrations' and column_name = 'Name'
+
+if (@maxLength <> 241)
+begin
+	alter table [rivet].[Migrations] alter column [Name] nvarchar(241) not null
+end
+
 if object_id('rivet.MigrationsPK', 'PK') is not null and object_id('rivet.PK_rivet_Migrations', 'PK') is null
 begin
     exec sp_rename 'rivet.MigrationsPK', 'PK_rivet_Migrations', 'OBJECT'
@@ -91,10 +102,18 @@ begin
     )
 
     alter table [rivet].[Activity] add constraint [PK_rivet_Activity_ID] primary key ([ID])
-
     alter table [rivet].[Activity] add constraint [DF_rivet_Activity_AtUtc]  DEFAULT (getutcdate()) FOR [AtUtc]
-
     alter table [rivet].[Activity] with check add constraint [CK_rivet_Activity_Operation] CHECK  (([Operation]='Push' OR [Operation]='Pop'))
+end
+
+select @maxLength = character_maximum_length
+from information_schema.columns
+join sys.schemas s on s.name = 'rivet'
+where table_name = 'Activity' and column_name = 'Name'
+
+if (@maxLength <> 241)
+begin
+	alter table [rivet].[Activity] alter column [Name] nvarchar(241) not null
 end
 
 if object_id('rivet.PK_rivet_Activity_ID', 'PK') is not null and object_id('rivet.PK_rivet_Activity', 'PK') is null
@@ -112,14 +131,37 @@ if object_id('rivet.InsertMigration', 'P') is null and object_id('rivet.InsertMi
         as
         begin
 	        declare @AtUtc datetime2(7)
-
 	        select @AtUtc = getutcdate()
-
 	        insert into [rivet].[Migrations] ([ID],[Name],[Who],[ComputerName],[AtUtc]) values (@ID,@Name,@Who,@ComputerName,@AtUtc)
-
 	        insert into [rivet].[Activity] ([Operation],[MigrationID],[Name],[Who],[ComputerName],[AtUtc]) values (''Push'',@ID,@Name,@Who,@ComputerName,@AtUtc)
         end
     '
+else
+    begin
+        select @maxLength = p.max_length
+        from sys.procedures sp
+        join sys.parameters p on sp.object_id = p.object_id
+        join sys.schemas s on s.name = 'rivet'
+        where sp.name = 'InsertMigration' and p.name = '@Name'
+
+        if (@maxLength <> 241)
+            begin
+	            exec sp_executesql N'
+                    alter procedure [rivet].[InsertMigration]
+	                    @ID bigint,
+	                    @Name varchar(241),
+	                    @Who varchar(50),
+	                    @ComputerName varchar(50)
+                    as
+                    begin
+	                    declare @AtUtc datetime2(7)
+	                    select @AtUtc = getutcdate()
+	                    insert into [rivet].[Migrations] ([ID],[Name],[Who],[ComputerName],[AtUtc]) values (@ID,@Name,@Who,@ComputerName,@AtUtc)
+	                    insert into [rivet].[Activity] ([Operation],[MigrationID],[Name],[Who],[ComputerName],[AtUtc]) values (''Push'',@ID,@Name,@Who,@ComputerName,@AtUtc)
+                    end
+                '
+            end
+    end
 
 if object_id('rivet.RemoveMigration', 'P') is null and object_id('rivet.RemoveMigration', 'PC') is null
     exec sp_executesql N'
@@ -131,10 +173,33 @@ if object_id('rivet.RemoveMigration', 'P') is null and object_id('rivet.RemoveMi
         as
         begin
 	        delete from [rivet].[Migrations] where [ID] = @ID
-
 	        insert into [rivet].[Activity] ([Operation],[MigrationID],[Name],[Who],[ComputerName],[AtUtc]) values (''Pop'',@ID,@Name,@Who,@ComputerName,getutcdate())
         end
     '
+else
+    begin
+        select @maxLength = p.max_length
+        from sys.procedures sp
+        join sys.parameters p on sp.object_id = p.object_id
+        join sys.schemas s on s.name = 'rivet'
+        where sp.name = 'RemoveMigration' and p.name = '@Name'
+
+        if (@maxLength <> 241)
+        begin
+	        exec sp_executesql N'
+	            alter procedure [rivet].[RemoveMigration]
+	                @ID bigint,
+                    @Name varchar(241),
+                    @Who varchar(50),
+                    @ComputerName varchar(50)
+                as
+                begin
+	                delete from [rivet].[Migrations] where [ID] = @ID
+	                insert into [rivet].[Activity] ([Operation],[MigrationID],[Name],[Who],[ComputerName],[AtUtc]) values (''Pop'',@ID,@Name,@Who,@ComputerName,getutcdate())
+                end
+            '
+        end
+    end
 '@
 
         $null = Invoke-Query -Query $query -NonQuery -Verbose:$false
