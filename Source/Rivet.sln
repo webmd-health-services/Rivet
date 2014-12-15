@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+# Visual Studio 2013
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rivet", "Rivet.csproj", "{E987DC29-C1B0-4C9A-B8A3-46823E636087}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rivet.Test", "Test\Rivet.Test.csproj", "{7BF888CB-5E1D-42A2-B277-6E18E06F6AC8}"
