@@ -1,0 +1,3 @@
+# 0.2.0
+
+ * Rivet will now create a database if it doesn't exist.
