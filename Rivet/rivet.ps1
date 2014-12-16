@@ -3,7 +3,7 @@
 A database migration tool for PowerShell.
 
 .DESCRIPTION
-Rivet is a database migration tool for PowerShell.  Finally!
+Rivet is a database migration tool for SQL Server.  Finally!
 
 This script is the entry point for Rivet.  It is used to create a new migration, and apply/revert migrations against a database.
 
