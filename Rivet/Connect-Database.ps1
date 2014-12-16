@@ -19,33 +19,31 @@ function Connect-Database
     
     Set-StrictMode -Version 'Latest'
 
-    Disconnect-Database
+    if( -not $Connection -or $Connection.DataSource -ne $SqlServerName )
+    {
+        Disconnect-Database
+
+        $connString = 'Server={0};Database=master;Integrated Security=True;Connection Timeout={1}' -f $SqlServerName,$ConnectionTimeout
+        Set-Variable -Name 'Connection' -Scope 1 -Value (New-Object 'Data.SqlClient.SqlConnection' ($connString)) -Confirm:$False -WhatIf:$false
+        $Connection.Open()
+    }
+
+    if( $Connection.Database -ne 'master' )
+    {
+        $Connection.ChangeDatabase( 'master' )
+    }
 
     $query = 'select 1 from sys.databases where name=''{0}''' -f $Database
-    $masterConnString = 'Server={0};Database=master;Integrated Security=True;Connection Timeout={1}' -f $SqlServerName,$ConnectionTimeout
-    $masterConn = New-Object Data.SqlClient.SqlConnection ($masterConnString)
-    $masterConn.Open()
-
-    try
+    $cmd = New-Object 'Data.SqlClient.SqlCommand' $query,$Connection
+    if( -not ($cmd.ExecuteScalar()) )
     {
-        $cmd = New-Object 'Data.SqlClient.SqlCommand' $query,$masterConn
-        if( -not ($cmd.ExecuteScalar()) )
-        {
-            Write-Verbose ('Creating database {0}.{1}.' -f $SqlServerName,$Database)
-            $query = 'create database [{0}]' -f $Database
-            $cmd = New-Object 'Data.SqlClient.SqlCommand' $query,$masterConn
-            [void]$cmd.ExecuteNonQuery()
-        }
+        Write-Verbose ('Creating database {0}.{1}.' -f $SqlServerName,$Database)
+        $query = 'create database [{0}]' -f $Database
+        $cmd = New-Object 'Data.SqlClient.SqlCommand' $query,$Connection
+        [void]$cmd.ExecuteNonQuery()
     }
-    finally
-    {
-        $masterConn.Close()
-    }
-    
-    $connString = 'Server={0};Database={1};Integrated Security=True;Connection Timeout={2}' -f $SqlServerName,$Database,$ConnectionTimeout
-    Set-Variable -Name 'Connection' -Scope 1 -Value (New-Object Data.SqlClient.SqlConnection ($connString)) -Confirm:$False -WhatIf:$false
 
-    $Connection.Open()
+    $Connection.ChangeDatabase( $Database )
     
     $Connection |
         Add-Member -MemberType NoteProperty -Name Transaction -Value $null -PassThru |

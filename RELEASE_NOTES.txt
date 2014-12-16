@@ -1,3 +1,4 @@
 # 0.2.0
 
  * Rivet will now create a database if it doesn't exist.
+ * Rivet will now create one database connection, instead of creating a new one for each database.
