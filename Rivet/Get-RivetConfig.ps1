@@ -92,7 +92,12 @@ function Get-RivetConfig
             [Parameter(Mandatory=$true,ParameterSetName='AsString')]
             [Switch]
             # Set the configuration value as a string.
-            $AsString
+            $AsString,
+
+            [Parameter(Mandatory=$true,ParameterSetName='AsHashtable')]
+            [Switch]
+            # Set the configuration value as a hashtable.
+            $AsHashtable
         )
         
         $value = $null
@@ -149,6 +154,13 @@ function Get-RivetConfig
             'AsString'
             {
                 $properties.$Name = $value
+                break
+            }
+            'AsHashtable'
+            {
+                $hashtable = $properties.$Name
+                Get-Member -InputObject $value -MemberType NoteProperty |
+                    ForEach-Object { $hashtable[$_.Name] = $value.($_.Name) }
                 break
             }
         }
@@ -216,6 +228,7 @@ function Get-RivetConfig
                         Databases = @();
                         PluginsRoot = @();
                         IgnoreDatabases = @();
+                        TargetDatabases = @{ };
                    }
 
     $rawConfig = ((Get-Content -Path $Path) -join "`n") | ConvertFrom-Json
@@ -225,7 +238,8 @@ function Get-RivetConfig
                 (Set-ConfigProperty -Name PluginsRoot -AsPath) -and `
                 (Set-ConfigProperty -Name ConnectionTimeout -AsInt) -and `
                 (Set-ConfigProperty -Name CommandTimeout -AsInt) -and `
-                (Set-ConfigProperty -Name IgnoreDatabases -AsList)
+                (Set-ConfigProperty -Name IgnoreDatabases -AsList) -and `
+                (Set-ConfigProperty -Name 'TargetDatabases' -AsHashtable)
 
     if( $valid )
     {

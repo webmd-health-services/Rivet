@@ -80,6 +80,9 @@ function Test-ShouldParseMinimumConfig
     Assert-Equal (Join-Path -Path $tempDir -ChildPath "Databases\$dbName\Migrations") $config.Databases[0].MigrationsRoot
     Assert-True ($config.PluginsRoot -is 'String')
     Assert-Equal (Join-Path -Path $tempDir -ChildPath "Plugins") $config.PluginsRoot
+    Assert-NotNull $config.TargetDatabases
+    Assert-Is $config.TargetDatabases ([hashtable])
+    Assert-Equal 0 $config.TargetDatabases.Count
 }
 
 function Test-ShouldValidateDatabasesDirectoryExists
@@ -88,7 +91,7 @@ function Test-ShouldValidateDatabasesDirectoryExists
 
     $config = Get-RivetConfig -Path $rivetConfigPath -ErrorAction SilentlyContinue
     Assert-Null $config
-    Assert-LastError 'not found'
+    Assert-Error -Last 'not found'
 }
 
 function Test-ShouldValidatePluginDirectoryExists
@@ -97,7 +100,7 @@ function Test-ShouldValidatePluginDirectoryExists
 
     $config = Get-RivetConfig -Path $rivetConfigPath -ErrorAction SilentlyContinue
     Assert-Null $config
-    Assert-LastError 'not found'
+    Assert-Error -Last 'not found'
 }
 
 function Test-ShouldRequireDatabaseScriptsRoot
@@ -110,7 +113,7 @@ function Test-ShouldRequireDatabaseScriptsRoot
 
     $config = Get-RivetConfig -Path $rivetConfigPath -ErrorAction SilentlyContinue
     Assert-Null $config
-    Assert-LastError 'missing'
+    Assert-Error -Last 'missing'
 }
 
 function Test-ShouldRequireSqlServerName
@@ -123,7 +126,7 @@ function Test-ShouldRequireSqlServerName
 
     $config = Get-RivetConfig -Path $rivetConfigPath -ErrorAction SilentlyContinue
     Assert-Null $config
-    Assert-LastError 'missing'
+    Assert-Error -Last 'missing'
 }
 
 function Test-ShouldParseSqlServerName
@@ -168,7 +171,7 @@ function Test-ShouldValidateConnectionTimeout
 
     $config = Get-RivetConfig -Path $rivetConfigPath -ErrorAction SilentlyContinue
     Assert-Null $config
-    Assert-LastError 'invalid'
+    Assert-Error -Last 'invalid'
 }
 
 function Test-ShouldParseCommandTimeout
@@ -198,7 +201,7 @@ function Test-ShouldValidateCommandTimeout
 
     $config = Get-RivetConfig -Path $rivetConfigPath -ErrorAction SilentlyContinue
     Assert-Null $config
-    Assert-LastError 'invalid'
+    Assert-Error -Last 'invalid'
 }
 
 function Test-ShouldParseRivetConfigInCurrentDirectory
@@ -367,7 +370,31 @@ function Test-ShouldFailIfEnvironmentMissing
 
     $config = Get-RivetConfig -Path $rivetConfigPath -Environment 'IDoNotExist' -ErrorAction SilentlyContinue
     Assert-Null $config
-    Assert-LastError 'Environment ''IDoNotExist'' not found'
+    Assert-Error -Last 'Environment ''IDoNotExist'' not found'
+}
+
+
+function Test-ShouldParseTargetDatabases
+{
+    $uatDatabasesPath = Join-Path $tempDir 'UatDatabases'
+    $null = New-Item -Path $uatDatabasesPath -ItemType 'Directory'
+    $null = New-Item -Path (Join-Path $uatDatabasesPath 'Shared') -ItemType 'Directory'
+    $null = New-Item -Path (Join-Path $uatDatabasesPath 'UatDatabase') -ItemType 'Directory'
+    @'
+{
+    SqlServerName: '.\\Rivet',
+    DatabasesRoot: 'Databases',
+    TargetDatabases: {
+                        'DB1': [ 'DB2', 'DB3' ]
+                     }
+}
+'@ | Set-RivetConfig
+
+    $defaultConfig = Get-RivetConfig -Path $rivetConfigPath
+    Assert-NotNull $defaultConfig.TargetDatabases
+    Assert-Is $defaultConfig.TargetDatabases ([hashtable])
+    Assert-Equal $defaultConfig.TargetDatabases['DB1'][0] 'DB2'
+    Assert-Equal $defaultConfig.TargetDatabases['DB1'][1] 'DB3'
 }
 
 function Set-RivetConfig
