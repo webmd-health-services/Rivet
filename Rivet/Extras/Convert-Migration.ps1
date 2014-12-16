@@ -172,6 +172,7 @@ $opIdx = @{ }
 Get-Migration @getMigrationParams |
     ForEach-Object { 
         $migration = $_
+        $migration
         $migrationName = '{0}_{1}' -f $migration.ID,$migration.Name
         $authorMsg = ''
         if( $Author.ContainsKey( $migrationName ) )
