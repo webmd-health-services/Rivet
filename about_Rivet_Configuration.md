@@ -59,6 +59,14 @@ You can see directories for the `Rivet` and `RivetTest` databases under the `Dat
 
 Rivet assumes there is a one-to-one mapping between the directories under `DatabasesRoot` and a database on the SQL Server.  If this is not the case, and you'd like to exclude/ignore a directory under `DatabasesRoot`, use the `IgnoreDatabases` setting.
 
+### Environments
+
+A hash of environments, where they key is the environment's name, and the value is another hash of settings for that environment. These environment settings override the base/default settings.  If an environment doesn't specify a setting, the base/default setting is used.
+
+### IgnoreDatabases
+
+A list of database names to ignore/exclude from the Rivet.  This is useful if you have a directory  under `DatabasesRoot` that doesn't contain a database's scripts.  Wildcards are allowed, e.g. `Shared*` would exclude all directories under `DatabasesRoot` that begin with the word `Shared`.
+
 ### PluginsRoot
 
 This should point to the directory which contains the directory for which plugins should be stored.  For example, given this directory structure:
@@ -68,14 +76,6 @@ This should point to the directory which contains the directory for which plugin
 	+Plugins
 
 PluginsRoot should point to the "Plugins" directory
-
-### Environments
-
-A hash of environments, where they key is the environment's name, and the value is another hash of settings for that environment. These environment settings override the base/default settings.  If an environment doesn't specify a setting, the base/default setting is used.
-
-### IgnoreDatabases
-
-A list of database names to ignore/exclude from the Rivet.  This is useful if you have a directory  under `DatabasesRoot` that doesn't contain a database's scripts.  Wildcards are allowed, e.g. `Shared*` would exclude all directories under `DatabasesRoot` that begin with the word `Shared`.
 
 ### SqlServerName
 
