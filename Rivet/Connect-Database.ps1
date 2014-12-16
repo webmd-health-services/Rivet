@@ -19,7 +19,7 @@ function Connect-Database
     
     Set-StrictMode -Version 'Latest'
 
-    if( -not $Connection -or $Connection.DataSource -ne $SqlServerName )
+    if( -not $Connection -or $Connection.DataSource -ne $SqlServerName -or $Connection.State -eq [Data.ConnectionState]::Closed)
     {
         Disconnect-Database
 
@@ -45,7 +45,15 @@ function Connect-Database
 
     $Connection.ChangeDatabase( $Database )
     
-    $Connection |
-        Add-Member -MemberType NoteProperty -Name Transaction -Value $null -PassThru |
-        Add-Member -MemberType NoteProperty -Name ScriptsPath -Value $null 
+    if( -not ($Connection | Get-Member -Name 'Transaction' ) )
+    {
+        $Connection |
+            Add-Member -MemberType NoteProperty -Name 'Transaction' -Value $null
+    }
+
+    if( -not ($Connection | Get-Member -Name 'ScriptsPath') )
+    {
+        $Connection |
+            Add-Member -MemberType NoteProperty -Name 'ScriptsPath' -Value $null 
+    }
 }
