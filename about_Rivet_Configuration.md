@@ -81,6 +81,19 @@ PluginsRoot should point to the "Plugins" directory
 
 The name of the SQL Server to connect to.
 
+### TargetDatabases
+
+This setting maps database names to lists of target databases. Use this setting if you need to deploy the same migrations to multiple databases, but don't want to duplicate the migration. Should be a hashtable whose key is the name of the database's scripts directory on the file system, and whose value is an array of target database names those scripts should be applied to, e.g.
+
+    {
+        "TargetDatabases": {
+                                "Database1": [ "Database1", "DAtabase2" ]
+                           }
+    }
+
+In the above example, scripts in the `Database1` directory will be applied to the `Database1` *and* `Database2` databases.
+
+
 ## Examples
 
 ### Example 1
