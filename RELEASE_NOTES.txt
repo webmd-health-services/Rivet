@@ -3,3 +3,4 @@
  * Databases are now created if they don't exist.
  * A single database connection is now re-used when migrating multiple databases, instead of establishing a new connection for each database.
  * A database's migrations can now be applied to multiple target databases via the new `TargetDatabases` configuration option. See `about_Rivet_Configuration` for more information.
+ * Rivet now updates its internal objects using its own migrations.
