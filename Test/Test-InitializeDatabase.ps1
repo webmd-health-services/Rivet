@@ -17,6 +17,7 @@ function Test-ShouldCreateRivetObjectsInDatabase
 {
     Invoke-Rivet -Push
     
+    Assert-NoError
     Assert-True (Test-Database)
     Assert-True (Test-Schema -Name 'rivet') 'rivet schema not created'   
     Assert-True (Test-Table -Name 'Migrations' -SchemaName 'rivet') 'rivet migrations table not created'
@@ -34,6 +35,7 @@ function Test-ShouldUpdateColumnSizeFrom50to241
     $removeMigrationSprocName = 'RemoveMigration'
 
     Invoke-Rivet -Push
+    Assert-NoError
 
     $query = @'
         alter table {0}.{1} alter column Name nvarchar(50) not null
@@ -73,6 +75,7 @@ function Test-ShouldUpdateColumnSizeFrom50to241
     Invoke-RivetTestQuery -Query $query
     
     Invoke-Rivet -Push
+    Assert-NoError
 
     Assert-Column -TableName 'Migrations' -SchemaName 'rivet' -Name 'Name' -DataType 'nvarchar' -Size 241 -NotNull
     Assert-Column -TableName 'Activity' -SchemaName 'rivet' -Name 'Name' -DataType 'nvarchar' -Size 241 -NotNull
@@ -103,6 +106,7 @@ function Test-ShouldRenamePstepSchemaToRivet
     $oldSchemaName = 'pstep'
     $rivetSchemaName = 'rivet'
     Invoke-Rivet -Push
+    Assert-NoError
     $expectedCount = Measure-Migration
         
     Invoke-RivetTestQuery -Query ('create schema {0}' -f $oldSchemaName)
@@ -123,6 +127,7 @@ function Test-ShouldRenamePstepSchemaToRivet
     Assert-True (Test-Schema -Name $oldSchemaName)
 
     Invoke-Rivet -Push
+    Assert-NoError
     $actualCount = Measure-Migration
     Assert-Equal $expectedCount $actualCount
 
@@ -135,6 +140,7 @@ function Test-ShouldRenamePstepSchemaToRivet
 function Test-ShouldChangeAtUtcToDatetime2
 {
     Invoke-Rivet -Push
+    Assert-NoError
 
     $rivetSchemaName = 'rivet'
     $migrationsTableName = 'Migrations'
@@ -157,5 +163,6 @@ function Test-ShouldChangeAtUtcToDatetime2
     Assert-Column -DataType 'datetime' @assertColumnParams
 
     Invoke-Rivet -Push
+    Assert-NoError
     Assert-Column -DataType 'datetime2' @assertColumnParams
 }
