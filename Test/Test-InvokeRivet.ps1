@@ -88,3 +88,31 @@ function Pop-Migration
         Remove-RivetTestDatabase -Name 'InvokeRivet2'
     }
 }
+
+function Test-ShouldProhibitReservedRivetMigrationIDs
+{
+    $file = @'
+function Push-Migration
+{
+    Add-Schema 'fubar'
+}
+
+function Pop-Migration
+{
+}
+'@ | New-Migration -Name 'HasReservedID' -Database $RTDatabaseName    
+
+    Assert-NotNull $file
+    $file = Rename-Item -Path $file -NewName ('00999999999999_HasReservedID.ps1') -PassThru
+
+    Invoke-Rivet -Push -ErrorAction SilentlyContinue
+    Assert-Error -Last -Regex 'reserved'
+    Assert-False (Test-Schema -Name 'fubar')
+
+    $Global:Error.Clear()
+    Rename-Item -Path $file -NewName ('01000000000000_HasReservedID.ps1')
+    Invoke-Rivet -Push 
+    Assert-NoError
+    Assert-Schema -Name 'fubar'
+
+}

@@ -69,7 +69,7 @@ function Test-ShouldUpdateColumnSizeFrom50to241
             end
         '
 
-        delete from [rivet].[Migrations] where ID=20141121143349
+        delete from [rivet].[Migrations] where ID=00000000000002
 
 '@ -f $rivetSchemaName, $migrationsTableName, $activityTableName
     Invoke-RivetTestQuery -Query $query
@@ -119,7 +119,7 @@ function Test-ShouldRenamePstepSchemaToRivet
 
     Invoke-RivetTestQuery -Query ('drop schema {0}' -f $RivetSchemaName)
 
-    Invoke-RivetTestQuery -Query 'delete from [pstep].[Migrations] where ID=20130212024105'
+    Invoke-RivetTestQuery -Query 'delete from [pstep].[Migrations] where ID=00000000000001'
 
     Assert-False (Test-Table -Name 'Migrations' -SchemaName $RivetSchemaName)
     Assert-True (Test-Table -Name 'Migrations' -SchemaName $oldSchemaName) 
@@ -157,7 +157,7 @@ function Test-ShouldChangeAtUtcToDatetime2
         alter table {0}.{1} drop constraint DF_rivet_Migrations_AtUtc
         alter table {0}.{1} alter column Atutc datetime not null
         alter table {0}.{1} add constraint AtUtcDefault default (GetUtcDate()) for AtUtc
-        delete from [rivet].[Migrations] where ID=20130212024105
+        delete from [rivet].[Migrations] where ID=00000000000001
 '@ -f $rivetSchemaName,$migrationsTableName
     Invoke-RivetTestQuery -Query $query
     Assert-Column -DataType 'datetime' @assertColumnParams

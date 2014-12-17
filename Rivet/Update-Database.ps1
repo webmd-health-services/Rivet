@@ -53,6 +53,10 @@ function Update-Database
         # Reverse the given migration(s).
         $All,
 
+        [Switch]
+        # Running internal Rivet migrations. This is for internal use only. If you use this flag, Rivet will break when you upgrade. You've been warned!
+        $RivetSchema,
+
         [Parameter(ParameterSetName='Pop')]
         [Parameter(ParameterSetName='PopByCount')]
         [Parameter(ParameterSetName='PopByName')]
@@ -136,6 +140,21 @@ function Update-Database
             $matchesName =  ( $_.MigrationName -like $Name -or $_.MigrationID -like $Name )
             $foundNameMatch = $foundNameMatch -or $matchesName
             return $matchesName
+        } |
+        Where-Object {
+
+            if( $RivetSchema )
+            {
+                return $true
+            }
+
+            if( $_.MigrationID -lt 1000000000000 )
+            {
+                Write-Error ('Migration ''{0}'' has an invalid ID. IDs lower than 01000000000000 are reserved for internal use.' -f $_.BaseName)
+                $stopMigrating = $true
+                return $false
+            }
+            return $true
         } |
         Where-Object { 
             $migration = $null
