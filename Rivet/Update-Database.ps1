@@ -138,7 +138,21 @@ function Update-Database
             return $matchesName
         } |
         Where-Object { 
-            $migration = Test-Migration -ID $_.MigrationID -PassThru
+            $migration = $null
+            $preErrorCount = $Global:Error.Count
+            try
+            {
+                $migration = Test-Migration -ID $_.MigrationID -PassThru #-ErrorAction Ignore
+            }
+            catch
+            {
+                $errorCount = $Global:Error.Count - $preErrorCount
+                for( $idx = 0; $idx -lt $errorCount; ++$idx )
+                {
+                    $Global:Error.RemoveAt(0)
+                }
+            }
+
             if( $popping )
             {
                 if( $PSCmdlet.ParameterSetName -eq 'PopByCount' -and $numPopped -ge $Count )
