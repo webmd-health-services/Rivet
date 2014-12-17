@@ -125,13 +125,7 @@ function Update-Database
     $who = ('{0}\{1}' -f $env:USERDOMAIN,$env:USERNAME);
 
 
-    $getMigrationScriptParam = @{ }
-    if( $Name ) 
-    {
-        $getMigrationScriptParam.Include = $Name
-    }
-
-    Get-MigrationScript -Path $Path @getMigrationScriptParam |
+    Get-MigrationScript -Path $Path |
         Sort-Object -Property 'MigrationID' -Descending:$popping |
         Where-Object { 
             if( -not $PSBoundParameters.ContainsKey('Name') )
