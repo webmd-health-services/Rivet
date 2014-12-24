@@ -11,10 +11,10 @@ function Get-ActivityInfo
     
     Set-StrictMode -Version Latest
 
-    $query = 'select * from {0}.Activity' -f $RTRivetSchemaName
+    $query = 'select * from {0}.Activity where MigrationID >= 01000000000000' -f $RTRivetSchemaName
     if( $Name )
     {
-        $query = '{0} where name = ''{1}''' -f $query,$Name
+        $query = '{0} and name = ''{1}''' -f $query,$Name
     }
     else
     {
