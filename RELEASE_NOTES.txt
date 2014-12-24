@@ -1,3 +1,9 @@
+# 0.2.1
+
+## Bug Fixes
+
+ * If a database has multipe target databases and no migrations directory, Rivet stops after the first target database.
+
 # 0.2.0
 
  * Databases are now created if they don't exist.
