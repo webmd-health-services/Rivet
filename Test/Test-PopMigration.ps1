@@ -95,7 +95,6 @@ function Test-ShouldWriteToActivityTableOnPop
 
     Assert-Equal 'Pop' $rows[4].Operation
     Assert-Equal 'Migration4' $rows[4].Name
-    Assert-Equal 5 $rows[4].ID
 }
 
 function Test-ShouldPopSpecificNumberOfDatabaseMigrations
