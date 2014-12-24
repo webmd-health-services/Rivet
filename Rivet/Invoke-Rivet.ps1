@@ -29,6 +29,7 @@ function Invoke-Rivet
         [Parameter(Mandatory=$true,ParameterSetName='New',Position=1)]
         [Parameter(ParameterSetName='Push',Position=1)]
         [Parameter(Mandatory=$true,ParameterSetName='PopByName',Position=1)]
+        [ValidateLength(1,241)]
         [string]
         # The name of the migration to create/push.  Wildcards accepted when pushing.
         $Name,
