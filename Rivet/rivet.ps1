@@ -92,6 +92,7 @@ param(
     [Parameter(Mandatory=$true,ParameterSetName='New',Position=1)]
     [Parameter(ParameterSetName='Push',Position=1)]
     [Parameter(Mandatory=$true,ParameterSetName='PopByName',Position=1)]
+    [ValidateLength(1,241)]
     [string]
     # The name of the migration to create, push, or pop.  Wildcards accepted when pushing/popping, which will match either the migration name or ID.
     $Name,
