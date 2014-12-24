@@ -45,7 +45,7 @@ function Add-CheckConstraint
 
     Set-StrictMode -Version 'Latest'
 
-    $op = New-Object 'Rivet.Operations.AddCheckConstraintOperation' $SchemaName, $TableName, $Name, $Expression, $NotForReplication
+    $op = New-Object 'Rivet.Operations.AddCheckConstraintOperation' $SchemaName, $TableName, $Name, $Expression, $NotForReplication, $false
     if( -not $Quiet )
     {
         Write-Host (' {0}.{1} +{2} {3}' -f $SchemaName, $TableName, $Name, $Expression)
