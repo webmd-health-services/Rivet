@@ -52,7 +52,7 @@ namespace Rivet.Operations
 		    }
 
             var optionClause = "";
-            if (Options.Count > 0)
+			if (allOptions.Count > 0)
 		    {
 		        optionClause = string.Format(" with ({0})", string.Join(", ", allOptions.ToArray()));
 		    }
