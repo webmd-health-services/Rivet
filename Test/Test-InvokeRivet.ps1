@@ -89,6 +89,32 @@ function Pop-Migration
     }
 }
 
+function Test-ShouldApplyMigrationsToDuplicateDatabasesWithNoMigrationsDirectory
+{
+    $config = Get-Content -Raw -Path $RTConfigFilePath | ConvertFrom-Json
+    $config | Add-Member -MemberType NoteProperty -Name 'TargetDatabases' -Value @{ $RTDatabaseName = @( 'InvokeRivet', 'InvokeRivet2' ) }
+    $config | ConvertTo-Json | Set-Content -Path $RTConfigFilePath
+
+    Remove-Item -Path $RTDatabaseMigrationRoot -Recurse
+
+    try
+    {
+        Remove-RivetTestDatabase -Name 'InvokeRivet'
+        Remove-RivetTestDatabase -Name 'InvokeRivet2'
+
+        $result = Invoke-Rivet -Push -Database $RTDatabaseName
+        Assert-NoError 
+        Assert-Null $result
+        Assert-True (Test-Database 'InvokeRivet')
+        Assert-True (Test-Database 'InvokeRivet2')
+    }
+    finally
+    {
+        Remove-RivetTestDatabase -Name 'InvokeRivet'
+        Remove-RivetTestDatabase -Name 'InvokeRivet2'
+    }
+}
+
 function Test-ShouldProhibitReservedRivetMigrationIDs
 {
     $file = @'

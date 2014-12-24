@@ -113,16 +113,16 @@ function Invoke-Rivet
 
     try
     {
-        $settings.Databases | ForEach-Object {
-
-            $databaseName = $_.Name
-            $dbScriptsPath = $_.Root
-            $dbMigrationsPath = $_.MigrationsRoot
+        foreach( $databaseItem in $settings.Databases )
+        {
+            $databaseName = $databaseItem.Name
+            $dbScriptsPath = $databaseItem.Root
+            $dbMigrationsPath = $databaseItem.MigrationsRoot
         
             if( $pscmdlet.ParameterSetName -eq 'New' )
             {
                 New-Migration -Name $Name -Path $dbMigrationsPath
-                return
+                continue
             }
 
             $targetDatabases = $databaseName
@@ -152,7 +152,7 @@ function Invoke-Rivet
                     if( -not (Test-Path -Path $dbMigrationsPath -PathType Container) )
                     {
                         Write-Warning ('{0} database migrations directory ({1}) not found.' -f $databaseName,$dbMigrationsPath)
-                        return
+                        continue
                     }
             
                     if( $PSBoundParameters.ContainsKey('Name') )
