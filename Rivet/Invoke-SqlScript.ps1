@@ -60,6 +60,8 @@ function Invoke-SqlScript
         throw ('SQL script ''{0}'' not found.' -f $Path)
         return
     }
+
+    $Path = Resolve-Path -Path $Path | Select-Object -ExpandProperty 'ProviderPath'
     
     Get-Content -Path $Path -Raw |
         Split-SqlBatchQuery |
