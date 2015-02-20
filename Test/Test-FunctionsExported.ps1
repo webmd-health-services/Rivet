@@ -23,6 +23,7 @@ function Test-FunctionsExported
                             'New-Migration' = $true;
                             'New-MigrationObject' = $true;
                             'Resolve-ObjectScriptPath' = $true;
+                            'Split-SqlBatchQuery' = $true;
                             'Test-Migration' = $true;
                             'Test-Schema' = $true;
                             'Test-Table' = $true;
