@@ -8,6 +8,9 @@
 
  * `Invoke-SqlScript` ignoring `CommandTimeout` parameter.
  * `Invoke-SqlScript` didn't rollback migration if the script file was not found.
+ * `Get-Migration` fails if a migration doesn't contain a `Push-Migration` or `Pop-Migration` function.
+ * `Get-Migratoin` duplicates output of previous migration if a migration is missing a `Push-Migration` or `Pop-Migration` function.
+
 
 # 0.2.1
 
