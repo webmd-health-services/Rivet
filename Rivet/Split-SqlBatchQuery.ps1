@@ -65,7 +65,7 @@ function Split-SqlBatchQuery
                 $inComment = ($commentDepth -gt 0)
             }
             
-            if( $inString -and $currentChar -eq "'" -and $nextChar -ne "'" )
+            if( $inString -and $currentChar -eq "'" -and $nextChar -ne "'" -and $prevChar -ne "'" )
             {
                 $inString = $false
                 $justClosedString = $true
@@ -86,7 +86,7 @@ function Split-SqlBatchQuery
 
             if( $currentChar -eq "`n" )
             {
-                Write-Debug $currentLine.ToString()
+                Write-Debug ("inComment: {0}; inString {1}; {2}" -f $inComment,$inString,$currentLine.ToString())
                 $trimmedLine = $currentLine.ToString().Trim() 
                 if( -not $inComment -and -not $inString -and $trimmedLine -match "^GO\b" )
                 {
