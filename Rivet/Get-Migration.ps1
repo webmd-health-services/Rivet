@@ -55,10 +55,12 @@ function Get-Migration
 
     function Clear-Migration
     {
-        ($pushFunctionPath,'function:Pop-Migration') |
+        ('function:Push-Migration','function:Pop-Migration') |
             Where-Object { Test-Path -Path $_ } |
             Remove-Item
     }
+
+    Clear-Migration
 
     $getMigrationScriptParams = @{ }
     @( 'Exclude', 'Include', 'Before', 'After' ) |
@@ -123,14 +125,34 @@ function Get-Migration
 
             . $_.FullName
 
-            $currentOp = 'Push'
-            Push-Migration
+            try
+            {
+                $currentOp = 'Push'
+                if( (Test-Path -Path 'function:Push-Migration') )
+                {
+                    Push-Migration
+                }
+                else
+                {
+                    Write-Warning ('{0} migration''s ''Push-Migration'' function not found.' -f $_.FullName)
+                }
+                
+                $currentOp = 'Pop'
+                if( (Test-Path -Path 'function:Pop-Migration') )
+                {
+                    Pop-Migration
+                }
+                else
+                {
+                    Write-Warning ('{0} migration''s ''Pop-Migration'' function not found.' -f $_.FullName)
+                }
 
-            $currentOp = 'Pop'
-            Pop-Migration
-
-            $m
-
+                $m
+            }
+            finally
+            {
+                Clear-Migration
+            }
         }
     }
 }
