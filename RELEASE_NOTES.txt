@@ -7,7 +7,7 @@
 ## Bug Fixes
 
  * `Invoke-SqlScript` ignoring `CommandTimeout` parameter.
-
+ * `Invoke-SqlScript` didn't rollback migration if the script file was not found.
 
 # 0.2.1
 

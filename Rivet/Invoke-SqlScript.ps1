@@ -54,6 +54,12 @@ function Invoke-SqlScript
     {
         $Path = Join-Path $DBMigrationsRoot $Path
     }
+
+    if( -not (Test-Path -Path $Path -PathType Leaf) )
+    {
+        throw ('SQL script ''{0}'' not found.' -f $Path)
+        return
+    }
     
     Get-Content -Path $Path -Raw |
         Split-SqlBatchQuery |
