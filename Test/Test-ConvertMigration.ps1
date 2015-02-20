@@ -133,7 +133,7 @@ function Pop-Migration
 
 function Test-ShouldCreateIdempotentQueryForAddOperations
 {
-    @'
+    $m = @'
 function Push-Migration
 {
     Add-Schema 'idempotent'
@@ -194,6 +194,8 @@ function Push-Migration
     Invoke-Query 'select 1'
 
     Update-CodeObjectMetadata @idempotent 'FarmerCrops'
+
+    Invoke-SqlScript -Path 'query.sql'
 }
 
 function Pop-Migration
@@ -211,6 +213,10 @@ function Pop-Migration
     Remove-Table @idempotent $farmers.TableName
 }
 '@ | New-Migration -Name 'AddOperations'
+
+    $scriptPath = Split-Path -Parent -Path $m
+    $scriptPath = Join-Path -Path $scriptPath -ChildPath 'query.sql'
+    "if not exists (select * from sys.schemas where name = 'convertmigrationquery')`n`t exec sp_executesql N'convertmigrationquery'" | Set-Content -Path $scriptPath
 
     Assert-ConvertMigration -Schema -CodeObject -Data -ExtendedProperty -Unknown
 
@@ -237,6 +243,11 @@ function Pop-Migration
     Assert-Trigger @schema -Name 'CropActivity' -Definition 'on idempotent.Crops after insert, update as return'
     Assert-UserDefinedFunction @schema -Name 'GetInteger' -Definition '(@Number int) returns int as begin return @Number + @Number end'
     Assert-View @schema -Name 'FarmerCrops' -Definition "as select Farmers.Name FarmerName, Crops.Name CropName from Crops join Farmers on Crops.FarmerID = Farmers.ID"
+    Assert-False (Test-Schema 'convertmigrationquery')
+
+    $scriptQuery = Get-Content -Path (Join-Path $outputDir -ChildPath ('{0}.Unknown.sql' -f $RTDatabaseName)) |
+                        Where-Object { $_ -match 'sp_executesql N''convertmigrationquery''' }
+    Assert-NotNull $scriptQuery
 }
 
 function Test-ShouldCreateIdempotentQueriesForRemoveOperations
