@@ -52,7 +52,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'InvokeSqlScript'
 
-    Invoke-Rivet -Push 'InvokeSqlScript'
+    Invoke-Rivet -Push 'InvokeSqlScript' -ErrorAction SilentlyContinue
 
     Assert-False (Test-Schema 'invokesqlscript')
 }
