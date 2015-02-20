@@ -89,6 +89,7 @@
     <Compile Include="Operations\RemoveUniqueKeyOperationTestFixture.cs" />
     <Compile Include="Operations\RenameColumnOperationTestFixture.cs" />
     <Compile Include="Operations\RenameIndexOperationTestFixture.cs" />
+    <Compile Include="Operations\ScriptFileOperationTestFixture.cs" />
     <Compile Include="Operations\UpdateTableOperationTestFixture.cs" />
     <Compile Include="Operations\RemoveExtendedPropertyOperationTestFixture.cs" />
     <Compile Include="Operations\UpdateExtendedPropertyOperationTestFixture.cs" />

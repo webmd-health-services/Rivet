@@ -35,14 +35,19 @@ function Invoke-SqlScript
         $CommandTimeout = 30
     )
 
-    $invokeQueryArgs = @{ }
+    Set-StrictMode -Version 'Latest'
+
+    $invokeMigrationParams = @{
+                                    CommandTimeout = $CommandTimeout; 
+                              }
+
     if( $pscmdlet.ParameterSetName -eq 'AsScalar' )
     {
-        $invokeQueryArgs.AsScalar = $true
+        $invokeMigrationParams.AsScalar = $true
     }
     elseif( $pscmdlet.ParameterSetName -eq 'AsNonQuery' )
     {
-        $invokeQueryArgs.AsNonQuery = $true
+        $invokeMigrationParams.AsNonQuery = $true
     }
     
     if( -not ([IO.Path]::IsPathRooted( $Path )) )
@@ -51,6 +56,9 @@ function Invoke-SqlScript
     }
     
     Get-Content -Path $Path -Raw |
-        Invoke-Query -CommandTimeout $CommandTimeout @invokeQueryArgs
-
+        Split-SqlBatchQuery |
+        ForEach-Object {
+            $operation = New-Object 'Rivet.Operations.ScriptFileOperation' $Path,$_
+            Invoke-MigrationOperation -Operation $operation @invokeMigrationParams
+        }
 }
