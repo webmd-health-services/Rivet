@@ -1,8 +1,6 @@
-﻿using System;
-
-namespace Rivet.Operations
+﻿namespace Rivet.Operations
 {
-	public sealed class RawQueryOperation : Operation
+	public class RawQueryOperation : Operation
 	{
 		public RawQueryOperation(string query)
 		{
