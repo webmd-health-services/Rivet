@@ -43,7 +43,8 @@ function Assert-NoError
 
     if( $Global:Error.Count -gt 0 )
     {
-        Fail "Found $($Global:Error.Count) errors, expected none.  $Message" 
+        $errors = $Global:Error | ForEach-Object { $_; if( (Get-Member 'ScriptStackTrace' -InputObject $_) ) { $_.ScriptStackTrace } ; "`n" } | Out-String
+        Fail "Found $($Global:Error.Count) errors, expected none. $Message`n$errors" 
     }
 }
 
