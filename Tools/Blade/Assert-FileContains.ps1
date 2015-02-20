@@ -54,7 +54,7 @@ function Assert-FileContains
     $actualContents = Get-Content -Path $Path -Raw
     Write-Verbose "Actual:`n$actualContents"
     Write-Verbose "Expected:`n$Needle"
-    if( $actualContents.Contains($Needle) )
+    if( $actualContents -notmatch ([Text.RegularExpressions.Regex]::Escape($Needle)) )
     {
         Fail ("File '{0}' does not contain '{1}'. {2}" -f $Path,$Needle,$Message)
     }
