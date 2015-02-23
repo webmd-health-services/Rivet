@@ -169,6 +169,7 @@ function Push-Migration
 
 function Test-ShouldAllowSqlExpressionForColumnValue
 {
+    [datetime]$expectedUpdatedAt = Invoke-RivetTestQuery -Query 'select getutcdate()' -AsScalar
     @'
 function Push-Migration
 {
@@ -197,7 +198,6 @@ function Push-Migration
 
     $row = $rows[0]
     Assert-NotNull $row.LastVisit
-    $updatedAt = $row.LastVisit.AddSeconds(-15)
-    $now = (Get-Date).ToUniversalTime()
-    Assert-True ($updatedAt -le $now) ('default date ''{0}'' is not before ''{1}''' -f $now,$updatedAt)
+    $updatedAt = $row.LastVisit
+    Assert-True ($expectedUpdatedAt -le $updatedAt) ('updated date ''{0}'' is not before ''{1}''' -f $expectedUpdatedAt,$updatedAt)
 }
