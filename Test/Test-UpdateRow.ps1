@@ -199,5 +199,5 @@ function Push-Migration
     Assert-NotNull $row.LastVisit
     $updatedAt = $row.LastVisit.AddSeconds(-15)
     $now = (Get-Date).ToUniversalTime()
-    Assert-True ($updatedAt -le $now) ('default date ''{0}'' is not before ''{1}''' -f $after,$updatedAt)
+    Assert-True ($updatedAt -le $now) ('default date ''{0}'' is not before ''{1}''' -f $now,$updatedAt)
 }
