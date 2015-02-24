@@ -28,7 +28,8 @@ function Split-SqlBatchQuery
         Set-StrictMode -Version 'Latest'
 
         $currentQuery = New-Object 'Text.StringBuilder'
-        $inComment = $false
+        $inSingleLineComment = $false
+        $inMultiLineComment = $false
         $inString = $false
         $justClosedString = $false
         $stringCouldBeEnding = $false
@@ -59,26 +60,68 @@ function Split-SqlBatchQuery
                 $nextChar = $chars[$idx + 1]
             }
 
-            if( $inComment -and $currentChar -eq '*' -and $nextChar -eq '/' )
+            if( $inMultiLineComment )
             {
-                $commentDepth--
-                $inComment = ($commentDepth -gt 0)
+                [void] $currentLine.Append( $currentChar )
+                if( $prevChar -eq '/' -and $currentChar -eq '*' )
+                {
+                    Write-Verbose ('Entering nested multi-line comment.')
+                    $commentDepth++
+                    continue
+                }
+                elseif( $prevChar -eq '*' -and $currentChar -eq '/' )
+                {
+                    Write-Verbose ('Leaving multi-line comment.')
+                    $commentDepth--
+                    $inMultiLineComment = ($commentDepth -gt 0)
+                }
+
+                if( -not $inMultiLineComment )
+                {
+                    Write-Verbose ('Multi-line comment closed.')
+                }
+                continue
+            }
+
+            if( $inSingleLineComment )
+            {
+                if( $currentChar -eq "`n" )
+                {
+                    Write-Verbose ('Leaving single-line comment.')
+                    $inSingleLineComment = $false
+                }
+                else
+                {
+                    [void] $currentLine.Append( $currentChar )
+                    continue
+                }
             }
             
-            if( $inString -and $currentChar -eq "'" -and $nextChar -ne "'" -and $prevChar -ne "'" )
+            if( $inString )
             {
-                $inString = $false
-                $justClosedString = $true
+                [void] $currentLine.Append( $currentChar )
+                if( $prevChar -ne "'" -and $currentChar -eq "'" -and $nextChar -ne "'" )
+                {
+                    Write-Verbose ('Leaving string.')
+                    $inString = $false
+                }
+                continue
             }
 
-            if( -not $inString -and $currentChar -eq '/' -and $nextChar -eq '*' )
+            if( $prevChar -eq "/" -and $currentChar -eq "*" )
             {
+                Write-Verbose ('Entering multi-line comment.')
+                $inMultiLineComment = $true
                 $commentDepth++
-                $inComment = $true
             }
-
-            if( -not $inComment -and -not $justClosedString -and $currentChar -eq "'" -and $prevChar -ne "'" -and $nextChar -ne "'" )
+            elseif( $prevChar -eq '-' -and $currentChar -eq '-' )
             {
+                Write-Verbose ('Entering single-line comment.')
+                $inSingleLineComment = $true
+            }
+            elseif( $currentChar -eq "'" -and $nextChar -ne "'" -and $prevChar -ne "'" )
+            {
+                Write-Verbose ('Entering string.')
                 $inString = $true
             }
 
@@ -86,9 +129,11 @@ function Split-SqlBatchQuery
 
             if( $currentChar -eq "`n" )
             {
-                Write-Debug ("inComment: {0}; inString {1}; {2}" -f $inComment,$inString,$currentLine.ToString())
+                $inSingleLineComment = $false
+
+                Write-Verbose ("inMultiLineComment: {0}; inSingleLineComment: {1}; inString {2}; {3}" -f $inMultiLineComment,$inSingleLineComment,$inString,$currentLine.ToString())
                 $trimmedLine = $currentLine.ToString().Trim() 
-                if( -not $inComment -and -not $inString -and $trimmedLine -match "^GO\b" )
+                if( -not $inMultiLineComment -and -not $inString -and $trimmedLine -match "^GO\b" )
                 {
                     if( $currentQuery.Length -gt 0 )
                     {
