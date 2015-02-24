@@ -111,7 +111,7 @@ GO
 
 $query3
 "@
-    $result = Split-SqlBatchQuery $query 
+    $result = Split-SqlBatchQuery $query -Verbose
     Assert-Equal $query1 $result[0]
     Assert-Equal $query2 $result[2]
     Assert-Equal $query3 $result[3]
@@ -137,7 +137,7 @@ if object_id('rivet.InsertMigration', 'P') is null
     '
 '@
 
-    $result = Split-SqlBatchQuery $query 
+    $result = Split-SqlBatchQuery $query
     Assert-Equal $query $result    
 }
 
@@ -147,6 +147,20 @@ function Test-ShouldSplitWithVariableSetToEmptyString
 DECLARE @EmptyGoal Varchar(3000)
 
 SET @EmptyGoal = ''
+
+Select @EmptyGoal
+'@
+
+    $result = Split-SqlBatchQuery $query
+    Assert-Equal $query $result    
+}
+
+function Test-ShouldIgnoreAnythingInSingleLineComments
+{
+    $query = @'
+DECLARE @EmptyGoal Varchar(3000)
+
+-- Let's ignore that apostrophe
 
 Select @EmptyGoal
 '@
