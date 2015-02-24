@@ -77,7 +77,7 @@ function Split-SqlBatchQuery
                 $inComment = $true
             }
 
-            if( -not $inComment -and -not $justClosedString -and $currentChar -eq "'" -and $prevChar -ne "'" )
+            if( -not $inComment -and -not $justClosedString -and $currentChar -eq "'" -and $prevChar -ne "'" -and $nextChar -ne "'" )
             {
                 $inString = $true
             }
