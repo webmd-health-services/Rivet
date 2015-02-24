@@ -140,3 +140,17 @@ if object_id('rivet.InsertMigration', 'P') is null
     $result = Split-SqlBatchQuery $query 
     Assert-Equal $query $result    
 }
+
+function Test-ShouldSplitWithVariableSetToEmptyString
+{
+    $query = @'
+DECLARE @EmptyGoal Varchar(3000)
+
+SET @EmptyGoal = ''
+
+Select @EmptyGoal
+'@
+
+    $result = Split-SqlBatchQuery $query 
+    Assert-Equal $query $result    
+}
