@@ -31,21 +31,33 @@ function Split-SqlBatchQuery
         $inSingleLineComment = $false
         $inMultiLineComment = $false
         $inString = $false
-        $justClosedString = $false
         $stringCouldBeEnding = $false
         $prevChar = $null
         $currentChar = $null
         $commentDepth = 0
         $currentLine = New-Object 'Text.StringBuilder'
 
-        $chars = Invoke-Command { 
-                                    $Query.ToCharArray()
-                                    "`nGO`n".ToCharArray() # We add `nGO`n to ensure we send the last query to the pipeline. 
-                                }
+        function Complete-Line
+        {
+            Write-Verbose ("inMultiLineComment: {0}; inSingleLineComment: {1}; inString {2}; {3}" -f $inMultiLineComment,$inSingleLineComment,$inString,$currentLine.ToString())
+            $trimmedLine = $currentLine.ToString().Trim() 
+            if( $trimmedLine -notmatch "^GO\b" )
+            {
+                [void]$currentQuery.Append( $currentLine )
+            }
+
+            $currentLine.Length = 0
+                
+            if( $trimmedLine -match "^GO\b" -or $atLastChar )
+            {
+                $currentQuery.ToString()
+                $currentQuery.Length = 0
+            }
+        }
+
+        $chars = $Query.ToCharArray()
         for( $idx = 0; $idx -lt $chars.Count; ++$idx )
         {
-            $justClosedString = $false
-
             $prevChar = $null
             if( $idx -gt 1 )
             {
@@ -58,6 +70,14 @@ function Split-SqlBatchQuery
             if( $idx + 1 -lt $chars.Count )
             {
                 $nextChar = $chars[$idx + 1]
+            }
+
+            $atLastChar = $idx -eq $chars.Count - 1
+            if( $atLastChar )
+            {
+                [void]$currentLine.Append( $currentChar )
+                Complete-Line
+                continue
             }
 
             if( $inMultiLineComment )
@@ -99,13 +119,32 @@ function Split-SqlBatchQuery
             
             if( $inString )
             {
-                [void] $currentLine.Append( $currentChar )
-                if( $prevChar -ne "'" -and $currentChar -eq "'" -and $nextChar -ne "'" )
+                if( $stringCouldBeEnding )
                 {
-                    Write-Verbose ('Leaving string.')
-                    $inString = $false
+                    $stringCouldBeEnding = $false
+                    if( $currentChar -eq "'" )
+                    {
+                        [void] $currentLine.Append( $currentChar )
+                        Write-Verbose ('Found escaped quote.')
+                        continue
+                    }
+                    else
+                    {
+                        Write-Verbose ('Leaving string.')
+                        $inString = $false
+                    }
                 }
-                continue
+                elseif( $currentChar -eq "'" )
+                {
+                    [void] $currentLine.Append( $currentChar )
+                    $stringCouldBeEnding = $true
+                    continue
+                }
+                else
+                {
+                    [void]$currentLine.Append( $currentChar )
+                    continue
+                }
             }
 
             if( $prevChar -eq "/" -and $currentChar -eq "*" )
@@ -119,7 +158,7 @@ function Split-SqlBatchQuery
                 Write-Verbose ('Entering single-line comment.')
                 $inSingleLineComment = $true
             }
-            elseif( $currentChar -eq "'" -and $nextChar -ne "'" -and $prevChar -ne "'" )
+            elseif( $currentChar -eq "'" )
             {
                 Write-Verbose ('Entering string.')
                 $inString = $true
@@ -127,30 +166,9 @@ function Split-SqlBatchQuery
 
             [void] $currentLine.Append( $currentChar )
 
-            if( $currentChar -eq "`n" )
+            if( $currentChar -eq "`n" -or $atLastChar )
             {
-                $inSingleLineComment = $false
-
-                Write-Verbose ("inMultiLineComment: {0}; inSingleLineComment: {1}; inString {2}; {3}" -f $inMultiLineComment,$inSingleLineComment,$inString,$currentLine.ToString())
-                $trimmedLine = $currentLine.ToString().Trim() 
-                if( -not $inMultiLineComment -and -not $inString -and $trimmedLine -match "^GO\b" )
-                {
-                    if( $currentQuery.Length -gt 0 )
-                    {
-                        $splitQuery = $currentQuery.ToString().Trim()
-                        if( $splitQuery )
-                        {
-                            Write-Debug $splitQuery
-                            $splitQuery
-                        }
-                        $currentQuery.Length = 0
-                    }
-                }
-                else
-                {
-                    $null = $currentQuery.Append( $currentLine )
-                }
-                $currentLine.Length = 0
+                Complete-Line
             }
         }
     }

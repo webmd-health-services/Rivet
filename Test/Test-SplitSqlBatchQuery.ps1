@@ -18,6 +18,7 @@ returns int
 begin
  return 1 
 end
+
 "@
 
     $query2 = @"
@@ -25,16 +26,13 @@ drop function [InvokeQuery]
 "@ 
 
     $query = @"
-$query1
-
-GO
-
+$($query1)GO
 $query2
 "@
 
     $result = Split-SqlBatchQuery -Query $query
-    Assert-Equal $result[0] $query1
-    Assert-Equal $result[1] $query2
+    Assert-Equal $query1 $result[0]
+    Assert-Equal $query2 $result[1]
 }
 
 function Test-ShouldSplitBatchWithCommentedOutGO
@@ -62,6 +60,7 @@ function Test-ShouldSplitCrazyQueries
     $query1 = @'
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[RivetTestSproc]') AND type in (N'P', N'PC'))
 	drop procedure [dbo].[RivetTestSproc]
+
 '@
 
     $ignoredStuff = @'
@@ -88,6 +87,7 @@ AS
 BEGIN
 	select GETDATE()
 END
+
 '@
 
     $query3 = @"
@@ -102,16 +102,13 @@ GO
 select @str
 "@
     $query = @"
-$query1
-go
+$($query1)go
+
 $ignoredStuff
-$query2
-
-GO
-
+$($query2)GO
 $query3
 "@
-    $result = Split-SqlBatchQuery $query -Verbose
+    $result = Split-SqlBatchQuery $query | Where-Object { $_.Trim() }
     Assert-Equal $query1 $result[0]
     Assert-Equal $query2 $result[2]
     Assert-Equal $query3 $result[3]
@@ -167,4 +164,90 @@ Select @EmptyGoal
 
     $result = Split-SqlBatchQuery $query 
     Assert-Equal $query $result    
+}
+
+
+function Test-ShouldIgnoreStringThatEndsInEscapedQuote
+{
+    $query = @'
+IF OBJECT_ID(N'[dbo].[GetFeatureActivationsBySponsor]') IS NULL 
+	EXEC (N'CREATE PROCEDURE [dbo].[GetFeatureActivationsBySponsor] AS select col1 = ''StubColumn''')
+'@
+
+    $result = Split-SqlBatchQuery $query
+    Assert-Equal $query $result    
+}
+
+function Test-ShouldHandleGoAtEndOfQuery
+{
+    $query = @'
+IF OBJECT_ID(N'[dbo].[GetFeatureActivationsBySponsor]') IS NULL 
+	EXEC (N'CREATE PROCEDURE [dbo].[GetFeatureActivationsBySponsor] AS select col1 = ''StubColumn''')
+
+'@
+
+    $result = Split-SqlBatchQuery ("{0}GO`n" -f $query)
+    Assert-Equal $query $result    
+}
+
+function Test-ShouldParseReallyScaryEmbeddedString
+{
+    $query = @"
+SET @SQL = '
+AND a.name = ''' + @tablename + '''
+END
+'
+
+"@
+
+    $result = Split-SqlBatchQuery ("{0}GO`n" -f $query) -Verbose
+    Assert-Equal $query $result    
+}
+
+function Ignore-ShouldSplitCurrentCodeObjects
+{
+    Get-ChildItem -Path 'F:\Build\PHMA\Production\Database\Change Scripts\*\*\*.sql' |
+        ForEach-Object {
+            $path = $_.FullName
+            Write-Verbose $path #-Verbose
+
+            $expectedContent = Get-Content -LiteralPath $path -Raw 
+            if( -not $expectedContent )
+            {
+                Write-Warning ('File ''{0}'' is empty.' -f $path)
+                return
+            }
+
+            do
+            {
+                $expectedContent = $expectedContent.Trim()
+                $expectedContent = $expectedContent -replace "`nGO$","`n"
+            }
+            while( $expectedContent -match "`nGO\s*$" )
+
+            if( -not $expectedContent )
+            {
+                Write-Warning ('File ''{0}'' is empty.' -f $path)
+                return
+            }
+
+            # make sure all GO statements are GO`r`n
+            $expectedContent = $expectedContent -replace "`n[ \t]*GO[ \t]*`r?`n","`nGO`r`n"
+ 
+            $splitContent = $expectedContent | Split-SqlBatchQuery
+            $splitContent = $splitContent -join "GO`r`n"
+
+            #try
+            #{
+                Assert-Equal $expectedContent.ToLower() $splitContent.ToLower()  $path
+            #}
+            #catch
+            #{
+            #    $path
+            #}
+            #}
+
+        } | 
+        Write-Error
+
 }
