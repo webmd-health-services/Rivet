@@ -122,7 +122,7 @@ function Pop-Migration
 
 "@ | New-Migration -Name 'CreateInvokeQueryFunction'
 
-    Invoke-Rivet -Push 'CreateInvokeQueryFunction' -ErrorAction SilentlyContinue
+    Invoke-Rivet -Push 'CreateInvokeQueryFunction' #-ErrorAction SilentlyContinue
 
     Assert-True (Test-DatabaseObject -StoredProcedure -Name 'RivetTestSproc')
 }

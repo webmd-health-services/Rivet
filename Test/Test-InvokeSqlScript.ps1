@@ -56,3 +56,38 @@ function Pop-Migration
 
     Assert-False (Test-Schema 'invokesqlscript')
 }
+
+function Test-ShouldSkipEmptyQueries
+{
+    $m = @'
+function Push-Migration
+{
+    Invoke-SqlScript -Path 'AddSchema.sql'
+}
+
+function Pop-Migration
+{
+}
+
+'@ | New-Migration -Name 'InvokeSqlScript'
+
+    $scriptPath = Split-Path -Parent -Path $m
+    $scriptPath = Join-Path -Path $scriptPath -ChildPath 'AddSchema.sql'
+
+    @'
+create schema [invokesqlscript]
+
+-- keep these two go statements together
+go
+go
+
+create schema [invokesqlscript2]
+
+'@ | Set-Content -Path $scriptPath
+
+    Invoke-Rivet -Push 'InvokeSqlScript'
+
+    Assert-Schema 'invokesqlscript'
+    Assert-Schema 'invokesqlscript2'
+
+}

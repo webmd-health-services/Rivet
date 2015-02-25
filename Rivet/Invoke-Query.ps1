@@ -74,6 +74,7 @@ filter Invoke-Query
 
     $Query |
         Split-SqlBatchQuery |
+        Where-Object { $_ } |
         ForEach-Object {
             Write-Verbose $_
             $operation = New-Object 'Rivet.Operations.RawQueryOperation' $_
