@@ -31,6 +31,7 @@ $publicFunctions = @(
                         'Add-UserDefinedFunction',
                         'Add-View',
                         'Get-Migration',
+                        'Get-RivetConfig',
                         'Invoke-Query',
                         'Invoke-Rivet',
                         'Invoke-SqlScript',

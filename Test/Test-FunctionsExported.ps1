@@ -15,7 +15,6 @@ function Test-FunctionsExported
                             'Disconnect-Database' = $true;
                             'Export-Row' = $true;
                             'Get-MigrationScript' = $true;
-                            'Get-RivetConfig' = $true;
                             'Import-Rivet' = $true;
                             'Import-Plugin' = $true;
                             'Initialize-Database' = $true;
