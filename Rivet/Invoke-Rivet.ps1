@@ -89,11 +89,14 @@ function Invoke-Rivet
     $settings = Get-RivetConfig -Database $Database -Path $ConfigFilePath -Environment $Environment
 
     $ignored = $Database | 
-                    Where-Object { $settings.IgnoreDatabases -contains $_ } |
+                    Where-Object { 
+                        $dbName = $_
+                        -not ($settings.Databases | Where-Object { $_.Name -eq $dbName })
+                    } |
                     ForEach-Object { 
                         Write-Error ('Can''t use database ''{0}'' because it is on the ignore list in ''{1}''.  Please remove it from the ignore list or choose a different database.' -f $_,$settings.ConfigFilePath)
                         $_
-                 }
+                    }
     if( $ignored )
     {
         return

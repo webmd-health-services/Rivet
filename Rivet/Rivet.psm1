@@ -8,6 +8,36 @@ $RivetMigrationsTableName = 'Migrations'
 $RivetMigrationsTableFullName = '{0}.{1}' -f $RivetSchemaName,$RivetMigrationsTableName
 $RivetActivityTableName = 'Activity'
 
+
+function Test-TypeDataMember
+{
+    [CmdletBinding()]
+    [OutputType([bool])]
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]
+        # The type name to check.
+        $TypeName,
+
+        [Parameter(Mandatory=$true)]
+        [string]
+        # The name of the member to check.
+        $MemberName
+    )
+
+    Set-StrictMode -Version 'Latest'
+
+    $typeData = Get-TypeData -TypeName $TypeName
+    if( -not $typeData )
+    {
+        # The type isn't defined or there is no extended type data on it.
+        return $false
+    }
+
+    return $typeData.Members.ContainsKey( $MemberName )
+}
+
+
 dir $PSScriptRoot *-*.ps1 |
     Where-Object { $_.BaseName -ne 'Import-Rivet' -and $_.BaseName -ne 'Export-Row' } |
     ForEach-Object { . $_.FullName }

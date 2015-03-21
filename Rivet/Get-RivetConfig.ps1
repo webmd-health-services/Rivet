@@ -22,6 +22,7 @@ function Get-RivetConfig
     Demonstrates how to load a custom Rivet configuration file.
     #>
     [CmdletBinding()]
+    [OutputType([Rivet.Configuration.Configuration])]
     param(
         [Parameter()]
         [string[]]
@@ -38,7 +39,7 @@ function Get-RivetConfig
         $Path
     )
 
-    Set-StrictMode -Version Latest
+    Set-StrictMode -Version 'Latest'
 
     function Resolve-RivetConfigPath
     {
@@ -61,7 +62,7 @@ function Get-RivetConfig
         }
     }
 
-    filter Set-ConfigProperty
+    filter Get-ConfigProperty
     {
         [CmdletBinding()]
         param(
@@ -118,9 +119,8 @@ function Get-RivetConfig
             if( $Required )
             {
                 Write-ValidationError ('setting ''{0}'' is missing.' -f $Name)
-                return $false
             }
-            return $true
+            return
         }
 
         switch ($PSCmdlet.ParameterSetName )
@@ -130,15 +130,13 @@ function Get-RivetConfig
                 if( -not ($value -is 'int') )
                 {
                     Write-ValidationError -Message ('setting ''{0}'' is invalid. It should be a positive integer.' -f $Name)
-                    return $false
+                    return
                 }
-                $properties.$Name = $value
-                break
+                return $value
             }
             'AsList'
             {
-                $properties.$Name = [Object[]]$value
-                break
+                return [Object[]]$value
             }
             'AsPath'
             {
@@ -146,26 +144,22 @@ function Get-RivetConfig
                 if( -not (Test-Path -Path $path -PathType Container) )
                 {
                     Write-ValidationError ('path {0} ''{1}'' not found.' -f $Name,$path)
-                    return $false
+                    return
                 }
-                $properties.$Name = $path
-                break
+                return $path
             }
             'AsString'
             {
-                $properties.$Name = $value
-                break
+                return $value
             }
             'AsHashtable'
             {
-                $hashtable = $properties.$Name
+                $hashtable = @{ }
                 Get-Member -InputObject $value -MemberType NoteProperty |
                     ForEach-Object { $hashtable[$_.Name] = $value.($_.Name) }
-                break
+                return ,$hashtable
             }
         }
-
-        return $true
     }
 
     function Write-ValidationError
@@ -220,80 +214,86 @@ function Get-RivetConfig
 
     $configRoot = Split-Path -Parent -Path $Path
 
-    # Defaults
-    $properties = @{
-                        ConnectionTimeout = 15;
-                        ConfigFilePath = $Path;
-                        CommandTimeout = 30;
-                        Databases = @();
-                        PluginsRoot = @();
-                        IgnoreDatabases = @();
-                        TargetDatabases = @{ };
-                   }
-
-    $rawConfig = ((Get-Content -Path $Path) -join "`n") | ConvertFrom-Json
-
-    $valid = (Set-ConfigProperty -Name SqlServerName -Required -AsString) -and `
-                (Set-ConfigProperty -Name DatabasesRoot -Required -AsPath) -and `
-                (Set-ConfigProperty -Name PluginsRoot -AsPath) -and `
-                (Set-ConfigProperty -Name ConnectionTimeout -AsInt) -and `
-                (Set-ConfigProperty -Name CommandTimeout -AsInt) -and `
-                (Set-ConfigProperty -Name IgnoreDatabases -AsList) -and `
-                (Set-ConfigProperty -Name 'TargetDatabases' -AsHashtable)
-
-    if( $valid )
+    $rawConfig = Get-Content -Raw -Path $Path | ConvertFrom-Json
+    if( -not $rawConfig )
     {
-        if( $Environment -and -not (Get-Environment) )
-        {
-            Write-Error ('Environment ''{0}'' not found in ''{1}''.' -f $Environment,$Path)
-            return
-        }
-
-        $properties.Databases = Invoke-Command {
-
-                                    # Get user-specified databases first
-                                    if( $Database )
-                                    {
-                                        $Database | 
-                                            Add-Member -MemberType ScriptProperty -Name Name -Value { $this } -PassThru |
-                                            Add-Member -MemberType ScriptProperty -Name FullName -Value { Join-Path -Path $properties.DatabasesRoot -ChildPath $this.Name } -PassThru
-                                    }
-                                    else
-                                    {                                    
-                                        # Then get all of them
-                                        Get-ChildItem -Path $properties.DatabasesRoot |
-                                            Where-Object { $_.PsIsContainer }
-                                    }
-                                } |
-                                Select-Object -Property Name,FullName -Unique |
-                                Where-Object { 
-                                    if( -not $properties.IgnoreDatabases )
-                                    {
-                                        return $true
-                                    }
-
-                                    $dbName = $_.Name                                        
-                                    $ignore = $properties.IgnoreDatabases | Where-Object { $dbName -like $_ }
-                                    return -not $ignore
-                                } |
-                                ForEach-Object {
-                                    $dbName = $_.Name
-                                    $dbProps = @{
-                                                    'Name' = $dbName;
-                                                    'Root' = $_.FullName;
-                                                }
-                                    New-Object PsObject -Property $dbProps |
-                                        Add-Member -MemberType ScriptProperty -Name MigrationsRoot -Value { Join-Path -Path $this.Root -ChildPath 'Migrations' } -PassThru
-                                }
-        if( $properties.Databases )
-        {
-            $properties.Databases = [Object[]]$properties.Databases
-        }
-        else
-        {
-            $properties.Databases = @()
-        }
-
-        return New-Object PsObject -Property $properties
+        Write-Error -Message ('Rivet configuration file ''{0}'' contains invalid JSON.' -f $Path)
+        return
     }
+
+    if( $Environment -and -not (Get-Environment) )
+    {
+        Write-Error ('Environment ''{0}'' not found in ''{1}''.' -f $Environment,$Path)
+        return
+    }
+
+    $errorCount = $Global:Error.Count
+
+    $sqlServerName = Get-ConfigProperty -Name 'SqlServerName' -Required -AsString
+    $dbsRoot = Get-ConfigProperty -Name 'DatabasesRoot' -Required -AsPath
+    $connectionTimeout = Get-ConfigProperty -Name 'ConnectionTimeout' -AsInt
+    if( $connectionTimeout -eq $null )
+    {
+        $connectionTimeout = 15
+    }
+
+    $commandTimeout = Get-ConfigProperty -Name 'CommandTimeout' -AsInt
+    if( $commandTimeout -eq $null )
+    {
+        $commandTimeout = 30
+    }
+
+    if( $Global:Error.Count -ne $errorCount )
+    {
+        return
+    }
+
+    [Rivet.Configuration.Configuration]$configuration = New-Object 'Rivet.Configuration.Configuration' $Path,$Environment,$sqlServerName,$dbsRoot,$connectionTimeout,$commandTimeout
+
+    Get-ConfigProperty -Name 'PluginsRoot' -AsPath | ForEach-Object { $configuration.PluginsRoot.Add( $_ ) }
+    $ignoredDatabases = Get-ConfigProperty -Name 'IgnoreDatabases' -AsList
+    $targetDatabases = Get-ConfigProperty -Name 'TargetDatabases' -AsHashtable
+    if( $targetDatabases )
+    {
+        $targetDatabases.Keys | ForEach-Object { $configuration.TargetDatabases[$_] = $targetDatabases[$_] }
+    }
+
+    if( $Global:Error -ne $errorCount )
+    {
+        return
+    }
+
+    Invoke-Command {
+            # Get user-specified databases first
+            if( $Database )
+            {
+                $Database | 
+                    Add-Member -MemberType ScriptProperty -Name Name -Value { $this } -PassThru |
+                    Add-Member -MemberType ScriptProperty -Name FullName -Value { Join-Path -Path $configuration.DatabasesRoot -ChildPath $this.Name } -PassThru
+            }
+            else
+            {                                    
+                # Then get all of them
+                Get-ChildItem -Path $configuration.DatabasesRoot |
+                    Where-Object { $_.PsIsContainer }
+            }
+        } |
+        Select-Object -Property Name,FullName -Unique |
+        Where-Object { 
+            if( -not $ignoredDatabases )
+            {
+                return $true
+            }
+
+            $dbName = $_.Name                                        
+            $ignore = $ignoredDatabases | Where-Object { $dbName -like $_ }
+            return -not $ignore
+        } |
+        ForEach-Object {
+            $dbName = $_.Name
+            $db = New-Object 'Rivet.Configuration.Database' $dbName,$_.FullName
+            $configuration.Databases.Add( $db )
+        }
+
+    return $configuration
 }
