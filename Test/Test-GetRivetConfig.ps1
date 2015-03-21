@@ -72,13 +72,11 @@ function Test-ShouldParseMinimumConfig
     Assert-True ($config.Databases -is 'Collections.Generic.List[Rivet.Configuration.Database]')
     Assert-Equal 1 $config.Databases.Count 
     Assert-Equal $dbName $config.Databases[0].Name
+    Assert-Equal 0 $config.Databases[0].TargetDatabaseNames.Count
     Assert-Equal (Join-Path -Path $tempDir -ChildPath "Databases\$dbName") $config.Databases[0].Root
     Assert-Equal (Join-Path -Path $tempDir -ChildPath "Databases\$dbName\Migrations") $config.Databases[0].MigrationsRoot
     Assert-True ($config.PluginsRoot -is 'Collections.Generic.List[string]')
     Assert-Equal (Join-Path -Path $tempDir -ChildPath "Plugins") $config.PluginsRoot[0]
-    Assert-NotNull $config.TargetDatabases
-    Assert-Is $config.TargetDatabases ([hashtable])
-    Assert-Equal 0 $config.TargetDatabases.Count
 }
 
 function Test-ShouldValidateDatabasesDirectoryExists
@@ -375,18 +373,21 @@ function Test-ShouldParseTargetDatabases
     @'
 {
     SqlServerName: '.\\Rivet',
-    DatabasesRoot: 'Databases',
+    DatabasesRoot: 'UatDatabases',
     TargetDatabases: {
-                        'DB1': [ 'DB2', 'DB3' ]
+                        'UatDatabase': [ 'DB2', 'DB3' ]
                      }
 }
 '@ | Set-RivetConfig
 
     $defaultConfig = Get-RivetConfig -Path $rivetConfigPath
-    Assert-NotNull $defaultConfig.TargetDatabases
-    Assert-Is $defaultConfig.TargetDatabases ([hashtable])
-    Assert-Equal $defaultConfig.TargetDatabases['DB1'][0] 'DB2'
-    Assert-Equal $defaultConfig.TargetDatabases['DB1'][1] 'DB3'
+    [Rivet.Configuration.Database]$db1 = $defaultConfig.Databases | Where-Object { $_.Name -eq 'UatDatabase' }
+    Assert-True ($db1.TargetDatabaseNames -contains 'DB2')
+    Assert-True ($db1.TargetDatabaseNames -contains 'DB3')
+
+    [Rivet.Configuration.Database]$db2 = $defaultConfig.Databases | Where-Object { $_.Name -eq 'Shared' }
+    Assert-Equal 0 $db2.TargetDatabaseNames.Count
+
 }
 
 function Set-RivetConfig

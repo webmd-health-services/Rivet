@@ -16,7 +16,6 @@ namespace Rivet.Configuration
 
 			Databases = new List<Database>();
 			PluginsRoot = new List<string>();
-			TargetDatabases = new Hashtable();
 		}
 
 		public int CommandTimeout { get; private set; }
@@ -27,6 +26,5 @@ namespace Rivet.Configuration
 		public string Path { get; private set; }
 		public List<string> PluginsRoot { get; private set; }
 		public string SqlServerName { get; private set; }
-		public Hashtable TargetDatabases { get; private set; }
 	}
 }
