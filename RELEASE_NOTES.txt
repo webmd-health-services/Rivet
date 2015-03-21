@@ -1,6 +1,13 @@
+# 0.3.1
+
+## Enhancements
+
+ * `Get-RivetConfig` is now a publicly exposed function.  Use this method to parse a Rivet JSON configuration file. It returns a `Rivet.Configuration.Configuration` object.
+
+ 
 # 0.3.0
 
-## Improvements
+## Enhancements
 
  * `Get-Migration` now returns a `Rivet.Operations.ScriptFileOperation` object instead of a `Rivet.Operations.RawQueryOperation` for `Invoke-SqlQuery` operations.
 
