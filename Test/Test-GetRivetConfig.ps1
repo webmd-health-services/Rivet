@@ -387,7 +387,14 @@ function Test-ShouldParseTargetDatabases
 
     [Rivet.Configuration.Database]$db2 = $defaultConfig.Databases | Where-Object { $_.Name -eq 'Shared' }
     Assert-Equal 0 $db2.TargetDatabaseNames.Count
+}
 
+function Test-ShouldIgnoreErrorsFromOutside
+{
+    # REGRESSION TEST: If an error from outside exists, fails to return anything
+    Write-Error 'fubar!' -ErrorAction SilentlyContinue
+    $config = Get-RivetConfig -Path $rivetConfigPath
+    Assert-NotNull $config
 }
 
 function Set-RivetConfig
