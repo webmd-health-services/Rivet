@@ -244,13 +244,6 @@ function Get-RivetConfig
     }
     $pluginsRoot = Get-ConfigProperty -Name 'PluginsRoot' -AsPath
 
-    if( $Global:Error.Count -ne $errorCount )
-    {
-        return
-    }
-
-    [Rivet.Configuration.Configuration]$configuration = New-Object 'Rivet.Configuration.Configuration' $Path,$Environment,$sqlServerName,$dbsRoot,$connectionTimeout,$commandTimeout,$pluginsRoot
-
     $ignoredDatabases = Get-ConfigProperty -Name 'IgnoreDatabases' -AsList
     $targetDatabases = Get-ConfigProperty -Name 'TargetDatabases' -AsHashtable
     if( $targetDatabases -eq $null )
@@ -258,7 +251,9 @@ function Get-RivetConfig
         $targetDatabases = @{ }
     }
 
-    if( $Global:Error -ne $errorCount )
+    [Rivet.Configuration.Configuration]$configuration = New-Object 'Rivet.Configuration.Configuration' $Path,$Environment,$sqlServerName,$dbsRoot,$connectionTimeout,$commandTimeout,$pluginsRoot
+
+    if( $Global:Error.Count -ne $errorCount )
     {
         return
     }
