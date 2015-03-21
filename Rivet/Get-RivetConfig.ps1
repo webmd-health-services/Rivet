@@ -253,9 +253,9 @@ function Get-RivetConfig
     Get-ConfigProperty -Name 'PluginsRoot' -AsPath | ForEach-Object { $configuration.PluginsRoot.Add( $_ ) }
     $ignoredDatabases = Get-ConfigProperty -Name 'IgnoreDatabases' -AsList
     $targetDatabases = Get-ConfigProperty -Name 'TargetDatabases' -AsHashtable
-    if( $targetDatabases )
+    if( $targetDatabases -eq $null )
     {
-        $targetDatabases.Keys | ForEach-Object { $configuration.TargetDatabases[$_] = $targetDatabases[$_] }
+        $targetDatabases = @{ }
     }
 
     if( $Global:Error -ne $errorCount )
@@ -291,7 +291,12 @@ function Get-RivetConfig
         } |
         ForEach-Object {
             $dbName = $_.Name
-            $db = New-Object 'Rivet.Configuration.Database' $dbName,$_.FullName
+            $targetDBNames = @( )
+            if( $targetDatabases.ContainsKey( $dbName ) )
+            {
+                $targetDBNames = $targetDatabases[$dbName]
+            }
+            $db = New-Object 'Rivet.Configuration.Database' $dbName,$_.FullName,$targetDBNames
             $configuration.Databases.Add( $db )
         }
 

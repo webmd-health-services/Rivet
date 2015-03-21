@@ -86,7 +86,7 @@ function Invoke-Rivet
         $ConfigFilePath
     )
 
-    $settings = Get-RivetConfig -Database $Database -Path $ConfigFilePath -Environment $Environment
+    [Rivet.Configuration.Configuration]$settings = Get-RivetConfig -Database $Database -Path $ConfigFilePath -Environment $Environment
 
     $ignored = $Database | 
                     Where-Object { 
@@ -128,10 +128,10 @@ function Invoke-Rivet
                 continue
             }
 
-            $targetDatabases = $databaseName
-            if( $settings.TargetDatabases.ContainsKey( $databaseName ) )
+            $targetDatabases = $databaseItem.TargetDatabaseNames
+            if( -not $targetDatabases )
             {
-                $targetDatabases = $settings.TargetDatabases[$databaseName]
+                $targetDatabases = @( $databaseName )
             }
 
             foreach( $targetDatabase in $targetDatabases )
