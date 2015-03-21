@@ -9,6 +9,8 @@ $minConfig = @'
 }
 '@
 
+& (Join-Path -Path $PSScriptRoot -ChildPath '..\Rivet\Import-Rivet.ps1' -Resolve)
+
 function Start-Test
 {
     $tempDir = New-TempDirectoryTree -Prefix 'Rivet-Test-GetRivetConfig' @'
@@ -19,16 +21,10 @@ function Start-Test
     $rivetConfigPath = Join-Path -Path $tempDir -ChildPath 'rivet'
     $minConfig | Set-RivetConfig
     Assert-NotNull $rivetConfigPath
-    . (Join-Path -Path $TestDir -ChildPath ..\Rivet\Get-RivetConfig.ps1 -Resolve)
 }
 
 function Stop-Test
 {
-    if( (Test-Path -Path function:\Get-RivetConfig) )
-    {
-        Remove-Item -Path function:\Get-RivetConfig
-    }
-
     if( $tempDir -and (Test-Path -Path $tempDir -PathType Container) )
     {
         Remove-Item -Path $tempDir -Recurse
@@ -73,13 +69,13 @@ function Test-ShouldParseMinimumConfig
     Assert-Equal '.\Test' $config.SqlServerName
     Assert-Equal 15 $config.ConnectionTimeout   # Default
     Assert-Equal 30 $config.CommandTimeout      # Default
-    Assert-True ($config.Databases -is 'Object[]')
+    Assert-True ($config.Databases -is 'Collections.Generic.List[Rivet.Configuration.Database]')
     Assert-Equal 1 $config.Databases.Count 
     Assert-Equal $dbName $config.Databases[0].Name
     Assert-Equal (Join-Path -Path $tempDir -ChildPath "Databases\$dbName") $config.Databases[0].Root
     Assert-Equal (Join-Path -Path $tempDir -ChildPath "Databases\$dbName\Migrations") $config.Databases[0].MigrationsRoot
-    Assert-True ($config.PluginsRoot -is 'String')
-    Assert-Equal (Join-Path -Path $tempDir -ChildPath "Plugins") $config.PluginsRoot
+    Assert-True ($config.PluginsRoot -is 'Collections.Generic.List[string]')
+    Assert-Equal (Join-Path -Path $tempDir -ChildPath "Plugins") $config.PluginsRoot[0]
     Assert-NotNull $config.TargetDatabases
     Assert-Is $config.TargetDatabases ([hashtable])
     Assert-Equal 0 $config.TargetDatabases.Count
@@ -310,21 +306,17 @@ function Test-ShouldOverrideSettingsFromEnvironment
     Assert-Equal '.\Rivet' $defaultConfig.SqlServerName
     Assert-Equal $databasesRootPath $defaultConfig.DatabasesRoot
     Assert-Equal 15 $defaultConfig.ConnectionTimeout
-    Assert-Equal 0 $defaultConfig.IgnoreDatabases.Count
     Assert-Equal 0 $defaultConfig.Databases.Count
 
     Assert-Equal 'uatdb\Rivet' $uatConfig.SqlServerName
     Assert-Equal $uatDatabasesPath $uatConfig.DatabasesRoot
     Assert-Equal 999 $uatConfig.ConnectionTimeout
-    Assert-Equal 1 $uatConfig.IgnoreDatabases.Count
-    Assert-Equal 'Shared' $uatConfig.IgnoreDatabases[0]
     Assert-Equal 1 $uatConfig.Databases.Count
     Assert-Equal 'UatDatabase' $uatConfig.Databases[0].Name
 
     Assert-Equal 'proddb\Rivet' $prodConfig.SqlServerName
     Assert-Equal $databasesRootPath $prodConfig.DatabasesRoot
     Assert-Equal 15 $prodConfig.ConnectionTimeout
-    Assert-Equal 0 $prodConfig.IgnoreDatabases.Count
     Assert-Equal 0 $prodConfig.Databases.Count
 }
 
