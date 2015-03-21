@@ -88,23 +88,16 @@ function Invoke-Rivet
 
     [Rivet.Configuration.Configuration]$settings = Get-RivetConfig -Database $Database -Path $ConfigFilePath -Environment $Environment
 
-    $ignored = $Database | 
-                    Where-Object { 
-                        $dbName = $_
-                        -not ($settings.Databases | Where-Object { $_.Name -eq $dbName })
-                    } |
-                    ForEach-Object { 
-                        Write-Error ('Can''t use database ''{0}'' because it is on the ignore list in ''{1}''.  Please remove it from the ignore list or choose a different database.' -f $_,$settings.ConfigFilePath)
-                        $_
-                    }
-    if( $ignored )
-    {
-        return
-    }
-
     if( -not $settings.Databases )
     {
-        Write-Error ('There are no database directories in ''{0}''.  Please create a database directory there or supply an explicit database name with the `Database` parameter.' -f $settings.DatabasesRoot)
+        Write-Error (@'
+Found no databases to migrate. This can be a few things:
+ 
+ * There are no database directories in ''{0}''.  Please create a database directory there or supply an explicit database name with the `Database` parameter.  
+ * You supplied an explicit database name, but that database is on the ignore list. Remove it from the ignore list in ''{1}'' or enter a database name that isn't ignored.
+ * You supplied an explicit database name, but no directory for migrations exist on the file system (under {0}). Create a migrations directory or enter the name of a database that exists.
+
+'@ -f $settings.DatabasesRoot,$ConfigFilePath)
         return
     }
 
@@ -116,95 +109,87 @@ function Invoke-Rivet
 
     try
     {
+        if( $PSCmdlet.ParameterSetName -eq 'New' )
+        {
+            $settings.Databases | 
+                Select-Object -ExpandProperty 'MigrationsRoot' -Unique |
+                ForEach-Object { New-Migration -Name $Name -Path $_ }
+            return
+        }
+
         foreach( $databaseItem in $settings.Databases )
         {
             $databaseName = $databaseItem.Name
             $dbScriptsPath = $databaseItem.Root
             $dbMigrationsPath = $databaseItem.MigrationsRoot
         
-            if( $pscmdlet.ParameterSetName -eq 'New' )
-            {
-                New-Migration -Name $Name -Path $dbMigrationsPath
-                continue
-            }
-
-            $targetDatabases = $databaseItem.TargetDatabaseNames
-            if( -not $targetDatabases )
-            {
-                $targetDatabases = @( $databaseName )
-            }
-
-            foreach( $targetDatabase in $targetDatabases )
-            {
-    
-                Connect-Database -SqlServerName $settings.SqlServerName `
-                                 -Database $targetDatabase `
-                                 -ConnectionTimeout $settings.ConnectionTimeout
+            Connect-Database -SqlServerName $settings.SqlServerName `
+                                -Database $databaseName `
+                                -ConnectionTimeout $settings.ConnectionTimeout
         
-                $Connection.ScriptsPath = $dbScriptsPath
+            $Connection.ScriptsPath = $dbScriptsPath
 
-                try
+            try
+            {
+                Initialize-Database
+
+                $updateParams = @{
+                                    Path = $dbMigrationsPath;
+                                    DBScriptsPath = $dbScriptsPath;
+                                    }
+
+                if( -not (Test-Path -Path $dbMigrationsPath -PathType Container) )
                 {
-                    Initialize-Database
-
-                    $updateParams = @{
-                                        Path = $dbMigrationsPath;
-                                        DBScriptsPath = $dbScriptsPath;
-                                     }
-
-                    if( -not (Test-Path -Path $dbMigrationsPath -PathType Container) )
-                    {
-                        Write-Warning ('{0} database migrations directory ({1}) not found.' -f $databaseName,$dbMigrationsPath)
-                        continue
-                    }
-            
-                    if( $PSBoundParameters.ContainsKey('Name') )
-                    {
-                        $updateParams.Name = $Name    # Join-Path $dbMigrationsPath ("*_{0}.ps1" -f $Name)
-                    }
-
-                    Write-Host ('# {0}.{1}' -f $Connection.DataSource,$Connection.Database)
-            
-                    if( $pscmdlet.ParameterSetName -eq 'Push' )
-                    {
-                        Update-Database @updateParams
-                    }
-                    elseif( $pscmdlet.ParameterSetName -eq 'Pop' )
-                    {
-                        Update-Database -Pop -Count 1 -Force:$Force @updateParams
-                    }
-                    elseif( $pscmdlet.ParameterSetName -eq 'PopByName' )
-                    {
-                        Update-Database -Pop -Force:$Force @updateParams
-                    }
-                    elseif( $pscmdlet.ParameterSetName -eq 'PopByCount' )
-                    {
-                        Update-Database -Pop -Count $Count -Force:$Force @updateParams
-                    }
-                    elseif ( $pscmdlet.ParameterSetName -eq 'PopAll' )
-                    {
-                        Update-Database -Pop -All -Force:$Force @updateParams
-                    }
-                    elseif( $pscmdlet.ParameterSetName -eq 'Redo' )
-                    {
-                        Update-Database -Pop -Count 1 @updateParams
-                        Update-Database @updateParams
-                    }
+                    Write-Warning ('{0} database migrations directory ({1}) not found.' -f $databaseName,$dbMigrationsPath)
+                    continue
                 }
-                catch
+            
+                if( $PSBoundParameters.ContainsKey('Name') )
                 {
-                    $firstException = $_.Exception
-                    while( $firstException.InnerException )
-                    {
-                        $firstException = $firstException.InnerException
-                    }
+                    $updateParams.Name = $Name    # Join-Path $dbMigrationsPath ("*_{0}.ps1" -f $Name)
+                }
+
+                Write-Host ('# {0}.{1}' -f $Connection.DataSource,$Connection.Database)
             
-                    Write-Error ('{0} database migration failed: {1}.' -f $databaseName,$firstException.Message)
-                }
-                finally
+                if( $pscmdlet.ParameterSetName -eq 'Push' )
                 {
-                    $Connection.ScriptsPath = $null
+                    Update-Database @updateParams
                 }
+                elseif( $pscmdlet.ParameterSetName -eq 'Pop' )
+                {
+                    Update-Database -Pop -Count 1 -Force:$Force @updateParams
+                }
+                elseif( $pscmdlet.ParameterSetName -eq 'PopByName' )
+                {
+                    Update-Database -Pop -Force:$Force @updateParams
+                }
+                elseif( $pscmdlet.ParameterSetName -eq 'PopByCount' )
+                {
+                    Update-Database -Pop -Count $Count -Force:$Force @updateParams
+                }
+                elseif ( $pscmdlet.ParameterSetName -eq 'PopAll' )
+                {
+                    Update-Database -Pop -All -Force:$Force @updateParams
+                }
+                elseif( $pscmdlet.ParameterSetName -eq 'Redo' )
+                {
+                    Update-Database -Pop -Count 1 @updateParams
+                    Update-Database @updateParams
+                }
+            }
+            catch
+            {
+                $firstException = $_.Exception
+                while( $firstException.InnerException )
+                {
+                    $firstException = $firstException.InnerException
+                }
+            
+                Write-Error ('{0} database migration failed: {1}.' -f $databaseName,$firstException.Message)
+            }
+            finally
+            {
+                $Connection.ScriptsPath = $null
             }
         }
     }

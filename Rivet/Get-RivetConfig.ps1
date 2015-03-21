@@ -286,14 +286,19 @@ function Get-RivetConfig
         } |
         ForEach-Object {
             $dbName = $_.Name
-            $targetDBNames = @( )
             if( $targetDatabases.ContainsKey( $dbName ) )
             {
-                $targetDBNames = $targetDatabases[$dbName]
+                foreach( $targetDBName in $targetDatabases[$dbName] )
+                {
+                    New-Object 'Rivet.Configuration.Database' $targetDBName,$_.FullName
+                }
             }
-            $db = New-Object 'Rivet.Configuration.Database' $dbName,$_.FullName,$targetDBNames
-            $configuration.Databases.Add( $db )
-        }
+            else
+            {
+                New-Object 'Rivet.Configuration.Database' $dbName,$_.FullName
+            }
+        } | 
+        ForEach-Object { $configuration.Databases.Add( $_ ) }
 
     return $configuration
 }
