@@ -72,7 +72,6 @@ function Test-ShouldParseMinimumConfig
     Assert-True ($config.Databases -is 'Collections.Generic.List[Rivet.Configuration.Database]')
     Assert-Equal 1 $config.Databases.Count 
     Assert-Equal $dbName $config.Databases[0].Name
-    Assert-Equal 0 $config.Databases[0].TargetDatabaseNames.Count
     Assert-Equal (Join-Path -Path $tempDir -ChildPath "Databases\$dbName") $config.Databases[0].Root
     Assert-Equal (Join-Path -Path $tempDir -ChildPath "Databases\$dbName\Migrations") $config.Databases[0].MigrationsRoot
     Assert-True ($config.PluginsRoot -is 'string')
@@ -381,12 +380,19 @@ function Test-ShouldParseTargetDatabases
 '@ | Set-RivetConfig
 
     $defaultConfig = Get-RivetConfig -Path $rivetConfigPath
-    [Rivet.Configuration.Database]$db1 = $defaultConfig.Databases | Where-Object { $_.Name -eq 'UatDatabase' }
-    Assert-True ($db1.TargetDatabaseNames -contains 'DB2')
-    Assert-True ($db1.TargetDatabaseNames -contains 'DB3')
+    Assert-Null ($defaultConfig.Databases | Where-Object { $_.Name -eq 'UatDatabase' })
 
-    [Rivet.Configuration.Database]$db2 = $defaultConfig.Databases | Where-Object { $_.Name -eq 'Shared' }
-    Assert-Equal 0 $db2.TargetDatabaseNames.Count
+    $db2 = $defaultConfig.Databases | Where-Object { $_.Name -eq 'DB2' }
+    Assert-NotNull $db2
+    Assert-Equal 'DB2' $db2.Name
+    Assert-Equal (Join-Path -Path $uatDatabasesPath -ChildPath 'UatDatabase') $db2.Root
+    Assert-Equal (Join-Path -Path $uatDatabasesPath -ChildPath 'UatDatabase\Migrations') $db2.MigrationsRoot
+
+    $db3 = $defaultConfig.Databases | Where-Object { $_.Name -eq 'db3' }
+    Assert-NotNull $db3
+    Assert-Equal 'db3' $db3.Name
+    Assert-Equal (Join-Path -Path $uatDatabasesPath -ChildPath 'UatDatabase') $db3.Root
+    Assert-Equal (Join-Path -Path $uatDatabasesPath -ChildPath 'UatDatabase\Migrations') $db3.MigrationsRoot
 }
 
 function Test-ShouldIgnoreErrorsFromOutside
