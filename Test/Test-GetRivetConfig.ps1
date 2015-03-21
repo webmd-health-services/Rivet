@@ -75,8 +75,8 @@ function Test-ShouldParseMinimumConfig
     Assert-Equal 0 $config.Databases[0].TargetDatabaseNames.Count
     Assert-Equal (Join-Path -Path $tempDir -ChildPath "Databases\$dbName") $config.Databases[0].Root
     Assert-Equal (Join-Path -Path $tempDir -ChildPath "Databases\$dbName\Migrations") $config.Databases[0].MigrationsRoot
-    Assert-True ($config.PluginsRoot -is 'Collections.Generic.List[string]')
-    Assert-Equal (Join-Path -Path $tempDir -ChildPath "Plugins") $config.PluginsRoot[0]
+    Assert-True ($config.PluginsRoot -is 'string')
+    Assert-Equal (Join-Path -Path $tempDir -ChildPath "Plugins") $config.PluginsRoot
 }
 
 function Test-ShouldValidateDatabasesDirectoryExists
