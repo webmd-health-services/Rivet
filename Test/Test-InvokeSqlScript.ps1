@@ -91,3 +91,57 @@ create schema [invokesqlscript2]
     Assert-Schema 'invokesqlscript2'
 
 }
+
+function Test-ShouldSupportNonQueryParameter
+{
+    $m = @'
+function Push-Migration
+{
+    Invoke-SqlScript -Path 'AddSchema.sql' -NonQuery
+}
+
+function Pop-Migration
+{
+}
+
+'@ | New-Migration -Name 'InvokeSqlScript'
+
+    $scriptPath = Split-Path -Parent -Path $m
+    $scriptPath = Join-Path -Path $scriptPath -ChildPath 'AddSchema.sql'
+
+    @'
+create schema [invokesqlscript]
+'@ | Set-Content -Path $scriptPath
+
+    Invoke-Rivet -Push 'InvokeSqlScript'
+
+    Assert-Schema 'invokesqlscript'
+}
+
+
+function Test-ShouldSupportScalarParameter
+{
+    $m = @'
+function Push-Migration
+{
+    Invoke-SqlScript -Path 'AddSchema.sql' -AsScalar
+}
+
+function Pop-Migration
+{
+}
+
+'@ | New-Migration -Name 'InvokeSqlScript'
+
+    $scriptPath = Split-Path -Parent -Path $m
+    $scriptPath = Join-Path -Path $scriptPath -ChildPath 'AddSchema.sql'
+
+    @'
+create schema [invokesqlscript]
+'@ | Set-Content -Path $scriptPath
+
+    Invoke-Rivet -Push 'InvokeSqlScript'
+
+    Assert-Schema 'invokesqlscript'
+}
+

@@ -1,3 +1,9 @@
+# 0.3.2
+
+## Bug Fixes
+
+ * `Invoke-SqlScript` fails when `NonQuery` switch is used.
+
 # 0.3.1
 
 ## Enhancements

@@ -47,7 +47,7 @@ function Invoke-SqlScript
     }
     elseif( $pscmdlet.ParameterSetName -eq 'AsNonQuery' )
     {
-        $invokeMigrationParams.AsNonQuery = $true
+        $invokeMigrationParams.NonQuery = $true
     }
     
     if( -not ([IO.Path]::IsPathRooted( $Path )) )
