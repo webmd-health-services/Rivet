@@ -142,3 +142,13 @@ function Pop-Migration
     Assert-Schema -Name 'fubar'
 
 }
+
+function Test-ShouldHandleFailureToConnect
+{
+    $config = Get-Content -Raw -Path $RTConfigFilePath | ConvertFrom-Json
+    $config.SqlServerName = '.\IDoNotExist'
+    $config | ConvertTo-Json | Set-Content -Path $RTConfigFilePath
+
+    Invoke-Rivet -Push -ErrorAction SilentlyContinue
+    Assert-Error -Last -Regex 'failed to connect'
+}

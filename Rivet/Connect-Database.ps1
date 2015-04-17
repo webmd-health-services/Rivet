@@ -25,7 +25,21 @@ function Connect-Database
 
         $connString = 'Server={0};Database=master;Integrated Security=True;Connection Timeout={1}' -f $SqlServerName,$ConnectionTimeout
         Set-Variable -Name 'Connection' -Scope 1 -Value (New-Object 'Data.SqlClient.SqlConnection' ($connString)) -Confirm:$False -WhatIf:$false
-        $Connection.Open()
+        try
+        {
+            $Connection.Open()
+        }
+        catch
+        {
+            $ex = $_.Exception
+            while( $ex.InnerException )
+            {
+                $ex = $ex.InnerException
+            }
+
+            Write-Error ('Failed to connect to SQL Server ''{0}'' (connection string: {1}). Does this database server exist? ({2})' -f $SqlServerName,$connString,$ex.Message)
+            return $false
+        }
     }
 
     if( $Connection.Database -ne 'master' )
@@ -56,4 +70,6 @@ function Connect-Database
         $Connection |
             Add-Member -MemberType NoteProperty -Name 'ScriptsPath' -Value $null 
     }
+
+    return $true
 }

@@ -123,9 +123,13 @@ Found no databases to migrate. This can be a few things:
             $dbScriptsPath = $databaseItem.Root
             $dbMigrationsPath = $databaseItem.MigrationsRoot
         
-            Connect-Database -SqlServerName $settings.SqlServerName `
-                                -Database $databaseName `
-                                -ConnectionTimeout $settings.ConnectionTimeout
+            $result = Connect-Database -SqlServerName $settings.SqlServerName `
+                                       -Database $databaseName `
+                                       -ConnectionTimeout $settings.ConnectionTimeout
+            if( -not $result )
+            {
+                continue
+            }
         
             $Connection.ScriptsPath = $dbScriptsPath
 
