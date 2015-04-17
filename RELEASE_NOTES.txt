@@ -1,0 +1,45 @@
+# 0.3.3
+
+ * Improved error message when failing to connect to SQL Server.
+ 
+
+# 0.3.2
+
+## Bug Fixes
+
+ * `Invoke-SqlScript` fails when `NonQuery` switch is used.
+
+# 0.3.1
+
+## Enhancements
+
+ * `Get-RivetConfig` is now a publicly exposed function.  Use this method to parse a Rivet JSON configuration file. It returns a `Rivet.Configuration.Configuration` object.
+
+ 
+# 0.3.0
+
+## Enhancements
+
+ * `Get-Migration` now returns a `Rivet.Operations.ScriptFileOperation` object instead of a `Rivet.Operations.RawQueryOperation` for `Invoke-SqlQuery` operations.
+
+## Bug Fixes
+
+ * `Invoke-SqlScript` ignoring `CommandTimeout` parameter.
+ * `Invoke-SqlScript` didn't rollback migration if the script file was not found.
+ * `Get-Migration` fails if a migration doesn't contain a `Push-Migration` or `Pop-Migration` function.
+ * `Get-Migratoin` duplicates output of previous migration if a migration is missing a `Push-Migration` or `Pop-Migration` function.
+
+
+# 0.2.1
+
+## Bug Fixes
+
+ * If a database has multipe target databases and no migrations directory, Rivet stops after the first target database.
+
+# 0.2.0
+
+ * Databases are now created if they don't exist.
+ * A single database connection is now re-used when migrating multiple databases, instead of establishing a new connection for each database.
+ * A database's migrations can now be applied to multiple target databases via the new `TargetDatabases` configuration option. See `about_Rivet_Configuration` for more information.
+ * Rivet now updates its internal objects using migrations (i.e. it is now self-migrating). It uses (and reserves) migration IDs below 01000000000000. If you have migrations with these IDs, you'll need to give them new IDs and update IDs in any rivet.Migrations table that uses that ID.
+ * Migration name maximum length increased to 241 characters (the theoretical maximum allowed by Windows).
