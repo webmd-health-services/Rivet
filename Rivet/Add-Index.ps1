@@ -20,6 +20,12 @@ function Add-Index
     Add-Index -TableName 'Cars' -Column 'Year' -Unique -Option @('IGNORE_DUP_KEY = ON','ALLOW_ROW_LOCKS = OFF')
     
     Adds an unique relational index in 'Year' on the table 'Cars' with options to ignore duplicate keys and disallow row locks.
+
+    .EXAMPLE
+    Add-Index -TableName 'Cars' -Column 'Year' -Include 'Model'
+
+    Adds a relational index in 'Year' on the table 'Cars' and includes the column 'Model'
+
     #>
 
     [CmdletBinding()]
@@ -71,7 +77,11 @@ function Add-Index
 
         [string]
         # The value of the `FILESTREAM_ON` clause, which controls the placement of filestream data.
-        $FileStreamOn
+        $FileStreamOn,
+
+        [string[]]
+        #The value of the `INCLUDE` clause, which is a list of column names.
+        $Include
         
     )
 
@@ -96,12 +106,12 @@ function Add-Index
     {
         if ($PSBoundParameters.containskey("Name"))
         {
-            $op = New-Object 'Rivet.Operations.AddIndexOperation' $SchemaName, $TableName, $ColumnName, $Name, $Descending, $Unique, $Clustered, $Option, $Where, $On, $FileStreamOn
+            $op = New-Object 'Rivet.Operations.AddIndexOperation' $SchemaName, $TableName, $ColumnName, $Name, $Descending, $Unique, $Clustered, $Option, $Where, $On, $FileStreamOn, $Include
             Write-Host (' {0}.{1} +{2} ({3})' -f $SchemaName,$TableName,$Name,$ColumnClause)
         }
         else 
         {
-            $op = New-Object 'Rivet.Operations.AddIndexOperation' $SchemaName, $TableName, $ColumnName, $Descending, $Unique, $Clustered, $Option, $Where, $On, $FileStreamOn
+            $op = New-Object 'Rivet.Operations.AddIndexOperation' $SchemaName, $TableName, $ColumnName, $Descending, $Unique, $Clustered, $Option, $Where, $On, $FileStreamOn, $Include
             Write-Host (' {0}.{1} +{2} ({3})' -f $SchemaName,$TableName,$op.Name,$ColumnClause)
         }
         
@@ -110,12 +120,12 @@ function Add-Index
     {
         if ($PSBoundParameters.containskey("Name"))
         {
-            $op = New-Object 'Rivet.Operations.AddIndexOperation' $SchemaName, $TableName, $ColumnName, $Name, $Unique, $Clustered, $Option, $Where, $On, $FileStreamOn
+            $op = New-Object 'Rivet.Operations.AddIndexOperation' $SchemaName, $TableName, $ColumnName, $Name, $Unique, $Clustered, $Option, $Where, $On, $FileStreamOn, $Include
             Write-Host (' {0}.{1} +{2} ({3})' -f $SchemaName,$TableName,$Name,$ColumnClause)
         }
         else 
         {
-            $op = New-Object 'Rivet.Operations.AddIndexOperation' $SchemaName, $TableName, $ColumnName, $Unique, $Clustered, $Option, $Where, $On, $FileStreamOn
+            $op = New-Object 'Rivet.Operations.AddIndexOperation' $SchemaName, $TableName, $ColumnName, $Unique, $Clustered, $Option, $Where, $On, $FileStreamOn, $Include
             Write-Host (' {0}.{1} +{2} ({3})' -f $SchemaName,$TableName,$op.Name,$ColumnClause)
         }
     }
