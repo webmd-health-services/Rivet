@@ -1,3 +1,9 @@
+# 0.3.3
+
+## Enhancements
+
+ * `Add-Index` operation now supports INCLUDE clause.
+
 # 0.3.2
 
 ## Bug Fixes
