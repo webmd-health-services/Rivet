@@ -217,3 +217,41 @@ function Pop-Migration()
 
     Assert-Equal 'OptionalName' $ForeignKeys.Name
 }
+
+
+function Test-ShouldAddForeignKeyWithNoCheck
+{
+    @'
+function Push-Migration()
+{
+    Add-Table -Name 'Source Table' {
+        Int 'Source ID' -NotNull
+    }
+
+    Add-Table -Name 'Reference Table' {
+        Int 'Reference ID' -NotNull
+    }
+
+    Add-Row 'Source Table' @( @{ 'Source ID' = 1 } )
+    Add-Row 'Reference Table' @( @{ 'Reference ID' = 2 } )
+
+    Add-PrimaryKey -TableName 'Reference Table' -ColumnName 'Reference ID'
+
+    # Will fail without NOCHECK constraint
+    Add-ForeignKey 'Source Table' 'Source ID' 'Reference Table' 'Reference ID' -WithNoCheck
+}
+
+function Pop-Migration()
+{
+}
+'@ | New-Migration -Name 'AddForeignKeyFromSingleColumnToSingleColumn'
+    Invoke-Rivet -Push 'AddForeignKeyFromSingleColumnToSingleColumn'
+
+    $SourceRow = Get-Row -SchemaName 'dbo' -TableName 'Source Table'
+    Assert-Equal 1 $SourceRow.'Source ID'
+
+    $ReferenceRow = Get-Row -SchemaName 'dbo' -TableName 'Reference Table'
+    Assert-Equal 2 $ReferenceRow.'Reference ID'
+
+    Assert-ForeignKey -TableName 'Source Table' -References 'Reference Table'
+}
