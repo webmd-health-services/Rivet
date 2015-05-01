@@ -11,6 +11,11 @@ function Add-CheckConstraint
     Add-CheckConstraint 'Migrations' 'CK_Migrations_MigrationID' 'MigrationID > 0'
     
     Demonstrates how to add a check constraint to a column that requires the value to be greater than 0.
+
+    .EXAMPLE
+    Add-CheckConstraint 'Migrations' 'CK_Migrations_MigrationID' 'MigrationID > 0' -WithNoCheck
+
+    Demonstrates how to add a check constraint to a column without validating the current contents of the table against this check.
     #>
     [CmdletBinding()]
     param(
@@ -40,12 +45,16 @@ function Add-CheckConstraint
 
         [Switch]
         # Don't show any host output.
-        $Quiet
+        $Quiet,
+
+        [Switch]
+        # Specifies that the data in the table is not validated against a newly added CHECK constraint. If not specified, WITH CHECK is assumed for new constraints.
+        $WithNoCheck
     )
 
     Set-StrictMode -Version 'Latest'
 
-    $op = New-Object 'Rivet.Operations.AddCheckConstraintOperation' $SchemaName, $TableName, $Name, $Expression, $NotForReplication, $false
+    $op = New-Object 'Rivet.Operations.AddCheckConstraintOperation' $SchemaName, $TableName, $Name, $Expression, $NotForReplication, $WithNoCheck
     if( -not $Quiet )
     {
         Write-Host (' {0}.{1} +{2} {3}' -f $SchemaName, $TableName, $Name, $Expression)
