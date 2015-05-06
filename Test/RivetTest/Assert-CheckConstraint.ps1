@@ -10,6 +10,9 @@ function Assert-CheckConstraint
         [Switch]
         $NotForReplication,
 
+        [Switch]
+        $IsDisabled,
+
         [string]
         $Definition
     )
@@ -19,6 +22,15 @@ function Assert-CheckConstraint
     Assert-NotNull $constraint ('check constraint ''{0}'' not found' -f $Name)
 
     Assert-Equal $NotForReplication $constraint.is_not_for_replication
+
+    if( $IsDisabled )
+    {
+        Assert-True $constraint.is_disabled
+    }
+    else
+    {
+        Assert-False $constraint.is_disabled
+    }
 
     if( $PSBoundParameters.ContainsKey('Definition') )
     {

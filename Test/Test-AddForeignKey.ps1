@@ -238,7 +238,7 @@ function Push-Migration()
     Add-PrimaryKey -TableName 'Reference Table' -ColumnName 'Reference ID'
 
     # Will fail without NOCHECK constraint
-    Add-ForeignKey 'Source Table' 'Source ID' 'Reference Table' 'Reference ID' -WithNoCheck
+    Add-ForeignKey 'Source Table' 'Source ID' 'Reference Table' 'Reference ID' -NoCheck
 }
 
 function Pop-Migration()

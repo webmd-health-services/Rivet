@@ -39,7 +39,12 @@ function Assert-ForeignKey
         [Parameter()]
         [switch]
         # Test Not For Replication
-        $NotForReplication
+        $NotForReplication,
+
+        [Parameter()]
+        [switch]
+        # Test Disabled
+        $IsDisabled
     )
     
     Set-StrictMode -Version Latest
@@ -81,6 +86,14 @@ function Assert-ForeignKey
     else
     {
         Assert-Equal "False" $fk.is_not_for_replication
+    }
+
+    if ($IsDisabled) {
+        Assert-True $fk.is_disabled
+    }
+    else
+    {
+        Assert-False $fk.is_disabled
     }
     
 }

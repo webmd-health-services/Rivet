@@ -60,6 +60,10 @@
     <Compile Include="Operations\AddSynonymOperation.cs" />
     <Compile Include="Operations\AddDataTypeOperation.cs" />
     <Compile Include="Operations\AddCheckConstraintOperation.cs" />
+    <Compile Include="Operations\DisableCheckConstraintOperation.cs" />
+    <Compile Include="Operations\DisableForeignKeyOperation.cs" />
+    <Compile Include="Operations\EnableCheckConstraintOperation.cs" />
+    <Compile Include="Operations\EnableForeignKeyOperation.cs" />
     <Compile Include="Operations\ExtendedPropertyOperation.cs" />
     <Compile Include="Operations\ObjectOperation.cs" />
     <Compile Include="Operations\RemoveCheckConstraintOperation.cs" />

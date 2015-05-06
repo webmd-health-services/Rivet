@@ -63,7 +63,7 @@ function Push-Migration()
     Add-Row 'Migrations' @( @{ Example = -1 } )
 
     # Will fail without NOCHECK constraint
-    Add-CheckConstraint 'Migrations' 'CK_Migrations_Example' 'Example > 0' -WithNoCheck
+    Add-CheckConstraint 'Migrations' 'CK_Migrations_Example' 'Example > 0' -NoCheck
 }
 
 function Pop-Migration()
