@@ -12,8 +12,8 @@ namespace Rivet.Operations
 
         public override string ToIdempotentQuery()
         {
-            throw new NotImplementedException();
-            //check state of constraint
+            return String.Format("if objectproperty (object_id('{0}.{1}', 'C'), 'CnstIsDisabled') = 0{2}\t{3}",
+                SchemaName, Name, Environment.NewLine, ToQuery());
         }
 
         public override string ToQuery()
