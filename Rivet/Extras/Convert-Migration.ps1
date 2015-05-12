@@ -323,7 +323,7 @@ Get-Migration @getMigrationParams |
                 break
             }
 
-            '(Add|Remove|Update)(CheckConstraint|DefaultConstraint|ForeignKey|Index|PrimaryKey|UniqueKey)'
+            '(Add|Remove|Update|Disable|Enable)(CheckConstraint|DefaultConstraint|ForeignKey|Index|PrimaryKey|UniqueKey)'
             {
                 $tableName = '{0}.{1}' -f $op.SchemaName,$op.TableName
                 if( $newTables.Contains( $tableName ) )

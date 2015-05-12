@@ -15,12 +15,14 @@ namespace Rivet.Operations
 
         public override string ToIdempotentQuery()
         {
-            throw new NotImplementedException();
+            return String.Format("if objectproperty (object_id('{0}.{1}', 'F'), 'CnstIsDisabled') = 0{2}\t{3}",
+                SchemaName, Name, Environment.NewLine, ToQuery());
         }
 
         public override string ToQuery()
         {
-            return string.Format("alter table [{0}].[{1}] nocheck constraint [{2}]", SchemaName, TableName, Name);
+            return string.Format("alter table [{0}].[{1}] nocheck constraint [{2}]",
+                SchemaName, TableName, Name);
         }
     }
 }

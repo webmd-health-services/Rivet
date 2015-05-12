@@ -361,6 +361,144 @@ function Pop-Migration
     Assert-False (Test-View @schema -Name 'FarmerCrops')
 }
 
+function Test-ShouldCreateIdempotentQueriesForDisableOperations
+{
+    $migration = @'
+function Push-Migration
+{
+    $idempotent = @{ SchemaName = 'idempotent' }
+    $crops = @{ TableName = 'Crops' }
+    $farmers = @{ TableName = 'Farmers' }
+
+
+    Add-Schema $idempotent.SchemaName
+    
+    Add-Table @idempotent $farmers.TableName {
+        int 'ID' -NotNull
+        varchar 'Name' -NotNull -Size 500
+        varchar 'ZipCode' -Size 10
+    }
+    Add-PrimaryKey @idempotent @farmers -ColumnName 'ID'
+
+    Add-Table @idempotent $crops.TableName {
+        int 'ID' -Identity
+        varchar 'Name' -Size 50
+        int 'FarmerID' -NotNull
+    }
+    Add-CheckConstraint @idempotent @crops -Name 'CK_Crops_AllowedCrops' -Expression 'Name = ''Strawberries'' or Name = ''Rasberries'''
+
+    Add-ForeignKey @idempotent @crops -ColumnName 'FarmerID' `
+                   -ReferencesSchema $idempotent.SchemaName -References $farmers.TableName -ReferencedColumn 'ID'
+}
+
+function Pop-Migration
+{
+}
+'@ | New-Migration -Name 'AddOperations'
+
+    Invoke-Rivet -Push 'AddOperations'
+
+    $migration | Remove-Item
+
+    @'
+function Push-Migration
+{
+    $schema = @{ SchemaName = 'idempotent' }
+    $crops = @{ TableName = 'Crops' }
+    $farmers = @{ TableName = 'Farmers' }
+
+    #Remove-CheckConstraint @schema @crops -Name 'CK_Crops_AllowedCrops'
+    #Remove-ForeignKey @schema @crops -References $farmers.TableName -ReferencesSchema $schema.SchemaName
+
+    Disable-CheckConstraint @schema @crops -Name 'CK_Crops_AllowedCrops'
+    Disable-ForeignKey @schema @crops -References $farmers.TableName -ReferencesSchema $schema.SchemaName -ColumnName 'FarmerID'
+}
+
+function Pop-Migration
+{
+}
+'@ | New-Migration -Name 'DisableOperations'
+
+    Assert-ConvertMigration -DependentObject
+
+    $schema = @{ SchemaName = 'idempotent' }
+    $crops = @{ TableName = 'Crops' }
+    $farmers = @{ TableName = 'Farmers' }
+
+    Assert-CheckConstraint -Name 'CK_Crops_AllowedCrops' -Definition '([Name]=''Strawberries'' or [Name]=''Rasberries'')' -IsDisabled
+    Assert-ForeignKey @schema @crops -ReferencesSchema $schema.SchemaName -References $farmers.TableName -IsDisabled
+}
+
+function Test-ShouldCreateIdempotentQueriesForEnableOperations
+{
+    $migration = @'
+function Push-Migration
+{
+    $idempotent = @{ SchemaName = 'idempotent' }
+    $crops = @{ TableName = 'Crops' }
+    $farmers = @{ TableName = 'Farmers' }
+
+
+    Add-Schema $idempotent.SchemaName
+    
+    Add-Table @idempotent $farmers.TableName {
+        int 'ID' -NotNull
+        varchar 'Name' -NotNull -Size 500
+        varchar 'ZipCode' -Size 10
+    }
+    Add-PrimaryKey @idempotent @farmers -ColumnName 'ID'
+
+    Add-Table @idempotent $crops.TableName {
+        int 'ID' -Identity
+        varchar 'Name' -Size 50
+        int 'FarmerID' -NotNull
+    }
+    Add-CheckConstraint @idempotent @crops -Name 'CK_Crops_AllowedCrops' -Expression 'Name = ''Strawberries'' or Name = ''Rasberries'''
+    Add-ForeignKey @idempotent @crops -ColumnName 'FarmerID' `
+                   -ReferencesSchema $idempotent.SchemaName -References $farmers.TableName -ReferencedColumn 'ID'
+
+    $schema = @{ SchemaName = 'idempotent' }
+    $crops = @{ TableName = 'Crops' }
+    $farmers = @{ TableName = 'Farmers' }
+
+    Disable-CheckConstraint @schema @crops -Name 'CK_Crops_AllowedCrops'
+    Disable-ForeignKey @schema @crops -References $farmers.TableName -ReferencesSchema $schema.SchemaName -ColumnName 'FarmerID'
+}
+
+function Pop-Migration
+{
+}
+'@ | New-Migration -Name 'AddOperations'
+
+    Invoke-Rivet -Push 'AddOperations'
+
+    $migration | Remove-Item
+
+    @'
+function Push-Migration
+{
+    $schema = @{ SchemaName = 'idempotent' }
+    $crops = @{ TableName = 'Crops' }
+    $farmers = @{ TableName = 'Farmers' }
+
+    Enable-CheckConstraint @schema @crops -Name 'CK_Crops_AllowedCrops'
+    Enable-ForeignKey @schema @crops -References $farmers.TableName -ReferencesSchema $schema.SchemaName -ColumnName 'FarmerID'
+}
+
+function Pop-Migration
+{
+}
+'@ | New-Migration -Name 'DisableOperations'
+
+    Assert-ConvertMigration -DependentObject
+
+    $schema = @{ SchemaName = 'idempotent' }
+    $crops = @{ TableName = 'Crops' }
+    $farmers = @{ TableName = 'Farmers' }
+
+    Assert-CheckConstraint -Name 'CK_Crops_AllowedCrops' -Definition '([Name]=''Strawberries'' or [Name]=''Rasberries'')'
+    Assert-ForeignKey @schema @crops -ReferencesSchema $schema.SchemaName -References $farmers.TableName
+}
 
 function Test-ShouldMakeInsertUpdateQueriesIdempotent
 {
