@@ -8,10 +8,9 @@
     Enabling check constraints reapplies validation for data in columns.
     
     .EXAMPLE
+    Enable-CheckConstraint 'Migrations' 'CK_Migrations_MigrationID'
     
-    ...
-
-
+    Enables the disabled check constraint named 'CK_Migrations_MigrationID' on the 'Migrations' table.
     #>
 
     [CmdletBinding()]
