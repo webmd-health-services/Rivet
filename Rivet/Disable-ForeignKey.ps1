@@ -8,10 +8,9 @@
     Disabling foreign key constraints removes validation for data in columns.
     
     .EXAMPLE
+    Disable-ForeignKey 'SourceTable' 'SourceID' 'ReferenceTable'
     
-    ...
-
-
+    Disables the foreign key constraint on the 'SourceID' column of the 'SourceTable' referencing 'ReferenceTable'.
     #>
 
     [CmdletBinding()]

@@ -3,6 +3,8 @@
 ## Enhancements
 
  * NOCHECK parameter has been added to `Add-ForeignKey` and `Add-CheckConstraint` operations
+ * `Disable-CheckConstraint` and `Enable-CheckConstraint` functions have been added.
+ * `Disable-ForeignKey` and `Enable-ForeignKey` functions have been added.
 
 # 0.3.3
 

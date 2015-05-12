@@ -8,10 +8,9 @@
     Re-enabling foreign key constraints reapplies validation for data in columns.
     
     .EXAMPLE
+    Enable-ForeignKey 'SourceTable' 'SourceID' 'ReferenceTable'
     
-    ...
-
-
+    Enables the disabled foreign key constraint on the 'SourceID' column of the 'SourceTable' referencing 'ReferenceTable'.
     #>
 
     [CmdletBinding()]

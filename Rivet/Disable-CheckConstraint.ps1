@@ -8,10 +8,9 @@
     Disabling check constraints removes validation for data in columns.
     
     .EXAMPLE
+    Disable-CheckConstraint 'Migrations' 'CK_Migrations_MigrationID'
     
-    ...
-
-
+    Disables the check constraint named 'CK_Migrations_MigrationID' on the 'Migrations' table.
     #>
 
     [CmdletBinding()]
