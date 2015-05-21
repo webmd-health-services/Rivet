@@ -26,7 +26,7 @@
         
         [Parameter(Mandatory=$true,Position=1)]
         [string]
-        # The definition of the view.
+        # The definition of the view. Everything after the `create view [schema].[name]` clause.
         $Definition
     )
     

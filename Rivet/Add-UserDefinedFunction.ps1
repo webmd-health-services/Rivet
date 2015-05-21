@@ -25,7 +25,7 @@
         
         [Parameter(Mandatory=$true,Position=1)]
         [string]
-        # The store procedure's definition.
+        # The store procedure's definition. Everything after the `create function [schema].[name]` clause.
         $Definition
     )
     

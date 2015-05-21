@@ -7,6 +7,9 @@
     .DESCRIPTION
     Updates an existing view.
 
+    .LINK
+    https://msdn.microsoft.com/en-us/library/ms173846.aspx
+
     .EXAMPLE
     Update-View -SchemaName 'rivet' 'ReadMigrations' 'AS select * from rivet.Migrations'
 
@@ -26,7 +29,7 @@
         
         [Parameter(Mandatory=$true,Position=1)]
         [string]
-        # The definition of the view.
+        # The definition of the view. Everything after the `alter view [schema].[name]` clause.
         $Definition
     )
     

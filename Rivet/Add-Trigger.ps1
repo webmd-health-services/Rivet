@@ -28,7 +28,7 @@ function Add-Trigger
         
         [Parameter(Mandatory=$true,Position=1)]
         [string]
-        # The body of the trigger.  Everything after the `ON` clause.
+        # The body of the trigger.  Everything after and including the `ON` clause.
         $Definition
     )
 

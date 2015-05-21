@@ -7,6 +7,9 @@ function Update-StoredProcedure
     .DESCRIPTION
     Updates an existing stored procedure.
 
+    .LINK
+    https://msdn.microsoft.com/en-us/library/ms189762.aspx
+
     .EXAMPLE
     Update-StoredProcedure -SchemaName 'rivet' 'ReadMigrations' 'AS select * from rivet.Migrations'
 
@@ -26,7 +29,7 @@ function Update-StoredProcedure
             
         [Parameter(Mandatory=$true,Position=1)]
         [string]
-        # The store procedure's definition.
+        # The store procedure's definition, which is everything after the `alter procedure [schema].[name]` clause.
         $Definition
     )
         

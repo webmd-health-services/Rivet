@@ -6,6 +6,9 @@ function Update-Trigger
     
     .DESCRIPTION
     Updates an existing trigger.
+
+    .LINK
+    https://msdn.microsoft.com/en-us/library/ms176072.aspx
     
     .LINK
     Add-Trigger
@@ -29,7 +32,7 @@ function Update-Trigger
         
         [Parameter(Mandatory=$true,Position=1)]
         [string]
-        # The body of the trigger.  Everything after the `ON` clause.
+        # The body of the trigger.  Everything after and including the `ON` clause.
         $Definition
     )
 

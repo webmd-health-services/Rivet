@@ -7,6 +7,9 @@
     .DESCRIPTION
     Updates an existing user-defined function.
 
+    .LINK
+    https://msdn.microsoft.com/en-us/library/ms186967.aspx
+
     .EXAMPLE
     Update-UserDefinedFunction -SchemaName 'rivet' 'One' 'returns tinyint begin return 1 end'
 
@@ -27,7 +30,7 @@
         
         [Parameter(Mandatory=$true,Position=1)]
         [string]
-        # The store procedure's definition.
+        # The store procedure's definition. Everything after the `alter function [schema].[name]` clause.
         $Definition
     )
     
