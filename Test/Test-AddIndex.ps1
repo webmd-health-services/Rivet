@@ -343,3 +343,52 @@ function Pop-Migration()
     Invoke-Rivet -Push 'AddIndexWithOptionalName'
     Assert-Index -Name 'Example' -ColumnName 'IndexMe'
 }
+
+function Test-ShouldAddIndexWithIncludeColumn
+{
+    @'
+function Push-Migration()
+{
+    Add-Table -Name 'AddIndex' {
+        Int 'Index Me' -NotNull
+        Int 'Include Me' -NotNull
+    }
+
+    #Add an Index to 'Index Me' and include the column 'Include Me'
+    Add-Index -TableName 'AddIndex' -ColumnName 'Index Me' -Include 'Include Me'
+}
+
+function Pop-Migration()
+{
+}
+'@ | New-Migration -Name 'AddIndex'
+
+    Invoke-Rivet -Push 'AddIndex'
+
+    Assert-Index -TableName 'AddIndex' -ColumnName 'Index Me' -Include 'Include Me'
+}
+
+function Test-ShouldAddIndexWithMultipleIncludeColumns
+{
+    @'
+function Push-Migration()
+{
+    Add-Table -Name 'AddIndex' {
+        Int 'Index Me' -NotNull
+        Int 'Include Me' -NotNull
+        Int 'Include Me 2' -NotNull
+    }
+
+    #Add an Index to 'Index Me' and include the column 'Include Me'
+    Add-Index -TableName 'AddIndex' -ColumnName 'Index Me' -Include "Include Me","Include Me 2"
+}
+
+function Pop-Migration()
+{
+}
+'@ | New-Migration -Name 'AddIndex'
+
+    Invoke-Rivet -Push 'AddIndex'
+
+    Assert-Index -TableName 'AddIndex' -ColumnName 'Index Me' -Include "Include Me","Include Me 2"
+}

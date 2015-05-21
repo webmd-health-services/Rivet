@@ -53,7 +53,11 @@ function Assert-Index
         [Parameter()]
         [bool[]]
         # Test that the specified index is descending
-        $Descending
+        $Descending,
+
+        [string[]]
+        # Array of included column names
+        $Include
     )
 
     Set-StrictMode -Version 'Latest'
@@ -96,10 +100,13 @@ function Assert-Index
 
     $columns = $id.Columns
 
-    Assert-Equal $ColumnName.Count $columns.Count
-    for( $idx = 0; $idx -lt $ColumnName.Count; ++$idx )
+    if( -not $Include )
     {
-        Assert-Equal $ColumnName[$idx] $columns[$idx].column_name
+        Assert-Equal $ColumnName.Count $columns.Count
+        for( $idx = 0; $idx -lt $ColumnName.Count; ++$idx )
+        {
+            Assert-Equal $ColumnName[$idx] $columns[$idx].column_name
+        }
     }
 
     if( $PSBoundParameters.ContainsKey('Descending') )
@@ -116,5 +123,25 @@ function Assert-Index
             Assert-Equal $false $columns[$i].is_descending_key
         }
     }
-    
+
+    if( $Include )
+    {
+        foreach( $includeColumn in $Include )
+        {
+            foreach( $column in $columns ) 
+            {
+                if( $column.column_name -like $includeColumn )
+                {
+                    Assert-True $column.is_included_column
+                }
+            }
+        }
+    }
+    else
+    {
+        foreach( $column in $columns )
+        {
+            Assert-False $column.is_included_column
+        }
+    }
 }
