@@ -6,7 +6,7 @@ namespace Rivet.Operations
 	public sealed class AddIndexOperation : TableObjectOperation
 	{
 		// All Columns ASC
-		public AddIndexOperation(string schemaName, string tableName, string[] columnName, bool unique, bool clustered, string[] options, string where, string on, string fileStreamOn)
+		public AddIndexOperation(string schemaName, string tableName, string[] columnName, bool unique, bool clustered, string[] options, string where, string on, string fileStreamOn, string[] include)
 			: base(schemaName, tableName, new ConstraintName(schemaName, tableName, columnName, (unique) ? ConstraintType.UniqueIndex : ConstraintType.Index).ToString())
 		{
 			ColumnName = new List<string>(columnName ?? new string[0]);
@@ -17,25 +17,26 @@ namespace Rivet.Operations
 			On = on;
 			FileStreamOn = fileStreamOn;
 			Descending = new bool[0];
+            Include = new List<string>(include ?? new string[0]);
 		}
 
 		// All Columns ASC With Custom Constraint Name
-		public AddIndexOperation(string schemaName, string tableName, string[] columnName, string name, bool unique, bool clustered, string[] options, string where, string on, string fileStreamOn) 
-			: this(schemaName, tableName, columnName, unique, clustered, options, where, on, fileStreamOn)
+        public AddIndexOperation(string schemaName, string tableName, string[] columnName, string name, bool unique, bool clustered, string[] options, string where, string on, string fileStreamOn, string[] include) 
+			: this(schemaName, tableName, columnName, unique, clustered, options, where, on, fileStreamOn, include)
 		{
 			Name = name;
 		}
 		
 		// Some Columns DESC
-		public AddIndexOperation(string schemaName, string tableName, string [] columnName, bool [] descending, bool unique, bool clustered, string[] options, string where, string on, string fileStreamOn) 
-			: this(schemaName, tableName, columnName, unique, clustered, options, where, on, fileStreamOn)
+        public AddIndexOperation(string schemaName, string tableName, string[] columnName, bool[] descending, bool unique, bool clustered, string[] options, string where, string on, string fileStreamOn, string[] include)
+            : this(schemaName, tableName, columnName, unique, clustered, options, where, on, fileStreamOn, include)
 		{
 			Descending = descending ?? new bool[0];
 		}
 
 		// Some Columns DESC With Custom Constraint Name
-		public AddIndexOperation(string schemaName, string tableName, string[] columnName, string name, bool[] descending, bool unique, bool clustered, string[] options, string where, string on, string fileStreamOn)
-			: this(schemaName, tableName, columnName, name, unique, clustered, options, where, on, fileStreamOn)
+        public AddIndexOperation(string schemaName, string tableName, string[] columnName, string name, bool[] descending, bool unique, bool clustered, string[] options, string where, string on, string fileStreamOn, string[] include)
+            : this(schemaName, tableName, columnName, name, unique, clustered, options, where, on, fileStreamOn, include)
 		{
 			Descending = descending ?? new bool[0];
 		}
@@ -48,6 +49,7 @@ namespace Rivet.Operations
 		public string Where { get; set; }
 		public string On { get; set; }
 		public string FileStreamOn { get; set; }
+        public List<string> Include { get; set; }
 
 		public override string ToIdempotentQuery()
 		{
@@ -77,6 +79,17 @@ namespace Rivet.Operations
 				optionsClause = string.Join(", ", Options.ToArray());
 				optionsClause = string.Format(" with ( {0} )", optionsClause);
 			}
+
+            var includeClause = "";
+            if (Include.Count > 0)
+            {
+                for( var idx = 0; idx < Include.Count; idx++ )
+                {
+                    Include[idx] = string.Format("[{0}]", Include[idx]);
+                }
+                includeClause = string.Join(", ", Include.ToArray());
+                includeClause = string.Format(" include ( {0} )", includeClause);
+            }
 
 			var whereClause = "";
 			if (!string.IsNullOrEmpty(Where))
@@ -108,8 +121,8 @@ namespace Rivet.Operations
 
 			var columnClause = string.Join(", ", ColumnName.ToArray());
 
-			var query = string.Format("create{0}{1} index [{2}] on [{3}].[{4}] ({5}){6}{7}{8}{9}",
-				uniqueClause, clusteredClause, Name, SchemaName, TableName, columnClause, optionsClause, whereClause,
+			var query = string.Format("create{0}{1} index [{2}] on [{3}].[{4}] ({5}){6}{7}{8}{9}{10}",
+				uniqueClause, clusteredClause, Name, SchemaName, TableName, columnClause, includeClause, optionsClause, whereClause,
 				onClause, fileStreamClause);
 			return query;
 		}

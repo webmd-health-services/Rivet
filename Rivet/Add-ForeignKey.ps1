@@ -19,6 +19,11 @@ function Add-ForeignKey
     Add-ForeignKey -TableName 'Cars' -ColumnName 'DealerID' -References 'Dealer' -ReferencedColumn 'DealerID' -OnDelete 'CASCADE' -OnUpdate 'CASCADE' -NotForReplication
 
     Adds a foreign key to the 'Cars' table on the 'DealerID' column that references the 'DealerID' column on the 'Dealer' table with the options to cascade on delete and update, and also set notforreplication
+    
+    .EXAMPLE
+    Add-ForeignKey -TableName Cars -ColumnName DealerID -References Dealer -ReferencedColumn DealerID -NoCheck
+
+    Adds a foreign key to the 'Cars' table on the 'DealerID' column that references the 'DealerID' column on the 'Dealer' table without validating the current contents of the table against this key.
     #>
 
     [CmdletBinding()]
@@ -71,7 +76,11 @@ function Add-ForeignKey
         [Parameter()]
         [string]
         # The name for the <object type>. If not given, a sensible name will be created.
-        $Name
+        $Name,
+
+        [Switch]
+        # Specifies that the data in the table is not validated against a newly added FOREIGN KEY constraint. If not specified, WITH CHECK is assumed for new constraints.
+        $NoCheck
     )
 
     Set-StrictMode -Version Latest
@@ -81,12 +90,12 @@ function Add-ForeignKey
     
     if ($PSBoundParameters.containskey("Name"))
     {
-        $op = New-Object 'Rivet.Operations.AddForeignKeyOperation' $SchemaName, $TableName, $ColumnName, $ReferencesSchema, $references, $ReferencedColumn, $Name, $OnDelete, $OnUpdate, $NotForReplication, $false
+        $op = New-Object 'Rivet.Operations.AddForeignKeyOperation' $SchemaName, $TableName, $ColumnName, $ReferencesSchema, $references, $ReferencedColumn, $Name, $OnDelete, $OnUpdate, $NotForReplication, $NoCheck
         Write-Host (' {0}.{1} +{2} ({3}) => {4}.{5} ({6})' -f $SchemaName,$TableName,$Name,$source_columns,$ReferencesSchema,$References,$ref_columns)
     }
     else
     {
-        $op = New-Object 'Rivet.Operations.AddForeignKeyOperation' $SchemaName, $TableName, $ColumnName, $ReferencesSchema, $references, $ReferencedColumn, $OnDelete, $OnUpdate, $NotForReplication, $false
+        $op = New-Object 'Rivet.Operations.AddForeignKeyOperation' $SchemaName, $TableName, $ColumnName, $ReferencesSchema, $references, $ReferencedColumn, $OnDelete, $OnUpdate, $NotForReplication, $NoCheck
         Write-Host (' {0}.{1} +{2} ({3}) => {4}.{5} ({6})' -f $SchemaName,$TableName,$op.Name,$source_columns,$ReferencesSchema,$References,$ref_columns)
      
     }
