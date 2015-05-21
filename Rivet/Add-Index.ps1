@@ -44,6 +44,10 @@ function Add-Index
         # The name for the <object type>. If not given, a sensible name will be created.
         $Name,
 
+        [string[]]
+        # Column names to include in the index.
+        $Include,
+
         [Parameter(ParameterSetName='Descending')]
         [bool[]]
         # Optional array of booleans to specify descending switch per column.  Length must match $ColumnName
@@ -72,7 +76,6 @@ function Add-Index
         [string]
         # The value of the `FILESTREAM_ON` clause, which controls the placement of filestream data.
         $FileStreamOn
-        
     )
 
     Set-StrictMode -Version Latest

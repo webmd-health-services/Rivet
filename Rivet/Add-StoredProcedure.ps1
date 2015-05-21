@@ -26,7 +26,7 @@ function Add-StoredProcedure
             
         [Parameter(Mandatory=$true,Position=1)]
         [string]
-        # The store procedure's definition.
+        # The store procedure's definition, which is everything after the `create procedure [schema].[name]` clause.
         $Definition
     )
         

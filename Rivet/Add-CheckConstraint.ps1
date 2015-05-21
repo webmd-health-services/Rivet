@@ -39,6 +39,10 @@ function Add-CheckConstraint
         $NotForReplication,
 
         [Switch]
+        # Prevents the constraint f
+        $NoCheck,
+
+        [Switch]
         # Don't show any host output.
         $Quiet
     )
