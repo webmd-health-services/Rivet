@@ -8,21 +8,16 @@ function Add-UniqueKey
     Creates a UNIQUE constraint on the specified column and table.  
     You can use UNIQUE constraints to make sure that no duplicate values are entered in specific columns that do not participate in a primary key. Although both a UNIQUE constraint and a PRIMARY KEY constraint enforce uniqueness, use a UNIQUE constraint instead of a PRIMARY KEY constraint when you want to enforce the uniqueness of a column, or combination of columns, that is not the primary key.
 
-    .LINK
-    Add-Unique Constraint
-
     .EXAMPLE
-    Add-UniqueConstraint -TableName Cars -ColumnName Year
+    Add-UniqueKey -TableName Cars -ColumnName Year
 
     Adds an unique constraint on column 'Year' in the table 'Cars'
 
     .EXAMPLE 
-    Add-UniqueConstraint -TableName 'Cars' -ColumnName 'Year' -Option @('IGNORE_DUP_KEY = ON','ALLOW_ROW_LOCKS = OFF')
+    Add-UniqueKey -TableName 'Cars' -ColumnName 'Year' -Option @('IGNORE_DUP_KEY = ON','ALLOW_ROW_LOCKS = OFF')
 
     Adds an unique constraint on column 'Year' in the table 'Cars' with specified options
-
     #>
-
     [CmdletBinding()]
     param(
         [string]
