@@ -15,8 +15,7 @@ namespace Rivet.Operations
 
 		public override string ToIdempotentQuery()
 		{
-			return string.Format("if not exists (select * from sys.schemas where name = '{0}'){1}\t exec sp_executesql N'{2}'",
-				Name, Environment.NewLine, ToQuery());
+			return ToQuery();
 		}
 
 		public override string ToQuery()
@@ -28,7 +27,8 @@ namespace Rivet.Operations
 				query = string.Format("{0} authorization [{1}]", query, Owner);
 			}
 
-			return query;
+			return string.Format("if not exists (select * from sys.schemas where name = '{0}'){1}\t exec sp_executesql N'{2}'",
+				Name, Environment.NewLine, query);
 		}
 	}
 }
