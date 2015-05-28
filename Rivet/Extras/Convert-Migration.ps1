@@ -257,8 +257,30 @@ Get-Migration @getMigrationParams |
                         }
                         elseif( $existingOp -is [Rivet.Operations.UpdateTableOperation] )
                         {
-                            # Add new columns to the original operation
-                            $op.AddColumns | Add-Column -List $existingOp.AddColumns
+                            if( $op.AddColumns -and $op.AddColumns.Count -gt 0 )
+                            {
+                                # If adding a column that was previously removed, remove the removal
+                                $op.AddColumns | 
+                                    Select-Object -ExpandProperty 'Name' | 
+                                    ForEach-Object {
+                                        $columnName = $_
+                                        $columnIdx = -1
+                                        for( $idx = 0; $idx -lt $existingOp.RemoveColumns.Count; ++$idx )
+                                        {
+                                            if( $existingOp.RemoveColumns[$idx] -eq $columnName )
+                                            {
+                                                $columnIdx = $idx
+                                                break
+                                            }
+                                        }
+                                        if( $columnIdx -ge 0 )
+                                        {
+                                            $existingOp.RemoveColumns.RemoveAt( $columnIdx )
+                                        }
+                                    }
+                                # Add new columns to the original operation
+                                $op.AddColumns | Add-Column -List $existingOp.AddColumns
+                            }
 
                             # Replace existing column definitions
                             $op.UpdateColumns | 

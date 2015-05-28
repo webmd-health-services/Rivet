@@ -901,6 +901,33 @@ function Push-Migration
     Assert-Equal 0 (Get-ChildItem $outputDir | Measure-Object | Select-Object -ExpandProperty count)
 }
 
+function Test-ShouldHandleRemovingThenAddingColumn
+{
+    @'
+function Push-Migration
+{
+    Update-Table -Name EligibilityMaps -RemoveColumn 'UsePgpEncryption'
+    Update-Table -Name EligibilityMaps -RemoveColumn 'Delimiter'
+    Update-Table -Name EligibilityMaps -AddColumn { Bit 'UsePgpEncryption' -Description 'is the file expected to be encrypted?' }
+    Update-Table -Name EligibilityMaps -AddColumn { char 'Delimiter' -Size 1 -Description 'what is the delimiter to use when processing the file. valid values are: [,|\t]' }
+}
+
+function Pop-Migration
+{
+    Update-Table -Name EligibilityMaps -RemoveColumn 'UsePgpEncryption'
+    Update-Table -Name EligibilityMaps -RemoveColumn 'Delimiter'
+    Update-Table -Name EligibilityMaps -AddColumn { Bit 'UsePgpEncryption' -Description 'is the file expected to be encrypted?' }
+    Update-Table -Name EligibilityMaps -AddColumn { varchar 'Delimiter' -Size 5 -Description 'what is the delimiter to use when processing the file. valid values are: [,|\t]' }
+}
+'@ | New-Migration -Name 'RemoveThenReAdd'
+
+    & $convertRivetMigration -ConfigFilePath $RTConfigFilePath -OutputPath $outputDir
+    Assert-NoError
+    $sql = Get-Content -Path (Join-Path -Path $outputDir -ChildPath ('{0}.Schema.sql' -f $RTDatabaseName)) -Raw
+    Assert-True ($sql -notmatch 'drop column') 'SQL Contains drop column statements'
+}
+
+
 function Assert-ConvertMigration
 {
     param(

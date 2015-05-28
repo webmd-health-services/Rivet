@@ -5,6 +5,10 @@
  * NOCHECK parameter has been added to `Add-ForeignKey` and `Add-CheckConstraint` operations
  * `Disable-CheckConstraint` and `Enable-CheckConstraint` functions have been added.
  * `Disable-ForeignKey` and `Enable-ForeignKey` functions have been added.
+ 
+## Bug Fixes
+
+ * Convert-Migration.ps1 generates incorrect SQL if a migration removes then re-adds a column.
 
 # 0.3.3
 
