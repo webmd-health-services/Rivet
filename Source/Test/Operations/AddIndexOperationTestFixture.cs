@@ -152,7 +152,7 @@ namespace Rivet.Test.Operations
             var include = new[] { "include1", "include2" };
 
 			var op = new AddIndexOperation(schemaName, tableName, columnName, descending, unique, clustered, options, whereString, onString, filestreamonString, include);
-			const string expectedQuery = "create unique clustered index [UIX_schemaName_tableName_column1_column2] on [schemaName].[tableName] ([column1] desc, [column2]) with ( option1, option2 ) where ( whereString ) on onString filestream_on filestreamonString";
+			const string expectedQuery = "create unique clustered index [UIX_schemaName_tableName_column1_column2] on [schemaName].[tableName] ([column1] desc, [column2]) include ( [include1], [include2] ) with ( option1, option2 ) where ( whereString ) on onString filestream_on filestreamonString";
 
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}
@@ -174,7 +174,7 @@ namespace Rivet.Test.Operations
             var include = new[] { "include1", "include2" };
 
 			var op = new AddIndexOperation(schemaName, tableName, columnName, optionalConstraintName, descending, unique, clustered, options, whereString, onString, filestreamonString, include);
-			const string expectedQuery = "create unique clustered index [optionalConstraintName] on [schemaName].[tableName] ([column1] desc, [column2]) with ( option1, option2 ) where ( whereString ) on onString filestream_on filestreamonString";
+			const string expectedQuery = "create unique clustered index [optionalConstraintName] on [schemaName].[tableName] ([column1] desc, [column2]) include ( [include1], [include2] ) with ( option1, option2 ) where ( whereString ) on onString filestream_on filestreamonString";
 
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}
