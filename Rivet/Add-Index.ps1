@@ -81,12 +81,7 @@ function Add-Index
 
         [string]
         # The value of the `FILESTREAM_ON` clause, which controls the placement of filestream data.
-        $FileStreamOn,
-
-        [string[]]
-        #The value of the `INCLUDE` clause, which is a list of column names.
-        $Include
-        
+        $FileStreamOn        
     )
 
     Set-StrictMode -Version Latest
