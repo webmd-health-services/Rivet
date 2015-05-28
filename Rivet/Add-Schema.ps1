@@ -5,6 +5,9 @@ function Add-Schema
     .SYNOPSIS
     Creates a new schema.
 
+    .DESCRIPTION
+    The `Add-Schema` operation creates a new schema in a database. It does so in an idempotent way, i.e. it only creates the schema if it doesn't exist. 
+
     .EXAMPLE
     Add-Schema -Name 'rivetexample'
 
