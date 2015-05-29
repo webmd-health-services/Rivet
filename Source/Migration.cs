@@ -14,8 +14,10 @@ namespace Rivet
 			Database = database;
 			PushOperations = new List<Operation>();
 			PopOperations = new List<Operation>();
+			FullName = System.IO.Path.GetFileNameWithoutExtension(Path);
 		}
 
+		public string FullName { get; private set; }
 		public string Database { get; private set; }
 		public string ID { get; private set; }
 		public string Name { get; private set; }
