@@ -37,6 +37,11 @@ function Test-TypeDataMember
     return $typeData.Members.ContainsKey( $MemberName )
 }
 
+if( -not (Test-TypeDataMember -TypeName 'Rivet.Operations.Operation' -MemberName 'MigrationID') )
+{
+    Update-TypeData -TypeName 'Rivet.Operations.Operation' -MemberType ScriptProperty -MemberName 'MigrationID' -Value { $this.Migration.ID }
+}
+
 
 dir $PSScriptRoot *-*.ps1 |
     Where-Object { $_.BaseName -ne 'Import-Rivet' -and $_.BaseName -ne 'Export-Row' } |

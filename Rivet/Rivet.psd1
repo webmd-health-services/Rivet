@@ -60,7 +60,7 @@ ScriptsToProcess = @()
 #TypesToProcess = ''
 
 # Format files (.ps1xml) to be loaded when importing this module
-FormatsToProcess = @()
+FormatsToProcess = @( (Join-Path -Path $PSScriptRoot -ChildPath 'Rivet.format.ps1xml' -Resolve) )
 
 # Modules to import as nested modules of the module specified in ModuleToProcess
 NestedModules = @()

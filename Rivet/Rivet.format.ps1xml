@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Configuration>
+    <Controls>
+        <Control>
+            <Name>RivetOperation-GroupingFormat</Name>
+            <CustomControl>
+                <CustomEntries>
+                    <CustomEntry>
+                        <CustomItem>
+                            <Frame>
+                                <LeftIndent>4</LeftIndent>
+                                <CustomItem>
+                                    <ExpressionBinding>
+                                        <ScriptBlock>
+                                            $dataSource = $_.Migration.DataSource
+                                            if( $dataSource )
+                                            {
+                                                $dataSource = '{0}.' -f $dataSource
+                                            }
+                                            '{0}{1}: {2}' -f $dataSource,$_.Migration.Database,$_.Migration.FullName
+                                        </ScriptBlock>
+                                    </ExpressionBinding>
+                                    <NewLine/>
+                                </CustomItem>
+                            </Frame>
+                        </CustomItem>
+                    </CustomEntry>
+                </CustomEntries>
+            </CustomControl>
+        </Control>
+    </Controls>
+    <ViewDefinitions>
+        <View>
+            <Name>Rivet.Operations.Operation</Name>
+            <ViewSelectedBy>
+                <TypeName>Rivet.Operations.Operation</TypeName>
+            </ViewSelectedBy>
+            <GroupBy>
+                <PropertyName>MigrationID</PropertyName>
+                <CustomControlName>RivetOperation-GroupingFormat</CustomControlName>
+            </GroupBy>
+            <TableControl>
+                <TableHeaders>
+                    <TableColumnHeader>
+                        <Label>Operation</Label>
+                        <Width>24</Width>
+                    </TableColumnHeader>
+                    <TableColumnHeader>
+                        <Label>Schema</Label>
+                        <Width>10</Width>
+                    </TableColumnHeader>
+                    <TableColumnHeader>
+                        <Label>Object</Label>
+                    </TableColumnHeader>
+                    <TableColumnHeader>
+                        <Label>Details</Label>
+                    </TableColumnHeader>
+                </TableHeaders>
+                <TableRowEntries>
+                    <TableRowEntry>
+                        <TableColumnItems>
+                            <TableColumnItem>
+                                <ScriptBlock>
+                                    $_.GetType().Name -replace 'Operation$',''
+                                </ScriptBlock>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>SchemaName</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <ScriptBlock>
+                                    if( ($_ -is [Rivet.Operations.ExtendedPropertyOperation]) )
+                                    {
+                                        return $_.ObjectName
+                                    }
+
+                                    if( ($_ | Get-Member -Name 'Name') )
+                                    {
+                                        $_.Name
+                                    }
+                                    elseif( ($_ | Get-Member -Name 'TableName') )
+                                    {
+                                        $_.TableName
+                                    }
+                                    elseif( ($_ | Get-Member -Name 'Path') )
+                                    {
+                                        $migrationRoot = Split-Path -Parent -Path $_.Migration.Path
+                                        Push-Location -Path $migrationRoot -StackName 'RivetOperationView'
+                                        try
+                                        {
+                                            Resolve-Path -Path $_.Path -Relative
+                                        }
+                                        finally
+                                        {
+                                            Pop-Location -StackName 'RivetOperationView'
+                                        }
+                                    }
+                                </ScriptBlock>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <ScriptBlock>
+                                    if( $_.RowsAffected -ge 0 )
+                                    {
+                                        return $_.RowsAffected
+                                    }
+
+                                    if( $_ -is [Rivet.Operations.RawQueryOperation] )
+                                    {
+                                        return $_.Query
+                                    }
+
+                                    if( ($_ | Get-Member -Name 'NewName') )
+                                    {
+                                        return '=> {0}' -f $_.NewName
+                                    }
+
+                                    if( $_ -is [Rivet.Operations.AddTableOperation] )
+                                    {
+                                        return $_.Columns
+                                    }
+
+                                    if( $_ -is [Rivet.Operations.UpdateTableOperation] )
+                                    {
+                                        $_.AddColumns | ForEach-Object { '+{0}' -f $_ }
+                                        $_.UpdateColumns
+                                        $_.RemoveColumns | ForEach-Object { '-{0}' -f $_ }
+                                        return
+                                    }
+
+                                    if( ($_ | Get-Member -Name 'Value') )
+                                    {
+                                        return $_.Value
+                                    }
+                                </ScriptBlock>
+                            </TableColumnItem>
+                        </TableColumnItems>
+                    </TableRowEntry>
+                </TableRowEntries>
+            </TableControl>
+        </View>
+    </ViewDefinitions>
+</Configuration>
