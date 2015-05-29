@@ -67,14 +67,18 @@ function Add-DataType
         $TableConstraint
     )
 
+    Set-StrictMode -Version 'Latest'
+
     if ($PsCmdlet.ParameterSetName -eq 'From')
     {
         $op = New-Object 'Rivet.Operations.AddDataTypeOperation' $SchemaName, $Name, $From
     }
+
     if ($PsCmdlet.ParameterSetName -eq 'Assembly')
     {
         $op = New-Object 'Rivet.Operations.AddDataTypeOperation' $SchemaName, $Name, $AssemblyName, $ClassName
     }
+
     if ($PsCmdlet.ParameterSetName -eq 'AsTable')
     {
         # Process Column Scriptblock -> Rivet.Column[]
@@ -82,7 +86,7 @@ function Add-DataType
         $op = New-Object 'Rivet.Operations.AddDataTypeOperation' $SchemaName, $Name, $columns, ([string[]]$TableConstraint)
     }
 
-    Write-Host (' +{0}.{1}' -f $SchemaName,$Name)
-    Invoke-MigrationOperation -Operation $op
+    Write-Verbose (' +{0}.{1}' -f $SchemaName,$Name)
+    return $op
 
 }

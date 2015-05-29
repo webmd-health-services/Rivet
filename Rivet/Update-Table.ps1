@@ -76,28 +76,26 @@ function Update-Table
 
     foreach ($i in $newColumns)
     {
-        Write-Host (' {0}.{1} +{2}' -f $SchemaName,$Name,$i.GetColumnDefinition($Name,$SchemaName,$false))
+        Write-Verbose (' {0}.{1} +{2}' -f $SchemaName,$Name,$i.GetColumnDefinition($Name,$SchemaName,$false))
     }
 
     foreach ($i in $updatedColumns)
     {
-        Write-Host (' {0}.{1} ={2}' -f $SchemaName,$Name,$i.GetColumnDefinition($Name,$SchemaName,$false))
+        Write-Verbose (' {0}.{1} ={2}' -f $SchemaName,$Name,$i.GetColumnDefinition($Name,$SchemaName,$false))
     }
 
     foreach ($i in $RemoveColumn)
     {
-        Write-Host (' {0}.{1} -{2}' -f $SchemaName,$Name,$i)
+        Write-Verbose (' {0}.{1} -{2}' -f $SchemaName,$Name,$i)
     }
 
-    $op = New-Object 'Rivet.Operations.UpdateTableOperation' $SchemaName,$Name,$newColumns,$updatedColumns,$RemoveColumn
-
-    Invoke-MigrationOperation -Operation $op
+    New-Object 'Rivet.Operations.UpdateTableOperation' $SchemaName,$Name,$newColumns,$updatedColumns,$RemoveColumn
 
     foreach ($i in $newColumns)
     {
         if ($i.Description)
         {
-            Add-Description -Description $i.Description -SchemaName $SchemaName -TableName $Name -ColumnName $i.Name -Quiet
+            Add-Description -Description $i.Description -SchemaName $SchemaName -TableName $Name -ColumnName $i.Name
         }
     }
 
@@ -105,7 +103,7 @@ function Update-Table
     {
         if ($i.Description)
         {
-            Update-Description -Description $i.Description -SchemaName $SchemaName -TableName $Name -ColumnName $i.Name -Quiet
+            Update-Description -Description $i.Description -SchemaName $SchemaName -TableName $Name -ColumnName $i.Name
         }
     }
 }

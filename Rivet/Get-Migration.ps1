@@ -85,52 +85,53 @@ function Get-Migration
             $m = New-Object 'Rivet.Migration' $_.MigrationID,$_.MigrationName,$_.FullName,$dbName
             $currentOp = 'Push'
 
-            function Invoke-MigrationOperation
+            filter Add-Operation
             {
                 param(
-                    [Parameter(Mandatory=$true)]
-                    [Rivet.Operations.Operation]
+                    [Parameter(Mandatory=$true,ValueFromPipeline=$true)]
+                    [object]
                     # The migration object to invoke.
                     $Operation,
 
-                    [Parameter(ValueFromRemainingArguments=$true)]
-                    $Garbage
+                    [Parameter(ParameterSetName='Push',Mandatory=$true)]
+                    [Collections.Generic.IList[Rivet.Operations.Operation]]
+                    [AllowEmptyCollection()]
+                    $OperationsList,
+
+                    [Parameter(ParameterSetName='Pop',Mandatory=$true)]
+                    [Switch]
+                    $Pop
                 )
 
-                if( (Test-Path -Path 'function:Start-MigrationOperation') )
-                {
-                    # Protect ourself from poorly written plug-ins that return things.
-                    $null = Start-MigrationOperation -Operation $Operation
-                }
+                Set-StrictMode -Version 'Latest'
 
-                switch ($currentOp)
-                {
-                    'Push'
-                    {
-                        $m.PushOperations.Add( $Operation )
-                    }
-                    'Pop'
-                    {
-                        $m.PopOperations.Add( $Operation )
-                    }
-                }
+                $Operation |
+                    Where-Object { $_ -is [Rivet.Operations.Operation] } |
+                    ForEach-Object {
+                        if( (Test-Path -Path 'function:Start-MigrationOperation') )
+                        {
+                            Start-MigrationOperation -Operation $_
+                        }
 
-                if( (Test-Path -Path 'function:Complete-MigrationOperation') )
-                {
-                    # Protect ourself from poorly written plug-ins that return things.
-                    $null = Complete-MigrationOperation -Operation $Operation
-                }
+                        $_
 
+                        if( (Test-Path -Path 'function:Complete-MigrationOperation') )
+                        {
+                            Complete-MigrationOperation -Operation $_
+                        }
+                    } |
+                    Where-Object { $_ -is [Rivet.Operations.Operation] } |
+                    ForEach-Object { $OperationsList.Add( $_ ) } |
+                    Out-Null
             }
 
             . $_.FullName
 
             try
             {
-                $currentOp = 'Push'
                 if( (Test-Path -Path 'function:Push-Migration') )
                 {
-                    Push-Migration
+                    Push-Migration | Add-Operation -OperationsList $m.PushOperations
                 }
                 else
                 {
@@ -140,7 +141,7 @@ function Get-Migration
                 $currentOp = 'Pop'
                 if( (Test-Path -Path 'function:Pop-Migration') )
                 {
-                    Pop-Migration
+                    Pop-Migration | Add-Operation  -OperationsList $m.PopOperations
                 }
                 else
                 {

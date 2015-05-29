@@ -49,7 +49,7 @@ function Remove-PrimaryKey
     {
         $op = New-Object 'Rivet.Operations.RemovePrimaryKeyOperation' $SchemaName, $TableName
     }
-    Write-Host (' {0}.{1} -{2}' -f $SchemaName,$TableName,$op.Name)
+    Write-Verbose (' {0}.{1} -{2}' -f $SchemaName,$TableName,$op.Name)
 
-    Invoke-MigrationOperation -Operation $op
+    return $op
 }

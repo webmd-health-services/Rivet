@@ -37,7 +37,6 @@ function Remove-View
         
     )
     
-    $op = New-Object 'Rivet.Operations.RemoveViewOperation' $SchemaName, $Name
-    Write-Host (' -{0}.{1}' -f $SchemaName,$Name)
-    Invoke-MigrationOperation -Operation $op
+    Write-Verbose (' -{0}.{1}' -f $SchemaName,$Name)
+    New-Object 'Rivet.Operations.RemoveViewOperation' $SchemaName, $Name
 }

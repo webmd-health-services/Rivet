@@ -66,6 +66,6 @@ function Remove-Index
         $op = New-Object 'Rivet.Operations.RemoveIndexOperation' $SchemaName, $TableName, $ColumnName, $type
     }
 
-    Write-Host (' {0}.{1} -{2}' -f $SchemaName,$TableName,$op.Name) 
-    Invoke-MigrationOperation -Operation $op
+    Write-Verbose (' {0}.{1} -{2}' -f $SchemaName,$TableName,$op.Name) 
+    return $op
 }

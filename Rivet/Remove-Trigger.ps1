@@ -28,8 +28,8 @@ function Remove-Trigger
         $SchemaName = "dbo"
     )
 
-    $op = New-Object 'Rivet.Operations.RemoveTriggerOperation' $SchemaName, $Name
-    Write-Host (' -{0}.{1}' -f $SchemaName,$Name)
-    Invoke-MigrationOperation -Operation $op
-        
+    Set-StrictMode -Version 'Latest'
+
+    Write-Verbose (' -{0}.{1}' -f $SchemaName,$Name)
+    New-Object 'Rivet.Operations.RemoveTriggerOperation' $SchemaName, $Name
 }

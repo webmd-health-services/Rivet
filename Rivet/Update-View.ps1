@@ -33,7 +33,8 @@
         $Definition
     )
     
-    $op = New-Object Rivet.Operations.UpdateViewOperation $SchemaName,$Name,$Definition
-    Write-Host(' ={0}.{1}' -f $SchemaName,$Name)
-    Invoke-MigrationOperation -Operation $op
+    Set-StrictMode -Version 'Latest'
+
+    Write-Verbose (' ={0}.{1}' -f $SchemaName,$Name)
+    New-Object Rivet.Operations.UpdateViewOperation $SchemaName,$Name,$Definition
 }

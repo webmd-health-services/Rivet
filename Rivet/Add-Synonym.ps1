@@ -53,7 +53,6 @@
         $TargetObjectName
     )
 
-    $op = New-Object 'Rivet.Operations.AddSynonymOperation' $SchemaName, $Name, $TargetSchemaName, $TargetDatabaseName, $TargetObjectName
-    Write-Host(' +{0}.{1}' -f $SchemaName,$Name)
-    Invoke-MigrationOperation -operation $op
+    Write-Verbose (' +{0}.{1}' -f $SchemaName,$Name)
+    New-Object 'Rivet.Operations.AddSynonymOperation' $SchemaName, $Name, $TargetSchemaName, $TargetDatabaseName, $TargetObjectName
 }

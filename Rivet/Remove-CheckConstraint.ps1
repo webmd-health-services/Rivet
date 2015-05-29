@@ -32,7 +32,6 @@ function Remove-CheckConstraint
 
     Set-StrictMode -Version 'Latest'
 
-    $op = New-Object 'Rivet.Operations.RemoveCheckConstraintOperation' $SchemaName, $TableName, $Name
-    Write-Host (' {0}.{1} -{2}' -f $SchemaName,$TableName,$Name)
-    Invoke-MigrationOperation -Operation $op
+    Write-Verbose (' {0}.{1} -{2}' -f $SchemaName,$TableName,$Name)
+    New-Object 'Rivet.Operations.RemoveCheckConstraintOperation' $SchemaName, $TableName, $Name
 }

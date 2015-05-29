@@ -31,12 +31,9 @@ function Add-Schema
         $Quiet
     )
 
+    # TODO: Remove Quiet parameter
     Set-StrictMode -Version 'Latest'
 
-    if( -not $Quiet )
-    {
-        Write-Host (" +{0} {1}" -f $Name, $Owner)
-    }
-    $op = New-Object 'Rivet.Operations.AddSchemaOperation' $Name, $Owner
-    Invoke-MigrationOperation -Operation $op
+    Write-Verbose (" +{0} {1}" -f $Name, $Owner)
+    New-Object 'Rivet.Operations.AddSchemaOperation' $Name, $Owner
 }

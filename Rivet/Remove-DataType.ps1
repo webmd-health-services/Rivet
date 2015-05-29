@@ -36,7 +36,6 @@ function Remove-DataType
         $Name
     )
 
-    $op = New-Object 'Rivet.Operations.RemoveDataTypeOperation' $SchemaName, $Name
-    Write-Host (' -{0}.{1}' -f $SchemaName,$Name)
-    Invoke-MigrationOperation -Operation $op
+    Write-Verbose (' -{0}.{1}' -f $SchemaName,$Name)
+    New-Object 'Rivet.Operations.RemoveDataTypeOperation' $SchemaName, $Name
 }

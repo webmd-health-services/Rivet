@@ -59,6 +59,10 @@ function Update-Row
         $Quiet
     )
 
+    # TODO: remove Quiet switch
+
+    Set-StrictMode -Version 'Latest'
+
     if ($PSCmdlet.ParameterSetName -eq 'SpecificRows')
     {
         $op = New-Object 'Rivet.Operations.UpdateRowOperation' $SchemaName, $TableName, $Column, $Where, $RawColumnValue       
@@ -68,13 +72,5 @@ function Update-Row
         $op = New-Object 'Rivet.Operations.UpdateRowOperation' $SchemaName, $TableName, $Column, $RawColumnValue
     }
 
-    if( -not $Quiet )
-    {
-        Write-Host (" {0}.{1} =" -f $SchemaName,$TableName) -NoNewline
-    }
-    $rowsUpdated = Invoke-MigrationOperation -operation $op -NonQuery
-    if( -not $Quiet )
-    {
-        Write-Host ("{0} row(s)" -f $rowsUpdated)
-    }
+    return $op
 }

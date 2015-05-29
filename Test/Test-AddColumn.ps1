@@ -15,7 +15,7 @@ function Test-ShouldAddNullableColumnsNoDefaults
     @"
 function Push-Migration
 {
-    Invoke-Query -Query @'
+    Invoke-Ddl -Query @'
 create xml schema collection EmptyXsd as 
 N'
 <xsd:schema targetNamespace="http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelManuInstructions" 
@@ -120,7 +120,7 @@ function Test-ShouldAddNotNullableColumnsWithDefaults
     @"
 function Push-Migration()
 {
-    Invoke-Query -Query @'
+    Invoke-Ddl -Query @'
 create xml schema collection EmptyXsd as 
 N'
 <xsd:schema targetNamespace="http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelManuInstructions" 
@@ -308,7 +308,7 @@ function Test-ShouldSupportXmlDocument
     @"
 function Push-Migration()
 {
-    Invoke-Query -Query @'
+    Invoke-Ddl -Query @'
 create xml schema collection EmptyXsd as 
 N'
 <xsd:schema targetNamespace="http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelManuInstructions" 
@@ -410,7 +410,7 @@ function Test-ShouldAddSparseColumns
     @"
 function Push-Migration()
 {
-    Invoke-Query -Query @'
+    Invoke-Ddl -Query @'
 create xml schema collection EmptyXsd as 
 N'
 <xsd:schema targetNamespace="http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelManuInstructions" 

@@ -3,7 +3,8 @@ function Push-Migration()
     Add-Table -Name 'Ducati' {
         Int 'ID' -Identity 
     }
-    Invoke-Query 'create schema notDbo'
+    Add-Schema -Name 'notDbo'
+
     Add-Table -Name 'Ducati' {
         Int 'ID' -Identity 
     } -SchemaName 'notDbo'

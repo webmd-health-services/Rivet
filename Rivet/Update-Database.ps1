@@ -235,12 +235,7 @@ function Update-Database
                 $DBScriptRoot = $DBScriptsPath
                 $DBMigrationsRoot = Join-Path -Path $DBScriptsPath -ChildPath Migrations
 
-                $parameters = @{
-                                    ID = [int64]$migrationInfo.MigrationID; 
-                                    Name = $migrationInfo.MigrationName;
-                                    Who = $who;
-                                    ComputerName = $env:COMPUTERNAME;
-                                }
+                Write-Verbose $hostOutput
                 if( $Pop )
                 {
                     if( -not (Test-Path $popFuntionPath) )
@@ -249,12 +244,10 @@ function Update-Database
                         return
                     }
                 
-                    Write-Host $hostOutput
-                    Pop-Migration
+                    $operations = Pop-Migration
                     Remove-Item -Path $popFuntionPath -Confirm:$false -WhatIf:$false
 
-                    $query = 'exec [rivet].[RemoveMigration] @ID = @ID, @Name = @Name, @Who = @Who, @ComputerName = @ComputerName'
-                    Invoke-Query -Query $query -NonQuery -Parameter $parameters  | Out-Null
+                    $sprocName = 'RemoveMigration'
                 }
                 else
                 {
@@ -264,13 +257,37 @@ function Update-Database
                         return
                     }
                 
-                    Write-Host $hostOutput
-                    Push-Migration
+                    $operations = Push-Migration
                     Remove-Item -Path $pushFunctionPath -Confirm:$False -WhatIf:$false
-
-                    $query = 'exec [rivet].[InsertMigration] @ID = @ID, @Name = @Name, @Who = @Who, @ComputerName = @ComputerName'
-                    Invoke-Query -Query $query -NonQuery -Parameter $parameters | Out-Null
+                    $sprocName = 'InsertMigration'
                 }
+
+                $operations |
+                    Where-Object { $_ -is [Rivet.Operations.Operation] } |
+                    ForEach-Object {
+                        if( (Test-Path -Path 'function:Start-MigrationOperation') )
+                        {
+                            Start-MigrationOperation -Operation $_
+                        }
+
+                        $_
+
+                        if( (Test-Path -Path 'function:Complete-MigrationOperation') )
+                        {
+                            Complete-MigrationOperation -Operation $_
+                        }
+                    } |
+                    Where-Object { $_ -is [Rivet.Operations.Operation ] } |
+                    Invoke-MigrationOperation
+
+                $query = 'exec [rivet].[{0}] @ID = @ID, @Name = @Name, @Who = @Who, @ComputerName = @ComputerName' -f $sprocName
+                $parameters = @{
+                                    ID = [int64]$migrationInfo.MigrationID; 
+                                    Name = $migrationInfo.MigrationName;
+                                    Who = $who;
+                                    ComputerName = $env:COMPUTERNAME;
+                                }
+                Invoke-Query -Query $query -NonQuery -Parameter $parameters  | Out-Null
 
                 $target = '{0}.{1}' -f $Connection.DataSource,$Connection.Database
                 $operation = '{0} migration {1} {2}' -f $PSCmdlet.ParameterSetName,$migrationInfo.MigrationID,$migrationInfo.MigrationName

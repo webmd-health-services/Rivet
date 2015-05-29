@@ -153,7 +153,7 @@ Found no databases to migrate. This can be a few things:
                     $updateParams.Name = $Name    # Join-Path $dbMigrationsPath ("*_{0}.ps1" -f $Name)
                 }
 
-                Write-Host ('# {0}.{1}' -f $Connection.DataSource,$Connection.Database)
+                Write-Verbose ('# {0}.{1}' -f $Connection.DataSource,$Connection.Database)
             
                 if( $pscmdlet.ParameterSetName -eq 'Push' )
                 {

@@ -14,7 +14,7 @@ function Test-ShouldUpdateExtendedPropertyToSchema
     @'
 function Push-Migration
 {
-    Invoke-Query 'create schema fizz'
+    Add-Schema 'fizz'
     Add-ExtendedProperty -Name 'Deploy' -Value 'TRUE' -SchemaName 'fizz'
     Update-ExtendedProperty -Name 'Deploy' -Value 'FALSE' -SchemaName 'fizz'
 }

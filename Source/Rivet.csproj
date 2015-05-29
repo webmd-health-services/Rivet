@@ -66,6 +66,7 @@
     <Compile Include="Operations\EnableForeignKeyOperation.cs" />
     <Compile Include="Operations\ExtendedPropertyOperation.cs" />
     <Compile Include="Operations\ObjectOperation.cs" />
+    <Compile Include="Operations\OperationQueryType.cs" />
     <Compile Include="Operations\RemoveCheckConstraintOperation.cs" />
     <Compile Include="Operations\RenameColumnOperation.cs" />
     <Compile Include="Operations\RenameIndexOperation.cs" />

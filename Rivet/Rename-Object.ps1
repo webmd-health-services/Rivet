@@ -64,13 +64,8 @@ function Rename-Object
         $NewName
     )
 
-    $op = New-Object 'Rivet.Operations.RenameOperation' $SchemaName, $Name, $NewName, 'OBJECT'
-    Write-Host (' {0}.{1} -> {0}.{2}' -f $SchemaName,$Name,$NewName)
-    [int]$result = Invoke-MigrationOperation -Operation $op -AsScalar
-    
-    if ($result -ne 0)
-    {
-        throw ("Failed to rename object {0}.{1} to {0}.{2}: error code {3}" -f $SchemaName,$Name,$NewName,$result)
-    }
+    Set-StrictMode -Version 'Latest'
 
+    Write-Verbose (' {0}.{1} -> {0}.{2}' -f $SchemaName,$Name,$NewName)
+    New-Object 'Rivet.Operations.RenameOperation' $SchemaName, $Name, $NewName, 'OBJECT'
 }

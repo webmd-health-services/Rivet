@@ -6,9 +6,20 @@ filter Invoke-Query
     Executes a SQL query against the database.
     
     .DESCRIPTION
-    All migrations eventually come down to this method.  It takes raw SQL and executes it against the database.  Queries are split on `GO` statements, and each query is sent individually to the database.
+    The `Invoke-Query` function runs arbitrary queries aginst the database. Queries are split on `GO` statements, and each query is sent individually to the database. 
     
+    By default, rows are returned as anonymous PsObjects, with properties for each named column returned. Unnamed columns are given arbitrary `ColumnIdx` names, where `Idx` is a number the increments by one for each anonymous column, beginning with 0.
+
+    You can return the results as a scalar using the AsScalar parameter.
+
+    use the `NonQuery` switch to run non-queryies (e.g. `update`, `insert`, etc.). In this case, the number of rows affected by the query is returned.
+
+    Do not use this method to migrate/transform your database, or issue DDL queries! The queries issued by this function happen before the DDL applied by a migration's operations. Use the `Invoke-Ddl` function instead. If you need to dynamically migrate your database based on its state, use this function to query the state of the database, and the other Rivet operations to perform the migration.
+
     You can pipe queries to this method, too!
+
+    .LINK
+    Invoke-Ddl
     
     .EXAMPLE
     Invoke-Query -Query 'create table rivet.Migrations( )'
@@ -50,35 +61,78 @@ filter Invoke-Query
 
     Set-StrictMode -Version 'Latest'
 
-    $invokeMigrationParams = @{ }
-
-    if( $PSBoundParameters.ContainsKey( 'Parameter' ) )
-    {
-        $invokeMigrationParams.Parameter = $Parameter
-    }
-    
-    if( $PSBoundParameters.ContainsKey( 'AsScalar' ) )
-    {
-        $invokeMigrationParams.AsScalar = $true
-    }
-    
-    if( $PSBoundParameters.ContainsKey( 'NonQuery' ) )
-    {
-        $invokeMigrationParams.NonQuery = $true
-    }
-    
-    if( $PSBoundParameters.ContainsKey( 'CommandTimeout' ) )
-    {
-        $invokeMigrationParams.CommandTimeout = $CommandTimeout
-    }
-
     $Query |
-        Split-SqlBatchQuery |
+        Split-SqlBatchQuery -Verbose:$false |
         Where-Object { $_ } |
         ForEach-Object {
-            Write-Verbose $_
-            $operation = New-Object 'Rivet.Operations.RawQueryOperation' $_
-            Invoke-MigrationOperation -Operation $operation @invokeMigrationParams
+                
+                $queryBatch = $_
+                Write-Verbose $queryBatch
+                $cmd = New-Object 'Data.SqlClient.SqlCommand' ($queryBatch,$Connection,$Connection.Transaction)
+
+                try
+                {
+                    $cmd.CommandTimeout = $CommandTimeout
+
+                    if( $Parameter )
+                    {
+                        $Parameter.Keys | ForEach-Object { 
+                            $name = $_
+                            $value = $Parameter[$name]
+                            if( -not $name.StartsWith( '@' ) )
+                            {
+                                $name = '@{0}' -f $name
+                            }
+                            [void] $cmd.Parameters.AddWithValue( $name, $value )
+                       }
+                    }
+
+                    if( $PSCmdlet.ParameterSetName -eq 'ExecuteNonQuery' )
+                    {
+                        $cmd.ExecuteNonQuery()
+                    }
+                    elseif( $PSCmdlet.ParameterSetName -eq 'ExecuteScalar' )
+                    {
+                        $cmd.ExecuteScalar()
+                    }
+                    else
+                    {
+                        $cmdReader = $cmd.ExecuteReader()
+                        try
+                        {
+                            if( $cmdReader.HasRows )
+                            {                
+                                while( $cmdReader.Read() )
+                                {
+                                    $row = @{ }
+                                    for ($i= 0; $i -lt $cmdReader.FieldCount; $i++) 
+                                    { 
+                                        $name = $cmdReader.GetName( $i )
+                                        if( -not $name )
+                                        {
+                                            $name = 'Column{0}' -f $i
+                                        }
+                                        $value = $cmdReader.GetValue($i)
+                                        if( $cmdReader.IsDBNull($i) )
+                                        {
+                                            $value = $null
+                                        }
+                                        $row[$name] = $value
+                                    }
+                                    New-Object PsObject -Property $row
+                                }
+                            }
+                        }
+                        finally
+                        {
+                            $cmdReader.Close()
+                        }
+                    }
+                }
+                finally
+                {
+                    $cmd.Dispose()
+                }
         }
 
 }

@@ -1,3 +1,4 @@
+
 function Update-Trigger
 {
     <#
@@ -36,8 +37,8 @@ function Update-Trigger
         $Definition
     )
 
-    $op = New-Object 'Rivet.Operations.UpdateTriggerOperation' $SchemaName, $Name, $Definition
-    Write-Host(' ={0}.{1}' -f $SchemaName,$Name)
-    Invoke-MigrationOperation -operation $op
-        
+    Set-StrictMode -Version 'Latest'
+
+    Write-Verbose (' ={0}.{1}' -f $SchemaName,$Name)
+    New-Object 'Rivet.Operations.UpdateTriggerOperation' $SchemaName, $Name, $Definition
 }

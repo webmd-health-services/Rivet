@@ -42,6 +42,10 @@ function Remove-Description
         $Quiet
     )
 
+    Set-StrictMode -Version 'Latest'
+
+    # TODO: Remove Quiet switch
+
     $optionalArgs = @{ }
     if( $ColumnName )
     {
@@ -51,6 +55,5 @@ function Remove-Description
     Remove-ExtendedProperty -Name 'MS_Description' `
                             -SchemaName $SchemaName `
                             -TableName $TableName `
-                            -Quiet:$Quiet `
                             @optionalArgs
 }

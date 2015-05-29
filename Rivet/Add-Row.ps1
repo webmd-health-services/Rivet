@@ -49,16 +49,9 @@ function Add-Row
 
     process
     {
-        $op = New-Object 'Rivet.Operations.AddRowOperation' $SchemaName, $TableName, $Column, $IdentityInsert
+        # TODO: Remove Quiet switch
 
-        if( -not $Quiet )
-        {
-            Write-Host (" {0}.{1} +" -f $SchemaName,$TableName) -NoNewline
-        }
-        $rowsAdded = Invoke-MigrationOperation -operation $op -NonQuery
-        if( -not $Quiet )
-        {
-            Write-Host ("{0} row(s)" -f $rowsAdded)
-        }
+        Write-Verbose (" {0}.{1} +" -f $SchemaName,$TableName)
+        New-Object 'Rivet.Operations.AddRowOperation' $SchemaName, $TableName, $Column, $IdentityInsert
     }
 }

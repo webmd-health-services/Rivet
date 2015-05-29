@@ -30,7 +30,6 @@ function Add-StoredProcedure
         $Definition
     )
         
-    $op = New-Object 'Rivet.Operations.AddStoredProcedureOperation' $SchemaName, $Name, $Definition
-    Write-Host(' +{0}.{1}' -f $SchemaName,$Name)
-    Invoke-MigrationOperation -operation $op
+    Write-Verbose (' +{0}.{1}' -f $SchemaName,$Name)
+    New-Object 'Rivet.Operations.AddStoredProcedureOperation' $SchemaName, $Name, $Definition
 }

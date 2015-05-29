@@ -47,6 +47,9 @@ function Update-Description
         $Quiet
     )
 
+    # TODO: Remove Quiet switch
+    Set-StrictMode -Version 'Latest'
+
     $optionalArgs = @{ }
     if( $ColumnName )
     {
@@ -57,7 +60,6 @@ function Update-Description
                             -Value $Description `
                             -SchemaName $SchemaName `
                             -TableName $TableName `
-                            -Quiet:$Quiet `
                             @optionalArgs
 
 }

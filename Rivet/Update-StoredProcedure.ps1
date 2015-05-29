@@ -32,8 +32,9 @@ function Update-StoredProcedure
         # The store procedure's definition, which is everything after the `alter procedure [schema].[name]` clause.
         $Definition
     )
+    
+    Set-StrictMode -Version 'Latest'
         
-    $op = New-Object 'Rivet.Operations.UpdateStoredProcedureOperation' $SchemaName, $Name, $Definition
-    Write-Host(' ={0}.{1}' -f $SchemaName,$Name)
-    Invoke-MigrationOperation -operation $op
+    Write-Verbose (' ={0}.{1}' -f $SchemaName,$Name)
+    New-Object 'Rivet.Operations.UpdateStoredProcedureOperation' $SchemaName, $Name, $Definition
 }

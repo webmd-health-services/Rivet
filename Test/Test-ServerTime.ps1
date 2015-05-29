@@ -33,8 +33,8 @@ function Pop-Migration
 
     $migrationRow = Get-MigrationInfo -Name 'CreateDateTime2Column'
 
-    Write-Host ("Time Variance: {0}" -f ($migrationRow.AtUTC - $createdAt))
-    Write-Host "300 ms variance is allowed"
+    Write-Verbose ("Time Variance: {0}" -f ($migrationRow.AtUTC - $createdAt))
+    Write-Verbose "300 ms variance is allowed"
     Assert-True ($migrationRow.AtUTC.AddMilliseconds(300) -gt $createdAt) ($migrationRow.AtUTC - $createdAt)
 
 

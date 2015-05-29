@@ -59,7 +59,6 @@ function Remove-ForeignKey
         $op = New-Object 'Rivet.Operations.RemoveForeignKeyOperation' $SchemaName, $TableName, $ReferencesSchema, $References
     }
 
-    Write-Host (' {0}.{1} -{2}' -f $SchemaName,$TableName,$op.Name)
-    Invoke-MigrationOperation -Operation $op
-    
+    Write-Verbose (' {0}.{1} -{2}' -f $SchemaName,$TableName,$op.Name)
+    return $op
 }

@@ -24,7 +24,6 @@ function Remove-Table
         $SchemaName = 'dbo'
     )
 
-    Write-Host (' -{0}.{1}' -f $SchemaName,$Name)
-    $op = New-Object 'Rivet.Operations.RemoveTableOperation' $SchemaName, $Name
-    Invoke-MigrationOperation -Operation $op
+    Write-Verbose (' -{0}.{1}' -f $SchemaName,$Name)
+    New-Object 'Rivet.Operations.RemoveTableOperation' $SchemaName, $Name
 }

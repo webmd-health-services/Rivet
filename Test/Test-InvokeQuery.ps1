@@ -9,13 +9,13 @@ function Stop-Test
     Stop-RivetTest
 }
 
-function Test-ShouldInvokeQuery
+function Test-ShouldInvokeDdl
 {
     @"
 function Push-Migration
 {
-    Invoke-Query @'
-create function [InvokeQuery] ()
+    Invoke-Ddl @'
+create function [InvokeDdl] ()
 returns int 
 begin
  return 1 
@@ -23,32 +23,32 @@ end
 
 GO
 
-drop function [InvokeQuery]
+drop function [InvokeDdl]
 
 '@
 
-    Add-Schema 'Invoke-Query'
+    Add-Schema 'Invoke-Ddl'
 }
 
 function Pop-Migration
 {
-    Remove-Schema 'Invoke-Query'
+    Remove-Schema 'Invoke-Ddl'
 }
 
-"@ | New-Migration -Name 'CreateInvokeQueryFunction'
+"@ | New-Migration -Name 'CreateInvokeDdlFunction'
 
-    Invoke-Rivet -Push 'CreateInvokeQueryFunction'
+    Invoke-Rivet -Push 'CreateInvokeDdlFunction'
 
-    Assert-True (Test-Schema 'Invoke-Query')
+    Assert-True (Test-Schema 'Invoke-Ddl')
 }
 
-function Test-ShouldInvokeQueryWithCommentedOutGO
+function Test-ShouldInvokeDdlWithCommentedOutGO
 {
     @"
 function Push-Migration
 {
-    Invoke-Query @'
-create function [InvokeQuery] ()
+    Invoke-Ddl @'
+create function [InvokeDdl] ()
 returns int 
 begin
  return 1 
@@ -58,26 +58,26 @@ end
 GO
 */
 
-drop function [InvokeQuery]
+drop function [InvokeDdl]
 
 '@
 
-    Add-Schema 'Invoke-Query'
+    Add-Schema 'Invoke-Ddl'
 }
 
 function Pop-Migration
 {
-    Remove-Function 'InvokeQuery'
-    Remove-Schema 'Invoke-Query'
+    Remove-Function 'InvokeDdl'
+    Remove-Schema 'Invoke-Ddl'
 }
 
-"@ | New-Migration -Name 'CreateInvokeQueryFunction'
+"@ | New-Migration -Name 'CreateInvokeDdlFunction'
 
-    Invoke-Rivet -Push 'CreateInvokeQueryFunction' -ErrorAction SilentlyContinue
+    Invoke-Rivet -Push 'CreateInvokeDdlFunction' -ErrorAction SilentlyContinue
     Assert-Error
 
-    Assert-False (Test-DatabaseObject -ScalarFunction -Name 'InvokeQuery')
-    Assert-False (Test-Schema 'Invoke-Query')
+    Assert-False (Test-DatabaseObject -ScalarFunction -Name 'InvokeDdl')
+    Assert-False (Test-Schema 'Invoke-Ddl')
 }
 
 function Test-ShouldInvokeCrazyQueries
@@ -85,7 +85,7 @@ function Test-ShouldInvokeCrazyQueries
     @"
 function Push-Migration
 {
-    Invoke-Query @'
+    Invoke-Ddl @'
 IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[RivetTestSproc]') AND type in (N'P', N'PC'))
 	drop procedure [dbo].[RivetTestSproc]
 go
@@ -120,9 +120,9 @@ function Pop-Migration
 {
 }
 
-"@ | New-Migration -Name 'CreateInvokeQueryFunction'
+"@ | New-Migration -Name 'CreateInvokeDdlFunction'
 
-    Invoke-Rivet -Push 'CreateInvokeQueryFunction' #-ErrorAction SilentlyContinue
+    Invoke-Rivet -Push 'CreateInvokeDdlFunction' #-ErrorAction SilentlyContinue
 
     Assert-True (Test-DatabaseObject -StoredProcedure -Name 'RivetTestSproc')
 }

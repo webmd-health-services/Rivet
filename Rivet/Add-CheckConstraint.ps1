@@ -52,12 +52,10 @@ function Add-CheckConstraint
         $NoCheck
     )
 
+    # TODO: Remove Quiet switch
+
     Set-StrictMode -Version 'Latest'
 
-    $op = New-Object 'Rivet.Operations.AddCheckConstraintOperation' $SchemaName, $TableName, $Name, $Expression, $NotForReplication, $NoCheck
-    if( -not $Quiet )
-    {
-        Write-Host (' {0}.{1} +{2} {3}' -f $SchemaName, $TableName, $Name, $Expression)
-    }
-    Invoke-MigrationOperation -Operation $op
+    Write-Verbose (' {0}.{1} +{2} {3}' -f $SchemaName, $TableName, $Name, $Expression)
+    New-Object 'Rivet.Operations.AddCheckConstraintOperation' $SchemaName, $TableName, $Name, $Expression, $NotForReplication, $NoCheck
 }

@@ -66,7 +66,7 @@ $publicFunctions = @(
                         'Enable-ForeignKey',
                         'Get-Migration',
                         'Get-RivetConfig',
-                        'Invoke-Query',
+                        'Invoke-Ddl',
                         'Invoke-Rivet',
                         'Invoke-SqlScript',
                         'New-BigIntColumn',

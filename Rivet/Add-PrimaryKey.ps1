@@ -69,9 +69,7 @@ function Add-PrimaryKey
         $op = New-Object 'Rivet.Operations.AddPrimaryKeyOperation' $SchemaName, $TableName, $ColumnName, $NonClustered, $Option
     }
 
-    if( -not $Quiet )
-    {
-        Write-Host (' {0}.{1} +{2} ({3})' -f $SchemaName,$TableName,$op.Name,$columns)
-    }
-    Invoke-MigrationOperation -Operation $op
+    # TODO: Remove Quiet switch
+    Write-Verbose (' {0}.{1} +{2} ({3})' -f $SchemaName,$TableName,$op.Name,$columns)
+    return $op
 }

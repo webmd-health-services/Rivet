@@ -67,7 +67,6 @@ function Invoke-SqlScript
         Split-SqlBatchQuery |
         Where-Object { $_ } |
         ForEach-Object {
-            $operation = New-Object 'Rivet.Operations.ScriptFileOperation' $Path,$_
-            Invoke-MigrationOperation -Operation $operation @invokeMigrationParams
+            New-Object 'Rivet.Operations.ScriptFileOperation' $Path,$_
         }
 }
