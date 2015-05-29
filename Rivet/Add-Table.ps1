@@ -58,14 +58,8 @@ function Add-Table
 
         [string]
         # A description of the table.
-        $Description,
-
-        [Switch]
-        # Don't show any host output.
-        $Quiet
+        $Description
     )
-
-    # TODO: Remove Quiet switch
 
     Set-StrictMode -Version 'Latest'
 

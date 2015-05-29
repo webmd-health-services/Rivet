@@ -45,11 +45,7 @@ function Add-Description
         [Alias('Column')]
         [string]
         # The name of the column where the extended property is getting set.
-        $ColumnName,
-
-        [Switch]
-        # Don't output any messages.
-        $Quiet
+        $ColumnName
     )
 
     $optionalArgs = @{ }
@@ -58,7 +54,6 @@ function Add-Description
         $optionalArgs.ColumnName = $ColumnName
     }
 
-    # TODO: Remove Quiet switch
     Add-ExtendedProperty -Name 'MS_Description' `
                          -Value $Description `
                          -SchemaName $SchemaName `

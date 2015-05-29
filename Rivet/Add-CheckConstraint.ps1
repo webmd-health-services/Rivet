@@ -44,15 +44,9 @@ function Add-CheckConstraint
         $NotForReplication,
 
         [Switch]
-        # Don't show any host output.
-        $Quiet,
-
-        [Switch]
         # Specifies that the data in the table is not validated against a newly added CHECK constraint. If not specified, WITH CHECK is assumed for new constraints.
         $NoCheck
     )
-
-    # TODO: Remove Quiet switch
 
     Set-StrictMode -Version 'Latest'
 

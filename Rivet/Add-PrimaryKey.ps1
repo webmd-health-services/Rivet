@@ -49,11 +49,7 @@ function Add-PrimaryKey
         [Parameter()]
         [string]
         # The name for the <object type>. If not given, a sensible name will be created.
-        $Name,
-
-        [Switch]
-        # Don't show any host output.
-        $Quiet
+        $Name
     )
 
     Set-StrictMode -Version 'Latest'
@@ -69,7 +65,6 @@ function Add-PrimaryKey
         $op = New-Object 'Rivet.Operations.AddPrimaryKeyOperation' $SchemaName, $TableName, $ColumnName, $NonClustered, $Option
     }
 
-    # TODO: Remove Quiet switch
     Write-Verbose (' {0}.{1} +{2} ({3})' -f $SchemaName,$TableName,$op.Name,$columns)
     return $op
 }

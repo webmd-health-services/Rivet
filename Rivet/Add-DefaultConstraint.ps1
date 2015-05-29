@@ -51,11 +51,7 @@ function Add-DefaultConstraint
 
         [Switch]
         # WithValues
-        $WithValues,
-
-        [Switch]
-        # Don't show any host output.
-        $Quiet
+        $WithValues
     )
 
     Set-StrictMode -Version 'Latest'
@@ -70,7 +66,6 @@ function Add-DefaultConstraint
         $Name = $op.Name
     }
 
-    # TODO: Remove Quiet switch
     Write-Verbose (' {0}.{1} +{2} {3} {4}' -f $SchemaName, $TableName, $op.Name, $ColumnName, $Expression)
     return $op
 }

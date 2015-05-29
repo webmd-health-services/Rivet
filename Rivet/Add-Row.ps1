@@ -40,16 +40,12 @@ function Add-Row
 
         [Switch]
         # Allow inserting identies.
-        $IdentityInsert,
-
-        [Switch]
-        # Does not write messages.
-        $Quiet
+        $IdentityInsert
     )
 
     process
     {
-        # TODO: Remove Quiet switch
+        Set-StrictMode -Version 'Latest'
 
         Write-Verbose (" {0}.{1} +" -f $SchemaName,$TableName)
         New-Object 'Rivet.Operations.AddRowOperation' $SchemaName, $TableName, $Column, $IdentityInsert

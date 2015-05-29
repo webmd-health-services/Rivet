@@ -89,12 +89,10 @@ function Add-ExtendedProperty
         [Alias('Column')]
         [string]
         # The column name.
-        $ColumnName,
-
-        [Switch]
-        # Don't output any host message.
-        $Quiet
+        $ColumnName
     )
+
+    Set-StrictMode -Version 'Latest'
     
     $objectName = ''
     if ($PsCmdlet.ParameterSetName -eq "SCHEMA")
@@ -127,7 +125,6 @@ function Add-ExtendedProperty
         $objectName = '{0}.{1}.{2}' -f $SchemaName,$ViewName,$ColumnName
     }
 
-    #TODO: Remove Quiet switch
     Write-Verbose (' {0} +{1}' -f $objectName,$Name)
     return $op
 }

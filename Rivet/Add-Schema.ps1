@@ -24,14 +24,9 @@ function Add-Schema
         [Alias('Authorization')]
         [string]
         # The owner of the schema.
-        $Owner,
-
-        [Switch]
-        # Don't show any host output.
-        $Quiet
+        $Owner
     )
 
-    # TODO: Remove Quiet parameter
     Set-StrictMode -Version 'Latest'
 
     Write-Verbose (" +{0} {1}" -f $Name, $Owner)

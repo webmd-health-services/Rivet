@@ -41,11 +41,7 @@
         [Parameter(ParameterSetName='AllRows')]
         [Switch]
         # Truncate the table instead to delete all the rows.  This is faster than using a `delete` statement.
-        $Truncate,
-
-        [Switch]
-        # Does not write messages.
-        $Quiet
+        $Truncate
     )
 
     Set-StrictMode -Version 'Latest'

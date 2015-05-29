@@ -94,14 +94,9 @@ function Update-ExtendedProperty
         [Alias('Column')]
         [string]
         # The column name.
-        $ColumnName,
-
-        [Switch]
-        # Don't output any host message.
-        $Quiet
+        $ColumnName
     )
 
-    # TODO: Remove Quiet switch
     Set-StrictMode -Version 'Latest'
 
     $objectName = ''
