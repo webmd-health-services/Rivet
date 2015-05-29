@@ -23,16 +23,24 @@ function Get-Migration
 
     Returns `Rivet.Migration` objects for each migration in the `StarWars` database.
     #>
-    [CmdletBinding()]
+    [CmdletBinding(DefaultParameterSetName='Internal')]
     param(
+        [Parameter(ParameterSetName='External')]
         [string[]]
         $Database,
 
+        [Parameter(ParameterSetName='External')]
         [string]
         $Environment,
 
+        [Parameter(ParameterSetName='External')]
         [string]
         $ConfigFilePath,
+
+        [Parameter(ParameterSetName='Internal')]
+        [string[]]
+        # The path to a specific migration or directory of migrations.
+        $Path,
 
         [string[]]
         # A list of migrations to include. Only migrations that match are returned.  Wildcards permitted.
@@ -60,28 +68,128 @@ function Get-Migration
             Remove-Item
     }
 
-    Clear-Migration
-
-    $getMigrationScriptParams = @{ }
-    @( 'Exclude', 'Include', 'Before', 'After' ) |
-        Where-Object { $PSBoundParameters.ContainsKey( $_ ) } |
-        ForEach-Object { $getMigrationScriptParams.$_ = Get-Variable -Name $_ -ValueOnly }
-
-    $settings = Get-RivetConfig -Database $Database -Path $ConfigFilePath -Environment $Environment
-
-    if( $settings.PluginsRoot )
+    filter ConvertTo-Migration
     {
-        Import-Plugin -Path $settings.PluginsRoot
+        [CmdletBinding()]
+        param(
+            [Parameter(Mandatory=$true,ValueFromPipeline=$true)]
+            [string]
+            # The path to a migration.
+            $Path
+        )
+
+        Set-StrictMode -Version 'Latest'
+
     }
 
-    $settings.Databases | ForEach-Object {
-        $dbName = $_.Name
-        $DBScriptRoot = $_.Root
-        $DBMigrationsRoot = $_.MigrationsRoot
+    Clear-Migration
 
-        Get-MigrationScript -Path $_.MigrationsRoot @getMigrationScriptParams | ForEach-Object {
+    Invoke-Command -ScriptBlock {
+            if( $PSCmdlet.ParameterSetName -eq 'External' )
+            {
+                $getRivetConfigParams = @{ }
+                if( $Database )
+                {
+                    $getRivetConfigParams['Database'] = $Database
+                }
 
-            
+                if( $ConfigFilePath )
+                {
+                    $getRivetConfigParams['ConfigFilePath'] = $ConfigFilePath
+                }
+
+                if( $Environment )
+                {
+                    $getRivetConfigParams['Environment'] = $Environment
+                }
+
+                $settings = Get-RivetConfig -Database $Database -Path $ConfigFilePath -Environment $Environment
+                if( $settings.PluginsRoot )
+                {
+                    Import-Plugin -Path $settings.PluginsRoot
+                }
+                
+                $settings.Databases | Select-Object -ExpandProperty 'MigrationsRoot'
+            }
+            else
+            {
+                $Path
+            }
+        } | 
+        ForEach-Object {
+            if( (Test-Path -Path $_ -PathType Container) )
+            {
+                Get-ChildItem -Path $_ -Filter '*_*.ps1'
+            }
+            elseif( (Test-Path -Path $_ -PathType Leaf) )
+            {
+                Get-Item -Path
+            }
+            else
+            {
+                #Write-Error ('Migration path ''{0}'' not found.' -f $_)
+            }
+        
+        } | 
+        Where-Object {
+            $script = $_
+            if( -not ($PSBoundParameters.ContainsKey( 'Include' )) )
+            {
+                return $true
+            }
+
+            $Include | Where-Object { $script.BaseName -like $_ }
+        } |
+        Where-Object { 
+            $script = $_
+
+            if( -not ($PSBoundParameters.ContainsKey( 'Exclude' )) )
+            {
+                return $true
+            }
+
+            $foundMatch = $Exclude | Where-Object { $script.BaseName -like $_ }
+            return -not $foundMatch
+        } |
+        ForEach-Object {
+            if( $_.BaseName -notmatch '^(\d{14})_(.+)' )
+            {
+                Write-Error ('Migration {0} has invalid name.  Must be of the form `YYYYmmddhhMMss_MigrationName.ps1' -f $_.FullName)
+                return
+            }
+        
+            $id = [UInt64]$matches[1]
+            $name = $matches[2]
+        
+            $_ | 
+                Add-Member -MemberType NoteProperty -Name 'MigrationID' -Value $id -PassThru |
+                Add-Member -MemberType NoteProperty -Name 'MigrationName' -Value $name -PassThru
+        } |
+        Where-Object {
+            if( $PSBoundParameters.ContainsKey( 'Before' ) )
+            {
+                $beforeTimestamp = [uint64]$Before.ToString('yyyyMMddHHmmss')
+                if( $_.MigrationID -gt $beforeTimestamp )
+                {
+                    return $false
+                }
+            }
+
+            if( $PSBoundParameters.ContainsKey( 'After' ) )
+            {
+                $afterTimestamp = [uint64]$After.ToString('yyyyMMddHHmmss')
+                if( $_.MigrationID -lt $afterTimestamp )
+                {
+                    return $false
+                }
+            }
+            return $true
+        } |
+        ForEach-Object {
+            $dbName = Split-Path -Parent -Path $_.FullName
+            $dbName = Split-Path -Parent -Path $dbName
+            $dbName = Split-Path -Leaf -Path $dbName
+
             $m = New-Object 'Rivet.Migration' $_.MigrationID,$_.MigrationName,$_.FullName,$dbName
             $currentOp = 'Push'
 
@@ -155,5 +263,4 @@ function Get-Migration
                 Clear-Migration
             }
         }
-    }
 }

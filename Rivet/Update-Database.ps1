@@ -129,7 +129,7 @@ function Update-Database
     $who = ('{0}\{1}' -f $env:USERDOMAIN,$env:USERNAME);
 
 
-    Get-MigrationScript -Path $Path |
+    Get-Migration -Path $Path |
         Sort-Object -Property 'MigrationID' -Descending:$popping |
         Where-Object { 
             if( -not $PSBoundParameters.ContainsKey('Name') )
@@ -137,7 +137,7 @@ function Update-Database
                 return $true
             }
 
-            $matchesName =  ( $_.MigrationName -like $Name -or $_.MigrationID -like $Name )
+            $matchesName =  ( $_.Name -like $Name -or $_.ID -like $Name )
             $foundNameMatch = $foundNameMatch -or $matchesName
             return $matchesName
         } |
@@ -148,9 +148,9 @@ function Update-Database
                 return $true
             }
 
-            if( $_.MigrationID -lt 1000000000000 )
+            if( $_.ID -lt 1000000000000 )
             {
-                Write-Error ('Migration ''{0}'' has an invalid ID. IDs lower than 01000000000000 are reserved for internal use.' -f $_.BaseName)
+                Write-Error ('Migration ''{0}'' has an invalid ID. IDs lower than 01000000000000 are reserved for internal use.' -f $_.Path)
                 $stopMigrating = $true
                 return $false
             }
@@ -161,7 +161,7 @@ function Update-Database
             $preErrorCount = $Global:Error.Count
             try
             {
-                $migration = Test-Migration -ID $_.MigrationID -PassThru #-ErrorAction Ignore
+                $migration = Test-Migration -ID $_.ID -PassThru #-ErrorAction Ignore
             }
             catch
             {
@@ -184,8 +184,8 @@ function Update-Database
                 if( $migration -and ($migration.Who -ne $who -or $migration.AtUtc -lt $youngerThan) )
                 {
                     $howLongAgo = ConvertTo-RelativeTime -DateTime ($migration.AtUtc.ToLocalTime())
-                    $confirmQuery = "Are you sure you want to pop migration {0} from database {1} on {2} applied by {3} {4}?" -f $_.BaseName,$Connection.Database,$Connection.DataSource,$migration.Who,$howLongAgo
-                    $confirmCaption = "Pop Migration {2}?" -f $Connection.DataSource,$Connection.Database,$_.BaseName
+                    $confirmQuery = "Are you sure you want to pop migration {0} from database {1} on {2} applied by {3} {4}?" -f $_.FullName,$Connection.Database,$Connection.DataSource,$migration.Who,$howLongAgo
+                    $confirmCaption = "Pop Migration {0}?" -f $_.FullName
                     if( -not $Force -and -not $PSCmdlet.ShouldContinue( $confirmQuery, $confirmCaption ) )
                     {
                         return $false
@@ -219,15 +219,12 @@ function Update-Database
                 Remove-Item -Path $popFuntionPath -Confirm:$false -WhatIf:$false
             }
         
-            . $migrationInfo.FullName
-        
-        
             $action = '+'
             if( $Pop )
             {
                 $action = '-'
             }
-            $hostOutput = '[{0}] {1}{2}' -f $migrationInfo.MigrationID,$action,$migrationInfo.MigrationName
+            $hostOutput = '[{0}] {1}{2}' -f $migrationInfo.ID,$action,$migrationInfo.Name
         
             try
             {
@@ -238,59 +235,36 @@ function Update-Database
                 Write-Verbose $hostOutput
                 if( $Pop )
                 {
-                    if( -not (Test-Path $popFuntionPath) )
-                    {
-                        Write-Error ('Push function for migration {0} not found.' -f $migrationInfo.FullName)
-                        return
-                    }
-                
-                    $operations = Pop-Migration
-                    Remove-Item -Path $popFuntionPath -Confirm:$false -WhatIf:$false
-
+                    $operations = $migrationInfo.PopOperations
+                    $action = 'Pop'
                     $sprocName = 'RemoveMigration'
                 }
                 else
                 {
-                    if( -not (Test-Path $pushFunctionPath) )
-                    {
-                        Write-Error ('Push function for migration {0} not found.' -f $migrationInfo.FullName)
-                        return
-                    }
-                
-                    $operations = Push-Migration
-                    Remove-Item -Path $pushFunctionPath -Confirm:$False -WhatIf:$false
+                    $operations = $migrationInfo.PushOperations
+                    $action = 'Push'
                     $sprocName = 'InsertMigration'
                 }
 
-                $operations |
-                    Where-Object { $_ -is [Rivet.Operations.Operation] } |
-                    ForEach-Object {
-                        if( (Test-Path -Path 'function:Start-MigrationOperation') )
-                        {
-                            Start-MigrationOperation -Operation $_
-                        }
+                if( -not $operations.Count )
+                {
+                    Write-Error ('{0} migration''s {1}-Migration function is empty.' -f $migrationInfo.FullName,$action)
+                    return
+                }
 
-                        $_
-
-                        if( (Test-Path -Path 'function:Complete-MigrationOperation') )
-                        {
-                            Complete-MigrationOperation -Operation $_
-                        }
-                    } |
-                    Where-Object { $_ -is [Rivet.Operations.Operation ] } |
-                    Invoke-MigrationOperation
+                $operations | Invoke-MigrationOperation
 
                 $query = 'exec [rivet].[{0}] @ID = @ID, @Name = @Name, @Who = @Who, @ComputerName = @ComputerName' -f $sprocName
                 $parameters = @{
-                                    ID = [int64]$migrationInfo.MigrationID; 
-                                    Name = $migrationInfo.MigrationName;
+                                    ID = [int64]$migrationInfo.ID; 
+                                    Name = $migrationInfo.Name;
                                     Who = $who;
                                     ComputerName = $env:COMPUTERNAME;
                                 }
                 Invoke-Query -Query $query -NonQuery -Parameter $parameters  | Out-Null
 
                 $target = '{0}.{1}' -f $Connection.DataSource,$Connection.Database
-                $operation = '{0} migration {1} {2}' -f $PSCmdlet.ParameterSetName,$migrationInfo.MigrationID,$migrationInfo.MigrationName
+                $operation = '{0} migration {1} {2}' -f $PSCmdlet.ParameterSetName,$migrationInfo.ID,$migrationInfo.Name
                 if ($PSCmdlet.ShouldProcess($target, $operation))
                 {
                     $Connection.Transaction.Commit()
@@ -310,7 +284,7 @@ function Update-Database
                 # TODO: Create custom exception for migration query errors so that we can report here when unknown things happen.
                 if( $_.Exception -isnot [ApplicationException] )
                 {
-                    Write-RivetError -Message ('Migration {0} failed' -f $migrationInfo.FullName) -CategoryInfo $_.CategoryInfo.Category -ErrorID $_.FullyQualifiedErrorID -Exception $_.Exception -CallStack ($_.ScriptStackTrace)
+                    Write-RivetError -Message ('Migration {0} failed' -f $migrationInfo.Path) -CategoryInfo $_.CategoryInfo.Category -ErrorID $_.FullyQualifiedErrorID -Exception $_.Exception -CallStack ($_.ScriptStackTrace)
                 }            
             }
             finally
