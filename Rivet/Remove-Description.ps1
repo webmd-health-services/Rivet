@@ -35,16 +35,10 @@ function Remove-Description
         [Alias('Column')]
         [string]
         # The name of the column where the extended property is getting set.
-        $ColumnName,
-
-        [Switch]
-        # Don't output any messages.
-        $Quiet
+        $ColumnName
     )
 
     Set-StrictMode -Version 'Latest'
-
-    # TODO: Remove Quiet switch
 
     $optionalArgs = @{ }
     if( $ColumnName )

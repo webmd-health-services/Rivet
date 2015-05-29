@@ -52,14 +52,8 @@ function Update-Row
         [Parameter(Mandatory=$true,ParameterSetName='AllRows')]
         [Switch]
         # Updates all the rows in the table.
-        $All,
-
-        [Switch]
-        # Does not write messages.
-        $Quiet
+        $All
     )
-
-    # TODO: remove Quiet switch
 
     Set-StrictMode -Version 'Latest'
 

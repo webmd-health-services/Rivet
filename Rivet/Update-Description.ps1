@@ -40,14 +40,9 @@ function Update-Description
         [Alias('Column')]
         [string]
         # The name of the column where the extended property is getting updated.
-        $ColumnName,
-
-        [Switch]
-        # Don't output any messages.
-        $Quiet
+        $ColumnName
     )
 
-    # TODO: Remove Quiet switch
     Set-StrictMode -Version 'Latest'
 
     $optionalArgs = @{ }

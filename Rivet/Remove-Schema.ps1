@@ -16,16 +16,11 @@ function Remove-Schema
         [Alias('SchemaName')]
         [string]
         # The name of the schema.
-        $Name,
-
-        [Switch]
-        # Don't show any host output.
-        $Quiet
+        $Name
     )
 
     Set-StrictMode -Version 'Latest'
 
-    # TODO: Remove Quiet switch
     Write-Verbose (' -{0}' -f $Name)
     New-Object 'Rivet.Operations.RemoveSchemaOperation' $Name
 }
