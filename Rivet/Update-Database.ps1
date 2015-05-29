@@ -206,33 +206,14 @@ function Update-Database
             }
         
             $migrationInfo = $_
-        
-            $pushFunctionPath = 'function:Push-Migration'
-            if( (Test-Path -Path $pushFunctionPath) )
-            {
-                Remove-Item -Path $pushFunctionPath -Confirm:$false -WhatIf:$false
-            }
-        
-            $popFuntionPath = 'function:Pop-Migration'
-            if( (Test-Path -Path $popFuntionPath) )
-            {
-                Remove-Item -Path $popFuntionPath -Confirm:$false -WhatIf:$false
-            }
-        
-            $action = '+'
-            if( $Pop )
-            {
-                $action = '-'
-            }
-            $hostOutput = '[{0}] {1}{2}' -f $migrationInfo.ID,$action,$migrationInfo.Name
-        
+            $migrationInfo.DataSource = $Connection.DataSource
+
             try
             {
                 $Connection.Transaction = $Connection.BeginTransaction()
                 $DBScriptRoot = $DBScriptsPath
                 $DBMigrationsRoot = Join-Path -Path $DBScriptsPath -ChildPath Migrations
 
-                Write-Verbose $hostOutput
                 if( $Pop )
                 {
                     $operations = $migrationInfo.PopOperations

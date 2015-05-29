@@ -6,7 +6,7 @@ namespace Rivet
 {
 	public sealed class Migration
 	{
-		public Migration(string id, string name, string path, string database)
+		public Migration(string id, string name, string path, string database, string dataSource = null)
 		{
 			ID = id;
 			Name = name;
@@ -15,10 +15,12 @@ namespace Rivet
 			PushOperations = new List<Operation>();
 			PopOperations = new List<Operation>();
 			FullName = System.IO.Path.GetFileNameWithoutExtension(Path);
+			DataSource = dataSource;
 		}
 
 		public string FullName { get; private set; }
 		public string Database { get; private set; }
+		public string DataSource { get; set; }
 		public string ID { get; private set; }
 		public string Name { get; private set; }
 		public string Path { get; private set; }

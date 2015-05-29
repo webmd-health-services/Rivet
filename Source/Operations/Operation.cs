@@ -17,6 +17,11 @@ namespace Rivet.Operations
 		public int CommandTimeout { get; set; }
 
 		/// <summary>
+		/// The migration this operation is part of.
+		/// </summary>
+		public Migration Migration { get; set; }
+
+		/// <summary>
 		/// Any parameters to send with the query.
 		/// </summary>
 		public Hashtable Parameters { get; private set; }

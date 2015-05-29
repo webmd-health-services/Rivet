@@ -221,6 +221,7 @@ function Get-Migration
                             Start-MigrationOperation -Operation $_
                         }
 
+                        $_.Migration = $m
                         $_
 
                         if( (Test-Path -Path 'function:Complete-MigrationOperation') )
@@ -232,6 +233,8 @@ function Get-Migration
                     ForEach-Object { $OperationsList.Add( $_ ) } |
                     Out-Null
             }
+
+            $DBMigrationsRoot = Split-Path -Parent -Path $_.FullName
 
             . $_.FullName
 
