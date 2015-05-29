@@ -101,6 +101,9 @@ function Update-ExtendedProperty
         $Quiet
     )
 
+    # TODO: Remove Quiet switch
+    Set-StrictMode -Version 'Latest'
+
     $objectName = ''
     if ($PsCmdlet.ParameterSetName -eq "SCHEMA")
     {
@@ -132,9 +135,6 @@ function Update-ExtendedProperty
         $objectName = '{0}.{1}.{2}' -f $SchemaName,$ViewName,$ColumnName
     }
 
-    if( -not $Quiet )
-    {
-        Write-Host (' {0} ={1}' -f $objectName,$Name)
-    }
-    Invoke-MigrationOperation -Operation $op  
+    Write-Verbose (' {0} ={1}' -f $objectName,$Name)
+    return $op
 }

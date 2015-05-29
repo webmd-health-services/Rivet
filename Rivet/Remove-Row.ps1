@@ -48,37 +48,21 @@
         $Quiet
     )
 
+    Set-StrictMode -Version 'Latest'
+
     if ($PSCmdlet.ParameterSetName -eq 'DropSpecificRows')
     {
-        $op = New-Object 'Rivet.Operations.RemoveRowOperation' $SchemaName, $TableName, $Where        
+        New-Object 'Rivet.Operations.RemoveRowOperation' $SchemaName, $TableName, $Where        
     }
     elseif ($PSCmdlet.ParameterSetName -eq 'AllRows')
     {
         if ($Truncate)
         {
-            $op = New-Object 'Rivet.Operations.RemoveRowOperation' $SchemaName, $TableName, $true
-            $rowCount = Invoke-Query -Query ('select count(*) from [{0}].[{1}]' -f $SchemaName,$TableName) -AsScalar
+            New-Object 'Rivet.Operations.RemoveRowOperation' $SchemaName, $TableName, $true
         }
         else
         {
-            $op = New-Object 'Rivet.Operations.RemoveRowOperation' $SchemaName, $TableName, $false
+            New-Object 'Rivet.Operations.RemoveRowOperation' $SchemaName, $TableName, $false
         }
-    }
-
-    if (-not $Quiet)
-    {
-        Write-Host (" {0}.{1} -" -f $SchemaName,$TableName) -NoNewline
-    }
-
-    $rowsRemoved = Invoke-MigrationOperation -operation $op -NonQuery
-
-    if ($Truncate -and $PSCmdlet.ParameterSetName -eq 'AllRows')
-    {
-        $rowsRemoved = $rowCount
-    }
-
-    if (-not $Quiet)
-    {
-        Write-Host ("{0} row(s)" -f $rowsRemoved)
     }
 }

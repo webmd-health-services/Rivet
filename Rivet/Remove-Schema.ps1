@@ -25,10 +25,7 @@ function Remove-Schema
 
     Set-StrictMode -Version 'Latest'
 
-    if( -not $Quiet )
-    {
-        Write-Host (' -{0}' -f $Name)
-    }
-    $op = New-Object 'Rivet.Operations.RemoveSchemaOperation' $Name
-    Invoke-MigrationOperation -Operation $op
+    # TODO: Remove Quiet switch
+    Write-Verbose (' -{0}' -f $Name)
+    New-Object 'Rivet.Operations.RemoveSchemaOperation' $Name
 }

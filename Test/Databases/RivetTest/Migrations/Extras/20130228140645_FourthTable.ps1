@@ -1,16 +1,12 @@
 
 function Push-Migration()
 {
-    Invoke-Query -Query @'
-	create table FourthTable (
-		id int not null
-	)
-'@
+    Add-Table 'FourthTable' -Column {
+        int 'id' -NotNull
+    }
 }
 
 function Pop-Migration()
 {
-    Invoke-Query -Query @'
-	drop table FourthTable
-'@
+    Remove-Table 'FourthTable'
 }

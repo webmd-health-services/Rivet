@@ -17,6 +17,7 @@ function Test-FunctionsExported
                             'Get-MigrationScript' = $true;
                             'Import-Rivet' = $true;
                             'Import-Plugin' = $true;
+                            'Invoke-Query' = $true;
                             'Initialize-Database' = $true;
                             'Invoke-MigrationOperation' = $true;
                             'New-Migration' = $true;

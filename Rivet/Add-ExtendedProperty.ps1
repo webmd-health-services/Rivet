@@ -127,9 +127,7 @@ function Add-ExtendedProperty
         $objectName = '{0}.{1}.{2}' -f $SchemaName,$ViewName,$ColumnName
     }
 
-    if( -not $Quiet )
-    {
-        Write-Host (' {0} +{1}' -f $objectName,$Name)
-    }
-    Invoke-MigrationOperation -Operation $op
+    #TODO: Remove Quiet switch
+    Write-Verbose (' {0} +{1}' -f $objectName,$Name)
+    return $op
 }

@@ -43,7 +43,7 @@ function Ignore-ShouldAddDataTypeByAssembly
     @"
 function Push-Migration
 {
-    Invoke-Query "create assembly rivettest from '$assemblyPath' "
+    Invoke-Ddl "create assembly rivettest from '$assemblyPath' "
     Add-DataType 'Point Point' -AssemblyName 'rivettest' -ClassName 'Rivet.Test.Fake.Point'
 
     Add-Table 'important' {

@@ -8,5 +8,5 @@ function Push-Migration()
 
 function Pop-Migration()
 {
-    Invoke-Query 'drop table CustomFileGroup'
+    Remove-Table 'CustomFileGroup'
 }

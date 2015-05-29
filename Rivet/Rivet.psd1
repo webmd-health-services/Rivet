@@ -12,7 +12,7 @@
 ModuleToProcess = 'Rivet.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.4.0'
+ModuleVersion = '0.5.0'
 
 # ID used to uniquely identify this module
 GUID = '8af34b47-259b-4630-a945-75d38c33b94d'

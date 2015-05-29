@@ -1,7 +1,7 @@
 
 function Push-Migration()
 {
-    Invoke-Query 'create schema rivettest'
+    Add-Schema 'rivettest'
     Add-Table 'AddTableInRivetTest' {
         Int 'id' -Identity -Description 'AddTableInRivetTest identity column'
     } -SchemaName 'rivettest' -Description 'Testing Add-Table migration for custom schema.' 
@@ -12,6 +12,6 @@ function Push-Migration()
 
 function Pop-Migration()
 {
-    Invoke-Query 'drop table AddTable'
-    Invoke-Query 'drop schema rivettest'
+    Remove-Table 'AddTable'
+    Remove-Schema 'rivettest'
 }

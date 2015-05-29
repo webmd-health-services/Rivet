@@ -1,7 +1,7 @@
 
 function Push-Migration
 {
-    Invoke-Query -Query @'
+    Invoke-Ddl -Query @'
 if not exists (select * from sys.schemas where name = 'rivet')
     exec sp_executesql N'create schema [rivet] authorization [dbo]'
 

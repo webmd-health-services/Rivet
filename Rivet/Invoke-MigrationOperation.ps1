@@ -16,112 +16,86 @@ function Invoke-MigrationOperation
     [CmdletBinding(DefaultParameterSetName='AsReader')]
     param(
         [Alias('Migration')]
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory=$true,ValueFromPipeline=$true)]
         [Rivet.Operations.Operation]
         # The migration object to invoke.
-        $Operation,
-
-        [Hashtable]
-        # Any parameters to use in the query.
-        $Parameter,
-        
-        [Parameter(Mandatory=$true,ParameterSetName='ExecuteScalar')]
-        [Switch]
-        $AsScalar,
-        
-        [Parameter(Mandatory=$true,ParameterSetName='ExecuteNonQuery')]
-        [Switch]
-        $NonQuery,
-        
-        [UInt32]
-        # The time in seconds to wait for the command to execute. The default is 30 seconds.
-        $CommandTimeout = 30
+        $Operation
     )
 
-    if( (Test-Path -Path 'function:Start-MigrationOperation') )
+    begin
     {
-        # Protect ourself from poorly written plug-ins that return things.
-        $null = Start-MigrationOperation -Operation $Operation
     }
 
-    $query = $Operation.ToQuery()
-
-    Write-Verbose $query
-    $cmd = New-Object 'Data.SqlClient.SqlCommand' ($query,$Connection,$Connection.Transaction)
-    $cmd.CommandTimeout = $CommandTimeout
-
-    if( $Parameter )
+    process
     {
-        $Parameter.Keys | ForEach-Object { 
-            $name = $_
-            $value = $Parameter[$name]
-            if( -not $name.StartsWith( '@' ) )
+        Set-StrictMode -Version 'Latest'
+
+        $query = $Operation.ToQuery()
+        try
+        {
+            $optionalParams = @{ }
+            $nonQuery = $false
+            $asScalar = $false
+            if( $Operation.QueryType -eq [Rivet.Operations.OperationQueryType]::NonQuery )
             {
-                $name = '@{0}' -f $name
+                $optionalParams['NonQuery'] = $true
+                $nonQuery = $true
             }
-            [void] $cmd.Parameters.AddWithValue( $name, $value )
-       }
-    }
-
-    try
-    {
-        if( $pscmdlet.ParameterSetName -eq 'ExecuteNonQuery' )
-        {
-            $cmd.ExecuteNonQuery()
-        }
-        elseif( $pscmdlet.ParameterSetName -eq 'ExecuteScalar' )
-        {
-            $cmd.ExecuteScalar()
-        }
-        else
-        {
-            $cmdReader = $cmd.ExecuteReader()
-            try
+            elseif( $Operation.QueryType -eq [Rivet.Operations.OperationQueryType]::Scalar )
             {
-                if( $cmdReader.HasRows )
-                {                
-                    while( $cmdReader.Read() )
-                    {
-                        $row = @{ }
-                        for ($i= 0; $i -lt $cmdReader.FieldCount; $i++) 
-                        { 
-                            $name = $cmdReader.GetName( $i )
-                            if( -not $name )
-                            {
-                                $name = 'Column{0}' -f $i
-                            }
-                            $value = $cmdReader.GetValue($i)
-                            if( $cmdReader.IsDBNull($i) )
-                            {
-                                $value = $null
-                            }
-                            $row[$name] = $value
-                        }
-                        New-Object PsObject -Property $row
-                    }
+                $optionalParams['AsScalar'] = $true
+                $asScalar = $true
+            }
+
+            $rowCount = $null
+            if( $Operation -is [Rivet.Operations.RemoveRowOperation] -and $Operation.Truncate )
+            {
+                $rowCount = Invoke-Query -Query ('select count(*) from [{0}].[{1}]' -f $Operation.SchemaName,$Operation.TableName) -AsScalar
+            }
+
+            $result = Invoke-Query -Query $query -Parameter $Operation.Parameters -CommandTimeout $Operation.CommandTimeout @optionalParams
+            if( $nonQuery )
+            {
+                if( $rowCount -ne $null )
+                {
+                    $Operation.RowsAffected = $rowCount
+                }
+                else
+                {
+                    $Operation.RowsAffected = $result
                 }
             }
-            finally
+            elseif( $asScalar )
             {
-                $cmdReader.Close()
+                if( $result -ne 0 )
+                {
+                    if( $Operation -is [Rivet.Operations.UpdateCodeObjectMetadataOperation] )
+                    {
+                        $exMsg = "Failed to refresh {0}.{1}" -f $Operation.SchemaName,$Operation.Name
+                    }
+                    elseif( $Operation -is [Rivet.Operations.RenameColumnOperation] )
+                    {
+                        $exMsg = "Failed to rename column {0}.{1}.{2} to {0}.{1}.{3}" -f $Operation.SchemaName,$Operation.TableName,$Operation.Name,$Operation.NewName
+                    }
+                    elseif( $Operation -is [Rivet.Operations.RenameOperation] )
+                    {
+                        $exMsg = "Failed to rename object {0}.{1} to {0}.{2}" -f $Operation.SchemaName,$Operation.Name,$Operation.NewName
+                    }
+                    throw ('{0}: error code {1}' -f $exMsg,$result)
+                }
             }
+
         }
-    }
-    catch
-    {
-        $errorMsg = 'Query failed: {0}' -f $query
-        Write-RivetError -Message ('Migration {0} failed' -f $migrationInfo.FullName) -CategoryInfo $_.CategoryInfo.Category -ErrorID $_.FullyQualifiedErrorID -Exception $_.Exception -CallStack ($_.ScriptStackTrace) -Query $errorMsg
-        throw (New-Object ApplicationException 'Migration failed.',$_.Exception)
-    }
-    finally
-    {
-        $cmd.Dispose()
+        catch
+        {
+            Write-RivetError -Message ('Migration {0} failed' -f $migrationInfo.FullName) -CategoryInfo $_.CategoryInfo.Category -ErrorID $_.FullyQualifiedErrorID -Exception $_.Exception -CallStack ($_.ScriptStackTrace) -Query $query
+            throw (New-Object ApplicationException 'Migration failed.',$_.Exception)
+        }
+
+        return $Operation
     }
 
-    if( (Test-Path -Path 'function:Complete-MigrationOperation') )
+    end
     {
-        # Protect ourself from poorly written plug-ins that return things.
-        $null = Complete-MigrationOperation -Operation $Operation
     }
-
 }

@@ -16,11 +16,9 @@ function Test-ShouldUpdateTableAndColumnDescription
     @'
 function Push-Migration()
 {
-    Invoke-Query @"
-    create table [MS_Description] (
-        add_description varchar(max)
-    )
-"@
+    Add-Table 'MS_Description' -Column {
+        varchar 'add_description' -Max
+    }
 
     Add-Description -Description 'new description' -TableName 'MS_Description'
     Add-Description -Description 'new description' -TableName 'MS_Description' -ColumnName 'add_description'
@@ -28,8 +26,8 @@ function Push-Migration()
 
 function Pop-Migration()
 {
-    Invoke-Query 'drop table [MS_Description]'
-}
+    Remove-Table 'MS_Description'
+}4
 '@ | New-Migration -Name 'AddDescription'
     Invoke-Rivet -Push 'AddDescription'
 

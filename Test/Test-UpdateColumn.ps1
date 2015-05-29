@@ -96,7 +96,7 @@ function Test-ShouldUpdateColumnFromNVarChartoXml
 @"
 function Push-Migration
 {
-         Invoke-Query -Query @'
+         Invoke-Ddl -Query @'
 create xml schema collection EmptyXsd as 
 N'
 <xsd:schema targetNamespace="http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelManuInstructions" 

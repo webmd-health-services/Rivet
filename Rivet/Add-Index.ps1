@@ -105,29 +105,28 @@ function Add-Index
     {
         if ($PSBoundParameters.containskey("Name"))
         {
-            $op = New-Object 'Rivet.Operations.AddIndexOperation' $SchemaName, $TableName, $ColumnName, $Name, $Descending, $Unique, $Clustered, $Option, $Where, $On, $FileStreamOn, $Include
-            Write-Host (' {0}.{1} +{2} ({3})' -f $SchemaName,$TableName,$Name,$ColumnClause)
+            Write-Verbose (' {0}.{1} +{2} ({3})' -f $SchemaName,$TableName,$Name,$ColumnClause)
+            New-Object 'Rivet.Operations.AddIndexOperation' $SchemaName, $TableName, $ColumnName, $Name, $Descending, $Unique, $Clustered, $Option, $Where, $On, $FileStreamOn, $Include
         }
         else 
         {
             $op = New-Object 'Rivet.Operations.AddIndexOperation' $SchemaName, $TableName, $ColumnName, $Descending, $Unique, $Clustered, $Option, $Where, $On, $FileStreamOn, $Include
-            Write-Host (' {0}.{1} +{2} ({3})' -f $SchemaName,$TableName,$op.Name,$ColumnClause)
+            Write-Verbose (' {0}.{1} +{2} ({3})' -f $SchemaName,$TableName,$op.Name,$ColumnClause)
+            $op
         }
-        
     }
     else
     {
         if ($PSBoundParameters.containskey("Name"))
         {
-            $op = New-Object 'Rivet.Operations.AddIndexOperation' $SchemaName, $TableName, $ColumnName, $Name, $Unique, $Clustered, $Option, $Where, $On, $FileStreamOn, $Include
-            Write-Host (' {0}.{1} +{2} ({3})' -f $SchemaName,$TableName,$Name,$ColumnClause)
+            Write-Verbose (' {0}.{1} +{2} ({3})' -f $SchemaName,$TableName,$Name,$ColumnClause)
+            New-Object 'Rivet.Operations.AddIndexOperation' $SchemaName, $TableName, $ColumnName, $Name, $Unique, $Clustered, $Option, $Where, $On, $FileStreamOn, $Include
         }
         else 
         {
             $op = New-Object 'Rivet.Operations.AddIndexOperation' $SchemaName, $TableName, $ColumnName, $Unique, $Clustered, $Option, $Where, $On, $FileStreamOn, $Include
-            Write-Host (' {0}.{1} +{2} ({3})' -f $SchemaName,$TableName,$op.Name,$ColumnClause)
+            Write-Verbose (' {0}.{1} +{2} ({3})' -f $SchemaName,$TableName,$op.Name,$ColumnClause)
+            $op
         }
     }
-    
-    Invoke-MigrationOperation -Operation $op
 }

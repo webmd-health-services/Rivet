@@ -52,15 +52,13 @@
 
     if ($PSBoundParameters.containskey("Name"))
     {
-        $op = New-Object 'Rivet.Operations.DisableForeignKeyOperation' $SchemaName, $TableName, $Name
-        Write-Host (' {0}.{1} -{2} ({3}) => {4}.{5}' -f $SchemaName,$TableName,$Name,$source_columns,$ReferencesSchema,$References)
+        Write-Verbose (' {0}.{1} -{2} ({3}) => {4}.{5}' -f $SchemaName,$TableName,$Name,$source_columns,$ReferencesSchema,$References)
+        New-Object 'Rivet.Operations.DisableForeignKeyOperation' $SchemaName, $TableName, $Name
     }
     else
     {
         $op = New-Object 'Rivet.Operations.DisableForeignKeyOperation' $SchemaName, $TableName, $ReferencesSchema, $references
-        Write-Host (' {0}.{1} -{2} ({3}) => {4}.{5}' -f $SchemaName,$TableName,$op.Name,$source_columns,$ReferencesSchema,$References)
-     
+        Write-Verbose (' {0}.{1} -{2} ({3}) => {4}.{5}' -f $SchemaName,$TableName,$op.Name,$source_columns,$ReferencesSchema,$References)
+        $op
     }
-
-    Invoke-MigrationOperation -Operation $op
 }

@@ -51,13 +51,7 @@ function Rename-DataType
         $NewName
     )
 
-    $op = New-Object 'Rivet.Operations.RenameOperation' $SchemaName, $Name, $NewName, 'USERDATATYPE'
-    Write-Host (' {0}.{1} -> {0}.{2}' -f $SchemaName,$Name,$NewName)
-    [int]$result = Invoke-MigrationOperation -Operation $op -AsScalar
-    
-    if ($result -ne 0)
-    {
-        throw ("Failed to rename data type {0}.{1} to {0}.{2}: error code {3}" -f $SchemaName,$Name,$NewName,$result)
-    }
+    Write-Verbose (' {0}.{1} -> {0}.{2}' -f $SchemaName,$Name,$NewName)
+    New-Object 'Rivet.Operations.RenameOperation' $SchemaName, $Name, $NewName, 'USERDATATYPE'
 
 }

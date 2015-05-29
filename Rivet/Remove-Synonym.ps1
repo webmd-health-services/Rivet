@@ -34,7 +34,6 @@ function Remove-Synonym
         $SchemaName = 'dbo'
     )
 
-    $op = New-Object 'Rivet.Operations.RemoveSynonymOperation' $SchemaName, $Name
-    Write-Host(' -{0}.{1}' -f $SchemaName,$Name)
-    Invoke-MigrationOperation -operation $op
+    Write-Verbose(' -{0}.{1}' -f $SchemaName,$Name)
+    New-Object 'Rivet.Operations.RemoveSynonymOperation' $SchemaName, $Name
 }

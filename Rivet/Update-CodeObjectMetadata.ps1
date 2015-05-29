@@ -51,12 +51,7 @@ function Update-CodeObjectMetadata
     {
         $namespace = $PSCmdlet.ParameterSetName
     }
-    $op = New-Object 'Rivet.Operations.UpdateCodeObjectMetadataOperation' $SchemaName,$Name,$namespace
-    Write-Host (' ={0}.{1}' -f $SchemaName,$Name)
-    [int]$result = Invoke-MigrationOperation -Operation $op -AsScalar
 
-    if ($result -ne 0)
-    {
-        throw ("Failed to refresh {0}.{1}: error code {3}" -f $SchemaName,$Name,$result)
-    }
+    Write-Verbose (' ={0}.{1}' -f $SchemaName,$Name)
+    New-Object 'Rivet.Operations.UpdateCodeObjectMetadataOperation' $SchemaName,$Name,$namespace
 }

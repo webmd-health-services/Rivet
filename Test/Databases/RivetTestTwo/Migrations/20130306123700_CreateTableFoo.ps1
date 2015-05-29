@@ -1,9 +1,11 @@
 function Push-Migration()
 {
-    Invoke-Query -Query 'create table foo( id int not null )'
+    Add-Table 'foo' -Column {
+        int 'id' -NotNull
+    }
 }
 
 function Pop-Migration()
 {
-    Invoke-Query -Query 'drop table foo'
+    Remove-Table 'foo'
 }

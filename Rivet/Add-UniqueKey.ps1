@@ -71,7 +71,7 @@ function Add-UniqueKey
     {
         $op = New-Object 'Rivet.Operations.AddUniqueKeyOperation' $SchemaName, $TableName, $ColumnName, $Clustered, $FillFactor, $Option, $On
     }
-    
-    Write-Host (' {0}.{1} +{2} ({3})' -f $SchemaName,$TableName,$op.Name,$ColumnClause)
-    Invoke-MigrationOperation -Operation $op
+
+    Write-Verbose (' {0}.{1} +{2} ({3})' -f $SchemaName,$TableName,$op.Name,$ColumnClause)
+    return $op    
 }

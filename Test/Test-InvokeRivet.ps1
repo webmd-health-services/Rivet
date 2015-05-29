@@ -39,7 +39,7 @@ function Pop-Migration
     {
         $conn = Invoke-Rivet -Push -Database $name
         Assert-NoError
-        Assert-Null $conn
+        Assert-OperationsReturned $conn
 
         $cmd = New-Object 'Data.SqlClient.SqlCommand' ($query,$RTMasterConnection)
         Assert-True $cmd.ExecuteScalar()
@@ -72,7 +72,7 @@ function Pop-Migration
     {
         $result = Invoke-Rivet -Push -Database $RTDatabaseName
         Assert-NoError
-        Assert-Null $result
+        Assert-OperationsReturned $result
 
         Assert-False (Test-Schema -Name 'TargetDatabases')
 
@@ -104,7 +104,7 @@ function Test-ShouldApplyMigrationsToDuplicateDatabasesWithNoMigrationsDirectory
 
         $result = Invoke-Rivet -Push -Database $RTDatabaseName
         Assert-NoError 
-        Assert-Null $result
+        Assert-OperationsReturned $result
         Assert-True (Test-Database 'InvokeRivet')
         Assert-True (Test-Database 'InvokeRivet2')
     }
@@ -151,4 +151,15 @@ function Test-ShouldHandleFailureToConnect
 
     Invoke-Rivet -Push -ErrorAction SilentlyContinue
     Assert-Error -Last -Regex 'failed to connect'
+}
+
+function Assert-OperationsReturned
+{
+    param(
+        [object[]]
+        $Operation
+    )
+
+    Assert-NotNull $Operation
+    $Operation | ForEach-Object { Assert-Is $_ ([Rivet.Operations.Operation]) }
 }

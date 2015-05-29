@@ -70,9 +70,7 @@ function Add-DefaultConstraint
         $Name = $op.Name
     }
 
-    if( -not $Quiet )
-    {
-        Write-Host (' {0}.{1} +{2} {3} {4}' -f $SchemaName, $TableName, $op.Name, $ColumnName, $Expression)
-    }
-    Invoke-MigrationOperation -Operation $op
+    # TODO: Remove Quiet switch
+    Write-Verbose (' {0}.{1} +{2} {3} {4}' -f $SchemaName, $TableName, $op.Name, $ColumnName, $Expression)
+    return $op
 }

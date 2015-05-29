@@ -59,12 +59,8 @@ function Rename-Column
         $SchemaName = 'dbo'
     )
 
-    $op = New-Object 'Rivet.Operations.RenameColumnOperation' $SchemaName, $TableName, $Name, $NewName
-    Write-Host (' {0}.{1}.{2} -> {0}.{1}.{3}' -f $SchemaName,$TableName,$Name,$NewName)
-    [int]$result = Invoke-MigrationOperation -Operation $op -AsScalar
-    
-    if ($result -ne 0)
-    {
-        throw ("Failed to rename {0}.{1}.{2} to {0}.{1}.{3}: error code {4}" -f $SchemaName,$TableName,$Name,$NewName,$result)
-    }
+    Set-StrictMode -Version 'Latest'
+
+    Write-Verbose (' {0}.{1}.{2} -> {0}.{1}.{3}' -f $SchemaName,$TableName,$Name,$NewName)
+    New-Object 'Rivet.Operations.RenameColumnOperation' $SchemaName, $TableName, $Name, $NewName
 }

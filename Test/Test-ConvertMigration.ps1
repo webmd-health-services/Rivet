@@ -191,7 +191,7 @@ function Push-Migration
     Add-View 'FarmerCrops' @idempotent -Definition "as select Farmers.Name CropName, Crops.Name FarmersName from Crops join Farmers on Crops.FarmerID = Farmers.ID"
     Update-View 'FarmerCrops' @idempotent -Definition "as select Farmers.Name FarmerName, Crops.Name CropName from Crops join Farmers on Crops.FarmerID = Farmers.ID"
 
-    Invoke-Query 'select 1'
+    Invoke-Ddl 'select 1'
 
     Update-CodeObjectMetadata @idempotent 'FarmerCrops'
 
@@ -337,7 +337,7 @@ function Pop-Migration
 }
 '@ | New-Migration -Name 'RemoveOperations'
 
-    Assert-ConvertMigration -Schema -CodeObject -Data -DependentObject -ExtendedProperty
+    Assert-ConvertMigration -Schema -CodeObject -Data -DependentObject -ExtendedProperty -Verbose
 
     $schema = @{ SchemaName = 'idempotent' }
     $crops = @{ TableName = 'Crops' }
@@ -547,7 +547,7 @@ function Pop-Migration
 }
 '@ | New-Migration -Name 'ShouldRunPlugins'
 
-    Assert-ConvertMigration -Schema -ExtendedProperty
+    Assert-ConvertMigration -Schema -ExtendedProperty -Verbose
 
     Assert-Table 'NeedsPluginStuff'
     Assert-Column -TableName 'NeedsPluginStuff' -Name 'CreateDate' -DataType 'smalldatetime' -NotNull
@@ -930,6 +930,7 @@ function Pop-Migration
 
 function Assert-ConvertMigration
 {
+    [CmdletBinding()]
     param(
         [string]
         $DatabaseName = $RTDatabaseName,
@@ -978,7 +979,7 @@ function Assert-ConvertMigration
         $convertRivetMigrationParams.Author = $Author
     }
 
-    & $convertRivetMigration -ConfigFilePath $RTConfigFilePath -OutputPath $outputDir @convertRivetMigrationParams
+    & $convertRivetMigration -ConfigFilePath $RTConfigFilePath -OutputPath $outputDir @convertRivetMigrationParams -Verbose:$VerbosePreference
 
     ('Schema','DependentObject','ExtendedProperty','CodeObject','Data','Unknown') | ForEach-Object {
         $shouldExist = Get-Variable -Name $_ -ValueOnly

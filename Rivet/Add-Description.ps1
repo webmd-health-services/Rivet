@@ -58,10 +58,10 @@ function Add-Description
         $optionalArgs.ColumnName = $ColumnName
     }
 
+    # TODO: Remove Quiet switch
     Add-ExtendedProperty -Name 'MS_Description' `
                          -Value $Description `
                          -SchemaName $SchemaName `
                          -TableName $TableName `
-                         -Quiet:$Quiet `
                          @optionalArgs
 }

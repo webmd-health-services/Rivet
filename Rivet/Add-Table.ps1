@@ -65,16 +65,13 @@ function Add-Table
         $Quiet
     )
 
+    # TODO: Remove Quiet switch
+
     Set-StrictMode -Version 'Latest'
 
-    if( -not $Quiet )
-    {
-        Write-Host (' +{0}.{1}' -f $SchemaName,$Name)
-    }
-
+    Write-Verbose (' +{0}.{1}' -f $SchemaName,$Name)
     $columns = & $Column
-    $op = New-Object 'Rivet.Operations.AddTableOperation' $SchemaName, $Name, $columns, $FileTable, $FileGroup, $TextImageFileGroup, $FileStreamFileGroup, $Option, $Description
-    Invoke-MigrationOperation -Operation $op
+    New-Object 'Rivet.Operations.AddTableOperation' $SchemaName, $Name, $columns, $FileTable, $FileGroup, $TextImageFileGroup, $FileStreamFileGroup, $Option, $Description
 
     $addDescriptionArgs = @{
                                 SchemaName = $SchemaName;
@@ -83,12 +80,12 @@ function Add-Table
 
     if( $Description )
     {
-        Add-Description -Description $Description @addDescriptionArgs -Quiet
+        Add-Description -Description $Description @addDescriptionArgs
     }
 
     $columns | 
         Where-Object { $_.Description } |
-        ForEach-Object { Add-Description -Description $_.Description -ColumnName $_.Name @addDescriptionArgs -Quiet }
+        ForEach-Object { Add-Description -Description $_.Description -ColumnName $_.Name @addDescriptionArgs }
 }
 
 

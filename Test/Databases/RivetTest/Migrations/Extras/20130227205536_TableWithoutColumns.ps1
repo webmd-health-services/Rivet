@@ -1,26 +1,23 @@
 
 function Push-Migration()
 {
-    Invoke-Query -Query 'insert into InvokeQuery (id) values (1)'
+    Add-Row -TableName 'InvokeQuery' -Column @{ 'id' = '1' }
 
-    Invoke-Query -Query @'
-	create table TableWithoutColumnsWithColumn (
-		id int not null
-	)
-'@
-    Invoke-Query -Query @'
-	-- this will give an error
-	create table TableWithoutColumns ()
-'@
-    Invoke-Query -Query 'insert into InvokeQuery (id) values (2)'
+    Add-Table TableWithoutColumnsWithColumn {
+        int 'id' -NotNull
+	}
+  
+    Add-Table 'TableWithoutColumns' {
+    }
+
+    Add-Row 'InvokeQuery' -Column @{ 'id' = '2' }
 }
 
 function Pop-Migration()
 {
-    Invoke-Query -Query 'delete from InvokeQuery where id = 2'
+    Remove-Row -TableName 'InvokeQuery' -Where 'id = 2'
 	
-	Invoke-Query -Query 'drop table TableWithoutColumns()'
+    Remove-Table 'TableWithoutColumns'
 	
-	Invoke-Query -Query 'delete from InvokeQuery where id = 1'
-
+    Remove-Row -TableName 'InvokeQuery' -Where 'id = 2'
 }
