@@ -1,4 +1,4 @@
-﻿namespace Rivet.Operations
+﻿namespace Rivet
 {
 	public enum OperationQueryType
 	{

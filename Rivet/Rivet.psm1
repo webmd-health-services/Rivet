@@ -35,9 +35,9 @@ function Test-TypeDataMember
     return $typeData.Members.ContainsKey( $MemberName )
 }
 
-if( -not (Test-TypeDataMember -TypeName 'Rivet.Operations.Operation' -MemberName 'MigrationID') )
+if( -not (Test-TypeDataMember -TypeName 'Rivet.OperationResult' -MemberName 'MigrationID') )
 {
-    Update-TypeData -TypeName 'Rivet.Operations.Operation' -MemberType ScriptProperty -MemberName 'MigrationID' -Value { $this.Migration.ID }
+    Update-TypeData -TypeName 'Rivet.OperationResult' -MemberType ScriptProperty -MemberName 'MigrationID' -Value { $this.Migration.ID }
 }
 
 

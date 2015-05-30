@@ -1,6 +1,7 @@
 ﻿using System.Collections;
+using Rivet.Operations;
 
-namespace Rivet.Operations
+namespace Rivet
 {
 	public abstract class Operation
 	{
@@ -8,18 +9,12 @@ namespace Rivet.Operations
 		{
 			Parameters = new Hashtable();
 			CommandTimeout = 30;
-			RowsAffected = -1;
 		}
 
 		/// <summary>
 		/// The maximum amount of seconds the query should take. Defaults to 30 seconds. If the query takes longer than the timeout, ADO.NET will terminate the query.
 		/// </summary>
 		public int CommandTimeout { get; set; }
-
-		/// <summary>
-		/// The migration this operation is part of.
-		/// </summary>
-		public Migration Migration { get; set; }
 
 		/// <summary>
 		/// Any parameters to send with the query.
@@ -30,11 +25,6 @@ namespace Rivet.Operations
 		/// What kind of results to expect from the operation. Default is `NonQuery`, which means no results are expected.
 		/// </summary>
 		public OperationQueryType QueryType { get; set; }
-
-		/// <summary>
-		/// The number of rows affected. Set to -1 if no rows affected.
-		/// </summary>
-		public int RowsAffected { get; set; }
 
 		/// <summary>
 		/// The query to run for this operation.
