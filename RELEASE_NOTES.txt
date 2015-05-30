@@ -3,9 +3,8 @@
 ## Enhancements
 
  * The Add-Schema operation is now idempotent.
- * Refactored Rivet operation architecture: operations now return operation objects, instead of executing each operation.
+ * Rivet now returns OperationResult objects for each query executed by an operation.
  * Renamed `Invoke-Query` operation to `Invoke-Ddl`.
- * Added default formatting for operation objects returned by rivet.ps1.
 
 # 0.4.0
 

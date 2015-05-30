@@ -31,7 +31,7 @@ function Stop-Test
  
 function Stop-TestFixture
 {
-    $missingOps = [Reflection.Assembly]::GetAssembly( [Rivet.Operations.Operation] ) |
+    $missingOps = [Reflection.Assembly]::GetAssembly( [Rivet.Operation] ) |
                     ForEach-Object { $_.GetTypes() } | 
                     Where-Object { $_.IsClass } |
                     Where-Object { $_.Namespace -eq 'Rivet.Operations' } |

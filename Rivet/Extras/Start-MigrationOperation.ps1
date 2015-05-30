@@ -3,7 +3,7 @@ function Start-MigrationOperation
 {
     param(
         [Parameter(Mandatory=$true)]
-        [Rivet.Operations.Operation]
+        [Rivet.Operation]
         # The operation which is about to be applied.
         $Operation
     )

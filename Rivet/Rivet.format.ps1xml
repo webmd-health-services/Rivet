@@ -2,7 +2,7 @@
 <Configuration>
     <Controls>
         <Control>
-            <Name>RivetOperation-GroupingFormat</Name>
+            <Name>RivetOperationResult-GroupingFormat</Name>
             <CustomControl>
                 <CustomEntries>
                     <CustomEntry>
@@ -31,13 +31,13 @@
     </Controls>
     <ViewDefinitions>
         <View>
-            <Name>Rivet.Operations.Operation</Name>
+            <Name>Rivet.OperationResult</Name>
             <ViewSelectedBy>
-                <TypeName>Rivet.Operations.Operation</TypeName>
+                <TypeName>Rivet.OperationResult</TypeName>
             </ViewSelectedBy>
             <GroupBy>
                 <PropertyName>MigrationID</PropertyName>
-                <CustomControlName>RivetOperation-GroupingFormat</CustomControlName>
+                <CustomControlName>RivetOperationResult-GroupingFormat</CustomControlName>
             </GroupBy>
             <TableControl>
                 <TableHeaders>
@@ -61,34 +61,41 @@
                         <TableColumnItems>
                             <TableColumnItem>
                                 <ScriptBlock>
-                                    $_.GetType().Name -replace 'Operation$',''
+                                    $_.Operation.GetType().Name -replace 'Operation$',''
                                 </ScriptBlock>
                             </TableColumnItem>
                             <TableColumnItem>
-                                <PropertyName>SchemaName</PropertyName>
+                                <ScriptBlock>
+                                    if( $_.Operation | Get-Member -Name 'SchemaName' )
+                                    {
+                                        $_.Operation.SchemaName
+                                    }
+                                </ScriptBlock>
                             </TableColumnItem>
                             <TableColumnItem>
                                 <ScriptBlock>
-                                    if( ($_ -is [Rivet.Operations.ExtendedPropertyOperation]) )
+                                    $op = $_.Operation
+
+                                    if( ($op -is [Rivet.Operations.ExtendedPropertyOperation]) )
                                     {
-                                        return $_.ObjectName
+                                        return $op.ObjectName
                                     }
 
-                                    if( ($_ | Get-Member -Name 'Name') )
+                                    if( ($op | Get-Member -Name 'Name') )
                                     {
-                                        $_.Name
+                                        $op.Name
                                     }
-                                    elseif( ($_ | Get-Member -Name 'TableName') )
+                                    elseif( ($op | Get-Member -Name 'TableName') )
                                     {
-                                        $_.TableName
+                                        $op.TableName
                                     }
-                                    elseif( ($_ | Get-Member -Name 'Path') )
+                                    elseif( ($op | Get-Member -Name 'Path') )
                                     {
-                                        $migrationRoot = Split-Path -Parent -Path $_.Migration.Path
+                                        $migrationRoot = Split-Path -Parent -Path $op.Migration.Path
                                         Push-Location -Path $migrationRoot -StackName 'RivetOperationView'
                                         try
                                         {
-                                            Resolve-Path -Path $_.Path -Relative
+                                            Resolve-Path -Path $op.Path -Relative
                                         }
                                         finally
                                         {
@@ -104,32 +111,33 @@
                                         return $_.RowsAffected
                                     }
 
-                                    if( $_ -is [Rivet.Operations.RawDdlOperation] )
+                                    $op = $_.Operation
+                                    if( $op -is [Rivet.Operations.RawDdlOperation] )
                                     {
                                         return $_.Query
                                     }
 
-                                    if( ($_ | Get-Member -Name 'NewName') )
+                                    if( ($op | Get-Member -Name 'NewName') )
                                     {
-                                        return '=> {0}' -f $_.NewName
+                                        return '=> {0}' -f $op.NewName
                                     }
 
-                                    if( $_ -is [Rivet.Operations.AddTableOperation] )
+                                    if( $op -is [Rivet.Operations.AddTableOperation] )
                                     {
-                                        return $_.Columns
+                                        return $op.Columns
                                     }
 
-                                    if( $_ -is [Rivet.Operations.UpdateTableOperation] )
+                                    if( $op -is [Rivet.Operations.UpdateTableOperation] )
                                     {
-                                        $_.AddColumns | ForEach-Object { '+{0}' -f $_ }
-                                        $_.UpdateColumns
-                                        $_.RemoveColumns | ForEach-Object { '-{0}' -f $_ }
+                                        $op.AddColumns | ForEach-Object { '+{0}' -f $_ }
+                                        $op.UpdateColumns
+                                        $op.RemoveColumns | ForEach-Object { '-{0}' -f $_ }
                                         return
                                     }
 
-                                    if( ($_ | Get-Member -Name 'Value') )
+                                    if( ($op | Get-Member -Name 'Value') )
                                     {
-                                        return $_.Value
+                                        return $op.Value
                                     }
                                 </ScriptBlock>
                             </TableColumnItem>

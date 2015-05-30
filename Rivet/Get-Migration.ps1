@@ -202,7 +202,7 @@ function Get-Migration
                     $Operation,
 
                     [Parameter(ParameterSetName='Push',Mandatory=$true)]
-                    [Collections.Generic.IList[Rivet.Operations.Operation]]
+                    [Collections.Generic.IList[Rivet.Operation]]
                     [AllowEmptyCollection()]
                     $OperationsList,
 
@@ -214,14 +214,13 @@ function Get-Migration
                 Set-StrictMode -Version 'Latest'
 
                 $Operation |
-                    Where-Object { $_ -is [Rivet.Operations.Operation] } |
+                    Where-Object { $_ -is [Rivet.Operation] } |
                     ForEach-Object {
                         if( (Test-Path -Path 'function:Start-MigrationOperation') )
                         {
                             Start-MigrationOperation -Operation $_
                         }
 
-                        $_.Migration = $m
                         $_
 
                         if( (Test-Path -Path 'function:Complete-MigrationOperation') )
@@ -229,7 +228,7 @@ function Get-Migration
                             Complete-MigrationOperation -Operation $_
                         }
                     } |
-                    Where-Object { $_ -is [Rivet.Operations.Operation] } |
+                    Where-Object { $_ -is [Rivet.Operation] } |
                     ForEach-Object { $OperationsList.Add( $_ ) } |
                     Out-Null
             }

@@ -225,7 +225,7 @@ function Update-Database
                     return
                 }
 
-                $operations | Invoke-MigrationOperation
+                $operations | Invoke-MigrationOperation -Migration $migrationInfo
 
                 $query = 'exec [rivet].[{0}] @ID = @ID, @Name = @Name, @Who = @Who, @ComputerName = @ComputerName' -f $sprocName
                 $parameters = @{

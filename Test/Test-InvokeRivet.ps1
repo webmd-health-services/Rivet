@@ -161,5 +161,5 @@ function Assert-OperationsReturned
     )
 
     Assert-NotNull $Operation
-    $Operation | ForEach-Object { Assert-Is $_ ([Rivet.Operations.Operation]) }
+    $Operation | ForEach-Object { Assert-Is $_ ([Rivet.Operation]) }
 }
