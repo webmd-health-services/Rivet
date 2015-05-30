@@ -93,7 +93,7 @@
     <Compile Include="Operations\RemoveExtendedPropertyOperation.cs" />
     <Compile Include="Operations\RemoveSchemaOperation.cs" />
     <Compile Include="Operations\Operation.cs" />
-    <Compile Include="Operations\RawQueryOperation.cs" />
+    <Compile Include="Operations\RawDdlOperation.cs" />
     <Compile Include="Operations\RemoveDefaultConstraintOperation.cs" />
     <Compile Include="Operations\RemoveForeignKeyOperation.cs" />
     <Compile Include="Operations\RemoveIndexOperation.cs" />

@@ -22,5 +22,5 @@ function Invoke-Ddl
 
     Set-StrictMode -Version 'Latest'
 
-    New-Object 'Rivet.Operations.RawQueryOperation' $Query
+    New-Object 'Rivet.Operations.RawDdlOperation' $Query
 }
