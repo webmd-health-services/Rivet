@@ -43,13 +43,10 @@ function Remove-PrimaryKey
 
     if ($PSBoundParameters.containskey("Name"))
     {
-        $op = New-Object 'Rivet.Operations.RemovePrimaryKeyOperation' $SchemaName, $TableName, $Name
+        New-Object 'Rivet.Operations.RemovePrimaryKeyOperation' $SchemaName, $TableName, $Name
     }
     else 
     {
-        $op = New-Object 'Rivet.Operations.RemovePrimaryKeyOperation' $SchemaName, $TableName
+        New-Object 'Rivet.Operations.RemovePrimaryKeyOperation' $SchemaName, $TableName
     }
-    Write-Verbose (' {0}.{1} -{2}' -f $SchemaName,$TableName,$op.Name)
-
-    return $op
 }

@@ -52,6 +52,5 @@ function Update-CodeObjectMetadata
         $namespace = $PSCmdlet.ParameterSetName
     }
 
-    Write-Verbose (' ={0}.{1}' -f $SchemaName,$Name)
     New-Object 'Rivet.Operations.UpdateCodeObjectMetadataOperation' $SchemaName,$Name,$namespace
 }

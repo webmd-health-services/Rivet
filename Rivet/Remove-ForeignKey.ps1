@@ -52,13 +52,10 @@ function Remove-ForeignKey
 
     if( $PSBoundParameters.ContainsKey("Name") )
     {
-        $op = New-Object 'Rivet.Operations.RemoveForeignKeyOperation' $SchemaName, $TableName, $Name
+        New-Object 'Rivet.Operations.RemoveForeignKeyOperation' $SchemaName, $TableName, $Name
     }
     else 
     {
-        $op = New-Object 'Rivet.Operations.RemoveForeignKeyOperation' $SchemaName, $TableName, $ReferencesSchema, $References
+        New-Object 'Rivet.Operations.RemoveForeignKeyOperation' $SchemaName, $TableName, $ReferencesSchema, $References
     }
-
-    Write-Verbose (' {0}.{1} -{2}' -f $SchemaName,$TableName,$op.Name)
-    return $op
 }

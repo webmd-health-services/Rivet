@@ -54,7 +54,7 @@ function Remove-Index
 
     if( $PSBoundParameters.ContainsKey("Name") )
     {
-        $op = New-Object 'Rivet.Operations.RemoveIndexOperation' $SchemaName, $TableName, $Name
+        New-Object 'Rivet.Operations.RemoveIndexOperation' $SchemaName, $TableName, $Name
     }
     else 
     {
@@ -63,9 +63,7 @@ function Remove-Index
         {
             $type = [Rivet.ConstraintType]::UniqueIndex
         }
-        $op = New-Object 'Rivet.Operations.RemoveIndexOperation' $SchemaName, $TableName, $ColumnName, $type
+        New-Object 'Rivet.Operations.RemoveIndexOperation' $SchemaName, $TableName, $ColumnName, $type
     }
 
-    Write-Verbose (' {0}.{1} -{2}' -f $SchemaName,$TableName,$op.Name) 
-    return $op
 }

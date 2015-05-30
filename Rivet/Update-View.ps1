@@ -35,6 +35,5 @@
     
     Set-StrictMode -Version 'Latest'
 
-    Write-Verbose (' ={0}.{1}' -f $SchemaName,$Name)
     New-Object Rivet.Operations.UpdateViewOperation $SchemaName,$Name,$Definition
 }

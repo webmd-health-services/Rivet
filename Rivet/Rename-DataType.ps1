@@ -51,7 +51,8 @@ function Rename-DataType
         $NewName
     )
 
-    Write-Verbose (' {0}.{1} -> {0}.{2}' -f $SchemaName,$Name,$NewName)
+    Set-StrictMode -Version 'Latest'
+
     New-Object 'Rivet.Operations.RenameOperation' $SchemaName, $Name, $NewName, 'USERDATATYPE'
 
 }

@@ -50,13 +50,11 @@ function Remove-DefaultConstraint
 
     if( $PSBoundParameters.ContainsKey("Name") )
     {
-        $op = New-Object 'Rivet.Operations.RemoveDefaultConstraintOperation' $SchemaName, $TableName, $null, $Name
+        New-Object 'Rivet.Operations.RemoveDefaultConstraintOperation' $SchemaName, $TableName, $null, $Name
     }
     else 
     {
-        $op = New-Object 'Rivet.Operations.RemoveDefaultConstraintOperation' $SchemaName, $TableName, $ColumnName
+        New-Object 'Rivet.Operations.RemoveDefaultConstraintOperation' $SchemaName, $TableName, $ColumnName
     }
 
-    Write-Verbose (' {0}.{1} -{2}' -f $SchemaName,$TableName,$op.Name)
-    return $op
 }

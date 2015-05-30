@@ -61,6 +61,5 @@
     
     Set-StrictMode -Version 'Latest'
 
-    Write-Verbose (' {0}.{1}.{2} -> {0}.{1}.{3}' -f $SchemaName,$TableName,$Name,$NewName)
     New-Object 'Rivet.Operations.RenameIndexOperation' $SchemaName, $TableName, $Name, $NewName
 }

@@ -50,6 +50,5 @@ function Add-CheckConstraint
 
     Set-StrictMode -Version 'Latest'
 
-    Write-Verbose (' {0}.{1} +{2} {3}' -f $SchemaName, $TableName, $Name, $Expression)
     New-Object 'Rivet.Operations.AddCheckConstraintOperation' $SchemaName, $TableName, $Name, $Expression, $NotForReplication, $NoCheck
 }

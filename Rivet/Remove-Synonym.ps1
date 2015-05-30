@@ -34,6 +34,7 @@ function Remove-Synonym
         $SchemaName = 'dbo'
     )
 
-    Write-Verbose(' -{0}.{1}' -f $SchemaName,$Name)
+    Set-StrictMode -Version 'Latest'
+
     New-Object 'Rivet.Operations.RemoveSynonymOperation' $SchemaName, $Name
 }

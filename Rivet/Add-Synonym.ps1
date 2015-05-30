@@ -53,6 +53,7 @@
         $TargetObjectName
     )
 
-    Write-Verbose (' +{0}.{1}' -f $SchemaName,$Name)
+    Set-StrictMode -Version 'Latest'
+
     New-Object 'Rivet.Operations.AddSynonymOperation' $SchemaName, $Name, $TargetSchemaName, $TargetDatabaseName, $TargetObjectName
 }

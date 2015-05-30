@@ -52,13 +52,10 @@
 
     if ($PSBoundParameters.containskey("Name"))
     {
-        Write-Verbose (' {0}.{1} +{2} ({3}) => {4}.{5}' -f $SchemaName,$TableName,$Name,$source_columns,$ReferencesSchema,$References)
         New-Object 'Rivet.Operations.EnableForeignKeyOperation' $SchemaName, $TableName, $Name
     }
     else
     {
-        $op = New-Object 'Rivet.Operations.EnableForeignKeyOperation' $SchemaName, $TableName, $ReferencesSchema, $references
-        Write-Verbose (' {0}.{1} +{2} ({3}) => {4}.{5}' -f $SchemaName,$TableName,$op.Name,$source_columns,$ReferencesSchema,$References)
-        $op
+        New-Object 'Rivet.Operations.EnableForeignKeyOperation' $SchemaName, $TableName, $ReferencesSchema, $references
     }
 }

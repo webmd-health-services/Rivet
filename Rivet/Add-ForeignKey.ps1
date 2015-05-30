@@ -90,14 +90,11 @@ function Add-ForeignKey
     
     if ($PSBoundParameters.containskey("Name"))
     {
-        Write-Verbose (' {0}.{1} +{2} ({3}) => {4}.{5} ({6})' -f $SchemaName,$TableName,$Name,$source_columns,$ReferencesSchema,$References,$ref_columns)
         New-Object 'Rivet.Operations.AddForeignKeyOperation' $SchemaName, $TableName, $ColumnName, $ReferencesSchema, $references, $ReferencedColumn, $Name, $OnDelete, $OnUpdate, $NotForReplication, $NoCheck
     }
     else
     {
-        $op = New-Object 'Rivet.Operations.AddForeignKeyOperation' $SchemaName, $TableName, $ColumnName, $ReferencesSchema, $references, $ReferencedColumn, $OnDelete, $OnUpdate, $NotForReplication, $NoCheck
-        Write-Verbose (' {0}.{1} +{2} ({3}) => {4}.{5} ({6})' -f $SchemaName,$TableName,$op.Name,$source_columns,$ReferencesSchema,$References,$ref_columns)
-        $op
+        New-Object 'Rivet.Operations.AddForeignKeyOperation' $SchemaName, $TableName, $ColumnName, $ReferencesSchema, $references, $ReferencedColumn, $OnDelete, $OnUpdate, $NotForReplication, $NoCheck
     }
 }
 

@@ -49,15 +49,11 @@ function Remove-UniqueKey
 
     if ($PSBoundParameters.ContainsKey("Name"))
     {
-        $op = New-Object 'Rivet.Operations.RemoveUniqueKeyOperation' $SchemaName, $TableName, $Name
-        Write-Verbose (' {0}.{1} -{2}' -f $SchemaName,$TableName,$op.Name)
-        $op
+        New-Object 'Rivet.Operations.RemoveUniqueKeyOperation' $SchemaName, $TableName, $Name
     }
     else 
     {
         $ColumnClause = $ColumnName -join ','
-        $op = New-Object 'Rivet.Operations.RemoveUniqueKeyOperation' $SchemaName, $TableName, $ColumnName
-        Write-Verbose (' {0}.{1} -{2} ({3})' -f $SchemaName,$TableName,$op.Name,$ColumnClause)
-        $op
+        New-Object 'Rivet.Operations.RemoveUniqueKeyOperation' $SchemaName, $TableName, $ColumnName
     }
 }
