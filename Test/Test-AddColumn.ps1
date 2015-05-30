@@ -466,7 +466,7 @@ N'
 
 function Pop-Migration()
 {
-    RemoveTable 'WithSparseColumns'
+    Remove-Table 'WithSparseColumns'
 }
 
 "@ | New-Migration -Name 'AddColumnSparse'
