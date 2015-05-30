@@ -29,6 +29,5 @@ function Add-Schema
 
     Set-StrictMode -Version 'Latest'
 
-    Write-Verbose (" +{0} {1}" -f $Name, $Owner)
     New-Object 'Rivet.Operations.AddSchemaOperation' $Name, $Owner
 }

@@ -65,13 +65,11 @@ function Add-UniqueKey
 
     if ($PSBoundParameters.ContainsKey("Name"))
     {
-        $op = New-Object 'Rivet.Operations.AddUniqueKeyOperation' $SchemaName, $TableName, $ColumnName, $Name, $Clustered, $FillFactor, $Option, $On
+        New-Object 'Rivet.Operations.AddUniqueKeyOperation' $SchemaName, $TableName, $ColumnName, $Name, $Clustered, $FillFactor, $Option, $On
     }
     else 
     {
-        $op = New-Object 'Rivet.Operations.AddUniqueKeyOperation' $SchemaName, $TableName, $ColumnName, $Clustered, $FillFactor, $Option, $On
+        New-Object 'Rivet.Operations.AddUniqueKeyOperation' $SchemaName, $TableName, $ColumnName, $Clustered, $FillFactor, $Option, $On
     }
 
-    Write-Verbose (' {0}.{1} +{2} ({3})' -f $SchemaName,$TableName,$op.Name,$ColumnClause)
-    return $op    
 }

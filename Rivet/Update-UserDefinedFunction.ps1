@@ -34,6 +34,5 @@
         $Definition
     )
     
-    Write-Verbose (' ={0}.{1}' -f $SchemaName,$Name)
     New-Object Rivet.Operations.UpdateUserDefinedFunctionOperation $SchemaName,$Name,$Definition
 }

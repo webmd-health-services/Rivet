@@ -130,6 +130,5 @@ function Update-ExtendedProperty
         $objectName = '{0}.{1}.{2}' -f $SchemaName,$ViewName,$ColumnName
     }
 
-    Write-Verbose (' {0} ={1}' -f $objectName,$Name)
     return $op
 }

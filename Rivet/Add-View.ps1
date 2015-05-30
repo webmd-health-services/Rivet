@@ -30,6 +30,7 @@
         $Definition
     )
     
-    Write-Verbose(' +{0}.{1}' -f $SchemaName,$Name)
+    Set-StrictMode -Version 'Latest'
+
     New-Object 'Rivet.Operations.AddViewOperation' $SchemaName,$Name,$Definition
 }

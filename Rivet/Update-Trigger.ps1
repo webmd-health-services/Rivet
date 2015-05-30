@@ -39,6 +39,5 @@ function Update-Trigger
 
     Set-StrictMode -Version 'Latest'
 
-    Write-Verbose (' ={0}.{1}' -f $SchemaName,$Name)
     New-Object 'Rivet.Operations.UpdateTriggerOperation' $SchemaName, $Name, $Definition
 }

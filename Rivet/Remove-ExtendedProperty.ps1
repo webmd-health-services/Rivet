@@ -90,37 +90,30 @@ function Remove-ExtendedProperty
 
     Set-StrictMode -Version 'Latest'
 
-    $objectName = ''
     if ($PsCmdlet.ParameterSetName -eq "SCHEMA")
     {
         $op = New-Object 'Rivet.Operations.RemoveExtendedPropertyOperation' $SchemaName, $Name
-        $objectName = $SchemaName
     }
 
     if ($PsCmdlet.ParameterSetName -eq "TABLE")
     {
         $op = New-Object 'Rivet.Operations.RemoveExtendedPropertyOperation' $SchemaName, $TableName, $Name, $false
-        $objectName = '{0}.{1}' -f $SchemaName,$TableName
     }
 
     if ($PsCmdlet.ParameterSetName -eq "VIEW")
     {
         $op = New-Object 'Rivet.Operations.RemoveExtendedPropertyOperation' $SchemaName, $ViewName, $Name, $true
-        $objectName = '{0}.{1}' -f $SchemaName,$ViewName
     }
 
     if ($PsCmdlet.ParameterSetName -eq "TABLE-COLUMN")
     {
         $op = New-Object 'Rivet.Operations.RemoveExtendedPropertyOperation' $SchemaName, $TableName, $ColumnName, $Name, $false
-        $objectName = '{0}.{1}.{2}' -f $SchemaName,$TableName,$ColumnName
     }
 
     if ($PsCmdlet.ParameterSetName -eq "VIEW-COLUMN")
     {
         $op = New-Object 'Rivet.Operations.RemoveExtendedPropertyOperation' $SchemaName, $ViewName, $ColumnName, $Name, $true
-        $objectName = '{0}.{1}.{2}' -f $SchemaName,$ViewName,$ColumnName
     }
 
-    Write-Verbose (' {0} -{1}' -f $objectName,$Name)
     return $op
 }

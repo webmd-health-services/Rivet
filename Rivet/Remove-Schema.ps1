@@ -21,6 +21,5 @@ function Remove-Schema
 
     Set-StrictMode -Version 'Latest'
 
-    Write-Verbose (' -{0}' -f $Name)
     New-Object 'Rivet.Operations.RemoveSchemaOperation' $Name
 }

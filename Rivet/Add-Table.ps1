@@ -63,7 +63,6 @@ function Add-Table
 
     Set-StrictMode -Version 'Latest'
 
-    Write-Verbose (' +{0}.{1}' -f $SchemaName,$Name)
     $columns = & $Column
     New-Object 'Rivet.Operations.AddTableOperation' $SchemaName, $Name, $columns, $FileTable, $FileGroup, $TextImageFileGroup, $FileStreamFileGroup, $Option, $Description
 

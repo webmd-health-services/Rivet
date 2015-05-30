@@ -22,12 +22,5 @@ function Invoke-Ddl
 
     Set-StrictMode -Version 'Latest'
 
-    $Query |
-        Split-SqlBatchQuery |
-        Where-Object { $_ } |
-        ForEach-Object {
-            Write-Verbose $_
-            New-Object 'Rivet.Operations.RawQueryOperation' $_
-        }
-
+    New-Object 'Rivet.Operations.RawQueryOperation' $Query
 }

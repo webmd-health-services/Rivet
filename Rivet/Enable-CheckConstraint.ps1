@@ -33,6 +33,5 @@
 
     Set-StrictMode -Version 'Latest'
 
-    Write-Verbose (' {0}.{1} +{2}' -f $SchemaName, $TableName, $Name)
     New-Object 'Rivet.Operations.EnableCheckConstraintOperation' $SchemaName, $TableName, $Name
 }

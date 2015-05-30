@@ -34,9 +34,9 @@ function Remove-View
         [string]
         # The schema of the view.  Default is `dbo`.
         $SchemaName = 'dbo'
-        
     )
     
-    Write-Verbose (' -{0}.{1}' -f $SchemaName,$Name)
+    Set-StrictMode -Version 'Latest'
+
     New-Object 'Rivet.Operations.RemoveViewOperation' $SchemaName, $Name
 }

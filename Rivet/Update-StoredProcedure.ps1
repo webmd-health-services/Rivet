@@ -35,6 +35,5 @@ function Update-StoredProcedure
     
     Set-StrictMode -Version 'Latest'
         
-    Write-Verbose (' ={0}.{1}' -f $SchemaName,$Name)
     New-Object 'Rivet.Operations.UpdateStoredProcedureOperation' $SchemaName, $Name, $Definition
 }

@@ -30,6 +30,5 @@ function Remove-Trigger
 
     Set-StrictMode -Version 'Latest'
 
-    Write-Verbose (' -{0}.{1}' -f $SchemaName,$Name)
     New-Object 'Rivet.Operations.RemoveTriggerOperation' $SchemaName, $Name
 }

@@ -86,7 +86,5 @@ function Add-DataType
         $op = New-Object 'Rivet.Operations.AddDataTypeOperation' $SchemaName, $Name, $columns, ([string[]]$TableConstraint)
     }
 
-    Write-Verbose (' +{0}.{1}' -f $SchemaName,$Name)
     return $op
-
 }

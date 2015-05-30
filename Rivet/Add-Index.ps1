@@ -105,28 +105,22 @@ function Add-Index
     {
         if ($PSBoundParameters.containskey("Name"))
         {
-            Write-Verbose (' {0}.{1} +{2} ({3})' -f $SchemaName,$TableName,$Name,$ColumnClause)
             New-Object 'Rivet.Operations.AddIndexOperation' $SchemaName, $TableName, $ColumnName, $Name, $Descending, $Unique, $Clustered, $Option, $Where, $On, $FileStreamOn, $Include
         }
         else 
         {
-            $op = New-Object 'Rivet.Operations.AddIndexOperation' $SchemaName, $TableName, $ColumnName, $Descending, $Unique, $Clustered, $Option, $Where, $On, $FileStreamOn, $Include
-            Write-Verbose (' {0}.{1} +{2} ({3})' -f $SchemaName,$TableName,$op.Name,$ColumnClause)
-            $op
+            New-Object 'Rivet.Operations.AddIndexOperation' $SchemaName, $TableName, $ColumnName, $Descending, $Unique, $Clustered, $Option, $Where, $On, $FileStreamOn, $Include
         }
     }
     else
     {
         if ($PSBoundParameters.containskey("Name"))
         {
-            Write-Verbose (' {0}.{1} +{2} ({3})' -f $SchemaName,$TableName,$Name,$ColumnClause)
             New-Object 'Rivet.Operations.AddIndexOperation' $SchemaName, $TableName, $ColumnName, $Name, $Unique, $Clustered, $Option, $Where, $On, $FileStreamOn, $Include
         }
         else 
         {
-            $op = New-Object 'Rivet.Operations.AddIndexOperation' $SchemaName, $TableName, $ColumnName, $Unique, $Clustered, $Option, $Where, $On, $FileStreamOn, $Include
-            Write-Verbose (' {0}.{1} +{2} ({3})' -f $SchemaName,$TableName,$op.Name,$ColumnClause)
-            $op
+            New-Object 'Rivet.Operations.AddIndexOperation' $SchemaName, $TableName, $ColumnName, $Unique, $Clustered, $Option, $Where, $On, $FileStreamOn, $Include
         }
     }
 }

@@ -58,14 +58,11 @@ function Add-DefaultConstraint
 
     if ($PSBoundParameters.containskey("Name"))
     {
-        $op = New-Object 'Rivet.Operations.AddDefaultConstraintOperation' $SchemaName, $TableName, $Expression, $ColumnName, $Name, $WithValues
+        New-Object 'Rivet.Operations.AddDefaultConstraintOperation' $SchemaName, $TableName, $Expression, $ColumnName, $Name, $WithValues
     }
     else 
     {
-        $op = New-Object 'Rivet.Operations.AddDefaultConstraintOperation' $SchemaName, $TableName, $Expression, $ColumnName, $WithValues
-        $Name = $op.Name
+        New-Object 'Rivet.Operations.AddDefaultConstraintOperation' $SchemaName, $TableName, $Expression, $ColumnName, $WithValues
     }
 
-    Write-Verbose (' {0}.{1} +{2} {3} {4}' -f $SchemaName, $TableName, $op.Name, $ColumnName, $Expression)
-    return $op
 }

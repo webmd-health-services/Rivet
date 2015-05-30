@@ -58,13 +58,11 @@ function Add-PrimaryKey
 
     if ($PSBoundParameters.ContainsKey("Name"))
     {
-        $op = New-Object 'Rivet.Operations.AddPrimaryKeyOperation' $SchemaName, $TableName, $ColumnName, $Name, $NonClustered, $Option
+        New-Object 'Rivet.Operations.AddPrimaryKeyOperation' $SchemaName, $TableName, $ColumnName, $Name, $NonClustered, $Option
     }
     else 
     {
-        $op = New-Object 'Rivet.Operations.AddPrimaryKeyOperation' $SchemaName, $TableName, $ColumnName, $NonClustered, $Option
+        New-Object 'Rivet.Operations.AddPrimaryKeyOperation' $SchemaName, $TableName, $ColumnName, $NonClustered, $Option
     }
 
-    Write-Verbose (' {0}.{1} +{2} ({3})' -f $SchemaName,$TableName,$op.Name,$columns)
-    return $op
 }

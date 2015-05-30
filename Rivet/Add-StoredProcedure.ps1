@@ -29,7 +29,8 @@ function Add-StoredProcedure
         # The store procedure's definition, which is everything after the `create procedure [schema].[name]` clause.
         $Definition
     )
+    
+    Set-StrictMode -Version 'Latest'
         
-    Write-Verbose (' +{0}.{1}' -f $SchemaName,$Name)
     New-Object 'Rivet.Operations.AddStoredProcedureOperation' $SchemaName, $Name, $Definition
 }

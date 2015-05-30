@@ -74,21 +74,6 @@ function Update-Table
         [Object[]]$updatedColumns = & $UpdateColumn
     }
 
-    foreach ($i in $newColumns)
-    {
-        Write-Verbose (' {0}.{1} +{2}' -f $SchemaName,$Name,$i.GetColumnDefinition($Name,$SchemaName,$false))
-    }
-
-    foreach ($i in $updatedColumns)
-    {
-        Write-Verbose (' {0}.{1} ={2}' -f $SchemaName,$Name,$i.GetColumnDefinition($Name,$SchemaName,$false))
-    }
-
-    foreach ($i in $RemoveColumn)
-    {
-        Write-Verbose (' {0}.{1} -{2}' -f $SchemaName,$Name,$i)
-    }
-
     New-Object 'Rivet.Operations.UpdateTableOperation' $SchemaName,$Name,$newColumns,$updatedColumns,$RemoveColumn
 
     foreach ($i in $newColumns)

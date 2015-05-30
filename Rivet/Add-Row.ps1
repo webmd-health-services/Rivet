@@ -47,7 +47,6 @@ function Add-Row
     {
         Set-StrictMode -Version 'Latest'
 
-        Write-Verbose (" {0}.{1} +" -f $SchemaName,$TableName)
         New-Object 'Rivet.Operations.AddRowOperation' $SchemaName, $TableName, $Column, $IdentityInsert
     }
 }

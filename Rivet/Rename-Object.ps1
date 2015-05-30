@@ -66,6 +66,5 @@ function Rename-Object
 
     Set-StrictMode -Version 'Latest'
 
-    Write-Verbose (' {0}.{1} -> {0}.{2}' -f $SchemaName,$Name,$NewName)
     New-Object 'Rivet.Operations.RenameOperation' $SchemaName, $Name, $NewName, 'OBJECT'
 }
