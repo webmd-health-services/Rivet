@@ -28,10 +28,12 @@ function Test-ShouldCreateDatabase
     @'
 function Push-Migration
 {
+    Add-Schema 'fubar'
 }
 
 function Pop-Migration
 {
+    Remove-Schema 'fubar'
 }
 '@ | New-Migration -Name 'CreateDatabase' -Database $name
 
@@ -125,6 +127,7 @@ function Push-Migration
 
 function Pop-Migration
 {
+    Remove-Schema 'fubar'
 }
 '@ | New-Migration -Name 'HasReservedID' -Database $RTDatabaseName    
 
@@ -161,5 +164,5 @@ function Assert-OperationsReturned
     )
 
     Assert-NotNull $Operation
-    $Operation | ForEach-Object { Assert-Is $_ ([Rivet.Operation]) }
+    $Operation | ForEach-Object { Assert-Is $_ ([Rivet.OperationResult]) }
 }

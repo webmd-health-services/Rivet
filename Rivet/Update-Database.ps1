@@ -142,7 +142,7 @@ function Update-Database
                 return $true
             }
 
-            if( $_.ID -lt 1000000000000 )
+            if( [int64]$_.ID -lt 1000000000000 )
             {
                 Write-Error ('Migration ''{0}'' has an invalid ID. IDs lower than 01000000000000 are reserved for internal use.' -f $_.Path)
                 $stopMigrating = $true
