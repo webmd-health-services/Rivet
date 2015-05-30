@@ -9,12 +9,12 @@ function Update-Database
     By default, applies all unapplied migrations to the database.  You can reverse all migrations with the `Down` switch.
     
     .EXAMPLE
-    Update-Database -Path C:\Projects\Rivet\Databases\Rivet\Migrations -DBScriptsPath C:\Projects\Rivet\Databases\Rivet
+    Update-Database -Path C:\Projects\Rivet\Databases\Rivet\Migrations
     
     Applies all un-applied migrations from the `C:\Projects\Rivet\Databases\Rivet\Migrations` directory.
     
     .EXAMPLE
-    Update-Database -Path C:\Projects\Rivet\Databases\Rivet\Migrations -DBScriptsPath C:\Projects\Rivet\Databases\Rivet -Pop
+    Update-Database -Path C:\Projects\Rivet\Databases\Rivet\Migrations -Pop
     
     Reverses all migrations in the `C:\Projects\Rivet\Databases\Rivet\Migrations` directory
     #>
@@ -25,11 +25,6 @@ function Update-Database
         # The path to the migration.
         $Path,
 
-        [Parameter(Mandatory=$true)]
-        [string]
-        # The path to the database's scripts directory.
-        $DBScriptsPath,
-        
         [Parameter(Mandatory=$true,ParameterSetName='Pop')]
         [Parameter(Mandatory=$true,ParameterSetName='PopByName')]
         [Parameter(Mandatory=$true,ParameterSetName='PopByCount')]
@@ -130,7 +125,7 @@ function Update-Database
 
 
     Get-Migration -Path $Path |
-        Sort-Object -Property 'MigrationID' -Descending:$popping |
+        Sort-Object -Property 'ID' -Descending:$popping |
         Where-Object { 
             if( -not $PSBoundParameters.ContainsKey('Name') )
             {
@@ -211,8 +206,6 @@ function Update-Database
             try
             {
                 $Connection.Transaction = $Connection.BeginTransaction()
-                $DBScriptRoot = $DBScriptsPath
-                $DBMigrationsRoot = Join-Path -Path $DBScriptsPath -ChildPath Migrations
 
                 if( $Pop )
                 {

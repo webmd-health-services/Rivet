@@ -65,11 +65,5 @@ function Connect-Database
             Add-Member -MemberType NoteProperty -Name 'Transaction' -Value $null
     }
 
-    if( -not ($Connection | Get-Member -Name 'ScriptsPath') )
-    {
-        $Connection |
-            Add-Member -MemberType NoteProperty -Name 'ScriptsPath' -Value $null 
-    }
-
     return $true
 }
