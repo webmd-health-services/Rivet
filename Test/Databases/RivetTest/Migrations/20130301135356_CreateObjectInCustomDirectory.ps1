@@ -1,7 +1,7 @@
 
 function Push-Migration()
 {
-    $miscScriptPath = Join-Path $DBScriptRoot MiscellaneousObject.sql
+    $miscScriptPath = Join-Path $DBMigrationsRoot '..\MiscellaneousObject.sql'
     Invoke-SqlScript -Path $miscScriptPath
     Invoke-SqlScript -Path ..\ObjectMadeWithRelativePath.sql
 }

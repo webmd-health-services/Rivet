@@ -120,7 +120,6 @@ Found no databases to migrate. This can be a few things:
         foreach( $databaseItem in $settings.Databases )
         {
             $databaseName = $databaseItem.Name
-            $dbScriptsPath = $databaseItem.Root
             $dbMigrationsPath = $databaseItem.MigrationsRoot
         
             $result = Connect-Database -SqlServerName $settings.SqlServerName `
@@ -131,15 +130,12 @@ Found no databases to migrate. This can be a few things:
                 continue
             }
         
-            $Connection.ScriptsPath = $dbScriptsPath
-
             try
             {
                 Initialize-Database
 
                 $updateParams = @{
                                     Path = $dbMigrationsPath;
-                                    DBScriptsPath = $dbScriptsPath;
                                     }
 
                 if( -not (Test-Path -Path $dbMigrationsPath -PathType Container) )
@@ -190,10 +186,6 @@ Found no databases to migrate. This can be a few things:
                 }
             
                 Write-Error ('{0} database migration failed: {1}.' -f $databaseName,$firstException.Message)
-            }
-            finally
-            {
-                $Connection.ScriptsPath = $null
             }
         }
     }
