@@ -261,6 +261,14 @@ function Get-Migration
 
                 $m
             }
+            catch
+            {
+                Write-RivetError -Message ('Loading migration ''{0}'' failed' -f $m.Path) `
+                                 -CategoryInfo $_.CategoryInfo.Category `
+                                 -ErrorID $_.FullyQualifiedErrorID `
+                                 -Exception $_.Exception `
+                                 -CallStack ($_.ScriptStackTrace) 
+            }
             finally
             {
                 Clear-Migration

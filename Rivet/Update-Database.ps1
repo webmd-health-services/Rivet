@@ -123,8 +123,7 @@ function Update-Database
     $foundNameMatch = $false
     $who = ('{0}\{1}' -f $env:USERDOMAIN,$env:USERNAME);
 
-
-    Get-Migration -Path $Path |
+    Get-Migration -Path $Path -ErrorAction Stop |
         Sort-Object -Property 'ID' -Descending:$popping |
         Where-Object { 
             if( -not $PSBoundParameters.ContainsKey('Name') )

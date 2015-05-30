@@ -28,7 +28,7 @@ function Pop-Migration
 
     Invoke-Rivet -Push 'BogusMigration' -ErrorAction SilentlyContinue -ErrorVariable rivetError
     Assert-True ($rivetError.Count -gt 0)
-    Assert-Like $rivetError[6] 'TestingScriptStackTrace'
-    Assert-Like $rivetError[6] 'STACKTRACE'
+    Assert-Like $rivetError[-1] 'TestingScriptStackTrace'
+    Assert-Like $rivetError[-1] 'STACKTRACE'
 
 }
