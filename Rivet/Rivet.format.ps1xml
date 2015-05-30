@@ -104,7 +104,7 @@
                                         return $_.RowsAffected
                                     }
 
-                                    if( $_ -is [Rivet.Operations.RawQueryOperation] )
+                                    if( $_ -is [Rivet.Operations.RawDdlOperation] )
                                     {
                                         return $_.Query
                                     }

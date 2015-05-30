@@ -1,8 +1,8 @@
 ﻿namespace Rivet.Operations
 {
-	public class RawQueryOperation : Operation
+	public class RawDdlOperation : Operation
 	{
-		public RawQueryOperation(string query)
+		public RawDdlOperation(string query)
 		{
 			Query = query;
 		}

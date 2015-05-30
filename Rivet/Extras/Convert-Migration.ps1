@@ -376,7 +376,7 @@ Get-Migration @getMigrationParams |
                 break
             }
 
-            'RawQuery|ScriptFile'
+            'RawDdl|ScriptFile'
             {
                 Write-Warning ('Generic migration operation found in ''{0}''.' -f $migration.Path)
                 $unknownScriptPath
