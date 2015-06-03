@@ -28,7 +28,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CreateIntWithNullable'
 
-    Invoke-Rivet -Push 'CreateIntWithNullable'
+    Invoke-RTRivet -Push 'CreateIntWithNullable'
 
     Assert-Table 'Foobar'
     Assert-Column -Name 'ID' -DataType 'Int' -TableName 'Foobar'
@@ -51,7 +51,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CreateIntWithNotNull'
 
-    Invoke-Rivet -Push 'CreateIntWithNotNull'
+    Invoke-RTRivet -Push 'CreateIntWithNotNull'
 
     Assert-Table 'Foobar'
     Assert-Column -Name 'ID' -DataType 'Int' -TableName 'Foobar' -NotNull
@@ -74,7 +74,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CreateIntWithSparse'
 
-    Invoke-Rivet -Push 'CreateIntWithSparse'
+    Invoke-RTRivet -Push 'CreateIntWithSparse'
 
     Assert-Table 'Foobar'
     Assert-Column -Name 'ID' -DataType 'Int' -TableName 'Foobar' -Sparse
@@ -97,7 +97,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CreateIntWithIdentity'
 
-    Invoke-Rivet -Push 'CreateIntWithIdentity'
+    Invoke-RTRivet -Push 'CreateIntWithIdentity'
 
     Assert-Table 'Foobar'
     Assert-Column -Name 'ID' -DataType 'Int' -TableName 'Foobar' -NotNull -Seed 1 -Increment 1
@@ -120,7 +120,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CreateIntWithIdentityNotForReplication'
 
-    Invoke-Rivet -Push 'CreateIntWithIdentityNotForReplication'
+    Invoke-RTRivet -Push 'CreateIntWithIdentityNotForReplication'
 
     Assert-Table 'Foobar'
     Assert-Column -Name 'ID' -DataType 'Int' -TableName 'Foobar' -NotNull -Seed 1 -Increment 1 -NotForReplication
@@ -143,7 +143,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CreateIntWithIdentityCustomSeedCustomIncrement'
 
-    Invoke-Rivet -Push 'CreateIntWithIdentityCustomSeedCustomIncrement'
+    Invoke-RTRivet -Push 'CreateIntWithIdentityCustomSeedCustomIncrement'
 
     Assert-Table 'Foobar'
     Assert-Column -Name 'ID' -DataType 'Int' -TableName 'Foobar' -NotNull -Seed 4 -Increment 4 -NotForReplication
@@ -166,7 +166,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CreateIntWithCustomValueCustomDescription'
 
-    Invoke-Rivet -Push 'CreateIntWithCustomValueCustomDescription'
+    Invoke-RTRivet -Push 'CreateIntWithCustomValueCustomDescription'
 
     Assert-Table 'Foobar'
     Assert-Column -Name 'ID' -DataType 'Int' -TableName 'Foobar' -Default 21 -Description 'Test'

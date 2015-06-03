@@ -31,7 +31,7 @@ function Pop-Migration()
 
     Assert-False (Test-Schema 'rivetaddremoveschema')
 
-    Invoke-Rivet -Push 'AddSchema'
+    Invoke-RTRivet -Push 'AddSchema'
 
     Assert-True (Test-Schema -Name 'rivetaddremoveschema')
 }
@@ -52,7 +52,7 @@ function Pop-Migration()
 
     Assert-False (Test-Schema 'alter')
 
-    Invoke-Rivet -Push 'AddSchemaWithReservedName'
+    Invoke-RTRivet -Push 'AddSchemaWithReservedName'
 
     Assert-True (Test-Schema -Name 'alter')
 }
@@ -75,7 +75,7 @@ function Pop-Migration
 '@ | New-Migration -Name 'AddSchemaWithOwner'
 
     Assert-False (Test-Schema 'schemawithowner')
-    Invoke-Rivet -Push 'AddSchemaWithOwner'
+    Invoke-RTRivet -Push 'AddSchemaWithOwner'
     $schema = Get-Schema 'schemawithowner'
     Assert-NotNull $schema
     Assert-Equal 'addremoteschema' $schema.principal_name

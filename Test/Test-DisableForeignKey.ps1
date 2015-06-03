@@ -38,7 +38,7 @@ function Pop-Migration()
 }
 '@ | New-Migration -Name 'DisabledForeignKey'
 
-    Invoke-Rivet -Push 'DisabledForeignKey'
+    Invoke-RTRivet -Push 'DisabledForeignKey'
     Assert-ForeignKey -TableName 'SourceTable' -References 'ReferenceTable' -IsDisabled
 }
 
@@ -71,7 +71,7 @@ function Pop-Migration()
 }
 '@ | New-Migration -Name 'DisabledForeignKey'
 
-    Invoke-Rivet -Push 'DisabledForeignKey'
+    Invoke-RTRivet -Push 'DisabledForeignKey'
     Assert-ForeignKey -TableName 'SourceTable' -References 'ReferenceTable' -IsDisabled
 }
 
@@ -103,7 +103,7 @@ function Pop-Migration()
 }
 '@ | New-Migration -Name 'DisabledForeignKeyWithName'
 
-    Invoke-Rivet -Push 'DisabledForeignKeyWithName'
+    Invoke-RTRivet -Push 'DisabledForeignKeyWithName'
 
     $ForeignKeys = @(Invoke-RivetTestQuery -Query 'select * from sys.foreign_keys')
 

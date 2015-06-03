@@ -25,7 +25,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'UpdateUserDefinedFunction'
 
-    Invoke-Rivet -Push 'UpdateUserDefinedFunction'
+    Invoke-RTRivet -Push 'UpdateUserDefinedFunction'
     
     Assert-UserDefinedFunction -Name 'squarefunction' -Schema 'dbo' -Definition '(@Number decimal(4,1)) returns decimal(12,3) as begin return(@Number * (@Number)) end'
 }

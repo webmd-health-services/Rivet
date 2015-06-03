@@ -37,7 +37,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CompleteAdminPlugin'
 
-    Invoke-Rivet -Push 'CompleteAdminPlugin'
+    Invoke-RTRivet -Push 'CompleteAdminPlugin'
 
     Assert-Column -Name CreateDate -DataType smalldatetime -NotNull -TableName "Foobar" -SchemaName 'fubar'
     Assert-Column -Name LastUpdated -DataType datetime -NotNull -TableName "Foobar" -SchemaName 'fubar'
@@ -63,7 +63,7 @@ function Pop-Migration
 }
 '@ | New-Migration -Name 'SkipRowGuid'
 
-    Invoke-Rivet -Push 'SkipRowGuid'
+    Invoke-RTRivet -Push 'SkipRowGuid'
 
     Assert-Column -Name guid -DataType uniqueidentifier -RowGuidCol -TableName "Foobar"
     Assert-False (Test-Column -TableName 'Foobar' -Name 'rowguid')
@@ -96,7 +96,7 @@ function Pop-Migration
 
     try
     {
-        Invoke-Rivet -Push 'ValidateMigrations' -ErrorAction SilentlyContinue
+        Invoke-RTRivet -Push 'ValidateMigrations' -ErrorAction SilentlyContinue
         Assert-False (Test-Trigger -Name 'trFoobar_Nothing')
         Assert-Error 2 'not for replication'
     }
@@ -124,7 +124,7 @@ function Pop-Migration
 
     try
     {
-        Invoke-Rivet -Push 'ValidateMigrations' -ErrorAction SilentlyContinue
+        Invoke-RTRivet -Push 'ValidateMigrations' -ErrorAction SilentlyContinue
         Assert-Error -First 'can''t be identity columns'
     }
     finally
@@ -151,7 +151,7 @@ function Pop-Migration
 
     try
     {
-        Invoke-Rivet -Push 'ValidateMigrations' -ErrorAction SilentlyContinue
+        Invoke-RTRivet -Push 'ValidateMigrations' -ErrorAction SilentlyContinue
         Assert-Error -First 'can''t be identity columns'
     }
     finally
@@ -178,7 +178,7 @@ function Pop-Migration
 
     try
     {
-        Invoke-Rivet -Push 'ValidateMigrations' -ErrorAction SilentlyContinue
+        Invoke-RTRivet -Push 'ValidateMigrations' -ErrorAction SilentlyContinue
         Assert-Error -First 'can''t be identity columns'
     }
     finally
@@ -203,7 +203,7 @@ function Pop-Migration
 }
 '@ | New-Migration -Name 'ValidateMigrations'
 
-    Invoke-Rivet -Push 'ValidateMigrations'
+    Invoke-RTRivet -Push 'ValidateMigrations'
 
     Assert-Table 'Foobar'
 
@@ -236,7 +236,7 @@ function Pop-Migration
 }
 '@ | New-Migration -Name 'ValidateMigrations'
 
-    Invoke-Rivet -Push 'ValidateMigrations'
+    Invoke-RTRivet -Push 'ValidateMigrations'
 
     Assert-Table 'Foo'
     Assert-Table 'Bar'
@@ -261,7 +261,7 @@ function Pop-Migration
 }
 '@ | New-Migration -Name 'ValidateMigrations'
 
-    Invoke-Rivet -Push 'ValidateMigrations'
+    Invoke-RTRivet -Push 'ValidateMigrations'
 
     Assert-Table 'Foo'
     Assert-CheckConstraint 'CK_Foo_Name' '([Name]=''Bono'' or [Name]=''The Edge'')' -NotForReplication
@@ -285,7 +285,7 @@ function Pop-Migration
 
     try
     {
-        Invoke-Rivet -Push 'ValidateMigrations' -ErrorAction SilentlyContinue
+        Invoke-RTRivet -Push 'ValidateMigrations' -ErrorAction SilentlyContinue
 
         Assert-Error -First 'Foo.*-Description'
 
@@ -315,7 +315,7 @@ function Pop-Migration
 
     try
     {
-        Invoke-Rivet -Push 'ValidateMigrations' -ErrorAction SilentlyContinue
+        Invoke-RTRivet -Push 'ValidateMigrations' -ErrorAction SilentlyContinue
 
         Assert-Error -First 'Name.*-Description'
 
@@ -349,7 +349,7 @@ function Pop-Migration
 
     try
     {
-        Invoke-Rivet -Push 'ValidateMigrations' -ErrorAction SilentlyContinue
+        Invoke-RTRivet -Push 'ValidateMigrations' -ErrorAction SilentlyContinue
 
         Assert-Error -First 'LastName.*-Description'
 

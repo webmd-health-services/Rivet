@@ -31,7 +31,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CreateDateTime2Column'
 
-    Invoke-Rivet -Push 'CreateDateTime2Column'
+    Invoke-RTRivet -Push 'CreateDateTime2Column'
 
     $migrationRow = Get-MigrationInfo -Name 'CreateDateTime2Column'
 

@@ -32,7 +32,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'UpdateTrigger'
 
-    Invoke-Rivet -Push 'UpdateTrigger'
+    Invoke-RTRivet -Push 'UpdateTrigger'
 
     Assert-Trigger -Name 'TestTrigger' -Definition "on dbo.Person after update, insert as raiserror ('Notify CEO', 16, 10);"
 }
@@ -60,7 +60,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'UpdateTriggerinCustomSchema'
 
-    Invoke-Rivet -Push 'UpdateTriggerinCustomSchema'
+    Invoke-RTRivet -Push 'UpdateTriggerinCustomSchema'
 
     Assert-Trigger -Name 'TestTrigger' -SchemaName 'fizz' -Definition "on fizz.Person after update, insert as raiserror ('Notify CEO', 16, 10);"
 }

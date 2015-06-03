@@ -28,7 +28,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CreateDecimalWithNullable'
 
-    Invoke-Rivet -Push 'CreateDecimalWithNullable'
+    Invoke-RTRivet -Push 'CreateDecimalWithNullable'
 
     Assert-Table 'Foobar'
     Assert-Column -Name 'ID' -DataType 'Decimal' -TableName 'Foobar' -Precision 18 -Scale 0
@@ -51,7 +51,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CreateDecimalWithNullable'
 
-    Invoke-Rivet -Push 'CreateDecimalWithNullable'
+    Invoke-RTRivet -Push 'CreateDecimalWithNullable'
 
     Assert-Table 'Foobar'
     Assert-Column -Name 'ID' -DataType 'Decimal' -TableName 'Foobar' -Precision 5 -Scale 2
@@ -74,7 +74,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CreateDecimalWithNotNull'
 
-    Invoke-Rivet -Push 'CreateDecimalWithNotNull'
+    Invoke-RTRivet -Push 'CreateDecimalWithNotNull'
 
     Assert-Table 'Foobar'
     Assert-Column -Name 'ID' -DataType 'Decimal' -TableName 'Foobar' -NotNull -Precision 5 -Scale 2
@@ -97,7 +97,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CreateDecimalWithSparse'
 
-    Invoke-Rivet -Push 'CreateDecimalWithSparse'
+    Invoke-RTRivet -Push 'CreateDecimalWithSparse'
 
     Assert-Table 'Foobar'
     Assert-Column -Name 'ID' -DataType 'Decimal' -TableName 'Foobar' -Sparse -Precision 5 -Scale 2
@@ -120,7 +120,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CreateDecimalWithIdentity'
 
-    Invoke-Rivet -Push 'CreateDecimalWithIdentity'
+    Invoke-RTRivet -Push 'CreateDecimalWithIdentity'
 
     Assert-Table 'Foobar'
     Assert-Column -Name 'ID' -DataType 'Decimal' -TableName 'Foobar' -NotNull -Seed 1 -Increment 1 -Precision 5 -Scale 0
@@ -143,7 +143,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CreateDecimalWithIdentityNotForReplication'
 
-    Invoke-Rivet -Push 'CreateDecimalWithIdentityNotForReplication'
+    Invoke-RTRivet -Push 'CreateDecimalWithIdentityNotForReplication'
 
     Assert-Table 'Foobar'
     Assert-Column -Name 'ID' -DataType 'Decimal' -TableName 'Foobar' -NotNull -Seed 1 -Increment 1 -NotForReplication -Precision 5
@@ -166,7 +166,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CreateDecimalWithIdentityCustomSeedCustomIncrement'
 
-    Invoke-Rivet -Push 'CreateDecimalWithIdentityCustomSeedCustomIncrement'
+    Invoke-RTRivet -Push 'CreateDecimalWithIdentityCustomSeedCustomIncrement'
 
     Assert-Table 'Foobar'
     Assert-Column -Name 'ID' -DataType 'Decimal' -TableName 'Foobar' -NotNull -Seed 4 -Increment 4 -NotForReplication -Precision 5
@@ -189,7 +189,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CreateDecimalWithCustomValueCustomDescription'
 
-    Invoke-Rivet -Push 'CreateDecimalWithCustomValueCustomDescription'
+    Invoke-RTRivet -Push 'CreateDecimalWithCustomValueCustomDescription'
 
     Assert-Table 'Foobar'
     Assert-Column -Name 'ID' -DataType 'Decimal' -TableName 'Foobar' -Default 21 -Description 'Test' -Precision 5 -Scale 2

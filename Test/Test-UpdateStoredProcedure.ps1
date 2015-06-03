@@ -32,7 +32,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'UpdateExistingStoredProcedure'
 
-    Invoke-Rivet -Push 'UpdateExistingStoredProcedure'
+    Invoke-RTRivet -Push 'UpdateExistingStoredProcedure'
 
     Assert-StoredProcedure -Name 'TestStoredProcedure' -Definition 'as SELECT MiddleName, LastName FROM dbo.Person;' -SchemaName 'dbo'
 }

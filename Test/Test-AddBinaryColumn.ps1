@@ -28,7 +28,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CreateBinaryColumn'
 
-    Invoke-Rivet -Push 'CreateBinaryColumn'
+    Invoke-RTRivet -Push 'CreateBinaryColumn'
     
     Assert-Table 'Foobar'
     Assert-Column -Name 'id' -DataType 'Binary' -TableName 'Foobar' -Size 500
@@ -51,7 +51,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CreateBinaryColumnWithSparse'
 
-    Invoke-Rivet -Push 'CreateBinaryColumnWithSparse'
+    Invoke-RTRivet -Push 'CreateBinaryColumnWithSparse'
     
     Assert-Table 'Foobar'
     Assert-Column -Name 'id' -DataType 'Binary' -TableName 'Foobar' -Sparse -Size 500
@@ -74,7 +74,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CreateBinaryColumnWithNotNull'
 
-    Invoke-Rivet -Push 'CreateBinaryColumnWithNotNull'
+    Invoke-RTRivet -Push 'CreateBinaryColumnWithNotNull'
     
     Assert-Table 'Foobar'
     Assert-Column -Name 'id' -DataType 'Binary' -TableName 'Foobar' -NotNull -Size 500
@@ -97,7 +97,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'ShouldCreateBinaryColumnWithCustomSizeCollation'
 
-    Invoke-Rivet -Push 'ShouldCreateBinaryColumnWithCustomSizeCollation'
+    Invoke-RTRivet -Push 'ShouldCreateBinaryColumnWithCustomSizeCollation'
     
     Assert-Table 'Foobar'
     Assert-Column -Name 'id' -DataType 'Binary' -TableName 'Foobar' -NotNull -Size 50 

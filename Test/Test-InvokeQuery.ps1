@@ -41,7 +41,7 @@ function Pop-Migration
 
 "@ | New-Migration -Name 'CreateInvokeDdlFunction'
 
-    Invoke-Rivet -Push 'CreateInvokeDdlFunction'
+    Invoke-RTRivet -Push 'CreateInvokeDdlFunction'
 
     Assert-True (Test-Schema 'Invoke-Ddl')
 }
@@ -76,7 +76,7 @@ function Pop-Migration
 
 "@ | New-Migration -Name 'CreateInvokeDdlFunction'
 
-    Invoke-Rivet -Push 'CreateInvokeDdlFunction' -ErrorAction SilentlyContinue
+    Invoke-RTRivet -Push 'CreateInvokeDdlFunction' -ErrorAction SilentlyContinue
     Assert-Error
 
     Assert-False (Test-DatabaseObject -ScalarFunction -Name 'InvokeDdl')
@@ -126,7 +126,7 @@ function Pop-Migration
 
 "@ | New-Migration -Name 'CreateInvokeDdlFunction'
 
-    Invoke-Rivet -Push 'CreateInvokeDdlFunction' #-ErrorAction SilentlyContinue
+    Invoke-RTRivet -Push 'CreateInvokeDdlFunction' #-ErrorAction SilentlyContinue
 
     Assert-True (Test-DatabaseObject -StoredProcedure -Name 'RivetTestSproc')
 }

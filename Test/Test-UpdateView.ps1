@@ -33,7 +33,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'UpdateView'
 
-    Invoke-Rivet -Push 'UpdateView'
+    Invoke-RTRivet -Push 'UpdateView'
     
     Assert-View -Name "customView" -Schema "dbo" -Definition "as select LastName from Person"
 }

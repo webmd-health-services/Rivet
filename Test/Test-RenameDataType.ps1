@@ -21,7 +21,7 @@ function Push-Migration
 }
 '@ | New-Migration -Name 'CreateMyType'
 
-    Invoke-Rivet -Push
+    Invoke-RTRivet -Push
 
     Assert-DataType -SchemaName 'refresh' -Name 'mytype' -BaseType 'nvarchar' -UserDefined
 
@@ -32,7 +32,7 @@ function Push-Migration
 }
 '@ | New-Migration -Name 'IncreaseToUpperLength'
 
-    Invoke-Rivet -Push
+    Invoke-RTRivet -Push
 
     Assert-DataType -SchemaName 'refresh' -Name 'myoldtype' -BaseType 'nvarchar' -UserDefined
 }

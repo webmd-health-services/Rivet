@@ -35,7 +35,7 @@ function Pop-Migration()
     Remove-Table 'Source Table'
 }
 '@ | New-Migration -Name 'AddForeignKeyFromSingleColumnToSingleColumn'
-    Invoke-Rivet -Push 'AddForeignKeyFromSingleColumnToSingleColumn'
+    Invoke-RTRivet -Push 'AddForeignKeyFromSingleColumnToSingleColumn'
     Assert-ForeignKey -TableName 'Source Table' -References 'Reference Table'
 }
 
@@ -65,7 +65,7 @@ function Pop-Migration()
     Remove-Table 'Source'
 }
 '@ | New-Migration -Name 'AddForeignKeyFromMultipleColumnToMultipleColumn'
-    Invoke-Rivet -Push 'AddForeignKeyFromMultipleColumnToMultipleColumn'
+    Invoke-RTRivet -Push 'AddForeignKeyFromMultipleColumnToMultipleColumn'
     Assert-ForeignKey -TableName 'Source' -References 'Reference'
 }
 
@@ -93,7 +93,7 @@ function Pop-Migration()
     Remove-Table 'Source' -SchemaName 'rivet'
 }
 '@ | New-Migration -Name 'AddForeignKeyWithCustomSchema'
-    Invoke-Rivet -Push 'AddForeignKeyWithCustomSchema'
+    Invoke-RTRivet -Push 'AddForeignKeyWithCustomSchema'
     Assert-ForeignKey -TableName 'Source' -SchemaName 'rivet' -References 'Reference' -ReferencesSchema 'rivet'
 }
 
@@ -121,7 +121,7 @@ function Pop-Migration()
     Remove-Table 'Source'
 }
 '@ | New-Migration -Name 'AddForeignKeyWithOnDelete'
-    Invoke-Rivet -Push 'AddForeignKeyWithOnDelete'
+    Invoke-RTRivet -Push 'AddForeignKeyWithOnDelete'
     Assert-ForeignKey -TableName 'Source' -References 'Reference' -OnDelete 'CASCADE'
 
 }
@@ -150,7 +150,7 @@ function Pop-Migration()
     Remove-Table 'Source'
 }
 '@ | New-Migration -Name 'AddForeignKeyWithOnUpdate'
-    Invoke-Rivet -Push 'AddForeignKeyWithOnUpdate'
+    Invoke-RTRivet -Push 'AddForeignKeyWithOnUpdate'
     Assert-ForeignKey -TableName 'Source' -References 'Reference' -OnDelete 'CASCADE' -OnUpdate 'CASCADE'
 }
 
@@ -178,7 +178,7 @@ function Pop-Migration()
     Remove-Table 'Source'
 }
 '@ | New-Migration -Name 'AddForeignKeyNotForReplication'
-    Invoke-Rivet -Push 'AddForeignKeyNotForReplication'
+    Invoke-RTRivet -Push 'AddForeignKeyNotForReplication'
     Assert-ForeignKey -TableName 'Source' -References 'Reference' -OnDelete 'CASCADE' -OnUpdate 'CASCADE' -NotForReplication
 
 }
@@ -207,7 +207,7 @@ function Pop-Migration()
     Remove-Table 'Add-ForeignKey'
 }
 '@ | New-Migration -Name 'AddForeignKeyFromSingleColumnToSingleColumn'
-    Invoke-Rivet -Push 'AddForeignKeyFromSingleColumnToSingleColumn'
+    Invoke-RTRivet -Push 'AddForeignKeyFromSingleColumnToSingleColumn'
     Assert-ForeignKey -TableName 'Add-ForeignKey' -References 'Reference'
 }
 
@@ -235,7 +235,7 @@ function Pop-Migration()
     Remove-Table 'Reference'
 }
 '@ | New-Migration -Name 'AddForeignKeyWithOptionalConstraintName'
-    Invoke-Rivet -Push 'AddForeignKeyWithOptionalConstraintName'
+    Invoke-RTRivet -Push 'AddForeignKeyWithOptionalConstraintName'
     
     $ForeignKeys = @(Invoke-RivetTestQuery -Query 'select * from sys.foreign_keys')
 
@@ -272,7 +272,7 @@ function Pop-Migration()
     Remove-Table 'Source Table'
 }
 '@ | New-Migration -Name 'AddForeignKeyFromSingleColumnToSingleColumn'
-    Invoke-Rivet -Push 'AddForeignKeyFromSingleColumnToSingleColumn'
+    Invoke-RTRivet -Push 'AddForeignKeyFromSingleColumnToSingleColumn'
 
     $SourceRow = Get-Row -SchemaName 'dbo' -TableName 'Source Table'
     Assert-Equal 1 $SourceRow.'Source ID'

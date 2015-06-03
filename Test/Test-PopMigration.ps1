@@ -54,7 +54,7 @@ function Pop-Migration
 }
 '@ | New-Migration -Name 'Migration4'
 
-    Invoke-Rivet -Push
+    Invoke-RTRivet -Push
     
     $expectedCount = Measure-MigrationScript
     Assert-Equal $expectedCount (Measure-Migration)
@@ -70,7 +70,7 @@ function Test-ShouldPopAllMigrations
     $migrationCount = Measure-Migration
     Assert-True ($migrationCount -gt 1)
     
-    Invoke-Rivet -Pop $migrationCount
+    Invoke-RTRivet -Pop $migrationCount
     Assert-LastProcessSucceeded
     
     Assert-Equal 0 (Measure-Migration)
@@ -88,7 +88,7 @@ function Test-ShouldWriteToActivityTableOnPop
     $migrationCount = Measure-Migration
     Assert-True ($migrationCount -gt 1)
 
-    Invoke-Rivet -Pop
+    Invoke-RTRivet -Pop
     Assert-LastProcessSucceeded
 
     Assert-Equal ($migrationCount-1) (Measure-Migration)
@@ -104,7 +104,7 @@ function Test-ShouldPopSpecificNumberOfDatabaseMigrations
     $rivetCount = Measure-Migration
     Assert-True ($rivetCount -gt 1)
 
-    Invoke-Rivet -Pop 2
+    Invoke-RTRivet -Pop 2
         
     Assert-Equal ($rivetCount - 2) (Measure-Migration)
 }
@@ -113,7 +113,7 @@ function Test-ShouldPopOneMigrationByDefault
 {
     $totalMigrations = Measure-Migration
     
-    Invoke-Rivet -Pop
+    Invoke-RTRivet -Pop
     
     Assert-Equal ($totalMigrations - 1) (Measure-Migration)
     
@@ -126,17 +126,17 @@ function Test-ShouldPopOneMigrationByDefault
 function Test-ShouldNotRePopMigrations
 {
     $originalMigrationCount = Measure-Migration
-    Invoke-Rivet -Pop
+    Invoke-RTRivet -Pop
     Assert-LastProcessSucceeded
     Assert-NoError
     Assert-Equal ($originalMigrationCount - 1) (Measure-Migration)
     
-    Invoke-Rivet -Pop 2
+    Invoke-RTRivet -Pop 2
     Assert-LastProcessSucceeded
     Assert-NoError
     Assert-Equal ($originalMigrationCount - 2) (Measure-Migration)
     
-    Invoke-Rivet -Pop 2
+    Invoke-RTRivet -Pop 2
     Assert-LastProcessSucceeded
     Assert-NoError
     Assert-Equal ($originalMigrationCount - 2) (Measure-Migration)
@@ -145,7 +145,7 @@ function Test-ShouldNotRePopMigrations
 function Test-ShouldSupportPoppingMoreThanAvailableMigrations
 {
     $migrationCount = Measure-Migration
-    Invoke-Rivet -Pop ($migrationCount * 2) 
+    Invoke-RTRivet -Pop ($migrationCount * 2) 
     Assert-LastProcessSucceeded
     Assert-NoError
     Assert-Equal 0 (Measure-Migration)
@@ -170,11 +170,11 @@ function Pop-Migration
     
     try
     {
-        Invoke-Rivet -Push
+        Invoke-RTRivet -Push
         Assert-LastProcessSucceeded
         Assert-NoError
     
-        Invoke-Rivet -Pop (Measure-Migration) -ErrorAction SilentlyContinue -ErrorVariable rivetError
+        Invoke-RTRivet -Pop (Measure-Migration) -ErrorAction SilentlyContinue -ErrorVariable rivetError
 
         Assert-NotNull $rivetError
         Assert-Like $rivetError[0] '*cannot drop the table*'
@@ -205,7 +205,7 @@ function Pop-Migration
 
 function Test-ShouldPopByName
 {
-    Invoke-Rivet -Pop 'Migration1'
+    Invoke-RTRivet -Pop 'Migration1'
 
     Assert-True (Test-Table -Name 'Migration4')
     Assert-True (Test-Table -Name 'Migration3')
@@ -215,7 +215,7 @@ function Test-ShouldPopByName
 
 function Test-ShouldPopByNameWithWildcard
 {
-    Invoke-Rivet -Pop 'Migration*'
+    Invoke-RTRivet -Pop 'Migration*'
 
     Assert-False (Test-Table -Name 'Migration4')
     Assert-False (Test-Table -Name 'Migration3')
@@ -226,7 +226,7 @@ function Test-ShouldPopByNameWithWildcard
 
 function Test-ShouldPopByNameWithNoMatch
 {
-    Invoke-Rivet -Pop 'Blah' -ErrorAction SilentlyContinue
+    Invoke-RTRivet -Pop 'Blah' -ErrorAction SilentlyContinue
     Assert-Error -Last 'not found'
 
     Assert-True (Test-Table -Name 'Migration4')
@@ -238,7 +238,7 @@ function Test-ShouldPopByNameWithNoMatch
 function Test-ShouldPopByID
 {
     $name = $migration1.BaseName.Substring(0,14)
-    Invoke-Rivet -Pop $name
+    Invoke-RTRivet -Pop $name
     Assert-Table -Name 'Migration4'
     Assert-Table -Name 'Migration3'
     Assert-Table -Name 'Migration2'
@@ -248,7 +248,7 @@ function Test-ShouldPopByID
 function Test-ShouldPopByIDWithWildcard
 {
     $name = '{0:yyyyMMdd}*' -f (Get-Date)
-    Invoke-Rivet -Pop $name
+    Invoke-RTRivet -Pop $name
     Assert-False (Test-Table -Name 'Migration4')
     Assert-False (Test-Table -Name 'Migration3')
     Assert-False (Test-Table -Name 'Migration2')
@@ -257,7 +257,7 @@ function Test-ShouldPopByIDWithWildcard
 
 function Test-ShouldPopAll
 {
-    Invoke-Rivet -Pop -All
+    Invoke-RTRivet -Pop -All
     Assert-False (Test-Table -Name 'Migration4')
     Assert-False (Test-Table -Name 'Migration3')
     Assert-False (Test-Table -Name 'Migration2')
@@ -268,7 +268,7 @@ function Test-ShouldConfirmPoppingAnothersMigration
 {
     Invoke-RivetTestQuery -Query 'update [rivet].[Migrations] set Who = ''LittleLionMan'''
 
-    Invoke-Rivet -Pop -All -Force
+    Invoke-RTRivet -Pop -All -Force
     Assert-False (Test-Table 'Migration4')
     Assert-False (Test-Table 'Migration3')
     Assert-False (Test-Table 'Migration2')
@@ -279,7 +279,7 @@ function Test-ShouldConfirmPoppingOldMigrations
 {
     Invoke-RivetTestQuery -Query 'update [rivet].[Migrations] set AtUtc = dateadd(minute, -21, AtUtc)'
 
-    Invoke-Rivet -Pop -All -Force
+    Invoke-RTRivet -Pop -All -Force
     Assert-False (Test-Table 'Migration4')
     Assert-False (Test-Table 'Migration3')
     Assert-False (Test-Table 'Migration2')

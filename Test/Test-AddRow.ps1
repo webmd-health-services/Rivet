@@ -45,7 +45,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'AddSingleRow'
 
-    Invoke-Rivet -Push 'AddSingleRow'
+    Invoke-RTRivet -Push 'AddSingleRow'
 
     Assert-Table 'Table of Cities'
 
@@ -87,7 +87,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'AddMultipleRow'
 
-    Invoke-Rivet -Push 'AddMultipleRow'
+    Invoke-RTRivet -Push 'AddMultipleRow'
 
     Assert-Table 'Cities'
     Assert-Column -TableName 'Cities' -Name 'City' -DataType 'VarChar' -NotNull
@@ -129,7 +129,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'AddMultipleRowByPipe'
 
-    Invoke-Rivet -Push 'AddMultipleRowByPipe'
+    Invoke-RTRivet -Push 'AddMultipleRowByPipe'
 
     Assert-Table 'Cities'
     Assert-Column -TableName 'Cities' -Name 'City' -DataType 'VarChar' -NotNull
@@ -169,7 +169,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'AddSingleRow'
 
-    Invoke-Rivet -Push 'AddSingleRow'
+    Invoke-RTRivet -Push 'AddSingleRow'
 
     Assert-Table 'Cities'
 
@@ -200,7 +200,7 @@ function Pop-Migration
 }
 '@ | New-Migration -Name 'AddSingleRow'
 
-    Invoke-Rivet -Push 'AddSingleRow'
+    Invoke-RTRivet -Push 'AddSingleRow'
 
     Assert-Table 'Cities'
 

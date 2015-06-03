@@ -28,7 +28,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CreateBigIntWithNullable'
 
-    Invoke-Rivet -Push 'CreateBigIntWithNullable'
+    Invoke-RTRivet -Push 'CreateBigIntWithNullable'
 
     Assert-Table 'Foobar'
     Assert-Column -Name 'ID' -DataType 'BigInt' -TableName 'Foobar'
@@ -51,7 +51,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CreateBigIntWithNotNull'
 
-    Invoke-Rivet -Push 'CreateBigIntWithNotNull'
+    Invoke-RTRivet -Push 'CreateBigIntWithNotNull'
 
     Assert-Table 'Foobar'
     Assert-Column -Name 'ID' -DataType 'BigInt' -TableName 'Foobar' -NotNull
@@ -74,7 +74,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CreateBigIntWithSparse'
 
-    Invoke-Rivet -Push 'CreateBigIntWithSparse'
+    Invoke-RTRivet -Push 'CreateBigIntWithSparse'
 
     Assert-Table 'Foobar'
     Assert-Column -Name 'ID' -DataType 'BigInt' -TableName 'Foobar' -Sparse
@@ -97,7 +97,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CreateBigIntWithIdentity'
 
-    Invoke-Rivet -Push 'CreateBigIntWithIdentity'
+    Invoke-RTRivet -Push 'CreateBigIntWithIdentity'
 
     Assert-Table 'Foobar'
     Assert-Column -Name 'ID' -DataType 'BigInt' -TableName 'Foobar' -NotNull -Seed 1 -Increment 1
@@ -120,7 +120,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CreateBigIntWithIdentityNotForReplication'
 
-    Invoke-Rivet -Push 'CreateBigIntWithIdentityNotForReplication'
+    Invoke-RTRivet -Push 'CreateBigIntWithIdentityNotForReplication'
 
     Assert-Table 'Foobar'
     Assert-Column -Name 'ID' -DataType 'BigInt' -TableName 'Foobar' -NotNull -Seed 1 -Increment 1 -NotForReplication
@@ -143,7 +143,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CreateBigIntWithIdentityCustomSeedCustomIncrement'
 
-    Invoke-Rivet -Push 'CreateBigIntWithIdentityCustomSeedCustomIncrement'
+    Invoke-RTRivet -Push 'CreateBigIntWithIdentityCustomSeedCustomIncrement'
 
     Assert-Table 'Foobar'
     Assert-Column -Name 'ID' -DataType 'BigInt' -TableName 'Foobar' -NotNull -Seed 4 -Increment 4 -NotForReplication
@@ -166,7 +166,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CreateBigIntWithCustomValueCustomDescription'
 
-    Invoke-Rivet -Push 'CreateBigIntWithCustomValueCustomDescription'
+    Invoke-RTRivet -Push 'CreateBigIntWithCustomValueCustomDescription'
 
     Assert-Table 'Foobar'
     Assert-Column -Name 'ID' -DataType 'BigInt' -TableName 'Foobar' -Default 21 -Description 'Test'
@@ -191,7 +191,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'ShouldEscapeNames'
 
-    Invoke-Rivet -Push 'ShouldEscapeNames'
+    Invoke-RTRivet -Push 'ShouldEscapeNames'
 
     Assert-Table 'Foo-Bar' -SchemaName 'New-BigInt'
     Assert-Column -Name 'ID-ID' -DataType 'BigInt' -TableName 'Foo-Bar' -SchemaName 'New-BigInt' -Default 21 

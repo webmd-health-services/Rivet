@@ -39,7 +39,7 @@ function Pop-Migration
 
     try
     {
-        $result = Invoke-Rivet -Push -Database $name
+        $result = Invoke-RTRivet -Push -Database $name
         Assert-NoError
         Assert-OperationsReturned $result
 
@@ -73,7 +73,7 @@ function Pop-Migration
 
     try
     {
-        $result = Invoke-Rivet -Push -Database $RTDatabaseName
+        $result = Invoke-RTRivet -Push -Database $RTDatabaseName
         Assert-NoError
         Assert-OperationsReturned $result
 
@@ -105,7 +105,7 @@ function Test-ShouldApplyMigrationsToDuplicateDatabasesWithNoMigrationsDirectory
         Remove-RivetTestDatabase -Name 'InvokeRivet'
         Remove-RivetTestDatabase -Name 'InvokeRivet2'
 
-        $result = Invoke-Rivet -Push -Database $RTDatabaseName
+        $result = Invoke-RTRivet -Push -Database $RTDatabaseName
         Assert-NoError 
         Assert-OperationsReturned $result
         Assert-True (Test-Database 'InvokeRivet')
@@ -135,13 +135,13 @@ function Pop-Migration
     Assert-NotNull $file
     $file = Rename-Item -Path $file -NewName ('00999999999999_HasReservedID.ps1') -PassThru
 
-    Invoke-Rivet -Push -ErrorAction SilentlyContinue
+    Invoke-RTRivet -Push -ErrorAction SilentlyContinue
     Assert-Error -Last -Regex 'reserved'
     Assert-False (Test-Schema -Name 'fubar')
 
     $Global:Error.Clear()
     Rename-Item -Path $file -NewName ('01000000000000_HasReservedID.ps1')
-    Invoke-Rivet -Push 
+    Invoke-RTRivet -Push 
     Assert-NoError
     Assert-Schema -Name 'fubar'
 
@@ -156,7 +156,7 @@ function Test-ShouldHandleFailureToConnect
 
     try
     {
-        Invoke-Rivet -Push -ErrorAction SilentlyContinue
+        Invoke-RTRivet -Push -ErrorAction SilentlyContinue
         Assert-Error -Last -Regex 'failed to connect'
     }
     finally

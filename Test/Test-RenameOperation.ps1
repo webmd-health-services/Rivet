@@ -30,7 +30,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'RenameTable'
 
-    Invoke-Rivet -Push 'RenameTable'
+    Invoke-RTRivet -Push 'RenameTable'
 
     Assert-Table 'RenameTable' -Description 'Testing Add-Table migration'
     Assert-Column -Name 'varchar' 'varchar' -NotNull -Description 'varchar(max) constraint DF_AddTable_varchar default default' -TableName 'RenameTable'
@@ -59,7 +59,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'RenameColumn'
 
-    Invoke-Rivet -Push 'RenameColumn'
+    Invoke-RTRivet -Push 'RenameColumn'
 
     Assert-Table 'Table'
     Assert-Column -Name 'fizz' -TableName 'Table' -DataType 'varchar'
@@ -89,7 +89,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'RenameIndex'
 
-    Invoke-Rivet -Push 'RenameIndex'
+    Invoke-RTRivet -Push 'RenameIndex'
 
     ##Assert Table and Column
     Assert-True (Test-Table 'AddIndex')
@@ -126,7 +126,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'RenameConstraint'
 
-    Invoke-Rivet -Push 'RenameConstraint'
+    Invoke-RTRivet -Push 'RenameConstraint'
 
     Assert-ForeignKey -TableName 'Reference' -References 'Source'
 

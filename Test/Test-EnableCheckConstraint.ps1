@@ -31,7 +31,7 @@ function Pop-Migration()
 }
 '@ | New-Migration -Name 'EnabledCheckConstraint'
 
-    Invoke-Rivet -Push 'EnabledCheckConstraint'
+    Invoke-RTRivet -Push 'EnabledCheckConstraint'
     Assert-CheckConstraint 'CK_Migrations_Example' -Definition '([Example]>(0))'
 }
 

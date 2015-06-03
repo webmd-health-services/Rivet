@@ -33,7 +33,7 @@ function Pop-Migration()
 }
 '@ | New-Migration -Name 'AddIndex'
 
-    Invoke-Rivet -Push 'AddIndex'
+    Invoke-RTRivet -Push 'AddIndex'
 
     ##Assert Table and Column
     Assert-True (Test-Table 'Add Index')
@@ -65,7 +65,7 @@ function Pop-Migration()
 }
 '@ | New-Migration -Name 'AddIndexMultipleColumns'
 
-    Invoke-Rivet -Push 'AddIndexMultipleColumns'
+    Invoke-RTRivet -Push 'AddIndexMultipleColumns'
 
     Assert-True (Test-Table 'AddIndex')
     Assert-True (Test-Column -Name 'IndexMe' -TableName 'AddIndex')
@@ -96,7 +96,7 @@ function Pop-Migration()
 }
 '@ | New-Migration -Name 'AddClusteredIndex'
 
-    Invoke-Rivet -Push 'AddClusteredIndex'
+    Invoke-RTRivet -Push 'AddClusteredIndex'
 
     ##Assert Table and Column
     Assert-True (Test-Table 'AddIndex')
@@ -125,7 +125,7 @@ function Pop-Migration()
 }
 '@ | New-Migration -Name 'CreateUniqueIndex'
 
-    Invoke-Rivet -Push 'CreateUniqueIndex'
+    Invoke-RTRivet -Push 'CreateUniqueIndex'
 
     ##Assert Table and Column
     Assert-True (Test-Table 'AddIndex')
@@ -157,7 +157,7 @@ function Pop-Migration()
 }
 '@ | New-Migration -Name 'CreateIndexWithOptions'
 
-    Invoke-Rivet -Push 'CreateIndexWithOptions'
+    Invoke-RTRivet -Push 'CreateIndexWithOptions'
 
     ##Assert Table and Column
     Assert-True (Test-Table 'AddIndex')
@@ -190,7 +190,7 @@ function Pop-Migration()
 }
 '@ | New-Migration -Name 'CreateIndexWithFilterPredicate'
 
-    Invoke-Rivet -Push 'CreateIndexWithFilterPredicate'
+    Invoke-RTRivet -Push 'CreateIndexWithFilterPredicate'
 
     ##Assert Table and Column
     Assert-True (Test-Table 'AddIndex')
@@ -223,7 +223,7 @@ function Pop-Migration()
 }
 '@ | New-Migration -Name 'CreateIndexOnCustomFileGroup'
 
-    Invoke-Rivet -Push 'CreateIndexOnCustomFileGroup' -ErrorAction SilentlyContinue
+    Invoke-RTRivet -Push 'CreateIndexOnCustomFileGroup' -ErrorAction SilentlyContinue
     Assert-Error 1 'Invalid filegroup'
 }
 
@@ -250,7 +250,7 @@ function Pop-Migration()
 }
 '@ | New-Migration -Name 'CreateIndexOnCustomFileStream'
 
-    Invoke-Rivet -Push 'CreateIndexOnCustomFileStream' -ErrorAction SilentlyContinue
+    Invoke-RTRivet -Push 'CreateIndexOnCustomFileStream' -ErrorAction SilentlyContinue
     Assert-Error 1 'FILESTREAM_ON cannot be specified'
 }
 
@@ -277,7 +277,7 @@ function Pop-Migration()
 
 '@ | New-Migration -Name 'CreateIndexWithDescending'
 
-    Invoke-Rivet -Push 'CreateIndexWithDescending'
+    Invoke-RTRivet -Push 'CreateIndexWithDescending'
 
     ##Assert Index
     Assert-Index -TableName 'AddIndex' -ColumnName 'IndexMe' -Descending @($true)
@@ -304,7 +304,7 @@ function Pop-Migration()
 }
 '@ | New-Migration -Name 'CreateIndexWithMultipleDescending'
 
-    Invoke-Rivet -Push 'CreateIndexWithMultipleDescending'
+    Invoke-RTRivet -Push 'CreateIndexWithMultipleDescending'
 
     ##Assert Index
     Assert-Index -TableName 'AddIndex' -ColumnName "IndexMe","Ascending","IndexMe2" -Descending @($true, $false, $true)
@@ -328,7 +328,7 @@ function Pop-Migration()
 }
 '@ | New-Migration -Name 'AddIndex'
 
-    Invoke-Rivet -Push 'AddIndex'
+    Invoke-RTRivet -Push 'AddIndex'
 
     Assert-Index -TableName 'Add-Index' -ColumnName 'IndexMe'
 }
@@ -351,7 +351,7 @@ function Pop-Migration()
 }
 '@ | New-Migration -Name 'AddIndexWithOptionalName'
 
-    Invoke-Rivet -Push 'AddIndexWithOptionalName'
+    Invoke-RTRivet -Push 'AddIndexWithOptionalName'
     Assert-Index -Name 'Example' -ColumnName 'IndexMe'
 }
 
@@ -375,7 +375,7 @@ function Pop-Migration()
 }
 '@ | New-Migration -Name 'AddIndex'
 
-    Invoke-Rivet -Push 'AddIndex'
+    Invoke-RTRivet -Push 'AddIndex'
 
     Assert-Index -TableName 'AddIndex' -ColumnName 'Index Me' -Include 'Include Me'
 }
@@ -401,7 +401,7 @@ function Pop-Migration()
 }
 '@ | New-Migration -Name 'AddIndex'
 
-    Invoke-Rivet -Push 'AddIndex'
+    Invoke-RTRivet -Push 'AddIndex'
 
     Assert-Index -TableName 'AddIndex' -ColumnName 'Index Me' -Include "Include Me","Include Me 2"
 }

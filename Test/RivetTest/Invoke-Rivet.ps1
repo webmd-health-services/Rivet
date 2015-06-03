@@ -1,6 +1,6 @@
 
-# TODO: Rename so it doesn't collide with Rivet's Invoke-Rivet. Update Test-ConvertMigration tests to not re-load RivetTest module for every test.
-function Invoke-Rivet
+# TODO: Rename so it doesn't collide with Rivet's Invoke-RTRivet. Update Test-ConvertMigration tests to not re-load RivetTest module for every test.
+function Invoke-RTRivet
 {
     [CmdletBinding(SupportsShouldProcess=$True)]
     param(

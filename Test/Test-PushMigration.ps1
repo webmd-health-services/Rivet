@@ -104,7 +104,7 @@ function Stop-Test
 function Test-ShouldPushMigrations
 {
     $createdAt = (Get-Date).ToUniversalTime()
-    Invoke-Rivet -Push
+    Invoke-RTRivet -Push
     
     $migrationScripts = Get-MigrationScript
     
@@ -131,7 +131,7 @@ function Test-ShouldPushMigrations
     Assert-Equal 'CreateObjectsFromFiles' $rows[2].Name
     
     $createdBefore = Get-SqlServerUtcDate
-    Invoke-Rivet -Push
+    Invoke-RTRivet -Push
    
     $rows = Get-MigrationInfo
     Assert-NotNull $rows
@@ -141,7 +141,7 @@ function Test-ShouldPushMigrations
 
 function Test-ShouldPushMigrationAndAddToActivityTable
 {
-    Invoke-Rivet -Push
+    Invoke-RTRivet -Push
 
     $migrationScripts = Get-MigrationScript
     
@@ -224,7 +224,7 @@ function Test-ShouldPushMigrationsForMultipleDBs
     $db2Conn = $null
     try
     {
-        Invoke-Rivet -Push -Database $db1Name,$db2Name -ConfigFilePath $configFilePath  | Format-Table | Out-String | Write-Verbose
+        Invoke-RTRivet -Push -Database $db1Name,$db2Name -ConfigFilePath $configFilePath  | Format-Table | Out-String | Write-Verbose
         
         $db1Conn = New-SqlConnection -Database $db1Name
         $db2Conn = New-SqlConnection -Database $db2Name
@@ -251,7 +251,7 @@ function Test-ShouldPushSpecificMigrationByName
         ForEach-Object {
             $id,$name = $_.BaseName -split '_'
             
-            Invoke-Rivet -Push $Name
+            Invoke-RTRivet -Push $Name
             
             Assert-Migration -ID $id -Name $name -CreatedAfter $CreatedAfter
         }
@@ -264,7 +264,7 @@ function Test-ShouldPushSpecificMigrationWithWildcard
 {
     $createdAfter = (Get-Date).ToUniversalTime()
     
-    Invoke-Rivet -Push 'Invoke*'
+    Invoke-RTRivet -Push 'Invoke*'
     
     $migration = Get-MigrationScript | Where-Object { $_.Name -like '*_Invoke*.ps1' }
     $id,$name = $migration.BaseName -split '_'
@@ -282,13 +282,13 @@ function Test-ShouldNotReapplyASpecificMigration
         ForEach-Object {
             $id,$name = $_.BaseName -split '_'
             
-            Invoke-Rivet -Push $name
+            Invoke-RTRivet -Push $name
             
             Assert-Migration -ID $id -Name $name -CreatedAfter $CreatedAfter
             
             $createdBefore = Get-SqlServerUtcDate
 
-            Invoke-Rivet -Push $name            
+            Invoke-RTRivet -Push $name            
 
             $row = Assert-Migration -ID $id -Name $name -CreatedAfter $CreatedAfter -PassThru
             Assert-True ($row.AtUtc.AddMilliseconds(-500) -lt $createdBefore)
@@ -314,7 +314,7 @@ function Pop-Migration()
 }
 '@ | New-Migration -Name 'AddTableWithNOColumns'
 
-    Invoke-Rivet -Push -ErrorAction SilentlyContinue -ErrorVariable rivetError
+    Invoke-RTRivet -Push -ErrorAction SilentlyContinue -ErrorVariable rivetError
     Assert-True ($rivetError.Count -gt 0)
     
     ('TableWithoutColumnsWithColumn','TableWithoutColumns','FourthTable') | ForEach-Object {
@@ -333,7 +333,7 @@ function Pop-Migration()
 
 function Test-ShouldFailIfMigrationNameDoesNotExist
 {
-    Invoke-Rivet -Push 'AMigrationWhichDoesNotExist' -ErrorAction SilentlyContinue
+    Invoke-RTRivet -Push 'AMigrationWhichDoesNotExist' -ErrorAction SilentlyContinue
     Assert-Error -Last 'not found'
 }
 

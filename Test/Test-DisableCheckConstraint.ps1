@@ -33,7 +33,7 @@ function Pop-Migration()
 }
 '@ | New-Migration -Name 'DisabledCheckConstraint'
 
-    Invoke-Rivet -Push 'DisabledCheckConstraint'
+    Invoke-RTRivet -Push 'DisabledCheckConstraint'
     Assert-CheckConstraint 'CK_Migrations_Example' -Definition '([Example]>(0))' -IsDisabled
 
     $row = Get-Row -SchemaName 'dbo' -TableName 'Migrations'

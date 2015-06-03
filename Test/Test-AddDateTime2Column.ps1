@@ -28,7 +28,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CreateDateTime2Column'
 
-    Invoke-Rivet -Push 'CreateDateTime2Column'
+    Invoke-RTRivet -Push 'CreateDateTime2Column'
     
     Assert-Table 'Foobar'
     Assert-Column -Name 'id' -DataType 'DateTime2' -TableName 'Foobar' -Scale 7
@@ -51,7 +51,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CreateDateTime2ColumnWithSparse'
 
-    Invoke-Rivet -Push 'CreateDateTime2ColumnWithSparse'
+    Invoke-RTRivet -Push 'CreateDateTime2ColumnWithSparse'
     
     Assert-Table 'Foobar'
     Assert-Column -Name 'id' -DataType 'DateTime2' -TableName 'Foobar' -Sparse -Scale 6
@@ -74,7 +74,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CreateDateTime2ColumnWithNotNull'
 
-    Invoke-Rivet -Push 'CreateDateTime2ColumnWithNotNull'
+    Invoke-RTRivet -Push 'CreateDateTime2ColumnWithNotNull'
     
     Assert-Table 'Foobar'
     Assert-Column -Name 'id' -DataType 'DateTime2' -TableName 'Foobar' -NotNull -Scale 6

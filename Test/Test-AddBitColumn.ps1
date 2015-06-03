@@ -28,7 +28,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CreateBitColumn'
 
-    Invoke-Rivet -Push 'CreateBitColumn'
+    Invoke-RTRivet -Push 'CreateBitColumn'
     
     Assert-Table 'Foobar'
     Assert-Column -Name 'id' -DataType 'Bit' -TableName 'Foobar'
@@ -51,7 +51,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CreateBitColumnWithSparse'
 
-    Invoke-Rivet -Push 'CreateBitColumnWithSparse'
+    Invoke-RTRivet -Push 'CreateBitColumnWithSparse'
     
     Assert-Table 'Foobar'
     Assert-Column -Name 'id' -DataType 'Bit' -TableName 'Foobar' -Sparse
@@ -74,7 +74,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CreateBitColumnWithNotNull'
 
-    Invoke-Rivet -Push 'CreateBitColumnWithNotNull'
+    Invoke-RTRivet -Push 'CreateBitColumnWithNotNull'
     
     Assert-Table 'Foobar'
     Assert-Column -Name 'id' -DataType 'Bit' -TableName 'Foobar' -NotNull

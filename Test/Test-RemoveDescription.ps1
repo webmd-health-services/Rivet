@@ -30,7 +30,7 @@ function Pop-Migration()
 }
 '@ | New-Migration -Name 'AddDescription'
 
-    Invoke-Rivet -Push 'AddDescription'
+    Invoke-RTRivet -Push 'AddDescription'
 
     Start-Sleep -Milliseconds 750
 
@@ -51,7 +51,7 @@ function Pop-Migration()
 }
 '@ | New-Migration -Name 'UpdateDescription'
 
-    Invoke-Rivet -Push 'UpdateDescription'
+    Invoke-RTRivet -Push 'UpdateDescription'
 
     Start-Sleep -Milliseconds 750
 
@@ -72,7 +72,7 @@ function Pop-Migration()
 }
 '@ | New-Migration -Name 'RemoveDescription'
 
-    Invoke-Rivet -Push 'RemoveDescription'
+    Invoke-RTRivet -Push 'RemoveDescription'
     Assert-Table -Name 'MS_Description' -Description $null 
     Assert-Column -Name 'add_description' 'varchar' -Description $null -TableName MS_Description
 }

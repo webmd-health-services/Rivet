@@ -28,7 +28,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CreateVarBinaryColumn'
 
-    Invoke-Rivet -Push 'CreateVarBinaryColumn'
+    Invoke-RTRivet -Push 'CreateVarBinaryColumn'
     
     Assert-Table 'Foobar'
     Assert-Column -Name 'id' -DataType 'VarBinary' -TableName 'Foobar' -Max
@@ -52,7 +52,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CreateVarBinaryColumnWithFileStream'
 
-    Invoke-Rivet -Push 'CreateVarBinaryColumnWithFileStream'
+    Invoke-RTRivet -Push 'CreateVarBinaryColumnWithFileStream'
     
     Assert-Table 'Foobar'
     Assert-Column -Name 'id' -DataType 'VarBinary' -TableName 'Foobar' -Max
@@ -75,7 +75,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CreateVarBinaryColumnWithNotNull'
 
-    Invoke-Rivet -Push 'CreateVarBinaryColumnWithNotNull'
+    Invoke-RTRivet -Push 'CreateVarBinaryColumnWithNotNull'
     
     Assert-Table 'Foobar'
     Assert-Column -Name 'id' -DataType 'VarBinary' -TableName 'Foobar' -NotNull -Max
@@ -98,7 +98,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'ShouldCreateVarBinaryColumnWithCustomSize'
 
-    Invoke-Rivet -Push 'ShouldCreateVarBinaryColumnWithCustomSize'
+    Invoke-RTRivet -Push 'ShouldCreateVarBinaryColumnWithCustomSize'
     
     Assert-Table 'Foobar'
     Assert-Column -Name 'id' -DataType 'VarBinary' -TableName 'Foobar' -NotNull -Size 50 

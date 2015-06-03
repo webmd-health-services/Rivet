@@ -32,7 +32,7 @@ function Pop-Migration()
 }
 '@ | New-Migration -Name 'RemoveIndex'
 
-    Invoke-Rivet -Push 'RemoveIndex'
+    Invoke-RTRivet -Push 'RemoveIndex'
     Assert-True (Test-Table 'AddIndex')
     Assert-True (Test-Column -Name 'IndexMe' -TableName 'AddIndex')
     Assert-False (Test-Index -TableName 'AddIndex' -ColumnName 'IndexMe')
@@ -57,7 +57,7 @@ function Pop-Migration()
 }
 '@ | New-Migration -Name 'RemoveIndex'
 
-    Invoke-Rivet -Push 'RemoveIndex'
+    Invoke-RTRivet -Push 'RemoveIndex'
     Assert-False (Test-Index -TableName 'Remove-Index' -ColumnName 'IndexMe')
 }
 
@@ -80,7 +80,7 @@ function Pop-Migration()
 }
 '@ | New-Migration -Name 'RemoveIndexWithOptionalName'
 
-    Invoke-Rivet -Push 'RemoveIndexWithOptionalName'
+    Invoke-RTRivet -Push 'RemoveIndexWithOptionalName'
     Assert-False (Test-Index -TableName 'Add-Index' -ColumnName 'IndexMe')
 }
 
@@ -104,7 +104,7 @@ function Pop-Migration()
 }
 '@ | New-Migration -Name 'RemoveIndex'
 
-    Invoke-Rivet -Push 'RemoveIndex'
+    Invoke-RTRivet -Push 'RemoveIndex'
     Assert-True (Test-Table 'AddIndex')
     Assert-True (Test-Column -Name 'IndexMe' -TableName 'AddIndex')
     Assert-False (Test-Index -TableName 'AddIndex' -ColumnName 'IndexMe' -Unique)

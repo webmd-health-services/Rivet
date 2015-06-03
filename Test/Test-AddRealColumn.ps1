@@ -28,7 +28,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CreateRealColumn'
 
-    Invoke-Rivet -Push 'CreateRealColumn'
+    Invoke-RTRivet -Push 'CreateRealColumn'
     
     Assert-Table 'Foobar'
     Assert-Column -Name 'id' -DataType 'Real' -TableName 'Foobar'
@@ -51,7 +51,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CreateRealColumnWithSparse'
 
-    Invoke-Rivet -Push 'CreateRealColumnWithSparse'
+    Invoke-RTRivet -Push 'CreateRealColumnWithSparse'
     
     Assert-Table 'Foobar'
     Assert-Column -Name 'id' -DataType 'Real' -TableName 'Foobar' -Sparse
@@ -74,7 +74,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CreateRealColumnWithNotNull'
 
-    Invoke-Rivet -Push 'CreateRealColumnWithNotNull'
+    Invoke-RTRivet -Push 'CreateRealColumnWithNotNull'
     
     Assert-Table 'Foobar'
     Assert-Column -Name 'id' -DataType 'Real' -TableName 'Foobar' -NotNull

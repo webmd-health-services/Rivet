@@ -29,7 +29,7 @@ function Pop-Migration()
     Remove-Table 'MS_Description'
 }
 '@ | New-Migration -Name 'AddDescription'
-    Invoke-Rivet -Push 'AddDescription'
+    Invoke-RTRivet -Push 'AddDescription'
 
     Assert-Table -Name 'MS_Description' -Description 'new description' 
     Assert-Column -Name 'add_description' 'varchar' -Description 'new description' -TableName 'MS_Description'

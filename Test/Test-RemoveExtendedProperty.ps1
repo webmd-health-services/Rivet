@@ -28,7 +28,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'RemoveExtendedPropertyToSchema'
 
-    Invoke-Rivet -Push 'RemoveExtendedPropertyToSchema'
+    Invoke-RTRivet -Push 'RemoveExtendedPropertyToSchema'
 
     $expinfo = Get-ExtendedProperties
 
@@ -56,7 +56,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'RemoveExtendedPropertyToTable'
 
-    Invoke-Rivet -Push 'RemoveExtendedPropertyToTable'
+    Invoke-RTRivet -Push 'RemoveExtendedPropertyToTable'
 
     $expinfo = Get-ExtendedProperties
 
@@ -81,7 +81,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'RemoveExtendedPropertyToView'
 
-    Invoke-Rivet -Push 'RemoveExtendedPropertyToView'
+    Invoke-RTRivet -Push 'RemoveExtendedPropertyToView'
 
     $expinfo = Get-ExtendedProperties
 
@@ -107,7 +107,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'RemoveExtendedPropertyToView'
 
-    Invoke-Rivet -Push 'RemoveExtendedPropertyToView'
+    Invoke-RTRivet -Push 'RemoveExtendedPropertyToView'
 
     $expinfo = Get-ExtendedProperties
 
@@ -135,7 +135,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'RemoveExtendedPropertyToTableColumn'
 
-    Invoke-Rivet -Push 'RemoveExtendedPropertyToTableColumn'
+    Invoke-RTRivet -Push 'RemoveExtendedPropertyToTableColumn'
 
     $expinfo = Get-ExtendedProperties
 
@@ -164,7 +164,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'RemoveExtendedPropertyToViewColumn'
 
-    Invoke-Rivet -Push 'RemoveExtendedPropertyToViewColumn'
+    Invoke-RTRivet -Push 'RemoveExtendedPropertyToViewColumn'
 
     $expinfo = Get-ExtendedProperties
 

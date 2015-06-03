@@ -27,10 +27,10 @@ function Pop-Migration()
     Remove-Table -Name 'Ducati'
 }
 '@ | New-Migration -Name 'AddTable'
-    Invoke-Rivet -Push 'AddTable'
+    Invoke-RTRivet -Push 'AddTable'
     Assert-True (Test-Table 'Ducati')
 
-    Invoke-Rivet -Pop ([Int32]::MaxValue)
+    Invoke-RTRivet -Pop ([Int32]::MaxValue)
     Assert-False (Test-Table 'Ducati')
 }
 
@@ -60,12 +60,12 @@ function Pop-Migration()
 }
 '@ | New-Migration -Name 'AddTablesInDifferentSchemas'    
 
-    Invoke-Rivet -Push 'AddTablesInDifferentSchemas'
+    Invoke-RTRivet -Push 'AddTablesInDifferentSchemas'
 
     Assert-True (Test-Table -Name $Name)
     Assert-True (Test-Table -Name $Name -SchemaName $CustomSchemaName)
     
-    Invoke-Rivet -Pop ([Int32]::MaxValue)
+    Invoke-RTRivet -Pop ([Int32]::MaxValue)
     Assert-False (Test-Table -Name $Name)
     Assert-False (Test-Table -Name $Name -SchemaName $CustomSchemaName)
 }

@@ -28,7 +28,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CreateVarCharColumn'
 
-    Invoke-Rivet -Push 'CreateVarCharColumn'
+    Invoke-RTRivet -Push 'CreateVarCharColumn'
     
     Assert-Table 'Foobar'
     Assert-Column -Name 'id' -DataType 'VarChar' -TableName 'Foobar' -Max
@@ -51,7 +51,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CreateVarCharColumnWithSparse'
 
-    Invoke-Rivet -Push 'CreateVarCharColumnWithSparse'
+    Invoke-RTRivet -Push 'CreateVarCharColumnWithSparse'
     
     Assert-Table 'Foobar'
     Assert-Column -Name 'id' -DataType 'VarChar' -TableName 'Foobar' -Sparse -Max
@@ -74,7 +74,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CreateVarCharColumnWithNotNull'
 
-    Invoke-Rivet -Push 'CreateVarCharColumnWithNotNull'
+    Invoke-RTRivet -Push 'CreateVarCharColumnWithNotNull'
     
     Assert-Table 'Foobar'
     Assert-Column -Name 'id' -DataType 'VarChar' -TableName 'Foobar' -NotNull -Max
@@ -97,7 +97,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'ShouldCreateVarCharColumnWithCustomSizeCollation'
 
-    Invoke-Rivet -Push 'ShouldCreateVarCharColumnWithCustomSizeCollation'
+    Invoke-RTRivet -Push 'ShouldCreateVarCharColumnWithCustomSizeCollation'
     
     Assert-Table 'Foobar'
     Assert-Column -Name 'id' -DataType 'VarChar' -TableName 'Foobar' -NotNull -Size 50 -Collation "Chinese_Taiwan_Stroke_CI_AS"

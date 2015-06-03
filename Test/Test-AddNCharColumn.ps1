@@ -28,7 +28,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CreateNCharColumn'
 
-    Invoke-Rivet -Push 'CreateNCharColumn'
+    Invoke-RTRivet -Push 'CreateNCharColumn'
     
     Assert-Table 'Foobar'
     Assert-Column -Name 'id' -DataType 'NChar' -TableName 'Foobar'
@@ -51,7 +51,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CreateNCharColumnWithSparse'
 
-    Invoke-Rivet -Push 'CreateNCharColumnWithSparse'
+    Invoke-RTRivet -Push 'CreateNCharColumnWithSparse'
     
     Assert-Table 'Foobar'
     Assert-Column -Name 'id' -DataType 'NChar' -TableName 'Foobar' -Sparse
@@ -74,7 +74,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CreateNCharColumnWithNotNull'
 
-    Invoke-Rivet -Push 'CreateNCharColumnWithNotNull'
+    Invoke-RTRivet -Push 'CreateNCharColumnWithNotNull'
     
     Assert-Table 'Foobar'
     Assert-Column -Name 'id' -DataType 'NChar' -TableName 'Foobar' -NotNull
@@ -97,7 +97,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'ShouldCreateNCharColumnWithCustomSizeCollation'
 
-    Invoke-Rivet -Push 'ShouldCreateNCharColumnWithCustomSizeCollation'
+    Invoke-RTRivet -Push 'ShouldCreateNCharColumnWithCustomSizeCollation'
     
     Assert-Table 'Foobar'
     Assert-Column -Name 'id' -DataType 'NChar' -TableName 'Foobar' -NotNull -Size 50 -Collation "Chinese_Taiwan_Stroke_CI_AS"

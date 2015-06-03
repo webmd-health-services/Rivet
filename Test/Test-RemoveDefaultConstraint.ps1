@@ -29,7 +29,7 @@ function Pop-Migration()
     Remove-Table 'AddDefaultConstraint'
 }
 '@ | New-Migration -Name 'RemoveDefaultConstraint'
-    Invoke-Rivet -Push 'RemoveDefaultConstraint'
+    Invoke-RTRivet -Push 'RemoveDefaultConstraint'
     Assert-Null (Get-DefaultConstraint 'DF_AddDefaultConstraint_DefaultConstraintMe')
 }
 
@@ -51,7 +51,7 @@ function Pop-Migration()
     Remove-Table 'Remove-DefaultConstraint'
 }
 '@ | New-Migration -Name 'RemoveDefaultConstraint'
-    Invoke-Rivet -Push 'RemoveDefaultConstraint'
+    Invoke-RTRivet -Push 'RemoveDefaultConstraint'
     Assert-Null (Get-DefaultConstraint 'DF_Remove-DefaultConstraint_DefaultConstraintMe')
 
 }
@@ -74,6 +74,6 @@ function Pop-Migration()
     Remove-Table 'AddDefaultConstraint'
 }
 '@ | New-Migration -Name 'RemoveDefaultConstraintWithOptionalConstraintName'
-    Invoke-Rivet -Push 'RemoveDefaultConstraintWithOptionalConstraintName'
+    Invoke-RTRivet -Push 'RemoveDefaultConstraintWithOptionalConstraintName'
     Assert-Null (Get-DefaultConstraint -Name 'Optional')
 }

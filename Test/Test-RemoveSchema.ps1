@@ -29,11 +29,11 @@ function Pop-Migration()
 
     Assert-False (Test-Schema 'rivetaddremoveschema')
 
-    Invoke-Rivet -Push 'AddSchema'
+    Invoke-RTRivet -Push 'AddSchema'
 
     Assert-True (Test-Schema -Name 'rivetaddremoveschema')
 
-    Invoke-Rivet -Pop -Name 'AddSchema'
+    Invoke-RTRivet -Pop -Name 'AddSchema'
 
     Assert-False (Test-Schema 'AddSchema')
 }

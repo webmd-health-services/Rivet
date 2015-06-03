@@ -26,7 +26,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'AddExtendedPropertyToSchema'
 
-    Invoke-Rivet -Push 'AddExtendedPropertyToSchema'
+    Invoke-RTRivet -Push 'AddExtendedPropertyToSchema'
 
     $expinfo = Get-ExtendedProperties
 
@@ -55,7 +55,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'AddExtendedPropertyToTable'
 
-    Invoke-Rivet -Push 'AddExtendedPropertyToTable'
+    Invoke-RTRivet -Push 'AddExtendedPropertyToTable'
 
     $expinfo = Get-ExtendedProperties
 
@@ -82,7 +82,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'AddExtendedPropertyToView'
 
-    Invoke-Rivet -Push 'AddExtendedPropertyToView'
+    Invoke-RTRivet -Push 'AddExtendedPropertyToView'
 
     $expinfo = Get-ExtendedProperties
 
@@ -112,7 +112,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'AddExtendedPropertyToView'
 
-    Invoke-Rivet -Push 'AddExtendedPropertyToView'
+    Invoke-RTRivet -Push 'AddExtendedPropertyToView'
 
     $expinfo = Get-ExtendedProperties
 
@@ -141,7 +141,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'AddExtendedPropertyToTableColumn'
 
-    Invoke-Rivet -Push 'AddExtendedPropertyToTableColumn'
+    Invoke-RTRivet -Push 'AddExtendedPropertyToTableColumn'
 
     $expinfo = Get-ExtendedProperties
 
@@ -173,7 +173,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'AddExtendedPropertyToViewColumn'
 
-    Invoke-Rivet -Push 'AddExtendedPropertyToViewColumn'
+    Invoke-RTRivet -Push 'AddExtendedPropertyToViewColumn'
 
     $expinfo = Get-ExtendedProperties
 
@@ -202,7 +202,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'AllowNullPropertyValue'
 
-    Invoke-Rivet -Push 'AllowNullPropertyValue'
+    Invoke-RTRivet -Push 'AllowNullPropertyValue'
 
     $expinfo = Get-ExtendedProperties
 
@@ -229,7 +229,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'AddExtendedPropertyToColumn'
 
-    Invoke-Rivet -Push 'AddExtendedPropertyToColumn'
+    Invoke-RTRivet -Push 'AddExtendedPropertyToColumn'
 
     $expinfo = Get-ExtendedProperties
 

@@ -332,7 +332,7 @@ function Pop-Migration
 }
 '@ | New-Migration -Name 'ShouldCreateIdempotentQueriesForRemoveOperations'
 
-    Invoke-Rivet -Push 'ShouldCreateIdempotentQueriesForRemoveOperations'
+    Invoke-RTRivet -Push 'ShouldCreateIdempotentQueriesForRemoveOperations'
 
     Assert-Table -SchemaName 'idempotent' -Name 'removeme'
     $migration | Remove-Item
@@ -466,7 +466,7 @@ function Pop-Migration
 }
 '@ | New-Migration -Name 'ShouldCreateIdempotentQueriesForDisableOperations'
 
-    Invoke-Rivet -Push 'ShouldCreateIdempotentQueriesForDisableOperations'
+    Invoke-RTRivet -Push 'ShouldCreateIdempotentQueriesForDisableOperations'
 
     $migration | Remove-Item
 
@@ -548,7 +548,7 @@ function Pop-Migration
 }
 '@ | New-Migration -Name 'ShouldCreateIdempotentQueriesForEnableOperations'
 
-    Invoke-Rivet -Push 'ShouldCreateIdempotentQueriesForEnableOperations'
+    Invoke-RTRivet -Push 'ShouldCreateIdempotentQueriesForEnableOperations'
 
     $migration | Remove-Item
 
@@ -770,7 +770,7 @@ function Pop-Migration
 }
 '@ | New-Migration -Name 'ShouldAggregateMultipleTableUpdates'
 
-    Invoke-Rivet -Push 'ShouldAggregateMultipleTableUpdates'
+    Invoke-RTRivet -Push 'ShouldAggregateMultipleTableUpdates'
 
     Assert-Table -Name 'FeedbackLog'
     $migration | Remove-Item
@@ -829,7 +829,7 @@ function Pop-Migration
 }
 '@ | New-Migration -Name 'AddT1'
 
-    Invoke-Rivet -Push 'AddT1'
+    Invoke-RTRivet -Push 'AddT1'
 
     Assert-Table -Name 'T1New'
 

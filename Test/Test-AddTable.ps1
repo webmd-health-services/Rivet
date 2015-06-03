@@ -30,7 +30,7 @@ function Pop-Migration()
     Remove-Table 'AddTable'
 }
 '@ | New-Migration -Name 'CreateTable'
-    Invoke-Rivet -Push 'CreateTable'
+    Invoke-RTRivet -Push 'CreateTable'
 
     Assert-Table 'AddTable' -Description 'Testing Add-Table migration'
     Assert-Column -Name 'varchar' 'varchar' -NotNull -Description 'varchar(max) constraint DF_AddTable_varchar default default' -TableName 'AddTable'
@@ -62,7 +62,7 @@ function Pop-Migration()
 }
 '@ | New-Migration -Name 'CreateTableInCustomSchema'
 
-    Invoke-Rivet -Push 'CreateTableInCustomSchema'
+    Invoke-RTRivet -Push 'CreateTableInCustomSchema'
 
     Assert-Table 'AddTableInRivetTest' -SchemaName 'rivettest' -Description 'Testing Add-Table migration for custom schema.'
     Assert-Column -Name 'id' 'int' -NotNull -Seed 1 -Increment 1 -Description 'AddTableInRivetTest identity column' -TableName 'AddTableInRivetTest' -SchemaName 'rivettest'
@@ -84,7 +84,7 @@ function Pop-Migration()
 }
 '@ | New-Migration -Name 'CreateTableWithCustomFileGroup'
 
-    Invoke-Rivet -Push 'CreateTableWithCustomFileGroup' -ErrorAction SilentlyContinue
+    Invoke-RTRivet -Push 'CreateTableWithCustomFileGroup' -ErrorAction SilentlyContinue
     Assert-Error 1 'Invalid filegroup'
     Assert-False (Test-Table -Name 'CustomFileGroup')
 }
@@ -105,7 +105,7 @@ function Pop-Migration()
 }
 '@ | New-Migration -Name 'CreateTableWithCustomTextImageFileGroup'
 
-    Invoke-Rivet -Push 'CreateTableWithCustomTextImageFileGroup' -ErrorAction SilentlyContinue
+    Invoke-RTRivet -Push 'CreateTableWithCustomTextImageFileGroup' -ErrorAction SilentlyContinue
     Assert-Error 1 'Cannot use TEXTIMAGE_ON'
     Assert-False (Test-Table -Name 'CustomTextImageFileGroup')
 }
@@ -125,7 +125,7 @@ function Pop-Migration()
     Remove-Table 'CustomTextImageFileGroup'
 }
 '@ | New-Migration -Name 'CreateTableWithCustomFileStreamFileGroup'
-    Invoke-Rivet -Push 'CreateTableWithCustomFileStreamFileGroup' -ErrorAction SilentlyContinue
+    Invoke-RTRivet -Push 'CreateTableWithCustomFileStreamFileGroup' -ErrorAction SilentlyContinue
     Assert-Error 1 'FILESTREAM_ON cannot be specified'
     Assert-False (Test-Table -Name 'CustomFileStreamFileGroup')
 }
@@ -147,7 +147,7 @@ function Pop-Migration()
 }
 '@ | New-Migration -Name 'CreateTableWithOption'
 
-    Invoke-Rivet -Push 'CreateTableWithOption' -ErrorAction SilentlyContinue
+    Invoke-RTRivet -Push 'CreateTableWithOption' -ErrorAction SilentlyContinue
     
     if( $Global:Error )
     {
@@ -179,7 +179,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'AddTrigger'
 
-    Invoke-Rivet -Push 'AddTrigger'
+    Invoke-RTRivet -Push 'AddTrigger'
 
     Assert-Table 'Add-Table-Test' -SchemaName 'Add-Table'
 }

@@ -32,7 +32,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'ByAlias'
 
-    Invoke-Rivet -Push 'ByAlias'
+    Invoke-RTRivet -Push 'ByAlias'
 
     Assert-DataType -Name 'G U I D' -BaseTypeName 'uniqueidentifier' -UserDefined
     Assert-Table 'important'
@@ -63,7 +63,7 @@ function Pop-Migration
 
 "@ | New-Migration -Name 'ByAssembly'
 
-    Invoke-Rivet -Push 'ByAssembly'
+    Invoke-RTRivet -Push 'ByAssembly'
     
     Assert-DataType -Name 'Point Point' -BaseTypeName $null -UserDefined -AssemblyType
     Assert-Table 'important'
@@ -89,7 +89,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'ByTable'
 
-    Invoke-Rivet -Push 'ByTable' -Verbose
+    Invoke-RTRivet -Push 'ByTable' -Verbose
 
     Assert-DataType -Name 'U s e r s' -UserDefined -TableType -NotNull
 }

@@ -25,7 +25,7 @@ function Stop-Test
 
 function Test-ShouldCreateRivetObjectsInDatabase
 {
-    Invoke-Rivet -Push | Format-Table | Out-String | Write-Verbose
+    Invoke-RTRivet -Push | Format-Table | Out-String | Write-Verbose
     
     Assert-NoError
 
@@ -68,7 +68,7 @@ function Test-ShouldRenamePstepSchemaToRivet
 {
     $oldSchemaName = 'pstep'
     $rivetSchemaName = 'rivet'
-    Invoke-Rivet -Push
+    Invoke-RTRivet -Push
     Assert-NoError
     $expectedCount = Measure-Migration
         
@@ -89,7 +89,7 @@ function Test-ShouldRenamePstepSchemaToRivet
     Assert-False (Test-Schema -Name $RivetSchemaName)
     Assert-True (Test-Schema -Name $oldSchemaName)
 
-    Invoke-Rivet -Push
+    Invoke-RTRivet -Push
     Assert-NoError
     $actualCount = Measure-Migration
     Assert-Equal $expectedCount $actualCount
@@ -102,7 +102,7 @@ function Test-ShouldRenamePstepSchemaToRivet
 
 function Test-ShouldChangeAtUtcToDatetime2
 {
-    Invoke-Rivet -Push
+    Invoke-RTRivet -Push
     Assert-NoError
 
     $rivetSchemaName = 'rivet'
@@ -125,7 +125,7 @@ function Test-ShouldChangeAtUtcToDatetime2
     Invoke-RivetTestQuery -Query $query
     Assert-Column -DataType 'datetime' @assertColumnParams
 
-    Invoke-Rivet -Push
+    Invoke-RTRivet -Push
     Assert-NoError
     Assert-Column -DataType 'datetime2' @assertColumnParams
 }

@@ -29,7 +29,7 @@ function Pop-Migration()
 }
 '@ | New-Migration -Name 'AddCheckConstraint'
 
-    Invoke-Rivet -Push 'AddCheckConstraint'
+    Invoke-RTRivet -Push 'AddCheckConstraint'
     Assert-CheckConstraint 'CK_Migrations_Example' -Definition '([Example]>(0))'
 }
 
@@ -51,7 +51,7 @@ function Pop-Migration()
 }
 '@ | New-Migration -Name 'AddCheckConstraint'
 
-    Invoke-Rivet -Push 'AddCheckConstraint'
+    Invoke-RTRivet -Push 'AddCheckConstraint'
     Assert-CheckConstraint 'CK_Migrations_Example' -NotForReplication -Definition '([Example]>(0))'
 }
 
@@ -76,7 +76,7 @@ function Pop-Migration()
 }
 '@ | New-Migration -Name 'AddCheckConstraint'
 
-    Invoke-Rivet -Push 'AddCheckConstraint'
+    Invoke-RTRivet -Push 'AddCheckConstraint'
 
     $row = Get-Row -SchemaName 'dbo' -TableName 'Migrations'
     Assert-Equal -1 $row.Example

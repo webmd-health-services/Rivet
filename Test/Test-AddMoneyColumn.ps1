@@ -28,7 +28,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CreateMoneyColumn'
 
-    Invoke-Rivet -Push 'CreateMoneyColumn'
+    Invoke-RTRivet -Push 'CreateMoneyColumn'
     
     Assert-Table 'Foobar'
     Assert-Column -Name 'id' -DataType 'Money' -TableName 'Foobar'
@@ -51,7 +51,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CreateMoneyColumnWithSparse'
 
-    Invoke-Rivet -Push 'CreateMoneyColumnWithSparse'
+    Invoke-RTRivet -Push 'CreateMoneyColumnWithSparse'
     
     Assert-Table 'Foobar'
     Assert-Column -Name 'id' -DataType 'Money' -TableName 'Foobar' -Sparse
@@ -74,7 +74,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CreateMoneyColumnWithNotNull'
 
-    Invoke-Rivet -Push 'CreateMoneyColumnWithNotNull'
+    Invoke-RTRivet -Push 'CreateMoneyColumnWithNotNull'
     
     Assert-Table 'Foobar'
     Assert-Column -Name 'id' -DataType 'Money' -TableName 'Foobar' -NotNull

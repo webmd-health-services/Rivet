@@ -32,7 +32,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'RemoveTrigger'
 
-    Invoke-Rivet -Push 'RemoveTrigger'
+    Invoke-RTRivet -Push 'RemoveTrigger'
 
     Assert-Table 'Person'
     Assert-False (Test-DatabaseObject -SQLTrigger -Name "TestTrigger")

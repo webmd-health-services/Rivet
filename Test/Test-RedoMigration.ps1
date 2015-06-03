@@ -49,7 +49,7 @@ function Pop-Migration()
 }
 '@ | New-Migration -Name 'AddColumn'
 
-    Invoke-Rivet -Push -Verbose
+    Invoke-RTRivet -Push -Verbose
 
     $redoMigrationTable = Get-Table -Name 'RedoMigration'
     $secondTable = Get-Table -Name 'SecondTable'
@@ -57,7 +57,7 @@ function Pop-Migration()
     $migrationInfo = Get-MigrationInfo -Name 'AddColumn'
     Assert-NotNull $migrationInfo
 
-    Invoke-Rivet -Redo
+    Invoke-RTRivet -Redo
     
     # Make sure only one migration was popped/pushed.
     $redoMigrationTableRedo = Get-Table -Name 'RedoMigration'

@@ -44,7 +44,7 @@ function Pop-Migration
 }
 '@ | New-Migration -Name 'AddMyTable'
 
-    Invoke-Rivet -Push
+    Invoke-RTRivet -Push
 
     Assert-Table 'MyTable'
 }
@@ -74,7 +74,7 @@ function Pop-Migration
 
     try
     {
-        Invoke-Rivet -Push -ErrorAction SilentlyContinue
+        Invoke-RTRivet -Push -ErrorAction SilentlyContinue
         Assert-Error -Last 'not found'
     }
     finally
