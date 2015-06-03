@@ -1,6 +1,8 @@
+
+& (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
+
 function Setup
 {
-    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve) -DatabaseName 'RenameTable' 
     Start-RivetTest
 }
 
@@ -25,7 +27,7 @@ function Push-Migration
 
 function Pop-Migration
 {
-    
+    Remove-Table 'RenameTable'
 }
 
 '@ | New-Migration -Name 'RenameTable'
@@ -54,7 +56,7 @@ function Push-Migration
 
 function Pop-Migration
 {
-    
+    Remove-Table 'Table'
 }
 
 '@ | New-Migration -Name 'RenameColumn'
@@ -84,7 +86,7 @@ function Push-Migration
 
 function Pop-Migration
 {
-    
+    Remove-Table 'AddIndex'
 }
 
 '@ | New-Migration -Name 'RenameIndex'
@@ -121,7 +123,9 @@ function Push-Migration
 
 function Pop-Migration
 {
-    
+    Remove-ForeignKey 'Source' -Name 'FK_Reference_Source'
+    Remove-Table 'Reference'
+    Remove-Table 'Source'
 }
 
 '@ | New-Migration -Name 'RenameConstraint'

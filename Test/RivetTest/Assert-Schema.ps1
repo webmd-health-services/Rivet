@@ -5,9 +5,11 @@ function Assert-Schema
         [Parameter(Mandatory=$true)]
         [string]
         # The schema name.
-        $Name
+        $Name,
+
+        $DatabaseName
     )
 
-    Assert-NotNull (Get-Schema -Name $Name)
+    Assert-NotNull (Get-Schema -Name $Name -DatabaseName $DatabaseName)
 }
 

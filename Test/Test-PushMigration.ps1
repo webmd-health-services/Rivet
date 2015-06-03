@@ -159,19 +159,23 @@ function Test-ShouldPushMigrationAndAddToActivityTable
     $rowsactivity = Get-ActivityInfo 
 
     Assert-NotNull $rowsmigration
-    Assert-Equal 'InvokeQuery' $rowsmigration[0].Name
-    Assert-Equal 'SecondTable' $rowsmigration[1].Name
-    Assert-Equal 'CreateObjectsFromFiles' $rowsmigration[2].Name
+    Assert-Equal 'InvokeQuery' $rowsmigration[-4].Name
+    Assert-Equal 'SecondTable' $rowsmigration[-3].Name
+    Assert-Equal 'CreateObjectsFromFiles' $rowsmigration[-2].Name
+    Assert-Equal 'CreateObjectInCustomDirectory' $rowsmigration[-1].Name
 
     Assert-NotNull $rowsactivity
-    Assert-Equal 'Push' $rowsactivity[0].Operation
-    Assert-Equal 'InvokeQuery' $rowsactivity[0].Name
+    Assert-Equal 'Push' $rowsactivity[-4].Operation
+    Assert-Equal 'InvokeQuery' $rowsactivity[-4].Name
 
-    Assert-Equal 'Push' $rowsactivity[1].Operation
-    Assert-Equal 'SecondTable' $rowsactivity[1].Name
+    Assert-Equal 'Push' $rowsactivity[-3].Operation
+    Assert-Equal 'SecondTable' $rowsactivity[-3].Name
 
-    Assert-Equal 'Push' $rowsactivity[2].Operation
-    Assert-Equal 'CreateObjectsFromFiles' $rowsactivity[2].Name
+    Assert-Equal 'Push' $rowsactivity[-2].Operation
+    Assert-Equal 'CreateObjectsFromFiles' $rowsactivity[-2].Name
+
+    Assert-Equal 'Push' $rowsactivity[-1].Operation
+    Assert-Equal 'CreateObjectInCustomDirectory' $rowsactivity[-1].Name
 }
 
 function Test-ShouldPushMigrationsForMultipleDBs
