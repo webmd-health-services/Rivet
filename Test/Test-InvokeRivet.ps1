@@ -79,11 +79,9 @@ function Pop-Migration
 
         Assert-False (Test-Schema -Name 'TargetDatabases')
 
-        $RTDatabaseConnection.ChangeDatabase( 'InvokeRivet' )
-        Assert-Schema -Name 'TargetDatabases'
+        Assert-Schema -Name 'TargetDatabases' -DatabaseName 'InvokeRivet'
 
-        $RTDatabaseConnection.ChangeDatabase( 'InvokeRivet2' )
-        Assert-Schema -Name 'TargetDatabases'
+        Assert-Schema -Name 'TargetDatabases' -DatabaseName 'InvokeRivet'
     }
     finally
     {

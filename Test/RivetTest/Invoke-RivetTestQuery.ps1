@@ -19,20 +19,24 @@ function Invoke-RivetTestQuery
 
         [Parameter()]
         # The timeout to use, in seconds.
-        $Timeout
+        $Timeout,
+
+        [string]
+        $DatabaseName
     )
     
     Set-StrictMode -Version Latest
 
-    if( -not $RTDatabaseConnection )
+    if( -not $DatabaseName )
     {
-        $script:RTDatabaseConnection = New-SqlConnection -Database $RTDatabaseName
-        if( -not $Connection )
-        {
-            $Connection = $RTDatabaseConnection
-        }
+        $DatabaseName = $RTDatabaseName
     }
     
+    if( -not $RTDatabaseConnection )
+    {
+        $script:RTDatabaseConnection = New-SqlConnection -Database $DatabaseName
+    }
+
     if( -not $PSBoundParameters.ContainsKey('Connection') )
     {
         $Connection = $RTDatabaseConnection
@@ -43,9 +47,9 @@ function Invoke-RivetTestQuery
                 $Connection.ChangeDatabase( 'Master' )
             }
         }
-        elseif( $Connection.Database -ne $RTDatabaseName )
+        elseif( $Connection.Database -ne $DatabaseName )
         {
-            $Connection.ChangeDatabase( $RTDatabaseName )
+            $Connection.ChangeDatabase( $DatabaseName )
         }
     }
 

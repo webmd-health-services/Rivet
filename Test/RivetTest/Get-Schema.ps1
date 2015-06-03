@@ -4,7 +4,9 @@ function Get-Schema
     param(
         [string]
         # The name of the schema.  Optional.  Returns all schemas otherwise.
-        $Name
+        $Name,
+
+        $DatabaseName
     )
     
     Set-StrictMode -Version Latest
@@ -23,5 +25,5 @@ function Get-Schema
     }
     
 
-    Invoke-RivetTestQuery -Query $query
+    Invoke-RivetTestQuery -Query $query -DatabaseName $DatabaseName
 }
