@@ -33,7 +33,7 @@ function Pop-Migration
 create schema [invokesqlscript]
 '@ | Set-Content -Path $scriptPath
 
-    Invoke-Rivet -Push 'InvokeSqlScript'
+    Invoke-RTRivet -Push 'InvokeSqlScript'
 
     Assert-Schema 'invokesqlscript'
 }
@@ -57,7 +57,7 @@ function Pop-Migration
 
     try
     {
-        Invoke-Rivet -Push 'InvokeSqlScript' -ErrorAction SilentlyContinue
+        Invoke-RTRivet -Push 'InvokeSqlScript' -ErrorAction SilentlyContinue
 
         Assert-False (Test-Schema 'invokesqlscript')
     }
@@ -108,7 +108,7 @@ create schema [invokesqlscript2]
 
 '@ | Set-Content -Path $scriptPath
 
-    Invoke-Rivet -Push 'InvokeSqlScript'
+    Invoke-RTRivet -Push 'InvokeSqlScript'
 
     Assert-Schema 'invokesqlscript'
     Assert-Schema 'invokesqlscript2'
@@ -137,7 +137,7 @@ function Pop-Migration
 create schema [invokesqlscript]
 '@ | Set-Content -Path $scriptPath
 
-    Invoke-Rivet -Push 'InvokeSqlScript'
+    Invoke-RTRivet -Push 'InvokeSqlScript'
 
     Assert-Schema 'invokesqlscript'
 }
@@ -165,7 +165,7 @@ function Pop-Migration
 create schema [invokesqlscript]
 '@ | Set-Content -Path $scriptPath
 
-    Invoke-Rivet -Push 'InvokeSqlScript'
+    Invoke-RTRivet -Push 'InvokeSqlScript'
 
     Assert-Schema 'invokesqlscript'
 }

@@ -23,7 +23,7 @@ function Pop-Migration
     Remove-UserDefinedFunction -Name 'squarefunction'
 }
 '@ | New-Migration -Name 'CreateNewUserDefinedFunction'
-    Invoke-Rivet -Push 'CreateNewUserDefinedFunction'
+    Invoke-RTRivet -Push 'CreateNewUserDefinedFunction'
     
     Assert-UserDefinedFunction -Name 'squarefunction' -Schema 'dbo' -Definition '(@Number decimal(4,1)) returns decimal(12,3) as begin return(@Number * @Number) end'
 }

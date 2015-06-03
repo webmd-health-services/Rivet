@@ -63,7 +63,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name $name
 
-    Invoke-Rivet -Push
+    Invoke-RTRivet -Push
     Assert-NoError
     Assert-True (Test-Table 'Foobar')
 }

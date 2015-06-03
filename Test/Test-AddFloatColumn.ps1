@@ -28,7 +28,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CreateFloatColumn'
 
-    Invoke-Rivet -Push 'CreateFloatColumn'
+    Invoke-RTRivet -Push 'CreateFloatColumn'
     
     Assert-Table 'Foobar'
     Assert-Column -Name 'id' -DataType 'Float' -TableName 'Foobar' -Precision 53
@@ -51,7 +51,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CreateFloatColumnWithSparse'
 
-    Invoke-Rivet -Push 'CreateFloatColumnWithSparse'
+    Invoke-RTRivet -Push 'CreateFloatColumnWithSparse'
     
     Assert-Table 'Foobar'
     Assert-Column -Name 'id' -DataType 'real' -TableName 'Foobar' -Sparse -Precision 24
@@ -74,7 +74,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CreateFloatColumnWithNotNull'
 
-    Invoke-Rivet -Push 'CreateFloatColumnWithNotNull'
+    Invoke-RTRivet -Push 'CreateFloatColumnWithNotNull'
     
     Assert-Table 'Foobar'
     Assert-Column -Name 'id' -DataType 'Float' -TableName 'Foobar' -NotNull -Precision 53

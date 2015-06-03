@@ -34,7 +34,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'AddSynonym'
 
-    Invoke-Rivet -Push 'AddSynonym'
+    Invoke-RTRivet -Push 'AddSynonym'
     Assert-Synonym -Name 'Buzz' -TargetObjectName '[dbo].[Fizz]'
     Assert-Synonym -SchemaName 'fiz' -Name 'Buzz' -TargetObjectName '[baz].[Buzz]'
     Assert-Synonym -Name 'Buzzed' -TargetObjectName '[Fizzy].[dbo].[Buzz]'

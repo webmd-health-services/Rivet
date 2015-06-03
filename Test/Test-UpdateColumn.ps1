@@ -32,7 +32,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'UpdateDateColumnWithDescription'
 
-    Invoke-Rivet -Push 'UpdateDateColumnWithDescription'
+    Invoke-RTRivet -Push 'UpdateDateColumnWithDescription'
     
     Assert-Table 'Foobar'
     Assert-Column -Name 'id' -DataType 'BigInt' -TableName 'Foobar' -Description 'Bar'
@@ -59,7 +59,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'ShouldUpdateColumnFromBinarytoVarBinary'
 
-    Invoke-Rivet -Push 'ShouldUpdateColumnFromBinarytoVarBinary'
+    Invoke-RTRivet -Push 'ShouldUpdateColumnFromBinarytoVarBinary'
     
     Assert-Table 'Foobar'
     Assert-Column -Name 'id' -DataType 'VarBinary' -TableName 'Foobar' -Sparse -Size 40 
@@ -86,7 +86,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'ShouldUpdateColumnFromNChartoNVarChar'
 
-    Invoke-Rivet -Push 'ShouldUpdateColumnFromNChartoNVarChar'
+    Invoke-RTRivet -Push 'ShouldUpdateColumnFromNChartoNVarChar'
     
     Assert-Table 'Foobar'
     Assert-Column -Name 'id' -DataType 'NVarChar' -TableName 'Foobar' -NotNull -Max -Collation "Chinese_Taiwan_Stroke_CI_AS"
@@ -130,7 +130,7 @@ function Pop-Migration
 }
 "@ | New-Migration -Name 'ShouldUpdateColumnFromNVarChartoXml'
 
-    Invoke-Rivet -Push 'ShouldUpdateColumnFromNVarChartoXml'
+    Invoke-RTRivet -Push 'ShouldUpdateColumnFromNVarChartoXml'
     
     Assert-Table 'WithXmlContent'
     Assert-Column -Name 'Two' -DataType 'Xml' -TableName 'WithXmlContent'
@@ -167,7 +167,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'UpdateDateColumnWithDescription'
 
-    Invoke-Rivet -Push 'UpdateDateColumnWithDescription'
+    Invoke-RTRivet -Push 'UpdateDateColumnWithDescription'
     
     Assert-Table 'Foobar'
     Assert-Column -Name 'id' -DataType 'VarChar' -TableName 'Foobar' -Max -Description 'Bar2'

@@ -28,7 +28,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CreateUniqueIdentifierColumn'
 
-    Invoke-Rivet -Push 'CreateUniqueIdentifierColumn'
+    Invoke-RTRivet -Push 'CreateUniqueIdentifierColumn'
     
     Assert-Table 'Foobar'
     Assert-Column -Name 'id' -DataType 'UniqueIdentifier' -TableName 'Foobar'
@@ -51,7 +51,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CreateUniqueIdentifierColumnWithSparse'
 
-    Invoke-Rivet -Push 'CreateUniqueIdentifierColumnWithSparse'
+    Invoke-RTRivet -Push 'CreateUniqueIdentifierColumnWithSparse'
     
     Assert-Table 'Foobar'
     Assert-Column -Name 'id' -DataType 'UniqueIdentifier' -TableName 'Foobar' -Sparse
@@ -74,7 +74,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CreateUniqueIdentifierColumnWithNotNull'
 
-    Invoke-Rivet -Push 'CreateUniqueIdentifierColumnWithNotNull'
+    Invoke-RTRivet -Push 'CreateUniqueIdentifierColumnWithNotNull'
     
     Assert-Table 'Foobar'
     Assert-Column -Name 'id' -DataType 'UniqueIdentifier' -TableName 'Foobar' -NotNull
@@ -97,7 +97,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CreateUniqueIdentifierRowGuidCol'
 
-    Invoke-Rivet -Push 'CreateUniqueIdentifierRowGuidCol'
+    Invoke-RTRivet -Push 'CreateUniqueIdentifierRowGuidCol'
     
     Assert-Table 'Foobar'
     Assert-Column -Name 'id' -DataType 'UniqueIdentifier' -TableName 'Foobar' -NotNull -RowGuidCol

@@ -29,5 +29,5 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'VerboseSwitch'
 
-    Invoke-Rivet -Push 'VerboseSwitch' -Verbose
+    Invoke-RTRivet -Push 'VerboseSwitch' -Verbose
 }

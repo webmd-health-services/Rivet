@@ -47,7 +47,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'RemoveSpecificRows'
 
-    Invoke-Rivet -Push 'RemoveSpecificRows'
+    Invoke-RTRivet -Push 'RemoveSpecificRows'
 
     Assert-Table 'Cities'
     Assert-Column -TableName 'Cities' -Name 'City' -DataType 'VarChar' -NotNull
@@ -101,7 +101,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'RemoveAllRows'
 
-    Invoke-Rivet -Push 'RemoveAllRows'
+    Invoke-RTRivet -Push 'RemoveAllRows'
 
     Assert-Table 'Cities'
     Assert-Column -TableName 'Cities' -Name 'City' -DataType 'VarChar' -NotNull
@@ -149,7 +149,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'RemoveAllRowsWithTruncate'
 
-    Invoke-Rivet -Push 'RemoveAllRowsWithTruncate'
+    Invoke-RTRivet -Push 'RemoveAllRowsWithTruncate'
 
     Assert-Table 'Cities'
     Assert-Column -TableName 'Cities' -Name 'City' -DataType 'VarChar' -NotNull

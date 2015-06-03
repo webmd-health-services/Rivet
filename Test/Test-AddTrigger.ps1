@@ -30,7 +30,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'AddTrigger'
 
-    Invoke-Rivet -Push 'AddTrigger'
+    Invoke-RTRivet -Push 'AddTrigger'
 
     Assert-Table 'Person'
     Assert-True (Test-DatabaseObject -SQLTrigger -Name "TestTrigger")
@@ -57,7 +57,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'AddTrigger'
 
-    Invoke-Rivet -Push 'AddTrigger'
+    Invoke-RTRivet -Push 'AddTrigger'
 
     Assert-Table 'Person' -SchemaName 'Test-AddTrigger'
     Assert-True (Test-DatabaseObject -SQLTrigger -Name "TestTrigger" -SchemaName 'Test-AddTrigger')
@@ -84,7 +84,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'AddTrigger'
 
-    Invoke-Rivet -Push 'AddTrigger'
+    Invoke-RTRivet -Push 'AddTrigger'
 
     Assert-Table 'AddTriggerTest' -SchemaName 'Add-Trigger'
     Assert-True (Test-DatabaseObject -SQLTrigger -Name "Test-Trigger" -SchemaName 'Add-Trigger')

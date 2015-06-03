@@ -28,7 +28,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CreateSqlVariantColumn'
 
-    Invoke-Rivet -Push 'CreateSqlVariantColumn'
+    Invoke-RTRivet -Push 'CreateSqlVariantColumn'
     
     Assert-Table 'Foobar'
     Assert-Column -Name 'id' -DataType 'sql_variant' -TableName 'Foobar'
@@ -51,7 +51,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CreateSqlVariantColumnWithSparse'
 
-    Invoke-Rivet -Push 'CreateSqlVariantColumnWithSparse'
+    Invoke-RTRivet -Push 'CreateSqlVariantColumnWithSparse'
     
     Assert-Table 'Foobar'
     Assert-Column -Name 'id' -DataType 'sql_variant' -TableName 'Foobar' -Sparse
@@ -74,7 +74,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CreateSqlVariantColumnWithNotNull'
 
-    Invoke-Rivet -Push 'CreateSqlVariantColumnWithNotNull'
+    Invoke-RTRivet -Push 'CreateSqlVariantColumnWithNotNull'
     
     Assert-Table 'Foobar'
     Assert-Column -Name 'id' -DataType 'sql_variant' -TableName 'Foobar' -NotNull

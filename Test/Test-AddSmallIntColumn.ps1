@@ -28,7 +28,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CreateSmallIntWithNullable'
 
-    Invoke-Rivet -Push 'CreateSmallIntWithNullable'
+    Invoke-RTRivet -Push 'CreateSmallIntWithNullable'
 
     Assert-Table 'Foobar'
     Assert-Column -Name 'ID' -DataType 'SmallInt' -TableName 'Foobar'
@@ -51,7 +51,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CreateSmallIntWithNotNull'
 
-    Invoke-Rivet -Push 'CreateSmallIntWithNotNull'
+    Invoke-RTRivet -Push 'CreateSmallIntWithNotNull'
 
     Assert-Table 'Foobar'
     Assert-Column -Name 'ID' -DataType 'SmallInt' -TableName 'Foobar' -NotNull
@@ -74,7 +74,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CreateSmallIntWithSparse'
 
-    Invoke-Rivet -Push 'CreateSmallIntWithSparse'
+    Invoke-RTRivet -Push 'CreateSmallIntWithSparse'
 
     Assert-Table 'Foobar'
     Assert-Column -Name 'ID' -DataType 'SmallInt' -TableName 'Foobar' -Sparse
@@ -97,7 +97,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CreateSmallIntWithIdentity'
 
-    Invoke-Rivet -Push 'CreateSmallIntWithIdentity'
+    Invoke-RTRivet -Push 'CreateSmallIntWithIdentity'
 
     Assert-Table 'Foobar'
     Assert-Column -Name 'ID' -DataType 'SmallInt' -TableName 'Foobar' -NotNull -Seed 1 -Increment 1
@@ -120,7 +120,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CreateSmallIntWithIdentityNotForReplication'
 
-    Invoke-Rivet -Push 'CreateSmallIntWithIdentityNotForReplication'
+    Invoke-RTRivet -Push 'CreateSmallIntWithIdentityNotForReplication'
 
     Assert-Table 'Foobar'
     Assert-Column -Name 'ID' -DataType 'SmallInt' -TableName 'Foobar' -NotNull -Seed 1 -Increment 1 -NotForReplication
@@ -143,7 +143,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CreateSmallIntWithIdentityCustom'
 
-    Invoke-Rivet -Push 'CreateSmallIntWithIdentityCustom'
+    Invoke-RTRivet -Push 'CreateSmallIntWithIdentityCustom'
 
     Assert-Table 'Foobar'
     Assert-Column -Name 'ID' -DataType 'SmallInt' -TableName 'Foobar' -NotNull -Seed 2 -Increment 2 -NotForReplication
@@ -166,7 +166,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CreateSmallIntWithCustomValueCustomDescription'
 
-    Invoke-Rivet -Push 'CreateSmallIntWithCustomValueCustomDescription'
+    Invoke-RTRivet -Push 'CreateSmallIntWithCustomValueCustomDescription'
 
     Assert-Table 'Foobar'
     Assert-Column -Name 'ID' -DataType 'SmallInt' -TableName 'Foobar' -Default 21 -Description 'Test'

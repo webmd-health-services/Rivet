@@ -26,7 +26,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'UpdateExtendedPropertyToSchema'
 
-    Invoke-Rivet -Push 'UpdateExtendedPropertyToSchema'
+    Invoke-RTRivet -Push 'UpdateExtendedPropertyToSchema'
 
     $expinfo = Get-ExtendedProperties
 
@@ -56,7 +56,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'UpdateExtendedPropertyToTable'
 
-    Invoke-Rivet -Push 'UpdateExtendedPropertyToTable'
+    Invoke-RTRivet -Push 'UpdateExtendedPropertyToTable'
 
     $expinfo = Get-ExtendedProperties
 
@@ -86,7 +86,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'UpdateExtendedPropertyToView'
 
-    Invoke-Rivet -Push 'UpdateExtendedPropertyToView'
+    Invoke-RTRivet -Push 'UpdateExtendedPropertyToView'
 
     $expinfo = Get-ExtendedProperties
 
@@ -116,7 +116,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'UpdateExtendedPropertyToView'
 
-    Invoke-Rivet -Push 'UpdateExtendedPropertyToView'
+    Invoke-RTRivet -Push 'UpdateExtendedPropertyToView'
 
     $expinfo = Get-ExtendedProperties
 
@@ -147,7 +147,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'UpdateExtendedPropertyToTableColumn'
 
-    Invoke-Rivet -Push 'UpdateExtendedPropertyToTableColumn'
+    Invoke-RTRivet -Push 'UpdateExtendedPropertyToTableColumn'
 
     $expinfo = Get-ExtendedProperties
 
@@ -181,7 +181,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'UpdateExtendedPropertyToViewColumn'
 
-    Invoke-Rivet -Push 'UpdateExtendedPropertyToViewColumn'
+    Invoke-RTRivet -Push 'UpdateExtendedPropertyToViewColumn'
 
     $expinfo = Get-ExtendedProperties
 
@@ -213,7 +213,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'AllowNullPropertyValue'
 
-    Invoke-Rivet -Push 'AllowNullPropertyValue'
+    Invoke-RTRivet -Push 'AllowNullPropertyValue'
 
     $expinfo = Get-ExtendedProperties
 
@@ -241,7 +241,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'AllowEmptyPropertyValue'
 
-    Invoke-Rivet -Push 'AllowEmptyPropertyValue'
+    Invoke-RTRivet -Push 'AllowEmptyPropertyValue'
 
     $expinfo = Get-ExtendedProperties
 

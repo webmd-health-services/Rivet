@@ -78,7 +78,7 @@ function Pop-Migration
 }
 "@ | New-Migration -Name 'AddColumnNoDefaultsAllNull'
 
-    Invoke-Rivet -Push 'AddColumnNoDefaultsAllNull'
+    Invoke-RTRivet -Push 'AddColumnNoDefaultsAllNull'
 
     Assert-True (Test-Table -Name 'AddColumnNoDefaultsAllNull')
 
@@ -183,7 +183,7 @@ function Pop-Migration()
 }
 "@ | New-Migration -Name 'AddColumnDefaultsNotNull'
 
-    Invoke-Rivet -Push 'AddColumnDefaultsNotNull'
+    Invoke-RTRivet -Push 'AddColumnDefaultsNotNull'
 
     Assert-True (Test-Table -Name 'AddColumnDefaultsNotNull')
 
@@ -263,7 +263,7 @@ function Pop-Migration()
 }
 '@ | New-Migration -Name 'AddColumnIdentityTables'
 
-    Invoke-Rivet -Push 'AddColumnIdentityTables'
+    Invoke-RTRivet -Push 'AddColumnIdentityTables'
 
     Assert-Table 'BigIntIdentity'
     Assert-Column -Name 'bigintidentity' 'bigint' -Seed 1 -Increment 2 -NotNull -TableName 'BigIntIdentity'
@@ -299,7 +299,7 @@ function Pop-Migration()
 }
 '@ | New-Migration -Name 'AddColumnRowGuidCol'
 
-    Invoke-Rivet -Push 'AddColumnRowGuidCol'
+    Invoke-RTRivet -Push 'AddColumnRowGuidCol'
 
     Assert-Table 'WithRowGuidCol'
 
@@ -339,7 +339,7 @@ function Pop-Migration()
 }
 "@ | New-Migration -Name 'AddColumnXmlDocument'
 
-    Invoke-Rivet -Push 'AddColumnXmlDocument'
+    Invoke-RTRivet -Push 'AddColumnXmlDocument'
 
     Assert-Table 'WithXmlDocument'
 
@@ -367,7 +367,7 @@ function Pop-Migration()
     Remove-Table 'WithVarBinaryFileStream'
 }
 "@ | New-Migration -Name 'AddColumnVarBinaryFileStream'
-    Invoke-Rivet -Push 'AddColumnVarBinaryFileStream'
+    Invoke-RTRivet -Push 'AddColumnVarBinaryFileStream'
 
     Assert-Table 'WithVarBinaryFileStream'
 
@@ -398,7 +398,7 @@ function Pop-Migration()
 }
 "@ | New-Migration -Name 'AddColumnCollation'
 
-    Invoke-Rivet -Push 'AddColumnCollation'
+    Invoke-RTRivet -Push 'AddColumnCollation'
 
     Assert-Table 'WithCustomCollation'
 
@@ -476,7 +476,7 @@ function Pop-Migration()
 
 "@ | New-Migration -Name 'AddColumnSparse'
 
-    Invoke-Rivet -Push 'AddColumnSparse'
+    Invoke-RTRivet -Push 'AddColumnSparse'
 
     Assert-Table -Name 'WithSparseColumns'
 
@@ -556,7 +556,7 @@ function Pop-Migration()
 }
 "@ | New-Migration -Name 'AddColumnNotForReplication'
 
-    Invoke-Rivet -Push 'AddColumnNotForReplication'
+    Invoke-RTRivet -Push 'AddColumnNotForReplication'
 
     Assert-Table 'BigIntIdentity'
     Assert-Column -Name 'bigintidentity' 'bigint' -Seed 1 -Increment 2 -NotNull -NotForReplication  -TableName 'BigIntIdentity'

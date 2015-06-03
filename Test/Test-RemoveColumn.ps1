@@ -35,7 +35,7 @@ function Pop-Migration()
 }
 '@ | New-Migration -Name 'AddColumnNoDefaultsAllNull'
 
-    Invoke-Rivet -Push 'AddColumnNoDefaultsAllNull'
+    Invoke-RTRivet -Push 'AddColumnNoDefaultsAllNull'
     
     $commonArgs = @{ TableName = 'AddColumnNoDefaultsAllNull' ; SchemaName = 'My-Schema' }
     Assert-False (Test-Column -Name 'varchar' @commonArgs)

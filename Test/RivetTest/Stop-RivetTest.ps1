@@ -4,7 +4,7 @@ function Stop-RivetTest
 
     Set-StrictMode -Version 'Latest'
 
-    Invoke-Rivet -Pop -All -Database $RTDatabaseName -ConfigFilePath $RTConfigFilePath
+    Invoke-RTRivet -Pop -All -Database $RTDatabaseName -ConfigFilePath $RTConfigFilePath
 
     if( Test-Database -Name $RTDatabaseName )
     {

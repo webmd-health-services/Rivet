@@ -43,7 +43,7 @@ function Pop-Migration
 }
 "@ | New-Migration -Name 'CreateXmlColumn'
 
-    Invoke-Rivet -Push 'CreateXmlColumn'
+    Invoke-RTRivet -Push 'CreateXmlColumn'
     
     Assert-Table 'WithXmlContent'
     Assert-Column -Name 'Two' -DataType 'Xml' -TableName 'WithXmlContent'
@@ -84,7 +84,7 @@ function Pop-Migration
 }
 "@ | New-Migration -Name 'CreateXmlColumn'
 
-    Invoke-Rivet -Push 'CreateXmlColumn'
+    Invoke-RTRivet -Push 'CreateXmlColumn'
     
     Assert-Table 'WithXmlDocument'
     Assert-Column -Name 'Two' -DataType 'Xml' -TableName 'WithXmlDocument'

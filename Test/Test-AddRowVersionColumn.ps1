@@ -28,7 +28,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CreateRowVersionColumn'
 
-    Invoke-Rivet -Push 'CreateRowVersionColumn'
+    Invoke-RTRivet -Push 'CreateRowVersionColumn'
     
     Assert-Table 'Foobar'
     Assert-Column -Name 'id' -DataType 'timestamp' -TableName 'Foobar' -NotNull
@@ -52,7 +52,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CreateRowVersionColumnWithNotNull'
 
-    Invoke-Rivet -Push 'CreateRowVersionColumnWithNotNull'
+    Invoke-RTRivet -Push 'CreateRowVersionColumnWithNotNull'
     
     Assert-Table 'Foobar'
     Assert-Column -Name 'id' -DataType 'timestamp' -TableName 'Foobar' -NotNull

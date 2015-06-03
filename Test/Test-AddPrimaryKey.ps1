@@ -31,7 +31,7 @@ function Pop-Migration()
 }
 
 '@ | New-Migration -Name 'AddTableWithPrimaryKey'
-    Invoke-Rivet -Push 'AddTableWithPrimaryKey'
+    Invoke-RTRivet -Push 'AddTableWithPrimaryKey'
     Assert-True (Test-Table 'Primary Key')
     Assert-PrimaryKey -TableName 'Primary Key' -ColumnName 'PK ID'
 }
@@ -57,7 +57,7 @@ function Pop-Migration()
     Remove-Table 'PrimaryKey'
 }
 '@ | New-Migration -Name 'AddTableWithPrimaryKeyWithMultipleColumns'
-    Invoke-Rivet -Push 'AddTableWithPrimaryKeyWithMultipleColumns'
+    Invoke-RTRivet -Push 'AddTableWithPrimaryKeyWithMultipleColumns'
     Assert-True (Test-Table 'PrimaryKey')
     Assert-PrimaryKey -TableName 'PrimaryKey' -ColumnName 'id','uuid','date'
 }
@@ -81,7 +81,7 @@ function Pop-Migration()
     Remove-Table 'PrimaryKey'
 }
 '@ | New-Migration -Name 'AddNonClusteredPrimaryKey'
-    Invoke-Rivet -Push 'AddNonClusteredPrimaryKey'
+    Invoke-RTRivet -Push 'AddNonClusteredPrimaryKey'
     Assert-True (Test-Table 'PrimaryKey')
     Assert-PrimaryKey -TableName 'PrimaryKey' -ColumnName 'id' -NonClustered
 }
@@ -105,7 +105,7 @@ function Pop-Migration()
     Remove-Table 'PrimaryKey'
 }
 '@ | New-Migration -Name 'SetIndexOptions'
-    Invoke-Rivet -Push 'SetIndexOptions'
+    Invoke-RTRivet -Push 'SetIndexOptions'
     Assert-True (Test-Table 'PrimaryKey')
     Assert-PrimaryKey -TableName 'PrimaryKey' -ColumnName 'id' -IgnoreDupKey -FillFActor 75 
 }
@@ -128,7 +128,7 @@ function Pop-Migration()
     Remove-Table 'PrimaryKey' -SchemaName 'rivet'
 }
 '@ | New-Migration -Name 'AddPrimaryKeyToTableInCustomSchema'
-    Invoke-Rivet -Push 'AddPrimaryKeyToTableInCustomSchema'
+    Invoke-RTRivet -Push 'AddPrimaryKeyToTableInCustomSchema'
     Assert-True (Test-Table 'PrimaryKey' -SchemaName 'rivet')
     Assert-PrimaryKey -TableName 'PrimaryKey' -ColumnName 'id' -SchemaName 'rivet'
 }
@@ -151,7 +151,7 @@ function Pop-Migration()
 }
 
 '@ | New-Migration -Name 'AddTableWithPrimaryKey'
-    Invoke-Rivet -Push 'AddTableWithPrimaryKey'
+    Invoke-RTRivet -Push 'AddTableWithPrimaryKey'
     Assert-PrimaryKey -TableName 'Add-PrimaryKey' -ColumnName 'id'
 }
 
@@ -173,7 +173,7 @@ function Pop-Migration()
 }
 
 '@ | New-Migration -Name 'AddPrimaryKeyWithCustomName'
-    Invoke-Rivet -Push 'AddPrimaryKeyWithCustomName'
+    Invoke-RTRivet -Push 'AddPrimaryKeyWithCustomName'
 
     Assert-PrimaryKey -Name 'Custom' -ColumnName 'id'
 }

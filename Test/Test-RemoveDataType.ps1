@@ -27,13 +27,13 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'ByTable'
 
-    Invoke-Rivet -Push 'ByTable'
+    Invoke-RTRivet -Push 'ByTable'
 
     $temp = Invoke-RivetTestQuery -Query 'select * from sys.table_types'
     Assert-NotNull $temp
     Assert-Equal $temp.name 'Users DT'
 
-    Invoke-Rivet -Pop 1
+    Invoke-RTRivet -Pop 1
     $temp = Invoke-RivetTestQuery -Query 'select * from sys.table_types'
     Assert-Null $temp
 }

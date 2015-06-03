@@ -32,7 +32,7 @@ function Pop-Migration()
     Remove-Table 'RemoveUniqueKey'
 }
 '@ | New-Migration -Name 'RemoveUniqueKey'
-    Invoke-Rivet -Push 'RemoveUniqueKey'
+    Invoke-RTRivet -Push 'RemoveUniqueKey'
     Assert-False (Test-UniqueKey -TableName 'RemoveUniqueKey' -ColumnName 'RemoveMyUniqueKey')
 
 }
@@ -55,7 +55,7 @@ function Pop-Migration()
     Remove-Table 'Remove-UniqueKey'
 }
 '@ | New-Migration -Name 'RemoveUniqueKey'
-    Invoke-Rivet -Push 'RemoveUniqueKey'
+    Invoke-RTRivet -Push 'RemoveUniqueKey'
     Assert-False (Test-UniqueKey -TableName 'Remove-UniqueKey' -ColumnName 'RemoveMyUniqueKey')
 
 }
@@ -78,7 +78,7 @@ function Pop-Migration()
     Remove-Table 'Add-UniqueKey'
 }
 '@ | New-Migration -Name 'AddUniqueKeyWithCustomName'
-    Invoke-Rivet -Push 'AddUniqueKeyWithCustomName'
+    Invoke-RTRivet -Push 'AddUniqueKeyWithCustomName'
     
     $UQC = Invoke-RivetTestQuery -Query "select * from sys.indexes where is_unique_constraint='True'"
 

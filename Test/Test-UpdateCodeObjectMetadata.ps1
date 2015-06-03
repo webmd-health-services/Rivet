@@ -39,7 +39,7 @@ function Pop-Migration
 }
 '@ | New-Migration -Name 'CreateToUpper'
 
-    Invoke-Rivet -Push
+    Invoke-RTRivet -Push
 
     $query = 'select refresh.to_upper(''abcdefgh'') Result'
     $result = Invoke-RivetTestQuery -Query $query -AsScalar
@@ -67,7 +67,7 @@ function Pop-Migration
 }
 '@ | New-Migration -Name 'IncreaseToUpperLength'
 
-    Invoke-Rivet -Push
+    Invoke-RTRivet -Push
 
     $result = Invoke-RivetTestQuery -Query $query -AsScalar
     Assert-True ($result -ceq 'ABCDEFGH') 'to_upper not updated'

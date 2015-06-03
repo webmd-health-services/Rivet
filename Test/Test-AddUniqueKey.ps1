@@ -36,7 +36,7 @@ function Pop-Migration()
     Remove-Table 'Add Unique Key'
 }
 '@ | New-Migration -Name 'AddUniqueKeyToOneColumn'
-    Invoke-Rivet -Push 'AddUniqueKeyToOneColumn'
+    Invoke-RTRivet -Push 'AddUniqueKeyToOneColumn'
     Assert-UniqueKey -TableName 'Add Unique Key' -ColumnName 'Unique Key Me'
 }
 
@@ -59,7 +59,7 @@ function Pop-Migration()
     Remove-Table AddUniqueKey
 }
 '@ | New-Migration -Name 'AddUniqueKeyToMultipleColumns'
-    Invoke-Rivet -Push 'AddUniqueKeyToMultipleColumns'
+    Invoke-RTRivet -Push 'AddUniqueKeyToMultipleColumns'
     Assert-UniqueKey -TableName 'AddUniqueKey' -ColumnName 'UniqueKeyMe','UniqueKeyMe2'
 }
 
@@ -82,7 +82,7 @@ function Pop-Migration()
     Remove-Table AddUniqueKey
 }
 '@ | New-Migration -Name 'AddUniqueKeyWithClustered'
-    Invoke-Rivet -Push 'AddUniqueKeyWithClustered'
+    Invoke-RTRivet -Push 'AddUniqueKeyWithClustered'
     Assert-UniqueKey -TableName 'AddUniqueKey' -ColumnName 'UniqueKeyMe','UniqueKeyMe2' -Clustered
 }
 
@@ -105,7 +105,7 @@ function Pop-Migration()
     Remove-Table AddUniqueKey
 }
 '@ | New-Migration -Name 'AddUniqueKeyWithFillFactor'
-    Invoke-Rivet -Push 'AddUniqueKeyWithFillFactor'
+    Invoke-RTRivet -Push 'AddUniqueKeyWithFillFactor'
     Assert-UniqueKey -TableName 'AddUniqueKey' -ColumnName 'UniqueKeyMe','UniqueKeyMe2' -FillFactor 80 -IgnoreDupKey -DenyRowLocks
 }
 
@@ -128,7 +128,7 @@ function Pop-Migration()
     Remove-Table AddUniqueKey
 }
 '@ | New-Migration -Name 'AddUniqueKeyWithOptions'
-    Invoke-Rivet -Push 'AddUniqueKeyWithOptions'
+    Invoke-RTRivet -Push 'AddUniqueKeyWithOptions'
     Assert-UniqueKey -TableName 'AddUniqueKey' -ColumnName 'UniqueKeyMe','UniqueKeyMe2' -IgnoreDupKey -DenyRowLocks
 }
 
@@ -149,7 +149,7 @@ function Pop-Migration()
     Remove-Table AddUniqueKey
 }
 '@ | New-Migration -Name 'AddUniqueKeyWithCustomFileGroup'
-    Invoke-Rivet -Push 'AddUniqueKeyWithCustomFileGroup' -ErrorAction SilentlyContinue
+    Invoke-RTRivet -Push 'AddUniqueKeyWithCustomFileGroup' -ErrorAction SilentlyContinue
     Assert-Error 1 'Invalid filegroup'
 }
 
@@ -170,7 +170,7 @@ function Pop-Migration()
     Remove-Table 'Add-UniqueKey'
 }
 '@ | New-Migration -Name 'AddUniqueKeyToOneColumn'
-    Invoke-Rivet -Push 'AddUniqueKeyToOneColumn'
+    Invoke-RTRivet -Push 'AddUniqueKeyToOneColumn'
     Assert-UniqueKey -TableName 'Add-UniqueKey' -ColumnName 'UniqueKeyMe'
 }
 
@@ -191,7 +191,7 @@ function Pop-Migration()
     Remove-Table 'Add-UniqueKey'
 }
 '@ | New-Migration -Name 'AddUniqueKeyWithCustomName'
-    Invoke-Rivet -Push 'AddUniqueKeyWithCustomName'
+    Invoke-RTRivet -Push 'AddUniqueKeyWithCustomName'
     
     $UQC = Invoke-RivetTestQuery -Query "select * from sys.indexes where is_unique_constraint='True'"
 

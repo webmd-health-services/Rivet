@@ -31,7 +31,7 @@ function Pop-Migration()
 }
 '@ | New-Migration -Name 'AddDefaultConstraint'
 
-    Invoke-Rivet -Push 'AddDefaultConstraint'
+    Invoke-RTRivet -Push 'AddDefaultConstraint'
     Assert-DefaultConstraint -TableName 'AddDefaultConstraint' -ColumnName 'Default Constraint Me'
 
 }
@@ -54,7 +54,7 @@ function Pop-Migration()
 }
 '@ | New-Migration -Name 'AddDefaultConstraintWithValues'
 
-    Invoke-Rivet -Push 'AddDefaultConstraintWithValues'
+    Invoke-RTRivet -Push 'AddDefaultConstraintWithValues'
     Assert-DefaultConstraint -TableName 'AddDefaultConstraint' -ColumnName 'DefaultConstraintMe'
     Assert-NoError
 }
@@ -79,7 +79,7 @@ function Pop-Migration()
 }
 '@ | New-Migration -Name 'AddDefaultConstraintQuotesName'
 
-    Invoke-Rivet -Push 'AddDefaultConstraintQuotesName'
+    Invoke-RTRivet -Push 'AddDefaultConstraintQuotesName'
     Assert-DefaultConstraint -TableName 'Add-DefaultConstraint' -ColumnName 'DefaultConstraintMe'
 
 }
@@ -103,7 +103,7 @@ function Pop-Migration()
 }
 '@ | New-Migration -Name 'AddDefaultConstraintOptionalParameterNames'
 
-    Invoke-Rivet -Push 'AddDefaultConstraintOptionalParameterNames'
+    Invoke-RTRivet -Push 'AddDefaultConstraintOptionalParameterNames'
     Assert-DefaultConstraint -TableName 'AddDefaultConstraint' -ColumnName 'DefaultConstraintMe'
 
 }
@@ -127,6 +127,6 @@ function Pop-Migration()
 }
 '@ | New-Migration -Name 'AddDefaultConstraintOptionalParameterNames'
 
-    Invoke-Rivet -Push 'AddDefaultConstraintOptionalParameterNames'
+    Invoke-RTRivet -Push 'AddDefaultConstraintOptionalParameterNames'
     Assert-DefaultConstraint -TableName 'AddDefaultConstraint' -ColumnName 'DefaultConstraintMe' -Name 'Optional'
 }

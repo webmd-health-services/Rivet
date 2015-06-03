@@ -28,7 +28,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CreateTinyIntWithNullable'
 
-    Invoke-Rivet -Push 'CreateTinyIntWithNullable'
+    Invoke-RTRivet -Push 'CreateTinyIntWithNullable'
 
     Assert-Table 'Foobar'
     Assert-Column -Name 'ID' -DataType 'TinyInt' -TableName 'Foobar'
@@ -51,7 +51,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CreateTinyIntWithNotNull'
 
-    Invoke-Rivet -Push 'CreateTinyIntWithNotNull'
+    Invoke-RTRivet -Push 'CreateTinyIntWithNotNull'
 
     Assert-Table 'Foobar'
     Assert-Column -Name 'ID' -DataType 'TinyInt' -TableName 'Foobar' -NotNull
@@ -74,7 +74,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CreateTinyIntWithSparse'
 
-    Invoke-Rivet -Push 'CreateTinyIntWithSparse'
+    Invoke-RTRivet -Push 'CreateTinyIntWithSparse'
 
     Assert-Table 'Foobar'
     Assert-Column -Name 'ID' -DataType 'TinyInt' -TableName 'Foobar' -Sparse
@@ -97,7 +97,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CreateTinyIntWithIdentity'
 
-    Invoke-Rivet -Push 'CreateTinyIntWithIdentity'
+    Invoke-RTRivet -Push 'CreateTinyIntWithIdentity'
 
     Assert-Table 'Foobar'
     Assert-Column -Name 'ID' -DataType 'TinyInt' -TableName 'Foobar' -NotNull -Seed 1 -Increment 1
@@ -120,7 +120,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CreateTinyIntWithIdentityNotForReplication'
 
-    Invoke-Rivet -Push 'CreateTinyIntWithIdentityNotForReplication'
+    Invoke-RTRivet -Push 'CreateTinyIntWithIdentityNotForReplication'
 
     Assert-Table 'Foobar'
     Assert-Column -Name 'ID' -DataType 'TinyInt' -TableName 'Foobar' -NotNull -Seed 1 -Increment 1 -NotForReplication
@@ -143,7 +143,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CreateTinyIntWithIdentityCustomSeedCustomIncrement'
 
-    Invoke-Rivet -Push 'CreateTinyIntWithIdentityCustomSeedCustomIncrement'
+    Invoke-RTRivet -Push 'CreateTinyIntWithIdentityCustomSeedCustomIncrement'
 
     Assert-Table 'Foobar'
     Assert-Column -Name 'ID' -DataType 'TinyInt' -TableName 'Foobar' -NotNull -Seed 4 -Increment 4 -NotForReplication
@@ -166,7 +166,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CreateTinyIntWithCustomValueCustomDescription'
 
-    Invoke-Rivet -Push 'CreateTinyIntWithCustomValueCustomDescription'
+    Invoke-RTRivet -Push 'CreateTinyIntWithCustomValueCustomDescription'
 
     Assert-Table 'Foobar'
     Assert-Column -Name 'ID' -DataType 'TinyInt' -TableName 'Foobar' -Default 21 -Description 'Test'

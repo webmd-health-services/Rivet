@@ -28,7 +28,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CreateHierarchyIDColumn'
 
-    Invoke-Rivet -Push 'CreateHierarchyIDColumn'
+    Invoke-RTRivet -Push 'CreateHierarchyIDColumn'
     
     Assert-Table 'Foobar'
     Assert-Column -Name 'id' -DataType 'HierarchyID' -TableName 'Foobar'
@@ -51,7 +51,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CreateHierarchyIDColumnWithSparse'
 
-    Invoke-Rivet -Push 'CreateHierarchyIDColumnWithSparse'
+    Invoke-RTRivet -Push 'CreateHierarchyIDColumnWithSparse'
     
     Assert-Table 'Foobar'
     Assert-Column -Name 'id' -DataType 'HierarchyID' -TableName 'Foobar' -Sparse
@@ -74,7 +74,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'CreateHierarchyIDColumnWithNotNull'
 
-    Invoke-Rivet -Push 'CreateHierarchyIDColumnWithNotNull'
+    Invoke-RTRivet -Push 'CreateHierarchyIDColumnWithNotNull'
     
     Assert-Table 'Foobar'
     Assert-Column -Name 'id' -DataType 'HierarchyID' -TableName 'Foobar' -NotNull

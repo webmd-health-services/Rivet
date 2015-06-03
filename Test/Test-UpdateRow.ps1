@@ -50,7 +50,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'UpdateSpecificRows'
 
-    Invoke-Rivet -Push 'UpdateSpecificRows'
+    Invoke-RTRivet -Push 'UpdateSpecificRows'
 
     Assert-Table 'City List'
     Assert-Column -TableName 'City List' -Name 'City Name' -DataType 'VarChar' -NotNull
@@ -101,7 +101,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'UpdateAllRows'
 
-    Invoke-Rivet -Push 'UpdateAllRows'
+    Invoke-RTRivet -Push 'UpdateAllRows'
 
     Assert-Table 'Cities'
     Assert-Column -TableName 'Cities' -Name 'City' -DataType 'VarChar' -NotNull
@@ -157,7 +157,7 @@ function Pop-Migration
 }
 '@ | New-Migration -Name 'AddSingleRow'
 
-    Invoke-Rivet -Push 'AddSingleRow'
+    Invoke-RTRivet -Push 'AddSingleRow'
 
     Assert-Table 'Members'
 
@@ -199,7 +199,7 @@ function Pop-Migration
 }
 '@ | New-Migration -Name 'AddSingleRow'
 
-    Invoke-Rivet -Push 'AddSingleRow'
+    Invoke-RTRivet -Push 'AddSingleRow'
 
     Assert-Table 'Members'
 
