@@ -1,6 +1,8 @@
+
+& (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
+
 function Start-Test
 {
-    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve) -DatabaseName 'AddTinyIntColumn' 
     Start-RivetTest
 }
 
@@ -21,7 +23,7 @@ function Push-Migration
 
 function Pop-Migration
 {
-    
+    Remove-Table 'Foobar'
 }
 
 '@ | New-Migration -Name 'CreateTinyIntWithNullable'
@@ -44,7 +46,7 @@ function Push-Migration
 
 function Pop-Migration
 {
-    
+    Remove-Table 'Foobar'
 }
 
 '@ | New-Migration -Name 'CreateTinyIntWithNotNull'
@@ -67,7 +69,7 @@ function Push-Migration
 
 function Pop-Migration
 {
-    
+    Remove-Table 'Foobar'
 }
 
 '@ | New-Migration -Name 'CreateTinyIntWithSparse'
@@ -90,7 +92,7 @@ function Push-Migration
 
 function Pop-Migration
 {
-    
+    Remove-Table 'Foobar'
 }
 
 '@ | New-Migration -Name 'CreateTinyIntWithIdentity'
@@ -113,7 +115,7 @@ function Push-Migration
 
 function Pop-Migration
 {
-    
+    Remove-Table 'Foobar'
 }
 
 '@ | New-Migration -Name 'CreateTinyIntWithIdentityNotForReplication'
@@ -136,7 +138,7 @@ function Push-Migration
 
 function Pop-Migration
 {
-    
+    Remove-Table 'Foobar'
 }
 
 '@ | New-Migration -Name 'CreateTinyIntWithIdentityCustomSeedCustomIncrement'
@@ -159,7 +161,7 @@ function Push-Migration
 
 function Pop-Migration
 {
-    
+    Remove-Table 'Foobar'
 }
 
 '@ | New-Migration -Name 'CreateTinyIntWithCustomValueCustomDescription'

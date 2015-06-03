@@ -1,6 +1,8 @@
+
+& (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
+
 function Start-Test
 {
-    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve) -DatabaseName 'RemoveRow' 
     Start-RivetTest
 }
 
@@ -40,7 +42,7 @@ function Push-Migration
 
 function Pop-Migration
 {
-    
+    Remove-Table 'Cities'
 }
 
 '@ | New-Migration -Name 'RemoveSpecificRows'
@@ -94,7 +96,7 @@ function Push-Migration
 
 function Pop-Migration
 {
-    
+    Remove-Table 'Cities'
 }
 
 '@ | New-Migration -Name 'RemoveAllRows'
@@ -142,7 +144,7 @@ function Push-Migration
 
 function Pop-Migration
 {
-    
+    Remove-Table 'Cities'
 }
 
 '@ | New-Migration -Name 'RemoveAllRowsWithTruncate'

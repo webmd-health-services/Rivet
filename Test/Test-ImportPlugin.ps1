@@ -1,9 +1,9 @@
 
+& (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
 $pluginsPath = $null
 
 function Start-Test
 {
-    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve) -DatabaseName 'ImportPlugin' 
     $pluginsPath = New-TempDir -Prefix 'ImportPlugin'
     @'
 function Add-MyTable
@@ -13,6 +13,13 @@ function Add-MyTable
     }
 }
 '@ | Set-Content -Path (Join-Path -Path $pluginsPath -ChildPath 'Add-MyTable.ps1')
+
+    @'
+function Remove-MyTable
+{
+    Remove-Table 'MyTable' 
+}
+'@ | Set-Content -Path (Join-Path -Path $pluginsPath -ChildPath 'Remove-MyTable.ps1')
 
     Start-RivetTest -PluginPath $pluginsPath
 }
@@ -30,6 +37,11 @@ function Push-Migration
 {
     Add-MyTable
 }
+
+function Pop-Migration
+{
+    Remove-MyTable
+}
 '@ | New-Migration -Name 'AddMyTable'
 
     Invoke-Rivet -Push
@@ -39,11 +51,12 @@ function Push-Migration
 
 function Test-ShouldValidatePlugins
 {
+    $badPluginPath = Join-Path -Path $pluginsPath -ChildPath 'Add-MyFeature.ps1'
     @'
 function BadPlugin
 {
 }
-'@ | Set-Content -Path (Join-Path -Path $pluginsPath -ChildPath 'Add-MyFeature.ps1')
+'@ | Set-Content -Path $badPluginPath
 
     @'
 function Push-Migration
@@ -52,9 +65,22 @@ function Push-Migration
         int 'ID' -Identity
     }
 }
+
+function Pop-Migration
+{
+    Remove-Table 'MyTable'
+}
 '@ | New-Migration -Name 'AddMyTable'
 
-    Invoke-Rivet -Push -ErrorAction SilentlyContinue
-    Assert-Error -Last 'not found'
+    try
+    {
+        Invoke-Rivet -Push -ErrorAction SilentlyContinue
+        Assert-Error -Last 'not found'
+    }
+    finally
+    {
+        Remove-Item $badPluginPath
+    }
+
 }
 

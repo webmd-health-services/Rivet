@@ -202,7 +202,7 @@ function Get-Migration
                     $Operation,
 
                     [Parameter(ParameterSetName='Push',Mandatory=$true)]
-                    [Collections.Generic.IList[Rivet.Operation]]
+                    [Collections.Generic.List[Rivet.Operation]]
                     [AllowEmptyCollection()]
                     $OperationsList,
 
@@ -272,5 +272,7 @@ function Get-Migration
             {
                 Clear-Migration
             }
-        }
+        } | 
+        # TODO: Write a test for this, i.e. make sure we protect our selves from scripts that return shit.
+        Where-Object { $_ -is [Rivet.Migration] }
 }

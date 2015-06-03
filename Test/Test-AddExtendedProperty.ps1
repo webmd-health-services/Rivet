@@ -21,7 +21,7 @@ function Push-Migration
 
 function Pop-Migration
 {
-    
+    Remove-Schema 'fizz'
 }
 
 '@ | New-Migration -Name 'AddExtendedPropertyToSchema'
@@ -50,7 +50,7 @@ function Push-Migration
 
 function Pop-Migration
 {
-    
+    Remove-Table 'Foobar'
 }
 
 '@ | New-Migration -Name 'AddExtendedPropertyToTable'
@@ -77,7 +77,7 @@ function Push-Migration
 
 function Pop-Migration
 {
-    
+    Remove-View 'Foobar'
 }
 
 '@ | New-Migration -Name 'AddExtendedPropertyToView'
@@ -106,6 +106,8 @@ function Push-Migration
 
 function Pop-Migration
 {
+    Remove-View 'Foobar' -SchemaName 'metric'
+    Remove-Schema 'metric'
 }
 
 '@ | New-Migration -Name 'AddExtendedPropertyToView'
@@ -134,7 +136,7 @@ function Push-Migration
 
 function Pop-Migration
 {
-    
+    Remove-Table 'Foobar'
 }
 
 '@ | New-Migration -Name 'AddExtendedPropertyToTableColumn'
@@ -165,7 +167,8 @@ function Push-Migration
 
 function Pop-Migration
 {
-    
+    Remove-View 'Foobar'
+    Remove-Table 'Table'
 }
 
 '@ | New-Migration -Name 'AddExtendedPropertyToViewColumn'
@@ -194,7 +197,7 @@ function Push-Migration
 
 function Pop-Migration
 {
-    
+    Remove-Table 'Foobar'
 }
 
 '@ | New-Migration -Name 'AllowNullPropertyValue'
@@ -221,7 +224,7 @@ function Push-Migration
 
 function Pop-Migration
 {
-    
+    Remove-Table 'Foobar'
 }
 
 '@ | New-Migration -Name 'AddExtendedPropertyToColumn'

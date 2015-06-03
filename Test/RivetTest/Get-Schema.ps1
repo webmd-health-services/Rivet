@@ -23,5 +23,5 @@ function Get-Schema
     }
     
 
-    Invoke-RivetTestQuery -Query $query -Connection $RTDatabaseConnection
+    Invoke-RivetTestQuery -Query $query
 }

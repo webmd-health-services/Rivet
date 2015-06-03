@@ -1,8 +1,99 @@
 
+& (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve) -DatabaseName 'RivetTest' 
+
 function Start-Test
 {
-    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve) -DatabaseName 'RivetTest' 
     Start-RivetTest
+
+    @'
+function Push-Migration()
+{
+    Add-Table 'InvokeQuery' {
+        int 'id' -NotNull
+    }
+}
+
+function Pop-Migration()
+{
+    Remove-Table 'InvokeQuery'
+}
+'@ | New-Migration -Name 'InvokeQuery'
+
+    @'
+function Push-Migration()
+{
+    Add-Table 'secondTable' {
+        int 'id' -NotNull
+    }
+}
+
+function Pop-Migration()
+{
+    Remove-Table 'secondTable'
+}
+'@ | New-Migration -Name 'SecondTable'
+
+    @'
+function Push-Migration()
+{
+    Add-StoredProcedure -Name RivetTestSproc -Definition 'as SELECT FirstName, LastName FROM dbo.Person;'
+    Add-UserDefinedFunction -Name RivetTestFunction -Definition '(@Number decimal(4,1)) returns decimal(12,3) as begin return(@Number * @Number) end'
+    Add-View -Name Migrators -Definition "AS SELECT DISTINCT Name FROM rivet.Migrations"
+}
+
+function Pop-Migration()
+{
+    Remove-View -Name Migrators
+    Remove-UserDefinedFunction -Name RivetTestFunction
+    Remove-StoredProcedure -Name RivetTestSproc
+}
+'@ | New-Migration -Name 'CreateObjectsFromFiles'
+
+    @'
+
+function Push-Migration()
+{
+    $miscScriptPath = Join-Path $DBMigrationsRoot '..\MiscellaneousObject.sql'
+    Invoke-SqlScript -Path $miscScriptPath
+    Invoke-SqlScript -Path ..\ObjectMadeWithRelativePath.sql
+}
+
+function Pop-Migration()
+{
+    Remove-UserDefinedFunction -Name MiscellaneousObject
+    Remove-UserDefinedFunction -Name ObjectMadeWithRelativePath
+}
+'@ | New-Migration -Name 'CreateObjectInCustomDirectory'
+
+    $miscellaneousObjectPath = Join-Path -Path $RTDatabaseMigrationRoot -ChildPath '..\MiscellaneousObject.sql'
+    @'
+CREATE FUNCTION MiscellaneousObject
+(
+)
+RETURNS datetime
+AS
+BEGIN
+
+	return GetDate()
+	
+END
+GO
+'@ | Set-Content -Path $miscellaneousObjectPath
+
+    $objectMadeWithRelativePathath = Join-Path -Path $RTDatabaseMigrationRoot -ChildPath '..\ObjectMadeWithRelativePath.sql'
+    @'
+CREATE FUNCTION ObjectMadeWithRelativePath
+(
+)
+RETURNS datetime
+AS
+BEGIN
+
+	return GetDate()
+	
+END
+GO
+'@ | Set-Content -Path $objectMadeWithRelativePathath
 }
 
 function Stop-Test
@@ -87,9 +178,8 @@ function Test-ShouldPushMigrationsForMultipleDBs
 {
     $createdAfter = (Get-Date).ToUniversalTime()
 
-    $timestamp = '{0:yyyyMMddHHss}' -f (Get-Date)
-    $db1Name = 'PushMigration{0}' -f $timestamp
-    $db2Name = 'PushMigration{0}' -f $timestamp
+    $db1Name = 'PushMigration1'
+    $db2Name = 'PushMigration2'
     $migrationFileName = '20130703152600_CreateTable.ps1'
     $tree = @'
 + {0}
@@ -130,16 +220,15 @@ function Test-ShouldPushMigrationsForMultipleDBs
     $db2MigrationsDir = Join-Path $tempDir $db2Name\Migrations
     $migration | Out-File (Join-Path $db2MigrationsDir $migrationFileName) -Encoding OEM
 
-    New-Database -Name $db1Name
-    $db1Conn = New-SqlConnection -Database $db1Name
-
-    New-Database -Name $db2Name
-    $db2Conn = New-SqlConnection -Database $db2Name
-    
+    $db1Conn = $null
+    $db2Conn = $null
     try
     {
-        Invoke-Rivet -Push -Database $db1Name,$db2Name -ConfigFilePath $configFilePath
+        Invoke-Rivet -Push -Database $db1Name,$db2Name -ConfigFilePath $configFilePath  | Format-Table | Out-String | Write-Verbose
         
+        $db1Conn = New-SqlConnection -Database $db1Name
+        $db2Conn = New-SqlConnection -Database $db2Name
+
         Assert-Migration -Path $db1MigrationsDir -Connection $db1Conn 
         Assert-Migration -Path $db2MigrationsDir -Connection $db2Conn 
     }
@@ -212,10 +301,19 @@ function Test-ShouldNotReapplyASpecificMigration
 
 function Test-ShouldStopPushingMigrationsIfOneGivesAnError
 {
-    $script = Get-MigrationScript | Select-Object -First 1
-    $migrationDir = Split-Path -Parent -Path $script.FullName
-    Copy-Item -Path (Join-Path $migrationDir Extras\*.ps1) -Destination $migrationDir
-    
+    @'
+function Push-Migration()
+{
+    Add-Table 'TableWithoutColumns' {
+    }
+}
+
+function Pop-Migration()
+{
+    Remove-Table 'TableWithoutColumns'
+}
+'@ | New-Migration -Name 'AddTableWithNOColumns'
+
     Invoke-Rivet -Push -ErrorAction SilentlyContinue -ErrorVariable rivetError
     Assert-True ($rivetError.Count -gt 0)
     
@@ -288,7 +386,15 @@ function Assert-Migration
     }
     
     $migrationRow = Get-MigrationInfo -Name $Name @connParam
-    Assert-IsNotNull $migrationRow
+    if( $Connection )
+    {
+        Assert-IsNotNull $migrationRow ('Migration ''{0}'' not found in {1}.{2}.' -f $Name,$Connection.DataSource,$Connection.Database)
+    }
+    else
+    {
+        Assert-IsNotNull $migrationRow ('Migration ''{0}'' not found.')
+    }
+
     Assert-True ($migrationRow -is [PsObject]) 'not a PsObject'
     Assert-Equal $id $migrationRow.ID
     Assert-Equal $name $migrationRow.Name

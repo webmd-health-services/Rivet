@@ -1,6 +1,8 @@
+
+& (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve) -DatabaseName 'RivetTest' 
+
 function Start-Test
 {
-    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve) -DatabaseName 'RivetTest' 
     Start-RivetTest
 }
 
@@ -38,7 +40,7 @@ function Push-Migration
 
 function Pop-Migration
 {
-    
+    Remove-Table 'Table of Cities'
 }
 
 '@ | New-Migration -Name 'AddSingleRow'
@@ -80,7 +82,7 @@ function Push-Migration
 
 function Pop-Migration
 {
-    
+    Remove-Table 'Cities'
 }
 
 '@ | New-Migration -Name 'AddMultipleRow'
@@ -122,7 +124,7 @@ function Push-Migration
 
 function Pop-Migration
 {
-    
+    Remove-Table 'Cities'
 }
 
 '@ | New-Migration -Name 'AddMultipleRowByPipe'
@@ -162,7 +164,7 @@ function Push-Migration
 
 function Pop-Migration
 {
-    
+    Remove-Table 'Cities'
 }
 
 '@ | New-Migration -Name 'AddSingleRow'
@@ -190,6 +192,11 @@ function Push-Migration
     }
 
     Add-Row 'Cities' -IdentityInsert @( @{ ID = 200; Name = $null } )
+}
+
+function Pop-Migration
+{
+    Remove-Table 'Cities'
 }
 '@ | New-Migration -Name 'AddSingleRow'
 

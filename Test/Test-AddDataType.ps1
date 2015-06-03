@@ -1,6 +1,8 @@
+
+& (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
+
 function Setup
 {
-    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve) -DatabaseName 'AddDataType' 
     Start-RivetTest
 }
 
@@ -24,7 +26,8 @@ function Push-Migration
 
 function Pop-Migration
 {
-    
+    Remove-Table 'important'
+    Remove-DataType 'G U I D'
 }
 
 '@ | New-Migration -Name 'ByAlias'
@@ -53,7 +56,9 @@ function Push-Migration
 
 function Pop-Migration
 {
-    
+    Remove-Table 'important'
+    Remove-DataType 'Point Point'
+    Invoke-Ddl 'drop assembly rivettest'
 }
 
 "@ | New-Migration -Name 'ByAssembly'
@@ -79,7 +84,7 @@ function Push-Migration
 
 function Pop-Migration
 {
-    
+    Remove-DataType 'U s e r s'
 }
 
 '@ | New-Migration -Name 'ByTable'

@@ -1,13 +1,16 @@
+& (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
+
 function Setup
 {
-    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve) -DatabaseName 'RivetTest' 
     Start-RivetTest
 
     # yes, on PowerShell 2 these tests need a breather.  Not sure why.
+    <#
     if( $PSVersionTable.PsVersion -eq '2.0' )
     {
         Start-Sleep -Milliseconds 200
     }
+    #>
 }
 
 function TearDown
@@ -30,6 +33,7 @@ function Push-Migration()
 
 function Pop-Migration()
 {
+    Remove-Table 'Add Unique Key'
 }
 '@ | New-Migration -Name 'AddUniqueKeyToOneColumn'
     Invoke-Rivet -Push 'AddUniqueKeyToOneColumn'
@@ -52,6 +56,7 @@ function Push-Migration()
 
 function Pop-Migration()
 {
+    Remove-Table AddUniqueKey
 }
 '@ | New-Migration -Name 'AddUniqueKeyToMultipleColumns'
     Invoke-Rivet -Push 'AddUniqueKeyToMultipleColumns'
@@ -74,6 +79,7 @@ function Push-Migration()
 
 function Pop-Migration()
 {
+    Remove-Table AddUniqueKey
 }
 '@ | New-Migration -Name 'AddUniqueKeyWithClustered'
     Invoke-Rivet -Push 'AddUniqueKeyWithClustered'
@@ -96,6 +102,7 @@ function Push-Migration()
 
 function Pop-Migration()
 {
+    Remove-Table AddUniqueKey
 }
 '@ | New-Migration -Name 'AddUniqueKeyWithFillFactor'
     Invoke-Rivet -Push 'AddUniqueKeyWithFillFactor'
@@ -118,6 +125,7 @@ function Push-Migration()
 
 function Pop-Migration()
 {
+    Remove-Table AddUniqueKey
 }
 '@ | New-Migration -Name 'AddUniqueKeyWithOptions'
     Invoke-Rivet -Push 'AddUniqueKeyWithOptions'
@@ -138,6 +146,7 @@ function Push-Migration()
 }
 function Pop-Migration()
 {
+    Remove-Table AddUniqueKey
 }
 '@ | New-Migration -Name 'AddUniqueKeyWithCustomFileGroup'
     Invoke-Rivet -Push 'AddUniqueKeyWithCustomFileGroup' -ErrorAction SilentlyContinue
@@ -158,6 +167,7 @@ function Push-Migration()
 
 function Pop-Migration()
 {
+    Remove-Table 'Add-UniqueKey'
 }
 '@ | New-Migration -Name 'AddUniqueKeyToOneColumn'
     Invoke-Rivet -Push 'AddUniqueKeyToOneColumn'
@@ -178,6 +188,7 @@ function Push-Migration()
 
 function Pop-Migration()
 {
+    Remove-Table 'Add-UniqueKey'
 }
 '@ | New-Migration -Name 'AddUniqueKeyWithCustomName'
     Invoke-Rivet -Push 'AddUniqueKeyWithCustomName'

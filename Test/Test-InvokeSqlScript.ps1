@@ -1,7 +1,8 @@
 
+& (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
+
 function Start-Test
 {
-    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve) -DatabaseName 'InvokeSqlScript' 
     Start-RivetTest
 }
 
@@ -20,6 +21,7 @@ function Push-Migration
 
 function Pop-Migration
 {
+    Remove-Schema 'invokesqlscript'
 }
 
 '@ | New-Migration -Name 'InvokeSqlScript'
@@ -48,13 +50,32 @@ function Push-Migration
 
 function Pop-Migration
 {
+    Remove-Schema 'invokesqlscript'
 }
 
 '@ | New-Migration -Name 'InvokeSqlScript'
 
-    Invoke-Rivet -Push 'InvokeSqlScript' -ErrorAction SilentlyContinue
+    try
+    {
+        Invoke-Rivet -Push 'InvokeSqlScript' -ErrorAction SilentlyContinue
 
-    Assert-False (Test-Schema 'invokesqlscript')
+        Assert-False (Test-Schema 'invokesqlscript')
+    }
+    finally
+    {
+        @'
+function Push-Migration
+{
+    Add-Schema 'invokesqlscript'
+}
+
+function Pop-Migration
+{
+    Remove-Schema 'invokesqlscript'
+}
+
+'@ | Set-Content -Path $m
+    }
 }
 
 function Test-ShouldSkipEmptyQueries
@@ -67,6 +88,8 @@ function Push-Migration
 
 function Pop-Migration
 {
+    Remove-Schema 'invokesqlscript'
+    Remove-Schema 'invokesqlscript2'
 }
 
 '@ | New-Migration -Name 'InvokeSqlScript'
@@ -102,6 +125,7 @@ function Push-Migration
 
 function Pop-Migration
 {
+    Remove-Schema 'invokesqlscript'
 }
 
 '@ | New-Migration -Name 'InvokeSqlScript'
@@ -129,6 +153,7 @@ function Push-Migration
 
 function Pop-Migration
 {
+    Remove-Schema 'invokesqlscript'
 }
 
 '@ | New-Migration -Name 'InvokeSqlScript'

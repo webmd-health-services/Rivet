@@ -1,6 +1,8 @@
+
+& (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
+
 function Start-Test
 {
-    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve) -DatabaseName 'RivetTest' 
     Start-RivetTest
 }
 
@@ -43,7 +45,7 @@ function Push-Migration
 
 function Pop-Migration
 {
-    
+    Remove-Table 'City List'
 }
 
 '@ | New-Migration -Name 'UpdateSpecificRows'
@@ -94,7 +96,7 @@ function Push-Migration
 
 function Pop-Migration
 {
-    
+    Remove-Table 'Cities'
 }
 
 '@ | New-Migration -Name 'UpdateAllRows'
@@ -148,6 +150,11 @@ function Push-Migration
         Comments = $null;
     }
 }
+
+function Pop-Migration
+{
+    Remove-Table 'Members'
+}
 '@ | New-Migration -Name 'AddSingleRow'
 
     Invoke-Rivet -Push 'AddSingleRow'
@@ -185,6 +192,10 @@ function Push-Migration
     Update-Row 'Members' -Where 'ID = 1' -RawColumnValue @{
         LastVisit = 'getutcdate()';
     }
+}
+function Pop-Migration
+{
+    Remove-Table 'Members'
 }
 '@ | New-Migration -Name 'AddSingleRow'
 

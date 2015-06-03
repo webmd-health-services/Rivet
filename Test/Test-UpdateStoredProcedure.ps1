@@ -26,7 +26,8 @@ function Push-Migration
 
 function Pop-Migration
 {
-    
+    Remove-StoredProcedure 'TestStoredProcedure'
+    Remove-Table 'Person'
 }
 
 '@ | New-Migration -Name 'UpdateExistingStoredProcedure'

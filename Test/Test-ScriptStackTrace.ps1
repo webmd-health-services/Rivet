@@ -1,6 +1,8 @@
+
+& (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve) 
+
 function Start-Test
 {
-    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve) -DatabaseName 'ScriptStackTrace' 
     Start-RivetTest
 }
 
@@ -11,7 +13,7 @@ function Stop-Test
 
 function Test-ShouldDisplayScriptStackTrace
 {
-    @'
+    $m = @'
 function Push-Migration
 {
     Add-Table -Name 'Foobar' -Column {
@@ -21,14 +23,20 @@ function Push-Migration
 
 function Pop-Migration
 {
-    
+    Remove-Table 'Foobar'
 }
 
 '@ | New-Migration -Name 'BogusMigration'
 
-    Invoke-Rivet -Push 'BogusMigration' -ErrorAction SilentlyContinue -ErrorVariable rivetError
-    Assert-True ($rivetError.Count -gt 0)
-    Assert-Like $rivetError[-1] 'TestingScriptStackTrace'
-    Assert-Like $rivetError[-1] 'STACKTRACE'
-
+    try
+    {
+        Invoke-Rivet -Push 'BogusMigration' -ErrorAction SilentlyContinue -ErrorVariable rivetError
+        Assert-True ($rivetError.Count -gt 0)
+        Assert-Like $rivetError[-1] 'TestingScriptStackTrace'
+        Assert-Like $rivetError[-1] 'STACKTRACE'
+    }
+    finally
+    {
+        Remove-Item $m
+    }
 }

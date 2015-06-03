@@ -7,19 +7,21 @@ $testsRun = 0
 
 function Start-Test
 {
-    $databaseName = 'ConvertMigration'
-    $pluginsPath = New-TempDir -Prefix $databaseName
-    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve) -DatabaseName $databaseName
+    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
+    $pluginsPath = New-TempDir -Prefix $PSCommandPath
     Start-RivetTest -PluginPath $pluginsPath
 
     & (Join-Path -Path $PSScriptRoot -ChildPath '..\Tools\SqlPS\Import-SqlPS.ps1' -Resolve)
 
     $outputDir = New-TempDir -Prefix 'Test-ConvertMigration'
     ++$testsRun
+
+    New-Database
 }
 
 function Stop-Test
 {
+    Remove-RivetTestDatabase
     Get-Migration -ConfigFilePath $RTConfigFilePath |
         Select-Object -ExpandProperty PushOperations |
         ForEach-Object { $testedOperations[$_.GetType()] = $true }
@@ -27,6 +29,7 @@ function Stop-Test
     Remove-Item -Path $outputDir -Recurse
     Stop-RivetTest
     Remove-Item $pluginsPath -Recurse
+    Remove-Module 'RivetTest'
 }
  
 function Stop-TestFixture
@@ -83,6 +86,8 @@ function Push-Migration
 
 function Pop-Migration 
 {
+    Remove-View 'vwT'
+    Remove-Table 'T'
 }
 '@ | Set-Content -Path (Join-Path -Path $RTDatabasesRoot -ChildPath 'Common\Migrations\00000000000001_A.ps1')
 
@@ -94,6 +99,7 @@ function Push-Migration
 
 function Pop-Migration
 {
+    Remove-ExtendedProperty 'MS_Description' -ViewName 'vwT'
 }
 '@ | Set-Content -Path (Join-Path -Path $RTDatabasesRoot -ChildPath 'Common\Migrations\00000000000002_B.ps1')
 
@@ -109,6 +115,8 @@ function Push-Migration
 
 function Pop-Migration
 {
+    Remove-StoredProcedure -SchemaName 's' 'prcT'
+    Remove-Schema 's'
 }
 '@ | Set-Content -Path (Join-Path -Path $RTDatabasesRoot -ChildPath 'Wellmed\Migrations\00000000000001_A.ps1')
 
@@ -211,8 +219,10 @@ function Pop-Migration
     Remove-DataType @idempotent 'GUID'
     Remove-Table @idempotent $crops.TableName
     Remove-Table @idempotent $farmers.TableName
+
+    Remove-Schema 'idempotent'
 }
-'@ | New-Migration -Name 'AddOperations'
+'@ | New-Migration -Name 'ShouldCreateIdempotentQueryForAddOperations'
 
     $scriptPath = Split-Path -Parent -Path $m
     $scriptPath = Join-Path -Path $scriptPath -ChildPath 'query.sql'
@@ -298,21 +308,42 @@ function Push-Migration
 
 function Pop-Migration
 {
-}
-'@ | New-Migration -Name 'AddOperations'
+    $idempotent = @{ SchemaName = 'idempotent' }
+    $crops = @{ TableName = 'Crops' }
+    $farmers = @{ TableName = 'Farmers' }
 
-    Invoke-Rivet -Push 'AddOperations'
+    Remove-Table @idempotent 'removeme'
+
+    Remove-View 'FarmerCrops' @idempotent
+    Remove-UserDefinedFunction 'GetInteger' @idempotent
+    Remove-Trigger 'CropActivity' @idempotent
+    Remove-StoredProcedure 'GetFarmers' @idempotent
+    
+    Remove-Synonym -Name 'Crop' @idempotent
+    Remove-DataType @idempotent -Name 'GUID'
+    
+    Remove-UniqueKey @idempotent @crops 'Name'
+    Remove-Index @idempotent @crops 'Name'
+    Remove-ForeignKey @idempotent @crops -ReferencesSchema $idempotent.SchemaName -References $farmers.TableName
+    Remove-Table @idempotent $crops.TableName
+    Remove-Table @idempotent $farmers.TableName
+    Remove-Schema 'empty'
+    Remove-Schema $idempotent.SchemaName
+}
+'@ | New-Migration -Name 'ShouldCreateIdempotentQueriesForRemoveOperations'
+
+    Invoke-Rivet -Push 'ShouldCreateIdempotentQueriesForRemoveOperations'
 
     Assert-Table -SchemaName 'idempotent' -Name 'removeme'
     $migration | Remove-Item
 
     @'
+$schema = @{ SchemaName = 'idempotent' }
+$crops = @{ TableName = 'Crops' }
+$farmers = @{ TableName = 'Farmers' }
+
 function Push-Migration
 {
-    $schema = @{ SchemaName = 'idempotent' }
-    $crops = @{ TableName = 'Crops' }
-    $farmers = @{ TableName = 'Farmers' }
-
     Remove-CheckConstraint @schema @crops -Name 'CK_Crops_AllowedCrops'
     Update-Table @schema -Name $farmers.TableName -Remove 'RemoveMe'
     Remove-DataType @schema -Name 'GUID'
@@ -334,6 +365,38 @@ function Push-Migration
 
 function Pop-Migration
 {
+    Add-Table @schema $farmers.TableName {
+        int 'ID' -NotNull
+        varchar 'Name' -NotNull -Size 500
+        varchar 'ZipCode' -Size 10
+    }
+    Add-PrimaryKey @schema @farmers -ColumnName 'ID'
+
+    Add-Table @schema $crops.TableName {
+        int 'ID' -Identity
+        varchar 'Name' -Size 50
+        int 'FarmerID' -NotNull
+        varchar 'RemoveMe' -Size 5
+    }
+    Add-CheckConstraint @schema @crops -Name 'CK_Crops_AllowedCrops' -Expression 'Name = ''Strawberries'' or Name = ''Rasberries'''
+    Add-DefaultConstraint @schema @crops -ColumnName 'Name' -Expression '''Strawberries'''
+    Add-Description @schema @crops -ColumnName 'Name' 'Yumm!'
+    Add-ForeignKey @schema @crops -ColumnName 'FarmerID' `
+                   -ReferencesSchema $schema.SchemaName -References $farmers.TableName -ReferencedColumn 'ID'
+    Add-Index @schema @crops -ColumnName 'Name'
+    Add-UniqueKey @schema @crops 'Name'
+
+    Add-DataType @schema -Name 'GUID' -From 'uniqueidentifier'
+    Add-Synonym -Name 'Crop' @schema -TargetSchemaName $schema.SchemaName 'Crops'
+
+    Add-StoredProcedure 'GetFarmers' @schema -Definition 'AS select * from Crops'
+    Add-Trigger 'CropActivity' @schema -Definition "on idempotent.Crops after insert as return"
+    Add-UserDefinedFunction 'GetInteger' @schema -Definition '(@Number int) returns int as begin return @Number end'
+    Add-View 'FarmerCrops' @schema -Definition "as select Farmers.Name CropName, Crops.Name FarmersName from Crops join Farmers on Crops.FarmerID = Farmers.ID"
+
+    Add-Table @schema 'removeme' {
+        int 'ID' -Identity
+    }
 }
 '@ | New-Migration -Name 'RemoveOperations'
 
@@ -370,7 +433,6 @@ function Push-Migration
     $crops = @{ TableName = 'Crops' }
     $farmers = @{ TableName = 'Farmers' }
 
-
     Add-Schema $idempotent.SchemaName
     
     Add-Table @idempotent $farmers.TableName {
@@ -393,10 +455,18 @@ function Push-Migration
 
 function Pop-Migration
 {
-}
-'@ | New-Migration -Name 'AddOperations'
+    $idempotent = @{ SchemaName = 'idempotent' }
+    $crops = @{ TableName = 'Crops' }
+    $farmers = @{ TableName = 'Farmers' }
 
-    Invoke-Rivet -Push 'AddOperations'
+    Remove-ForeignKey @idempotent @crops -ReferencesSchema $idempotent.SchemaName -References $farmers.TableName
+    Remove-Table @idempotent $crops.TableName
+    Remove-Table @idempotent $farmers.TableName
+    Remove-Schema $idempotent.SchemaName
+}
+'@ | New-Migration -Name 'ShouldCreateIdempotentQueriesForDisableOperations'
+
+    Invoke-Rivet -Push 'ShouldCreateIdempotentQueriesForDisableOperations'
 
     $migration | Remove-Item
 
@@ -407,15 +477,18 @@ function Push-Migration
     $crops = @{ TableName = 'Crops' }
     $farmers = @{ TableName = 'Farmers' }
 
-    #Remove-CheckConstraint @schema @crops -Name 'CK_Crops_AllowedCrops'
-    #Remove-ForeignKey @schema @crops -References $farmers.TableName -ReferencesSchema $schema.SchemaName
-
     Disable-CheckConstraint @schema @crops -Name 'CK_Crops_AllowedCrops'
     Disable-ForeignKey @schema @crops -References $farmers.TableName -ReferencesSchema $schema.SchemaName -ColumnName 'FarmerID'
 }
 
 function Pop-Migration
 {
+    $schema = @{ SchemaName = 'idempotent' }
+    $crops = @{ TableName = 'Crops' }
+    $farmers = @{ TableName = 'Farmers' }
+
+    Enable-CheckConstraint @schema @crops -Name 'CK_Crops_AllowedCrops'
+    Enable-ForeignKey @schema @crops -References $farmers.TableName -ReferencesSchema $schema.SchemaName -ColumnName 'FarmerID'
 }
 '@ | New-Migration -Name 'DisableOperations'
 
@@ -438,7 +511,6 @@ function Push-Migration
     $crops = @{ TableName = 'Crops' }
     $farmers = @{ TableName = 'Farmers' }
 
-
     Add-Schema $idempotent.SchemaName
     
     Add-Table @idempotent $farmers.TableName {
@@ -457,20 +529,26 @@ function Push-Migration
     Add-ForeignKey @idempotent @crops -ColumnName 'FarmerID' `
                    -ReferencesSchema $idempotent.SchemaName -References $farmers.TableName -ReferencedColumn 'ID'
 
-    $schema = @{ SchemaName = 'idempotent' }
-    $crops = @{ TableName = 'Crops' }
-    $farmers = @{ TableName = 'Farmers' }
-
-    Disable-CheckConstraint @schema @crops -Name 'CK_Crops_AllowedCrops'
-    Disable-ForeignKey @schema @crops -References $farmers.TableName -ReferencesSchema $schema.SchemaName -ColumnName 'FarmerID'
+    Disable-CheckConstraint @idempotent @crops -Name 'CK_Crops_AllowedCrops'
+    Disable-ForeignKey @idempotent @crops -References $farmers.TableName -ReferencesSchema $idempotent.SchemaName -ColumnName 'FarmerID'
 }
 
 function Pop-Migration
 {
-}
-'@ | New-Migration -Name 'AddOperations'
+    $idempotent = @{ SchemaName = 'idempotent' }
+    $crops = @{ TableName = 'Crops' }
+    $farmers = @{ TableName = 'Farmers' }
 
-    Invoke-Rivet -Push 'AddOperations'
+    Enable-CheckConstraint @idempotent @crops -Name 'CK_Crops_AllowedCrops'
+    Enable-ForeignKey @idempotent @crops -References $farmers.TableName -ReferencesSchema $idempotent.SchemaName -ColumnName 'FarmerID'
+    Remove-ForeignKey @idempotent @crops -References $farmers.TableName -REferencesSchema $idempotent.SchemaName
+    Remove-Table @idempotent $crops.TableName
+    Remove-Table @idempotent $farmers.TableName
+    Remove-Schema $idempotent.SchemaName
+}
+'@ | New-Migration -Name 'ShouldCreateIdempotentQueriesForEnableOperations'
+
+    Invoke-Rivet -Push 'ShouldCreateIdempotentQueriesForEnableOperations'
 
     $migration | Remove-Item
 
@@ -487,6 +565,12 @@ function Push-Migration
 
 function Pop-Migration
 {
+    $schema = @{ SchemaName = 'idempotent' }
+    $crops = @{ TableName = 'Crops' }
+    $farmers = @{ TableName = 'Farmers' }
+
+    Disable-CheckConstraint @schema @crops -Name 'CK_Crops_AllowedCrops'
+    Disable-ForeignKey @schema @crops -References $farmers.TableName -ReferencesSchema $schema.SchemaName -ColumnName 'FarmerID'
 }
 '@ | New-Migration -Name 'DisableOperations'
 
@@ -520,6 +604,8 @@ function Push-Migration
 
 function Pop-Migration
 {
+    Remove-Table -SchemaName 'idempotent' 'Idempotent'
+    Remove-Schema 'idempotent'
 }
 '@ | New-Migration -Name 'DataOperations'
 
@@ -544,6 +630,7 @@ function Push-Migration
 
 function Pop-Migration
 {
+    Remove-Table 'NeedsPluginStuff'
 }
 '@ | New-Migration -Name 'ShouldRunPlugins'
 
@@ -570,6 +657,7 @@ function Push-Migration
 
 function Pop-Migration
 {
+    Remove-Table 'TableOne'
 }
 '@ | New-Migration -Name 'CreateTableOne'
 
@@ -583,6 +671,7 @@ function Push-Migration
 
 function Pop-Migration
 {
+    Remove-Table 'TableTwo'
 }
 '@ | New-Migration -Name 'CreateTableTwo'
 
@@ -610,6 +699,8 @@ function Push-Migration
 
 function Pop-Migration
 {
+    Remove-Table -SchemaName 'aggregate' 'Beta'
+    Remove-Table 'aggregate'
 }
 '@ | New-Migration -Name 'AddTables'
 
@@ -675,10 +766,11 @@ function Push-Migration
 
 function Pop-Migration
 {
+    Remove-Table 'FeedbackLog'
 }
-'@ | New-Migration -Name 'AddOperations'
+'@ | New-Migration -Name 'ShouldAggregateMultipleTableUpdates'
 
-    Invoke-Rivet -Push 'AddOperations'
+    Invoke-Rivet -Push 'ShouldAggregateMultipleTableUpdates'
 
     Assert-Table -Name 'FeedbackLog'
     $migration | Remove-Item
@@ -733,6 +825,7 @@ function Push-Migration
 
 function Pop-Migration
 {
+    Remove-Table 'T1New'
 }
 '@ | New-Migration -Name 'AddT1'
 
@@ -758,6 +851,7 @@ function Push-Migration
 
 function Pop-Migration
 {
+    Remove-Schema 'include'
 }
 '@ | New-Migration -Name 'Include'
 
@@ -769,6 +863,7 @@ function Push-Migration
 
 function Pop-Migration
 {
+    Remove-Schema 'exclude'
 }
 '@ | New-Migration -Name 'Exclude'
 
@@ -788,6 +883,7 @@ function Push-Migration
 
 function Pop-Migration
 {
+    Remove-Schema 'include'
 }
 '@ | New-Migration -Name 'Include'
 
@@ -799,6 +895,7 @@ function Push-Migration
 
 function Pop-Migration
 {
+    Remove-Schema 'exclude'
 }
 '@ | New-Migration -Name 'Exclude'
 
@@ -818,6 +915,7 @@ function Push-Migration
 
 function Pop-Migration
 {
+    Remove-Schema 'include'
 }
 '@ | New-Migration -Name 'Include'
 
@@ -833,6 +931,7 @@ function Push-Migration
 
 function Pop-Migration
 {
+    Remove-Schema 'exclude'
 }
 '@ | New-Migration -Name 'Exclude'
 
@@ -852,6 +951,7 @@ function Push-Migration
 
 function Pop-Migration
 {
+    Remove-Schema 'exclude'
 }
 '@ | New-Migration -Name 'Exclude'
 
@@ -866,6 +966,7 @@ function Push-Migration
 
 function Pop-Migration
 {
+    Remove-Schema 'include'
 }
 '@ | New-Migration -Name 'Include'
 

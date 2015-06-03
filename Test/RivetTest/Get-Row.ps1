@@ -24,6 +24,6 @@ function Get-Row
     }
     $query = "select * from [{0}].[{1}]{2}" -f $SchemaName,$TableName,$whereClause
 
-    Invoke-RivetTestQuery -Query $query -Connection $RTDatabaseConnection
+    Invoke-RivetTestQuery -Query $query
 
 }

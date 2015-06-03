@@ -1,6 +1,8 @@
+
+& (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
+
 function Setup
 {
-    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve) -DatabaseName 'UpdateColumn' 
     Start-RivetTest
 }
 
@@ -25,7 +27,7 @@ function Push-Migration
 
 function Pop-Migration
 {
-    
+    Remove-Table 'Foobar'
 }
 
 '@ | New-Migration -Name 'UpdateDateColumnWithDescription'
@@ -52,7 +54,7 @@ function Push-Migration
 
 function Pop-Migration
 {
-    
+    Remove-Table 'Foobar'
 }
 
 '@ | New-Migration -Name 'ShouldUpdateColumnFromBinarytoVarBinary'
@@ -79,7 +81,7 @@ function Push-Migration
 
 function Pop-Migration
 {
-    
+    Remove-Table 'Foobar'
 }
 
 '@ | New-Migration -Name 'ShouldUpdateColumnFromNChartoNVarChar'
@@ -123,7 +125,8 @@ N'
 
 function Pop-Migration
 {
-    
+    Remove-Table 'WithXmlContent'
+    Invoke-Ddl 'drop xml schema collection EmptyXsd'
 }
 "@ | New-Migration -Name 'ShouldUpdateColumnFromNVarChartoXml'
 
@@ -159,7 +162,7 @@ function Push-Migration
 
 function Pop-Migration
 {
-    
+    Remove-Table 'Foobar'
 }
 
 '@ | New-Migration -Name 'UpdateDateColumnWithDescription'

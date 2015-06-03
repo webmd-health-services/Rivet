@@ -146,6 +146,7 @@ function Invoke-Test
 
     $Error.Clear()
 
+    $testFailed = $false
     try
     {
         if( Test-path function:Start-Test )
@@ -161,42 +162,50 @@ function Invoke-Test
         {
             . $function | ForEach-Object { $testInfo.Output.Add( $_ ) }
         }
-
-        $testInfo.Completed()
     }
     catch [Blade.AssertionException]
     {
         $ex = $_.Exception
         $testInfo.Completed( $ex )
+        $testFailed = $true
     }
     catch
     {
         $testInfo.Completed( $_ )
+        $testFailed = $true
     }
     finally
     {
-        $testInfo
         try
         {
-            $tearDownResult = New-Object 'Blade.TestResult' $fixture,'Stop-Test'
             if( Test-Path function:Stop-Test )
             {
-                . Stop-Test | ForEach-Object { $tearDownResult.Output.Add( $_ ) }
+                . Stop-Test | ForEach-Object { $testInfo.Output.Add( $_ ) }
             }
             elseif( Test-Path -Path function:TearDown )
             {
-                . TearDown | ForEach-Object { $tearDownResult.Output.Add( $_ ) }
+                . TearDown | ForEach-Object { $testInfo.Output.Add( $_ ) }
             }
+
+            if( -not $testFailed )
+            {
+                $testInfo.Completed()
+            }
+        }
+        catch [Blade.AssertionException]
+        {
+            $ex = $_.Exception
+            $testInfo.Completed( $ex )
         }
         catch
         {
-            $tearDownResult.Completed( $_ )
-            $tearDownResult
+            $testInfo.Completed( $_ )
         }
 
         $Error.Clear()
     }
 
+    return $testInfo
 }
 
 $getChildItemParams = @{ }

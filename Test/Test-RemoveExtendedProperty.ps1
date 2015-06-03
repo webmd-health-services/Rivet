@@ -1,6 +1,8 @@
+
+& (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
+
 function Setup
 {
-    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve) -DatabaseName 'RemoveExtendedProperty' 
     Start-RivetTest
 }
 
@@ -21,7 +23,7 @@ function Push-Migration
 
 function Pop-Migration
 {
-    
+    Remove-Schema 'fizz'
 }
 
 '@ | New-Migration -Name 'RemoveExtendedPropertyToSchema'
@@ -49,7 +51,7 @@ function Push-Migration
 
 function Pop-Migration
 {
-    
+    Remove-Table 'Foobar'
 }
 
 '@ | New-Migration -Name 'RemoveExtendedPropertyToTable'
@@ -74,7 +76,7 @@ function Push-Migration
 
 function Pop-Migration
 {
-    
+    Remove-View 'Foobar'
 }
 
 '@ | New-Migration -Name 'RemoveExtendedPropertyToView'
@@ -100,7 +102,7 @@ function Push-Migration
 
 function Pop-Migration
 {
-    
+    Remove-View 'Foobar' -schemaname 'metric'
 }
 
 '@ | New-Migration -Name 'RemoveExtendedPropertyToView'
@@ -128,7 +130,7 @@ function Push-Migration
 
 function Pop-Migration
 {
-    
+    Remove-Table 'Foobar'
 }
 
 '@ | New-Migration -Name 'RemoveExtendedPropertyToTableColumn'
@@ -156,7 +158,8 @@ function Push-Migration
 
 function Pop-Migration
 {
-    
+    Remove-View 'Foobar'
+    Remove-Table 'Foobar2'
 }
 
 '@ | New-Migration -Name 'RemoveExtendedPropertyToViewColumn'

@@ -30,6 +30,9 @@ function Push-Migration()
 
 function Pop-Migration()
 {
+    Remove-ForeignKey 'Source Table' 'Reference Table'
+    Remove-Table 'Reference Table'
+    Remove-Table 'Source Table'
 }
 '@ | New-Migration -Name 'AddForeignKeyFromSingleColumnToSingleColumn'
     Invoke-Rivet -Push 'AddForeignKeyFromSingleColumnToSingleColumn'
@@ -57,6 +60,9 @@ function Push-Migration()
 
 function Pop-Migration()
 {
+    Remove-ForeignKey 'Source' 'Reference'
+    Remove-Table 'Reference'
+    Remove-Table 'Source'
 }
 '@ | New-Migration -Name 'AddForeignKeyFromMultipleColumnToMultipleColumn'
     Invoke-Rivet -Push 'AddForeignKeyFromMultipleColumnToMultipleColumn'
@@ -82,6 +88,9 @@ function Push-Migration()
 
 function Pop-Migration()
 {
+    Remove-ForeignKey 'Source' -SchemaName 'rivet' 'Reference' -ReferencesSchema 'rivet'
+    Remove-Table 'Reference' -SchemaName 'rivet'
+    Remove-Table 'Source' -SchemaName 'rivet'
 }
 '@ | New-Migration -Name 'AddForeignKeyWithCustomSchema'
     Invoke-Rivet -Push 'AddForeignKeyWithCustomSchema'
@@ -107,6 +116,9 @@ function Push-Migration()
 
 function Pop-Migration()
 {
+    Remove-ForeignKey 'Source' 'Reference'
+    Remove-Table 'Reference'
+    Remove-Table 'Source'
 }
 '@ | New-Migration -Name 'AddForeignKeyWithOnDelete'
     Invoke-Rivet -Push 'AddForeignKeyWithOnDelete'
@@ -133,6 +145,9 @@ function Push-Migration()
 
 function Pop-Migration()
 {
+    Remove-ForeignKey 'Source' 'Reference' 
+    Remove-Table 'Reference'
+    Remove-Table 'Source'
 }
 '@ | New-Migration -Name 'AddForeignKeyWithOnUpdate'
     Invoke-Rivet -Push 'AddForeignKeyWithOnUpdate'
@@ -158,6 +173,9 @@ function Push-Migration()
 
 function Pop-Migration()
 {
+    Remove-ForeignKey 'Source' 'Reference' 
+    Remove-Table 'Reference'
+    Remove-Table 'Source'
 }
 '@ | New-Migration -Name 'AddForeignKeyNotForReplication'
     Invoke-Rivet -Push 'AddForeignKeyNotForReplication'
@@ -184,6 +202,9 @@ function Push-Migration()
 
 function Pop-Migration()
 {
+    Remove-ForeignKey 'Add-ForeignKey' 'Reference' 
+    Remove-Table 'Reference'
+    Remove-Table 'Add-ForeignKey'
 }
 '@ | New-Migration -Name 'AddForeignKeyFromSingleColumnToSingleColumn'
     Invoke-Rivet -Push 'AddForeignKeyFromSingleColumnToSingleColumn'
@@ -209,6 +230,9 @@ function Push-Migration()
 
 function Pop-Migration()
 {
+    Remove-ForeignKey 'Add-ForeignKey' -Name 'OptionalName'
+    Remove-Table 'Add-ForeignKey'
+    Remove-Table 'Reference'
 }
 '@ | New-Migration -Name 'AddForeignKeyWithOptionalConstraintName'
     Invoke-Rivet -Push 'AddForeignKeyWithOptionalConstraintName'
@@ -243,6 +267,9 @@ function Push-Migration()
 
 function Pop-Migration()
 {
+    Remove-ForeignKey 'Source Table' 'Reference Table' 
+    Remove-Table 'Reference Table'
+    Remove-Table 'Source Table'
 }
 '@ | New-Migration -Name 'AddForeignKeyFromSingleColumnToSingleColumn'
     Invoke-Rivet -Push 'AddForeignKeyFromSingleColumnToSingleColumn'

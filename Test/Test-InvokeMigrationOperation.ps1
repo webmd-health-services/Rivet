@@ -1,15 +1,21 @@
-function Setup
+
+& (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
+
+function Start-Test
 {
-    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve) -DatabaseName 'AddAdminColumnPlugin' 
     $tempPluginsPath = New-TempDir -Prefix 'AddAdminColumnPlugin'
     $pluginPath = Join-Path -Path $TestDir -ChildPath '..\Rivet\Extras\*-MigrationOperation.ps1' -Resolve
     Copy-Item -Path $pluginPath -Destination $tempPluginsPath
     Start-RivetTest -PluginPath $tempPluginsPath
 }
 
-function TearDown
+function Stop-Test
 {
     Stop-RivetTest
+    if( (Test-Path -Path $tempPluginsPath -PathType Container) )
+    {
+        Remove-Item -Path $tempPluginsPath -Recurse
+    }
 }
 
 function Test-ShouldRunPlugins
@@ -25,7 +31,8 @@ function Push-Migration
 
 function Pop-Migration
 {
-    
+    Remove-Table -SchemaName 'fubar' 'Foobar'
+    Remove-Schema 'fubar'
 }
 
 '@ | New-Migration -Name 'CompleteAdminPlugin'
@@ -64,7 +71,7 @@ function Pop-Migration
 
 function Test-ShouldRejectTriggersWithoutNotForReplication
 {
-    @'
+    $m = @'
 function Push-Migration
 {
     Add-Table Foobar -Description 'Test' {
@@ -83,17 +90,25 @@ AS
 
 function Pop-Migration
 {
+    Remove-Table 'Foobar'
 }
 '@ | New-Migration -Name 'ValidateMigrations'
 
-    Invoke-Rivet -Push 'ValidateMigrations' -ErrorAction SilentlyContinue
-    Assert-False (Test-Trigger -Name 'trFoobar_Nothing')
-    Assert-Error 2 'not for replication'
+    try
+    {
+        Invoke-Rivet -Push 'ValidateMigrations' -ErrorAction SilentlyContinue
+        Assert-False (Test-Trigger -Name 'trFoobar_Nothing')
+        Assert-Error 2 'not for replication'
+    }
+    finally
+    {
+        Remove-Item $m
+    }    
 }
 
 function Test-ShouldRejectBigIntIdentities
 {
-    @'
+    $m = @'
 function Push-Migration
 {
     Add-Table Foobar -Description 'Test' {
@@ -103,16 +118,24 @@ function Push-Migration
 
 function Pop-Migration
 {
+    Remove-Table 'Foobar'
 }
 '@ | New-Migration -Name 'ValidateMigrations'
 
-    Invoke-Rivet -Push 'ValidateMigrations' -ErrorAction SilentlyContinue
-    Assert-Error -First 'can''t be identity columns'
+    try
+    {
+        Invoke-Rivet -Push 'ValidateMigrations' -ErrorAction SilentlyContinue
+        Assert-Error -First 'can''t be identity columns'
+    }
+    finally
+    {
+        Remove-Item $m
+    }
 }
 
 function Test-ShouldRejectSmallIntIdentities
 {
-    @'
+    $m = @'
 function Push-Migration
 {
     Add-Table Foobar -Description 'Test' {
@@ -122,16 +145,24 @@ function Push-Migration
 
 function Pop-Migration
 {
+    Remove-Table 'Foobar'
 }
 '@ | New-Migration -Name 'ValidateMigrations'
 
-    Invoke-Rivet -Push 'ValidateMigrations' -ErrorAction SilentlyContinue
-    Assert-Error -First 'can''t be identity columns'
+    try
+    {
+        Invoke-Rivet -Push 'ValidateMigrations' -ErrorAction SilentlyContinue
+        Assert-Error -First 'can''t be identity columns'
+    }
+    finally
+    {
+        Remove-Item $m
+    }
 }
 
 function Test-ShouldRejectTinyIntIdentities
 {
-    @'
+    $m = @'
 function Push-Migration
 {
     Add-Table Foobar -Description 'Test' {
@@ -141,11 +172,19 @@ function Push-Migration
 
 function Pop-Migration
 {
+    Remove-Table 'Foobar'
 }
 '@ | New-Migration -Name 'ValidateMigrations'
 
-    Invoke-Rivet -Push 'ValidateMigrations' -ErrorAction SilentlyContinue
-    Assert-Error -First 'can''t be identity columns'
+    try
+    {
+        Invoke-Rivet -Push 'ValidateMigrations' -ErrorAction SilentlyContinue
+        Assert-Error -First 'can''t be identity columns'
+    }
+    finally
+    {
+        Remove-Item $m
+    }
 }
 
 function Test-ShouldMakeIdentitiesNotForReplication
@@ -160,18 +199,20 @@ function Push-Migration
 
 function Pop-Migration
 {
+    Remove-Table 'Foobar'
 }
 '@ | New-Migration -Name 'ValidateMigrations'
 
-    Invoke-Rivet -Push 'ValidateMigrations' -ErrorAction SilentlyContinue
+    Invoke-Rivet -Push 'ValidateMigrations'
 
     Assert-Table 'Foobar'
+
     Assert-Column -TableName 'FooBar' -Name 'ID' -DataType 'int' -Seed 1 -Increment 1 -NotForReplication -NotNull
 }
 
 function Test-ShouldMakeForeignKeyNotForReplication
 {
-    @'
+    $m = @'
 function Push-Migration
 {
     Add-Table Foo -Description 'Test' {
@@ -189,6 +230,9 @@ function Push-Migration
 
 function Pop-Migration
 {
+    Remove-ForeignKey -TableName 'Foo' -References 'Bar'
+    Remove-Table 'Bar'
+    Remove-Table 'Foo'
 }
 '@ | New-Migration -Name 'ValidateMigrations'
 
@@ -213,6 +257,7 @@ function Push-Migration
 
 function Pop-Migration
 {
+    Remove-Table 'Foo'
 }
 '@ | New-Migration -Name 'ValidateMigrations'
 
@@ -224,7 +269,7 @@ function Pop-Migration
 
 function Test-ShouldRequireDescriptionOnNewTables
 {
-   @'
+   $m = @'
 function Push-Migration
 {
     Add-Table Foo {
@@ -234,20 +279,27 @@ function Push-Migration
 
 function Pop-Migration
 {
+    Remove-Table 'Foo'
 }
 '@ | New-Migration -Name 'ValidateMigrations'
 
-    Invoke-Rivet -Push 'ValidateMigrations' -ErrorAction SilentlyContinue
+    try
+    {
+        Invoke-Rivet -Push 'ValidateMigrations' -ErrorAction SilentlyContinue
 
-    Assert-Error -First 'Foo.*-Description'
+        Assert-Error -First 'Foo.*-Description'
 
-    Assert-False (Test-Table 'Foo')
-    
+        Assert-False (Test-Table 'Foo')
+    }
+    finally
+    {
+        Remove-Item $m
+    }    
 }
 
 function Test-ShouldRequireDescriptionOnNewTableColumns
 {
-   @'
+   $m = @'
 function Push-Migration
 {
     Add-Table Foo -Description 'Test' {
@@ -257,20 +309,27 @@ function Push-Migration
 
 function Pop-Migration
 {
+    Remove-Table 'Foo'
 }
 '@ | New-Migration -Name 'ValidateMigrations'
 
-    Invoke-Rivet -Push 'ValidateMigrations' -ErrorAction SilentlyContinue
+    try
+    {
+        Invoke-Rivet -Push 'ValidateMigrations' -ErrorAction SilentlyContinue
 
-    Assert-Error -First 'Name.*-Description'
+        Assert-Error -First 'Name.*-Description'
 
-    Assert-False (Test-Table 'Foo')
-    
+        Assert-False (Test-Table 'Foo')
+    }
+    finally
+    {
+        Remove-Item $m
+    }    
 }
 
 function Test-ShouldRequireDescriptionOnExistingTableNewColumns
 {
-   @'
+   $m = @'
 function Push-Migration
 {
     Add-Table Foo -Description 'Test' {
@@ -284,13 +343,20 @@ function Push-Migration
 
 function Pop-Migration
 {
+    Remove-Table 'Foo'
 }
 '@ | New-Migration -Name 'ValidateMigrations'
 
-    Invoke-Rivet -Push 'ValidateMigrations' -ErrorAction SilentlyContinue
+    try
+    {
+        Invoke-Rivet -Push 'ValidateMigrations' -ErrorAction SilentlyContinue
 
-    Assert-Error -First 'LastName.*-Description'
+        Assert-Error -First 'LastName.*-Description'
 
-    Assert-False (Test-Table 'Foo')
-    
+        Assert-False (Test-Table 'Foo')
+    }
+    finally
+    {
+        Remove-Item $m
+    }    
 }

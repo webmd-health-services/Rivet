@@ -1,7 +1,8 @@
 
+& (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve) -DatabaseName 'RivetTest' 
+
 function Start-Test
 {
-    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve) -DatabaseName 'RivetTest' 
     Start-RivetTest
 }
 
@@ -26,6 +27,7 @@ function Push-Migration()
 
 function Pop-Migration()
 {
+    Remove-Table 'AddDefaultConstraint'
 }
 '@ | New-Migration -Name 'AddDefaultConstraint'
 
@@ -48,6 +50,7 @@ function Push-Migration()
 
 function Pop-Migration()
 {
+    Remove-Table 'AddDefaultConstraint'
 }
 '@ | New-Migration -Name 'AddDefaultConstraintWithValues'
 
@@ -72,6 +75,7 @@ function Push-Migration()
 
 function Pop-Migration()
 {
+    Remove-Table 'Add-DefaultConstraint'
 }
 '@ | New-Migration -Name 'AddDefaultConstraintQuotesName'
 
@@ -95,6 +99,7 @@ function Push-Migration()
 
 function Pop-Migration()
 {
+    Remove-Table 'AddDefaultConstraint'
 }
 '@ | New-Migration -Name 'AddDefaultConstraintOptionalParameterNames'
 
@@ -118,6 +123,7 @@ function Push-Migration()
 
 function Pop-Migration()
 {
+    Remove-Table 'AddDefaultConstraint'
 }
 '@ | New-Migration -Name 'AddDefaultConstraintOptionalParameterNames'
 

@@ -1,14 +1,14 @@
 
+& (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
+
 function Start-Test
 {
-    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve) -DatabaseName 'VerboseSwitch' 
     Start-RivetTest
 }
 
 function Stop-Test
 {
     Stop-RivetTest
-    Remove-Module RivetTest
 }
 
 function Test-VerboseSwitch
@@ -24,14 +24,10 @@ function Push-Migration
 
 function Pop-Migration
 {
-    
+    Remove-Table 'Foobar'
 }
 
 '@ | New-Migration -Name 'VerboseSwitch'
 
-    Invoke-Rivet -Push 'VerboseSwitch' -verbose
-
-
-
-
+    Invoke-Rivet -Push 'VerboseSwitch' -Verbose
 }

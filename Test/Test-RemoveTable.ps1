@@ -1,18 +1,32 @@
 
-function Setup
+& (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
+
+function Start-Test
 {
-    & (Join-Path $TestDir 'RivetTest\Import-RivetTest.ps1' -Resolve) -DatabaseName 'RemoveTable' 
     Start-RivetTest
 }
 
-function TearDown
+function Stop-Test
 {
     Stop-RivetTest
-    Remove-Module RivetTest
 }
 
 function Test-ShouldRemoveTable
 {
+    @'
+function Push-Migration()
+{
+    Add-Table -Name 'Ducati' {
+        Int 'ID' -Identity 
+    } # -SchemaName
+
+}
+
+function Pop-Migration()
+{
+    Remove-Table -Name 'Ducati'
+}
+'@ | New-Migration -Name 'AddTable'
     Invoke-Rivet -Push 'AddTable'
     Assert-True (Test-Table 'Ducati')
 
@@ -25,11 +39,33 @@ function Test-ShouldRemoveTableInCustomSchema
     $Name = 'Ducati'
     $CustomSchemaName = 'notDbo'
     
+@'
+function Push-Migration()
+{
+    Add-Table -Name 'Ducati' {
+        Int 'ID' -Identity 
+    }
+    Add-Schema -Name 'notDbo'
+
+    Add-Table -Name 'Ducati' {
+        Int 'ID' -Identity 
+    } -SchemaName 'notDbo'
+}
+
+function Pop-Migration()
+{
+    Remove-Table -Name 'Ducati' -SchemaName 'notDbo'
+    Remove-Table 'Ducati'
+    Remove-Schema 'notDbo'
+}
+'@ | New-Migration -Name 'AddTablesInDifferentSchemas'    
+
     Invoke-Rivet -Push 'AddTablesInDifferentSchemas'
+
     Assert-True (Test-Table -Name $Name)
     Assert-True (Test-Table -Name $Name -SchemaName $CustomSchemaName)
     
     Invoke-Rivet -Pop ([Int32]::MaxValue)
-    Assert-True (Test-Table -Name $Name)
+    Assert-False (Test-Table -Name $Name)
     Assert-False (Test-Table -Name $Name -SchemaName $CustomSchemaName)
 }

@@ -1,7 +1,8 @@
 
+& (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
+
 function Start-Test
 {
-    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve) -DatabaseName 'RivetTest' 
     Start-RivetTest
 }
 
@@ -20,17 +21,15 @@ function Push-Migration()
     }
 
     Add-DefaultConstraint -TableName 'AddDefaultConstraint' -ColumnName 'DefaultConstraintMe' -Expression 101
+    Remove-DefaultConstraint 'AddDefaultConstraint' 'DefaultConstraintMe'
 }
 
 function Pop-Migration()
 {
-    Remove-DefaultConstraint 'AddDefaultConstraint' 'DefaultConstraintMe'
+    Remove-Table 'AddDefaultConstraint'
 }
 '@ | New-Migration -Name 'RemoveDefaultConstraint'
     Invoke-Rivet -Push 'RemoveDefaultConstraint'
-    Assert-NotNull (Get-DefaultConstraint 'DF_AddDefaultConstraint_DefaultConstraintMe')
-
-    Invoke-Rivet -Pop 1
     Assert-Null (Get-DefaultConstraint 'DF_AddDefaultConstraint_DefaultConstraintMe')
 }
 
@@ -44,17 +43,15 @@ function Push-Migration()
     }
 
     Add-DefaultConstraint -TableName 'Remove-DefaultConstraint' -ColumnName 'DefaultConstraintMe' -Expression 101
+    Remove-DefaultConstraint -TableName 'Remove-DefaultConstraint' -ColumnName 'DefaultConstraintMe'
 }
 
 function Pop-Migration()
 {
-    Remove-DefaultConstraint -TableName 'Remove-DefaultConstraint' -ColumnName 'DefaultConstraintMe'
+    Remove-Table 'Remove-DefaultConstraint'
 }
 '@ | New-Migration -Name 'RemoveDefaultConstraint'
     Invoke-Rivet -Push 'RemoveDefaultConstraint'
-    Assert-NotNull (Get-DefaultConstraint 'DF_Remove-DefaultConstraint_DefaultConstraintMe')
-
-    Invoke-Rivet -Pop 1
     Assert-Null (Get-DefaultConstraint 'DF_Remove-DefaultConstraint_DefaultConstraintMe')
 
 }
@@ -69,16 +66,14 @@ function Push-Migration()
     }
 
     Add-DefaultConstraint -TableName 'AddDefaultConstraint' -ColumnName 'DefaultConstraintMe' -Expression 101 -Name 'Optional'
+    Remove-DefaultConstraint 'AddDefaultConstraint' -Name 'Optional'
 }
 
 function Pop-Migration()
 {
-    Remove-DefaultConstraint 'AddDefaultConstraint' -Name 'Optional'
+    Remove-Table 'AddDefaultConstraint'
 }
 '@ | New-Migration -Name 'RemoveDefaultConstraintWithOptionalConstraintName'
     Invoke-Rivet -Push 'RemoveDefaultConstraintWithOptionalConstraintName'
-    Assert-NotNull (Get-DefaultConstraint -Name 'Optional')
-
-    Invoke-Rivet -Pop 1
     Assert-Null (Get-DefaultConstraint -Name 'Optional')
 }

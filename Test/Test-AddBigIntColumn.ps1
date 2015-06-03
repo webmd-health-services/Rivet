@@ -1,7 +1,8 @@
 
+& (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
+
 function Start-Test
 {
-    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve) -DatabaseName 'AddBigIntColumn' 
     Start-RivetTest
 }
 
@@ -22,7 +23,7 @@ function Push-Migration
 
 function Pop-Migration
 {
-    
+    Remove-Table Foobar
 }
 
 '@ | New-Migration -Name 'CreateBigIntWithNullable'
@@ -45,7 +46,7 @@ function Push-Migration
 
 function Pop-Migration
 {
-    
+    Remove-Table Foobar
 }
 
 '@ | New-Migration -Name 'CreateBigIntWithNotNull'
@@ -68,7 +69,7 @@ function Push-Migration
 
 function Pop-Migration
 {
-    
+    Remove-Table Foobar
 }
 
 '@ | New-Migration -Name 'CreateBigIntWithSparse'
@@ -91,7 +92,7 @@ function Push-Migration
 
 function Pop-Migration
 {
-    
+    Remove-Table Foobar    
 }
 
 '@ | New-Migration -Name 'CreateBigIntWithIdentity'
@@ -114,7 +115,7 @@ function Push-Migration
 
 function Pop-Migration
 {
-    
+    Remove-Table Foobar    
 }
 
 '@ | New-Migration -Name 'CreateBigIntWithIdentityNotForReplication'
@@ -137,7 +138,7 @@ function Push-Migration
 
 function Pop-Migration
 {
-    
+    Remove-Table Foobar    
 }
 
 '@ | New-Migration -Name 'CreateBigIntWithIdentityCustomSeedCustomIncrement'
@@ -160,7 +161,7 @@ function Push-Migration
 
 function Pop-Migration
 {
-    
+    Remove-Table Foobar    
 }
 
 '@ | New-Migration -Name 'CreateBigIntWithCustomValueCustomDescription'
@@ -184,7 +185,7 @@ function Push-Migration
 
 function Pop-Migration
 {
-    Remove-Table 'Foo-Bar'
+    Remove-Table 'Foo-Bar' -SchemaName 'New-BigInt'
     Remove-Schema 'New-BigInt'
 }
 

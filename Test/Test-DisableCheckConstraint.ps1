@@ -1,6 +1,8 @@
-﻿function Start-Test
+﻿
+& (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
+
+function Start-Test
 {
-    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve) -DatabaseName 'RivetTest' 
     Start-RivetTest
 }
 
@@ -27,6 +29,7 @@ function Push-Migration()
 
 function Pop-Migration()
 {
+    Remove-Table 'Migrations'
 }
 '@ | New-Migration -Name 'DisabledCheckConstraint'
 
