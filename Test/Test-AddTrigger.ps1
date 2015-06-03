@@ -1,6 +1,8 @@
+
+& (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
+
 function Start-Test
 {
-    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve) -DatabaseName 'AddTrigger' 
     Start-RivetTest
 }
 
@@ -23,7 +25,7 @@ function Push-Migration
 
 function Pop-Migration
 {
-    
+    Remove-Table 'Person'
 }
 
 '@ | New-Migration -Name 'AddTrigger'
@@ -49,7 +51,8 @@ function Push-Migration
 
 function Pop-Migration
 {
-    
+    Remove-Table 'Person' -SchemaName 'Test-AddTrigger'
+    Remove-Schema 'Test-AddTrigger'
 }
 
 '@ | New-Migration -Name 'AddTrigger'
@@ -75,8 +78,7 @@ function Push-Migration
 
 function Pop-Migration
 {
-    Remove-Trigger -Name 'Test-Trigger' -SchemaName 'Add-Trigger'
-    Remove-Table 'AddTriggerTest'
+    Remove-Table 'AddTriggerTest' -SchemaName 'Add-Trigger'
     Remove-Schema 'Add-Trigger'
 }
 

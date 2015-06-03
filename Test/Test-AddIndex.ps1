@@ -1,7 +1,8 @@
 
+& (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
+
 function Start-Test
 {
-    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve) -DatabaseName 'RivetTest' 
     Start-RivetTest
 }
 
@@ -28,6 +29,7 @@ function Push-Migration()
 
 function Pop-Migration()
 {
+    Remove-Table 'Add Index'
 }
 '@ | New-Migration -Name 'AddIndex'
 
@@ -59,6 +61,7 @@ function Push-Migration()
 
 function Pop-Migration()
 {
+    Remove-Table 'AddIndex'
 }
 '@ | New-Migration -Name 'AddIndexMultipleColumns'
 
@@ -89,6 +92,7 @@ function Push-Migration()
 
 function Pop-Migration()
 {
+    Remove-Table 'AddIndex'
 }
 '@ | New-Migration -Name 'AddClusteredIndex'
 
@@ -117,6 +121,7 @@ function Push-Migration()
 
 function Pop-Migration()
 {
+    Remove-Table 'AddIndex'
 }
 '@ | New-Migration -Name 'CreateUniqueIndex'
 
@@ -148,6 +153,7 @@ function Push-Migration()
 
 function Pop-Migration()
 {
+    Remove-Table 'AddIndex'
 }
 '@ | New-Migration -Name 'CreateIndexWithOptions'
 
@@ -180,6 +186,7 @@ function Push-Migration()
 
 function Pop-Migration()
 {
+    Remove-Table 'AddIndex'
 }
 '@ | New-Migration -Name 'CreateIndexWithFilterPredicate'
 
@@ -212,6 +219,7 @@ function Push-Migration()
 
 function Pop-Migration()
 {
+    Remove-Table 'AddIndex'
 }
 '@ | New-Migration -Name 'CreateIndexOnCustomFileGroup'
 
@@ -238,6 +246,7 @@ function Push-Migration()
 
 function Pop-Migration()
 {
+    Remove-Table 'AddIndex'
 }
 '@ | New-Migration -Name 'CreateIndexOnCustomFileStream'
 
@@ -262,8 +271,7 @@ function Push-Migration()
 
 function Pop-Migration()
 {
-
-
+    Remove-Table 'AddIndex'
 }
 
 
@@ -292,6 +300,7 @@ function Push-Migration()
 
 function Pop-Migration()
 {
+    Remove-Table 'AddIndex'
 }
 '@ | New-Migration -Name 'CreateIndexWithMultipleDescending'
 
@@ -315,6 +324,7 @@ function Push-Migration()
 
 function Pop-Migration()
 {
+    Remove-Table 'Add-Index'
 }
 '@ | New-Migration -Name 'AddIndex'
 
@@ -337,6 +347,7 @@ function Push-Migration()
 
 function Pop-Migration()
 {
+    Remove-Table 'Add-Index'
 }
 '@ | New-Migration -Name 'AddIndexWithOptionalName'
 
@@ -360,6 +371,7 @@ function Push-Migration()
 
 function Pop-Migration()
 {
+    Remove-Table 'AddIndex'
 }
 '@ | New-Migration -Name 'AddIndex'
 
@@ -385,6 +397,7 @@ function Push-Migration()
 
 function Pop-Migration()
 {
+    Remove-Table 'AddIndex'
 }
 '@ | New-Migration -Name 'AddIndex'
 

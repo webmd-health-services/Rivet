@@ -7,7 +7,7 @@ function Invoke-RivetTestQuery
         $Query,
         
         [Data.SqlClient.SqlConnection]
-        $Connection = $RTDatabaseConnection,
+        $Connection,
 
         [Switch]
         # Use the master connection, instead of the database connection.
@@ -23,10 +23,30 @@ function Invoke-RivetTestQuery
     )
     
     Set-StrictMode -Version Latest
-    
-    if( $Master )
+
+    if( -not $RTDatabaseConnection )
     {
-        $Connection = $RTMasterConnection
+        $script:RTDatabaseConnection = New-SqlConnection -Database $RTDatabaseName
+        if( -not $Connection )
+        {
+            $Connection = $RTDatabaseConnection
+        }
+    }
+    
+    if( -not $PSBoundParameters.ContainsKey('Connection') )
+    {
+        $Connection = $RTDatabaseConnection
+        if( $Master )
+        {
+            if( $Connection.Database -ne 'Master' )
+            {
+                $Connection.ChangeDatabase( 'Master' )
+            }
+        }
+        elseif( $Connection.Database -ne $RTDatabaseName )
+        {
+            $Connection.ChangeDatabase( $RTDatabaseName )
+        }
     }
 
     try

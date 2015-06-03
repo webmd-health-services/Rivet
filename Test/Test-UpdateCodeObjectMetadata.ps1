@@ -1,7 +1,8 @@
 
+& (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
+
 function Start-Test
 {
-    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve) -DatabaseName 'UpdateCodeObjectMetadata' 
     Start-RivetTest
 }
 
@@ -28,7 +29,13 @@ BEGIN
 RETURN upper(@a)
 END
 "@
-    
+}
+
+function Pop-Migration
+{
+    Remove-UserDefinedFunction -SchemaName 'refresh' 'to_upper'
+    Remove-DataType -SchemaName 'refresh' 'mytype'
+    Remove-Schema 'refresh'
 }
 '@ | New-Migration -Name 'CreateToUpper'
 
@@ -46,6 +53,17 @@ function Push-Migration
     Add-DataType -SchemaName 'refresh' -Name 'mytype' -From 'nvarchar(10)'
 
     Update-CodeObjectMetadata -SchemaName 'refresh' -Name 'to_upper'
+}
+
+function Pop-Migration
+{
+    Rename-DataType -SchemaName 'refresh' -Name 'mytype' -NewName 'mytype_REMOVE'
+
+    Rename-DataType -SchemaName 'refresh' -Name 'myoldtype' -NewName 'mytype'
+
+    Update-CodeObjectMetadata -SchemaName 'refresh' -Name 'to_upper'
+
+    Remove-DataType -SchemaName 'refresh' -Name 'mytype_REMOVE'
 }
 '@ | New-Migration -Name 'IncreaseToUpperLength'
 

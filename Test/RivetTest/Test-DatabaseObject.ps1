@@ -51,6 +51,6 @@ function Test-DatabaseObject
         o.type = '{0}' and o.name = '{1}' and s.name = '{2}'
 '@ -f $pscmdlet.ParameterSetName,$Name,$SchemaName
 
-    $objectCount = Invoke-RivetTestQuery -Query $query -Connection $RTDatabaseConnection -AsScalar
+    $objectCount = Invoke-RivetTestQuery -Query $query -AsScalar
     return ($objectCount -eq 1)
 }

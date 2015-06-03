@@ -1,4 +1,5 @@
 
+# TODO: Rename so it doesn't collide with Rivet's Invoke-Rivet. Update Test-ConvertMigration tests to not re-load RivetTest module for every test.
 function Invoke-Rivet
 {
     [CmdletBinding(SupportsShouldProcess=$True)]

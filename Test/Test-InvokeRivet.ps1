@@ -1,8 +1,7 @@
-
+& (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
 
 function Start-Test
 {
-    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve) -DatabaseName 'InvokeRivet' 
     Start-RivetTest -IgnoredDatabase 'Ignored'
 }
 
@@ -22,7 +21,8 @@ function Test-ShouldCreateDatabase
     $name = 'RivetConnectDatabase{0}' -f ((Get-Date).ToString('yyyyMMddHHMMss'))
     $query = 'select 1 from sys.databases where name=''{0}''' -f $name
 
-    $cmd = New-Object 'Data.SqlClient.SqlCommand' ($query,$RTMasterConnection)
+    $conn = New-SqlConnection -Database 'master'
+    $cmd = New-Object 'Data.SqlClient.SqlCommand' ($query,$conn)
     Assert-False $cmd.ExecuteScalar()
 
     @'
@@ -39,16 +39,17 @@ function Pop-Migration
 
     try
     {
-        $conn = Invoke-Rivet -Push -Database $name
+        $result = Invoke-Rivet -Push -Database $name
         Assert-NoError
-        Assert-OperationsReturned $conn
+        Assert-OperationsReturned $result
 
-        $cmd = New-Object 'Data.SqlClient.SqlCommand' ($query,$RTMasterConnection)
+        $cmd = New-Object 'Data.SqlClient.SqlCommand' ($query,$conn)
         Assert-True $cmd.ExecuteScalar()
     }
     finally
     {
         Remove-RivetTestDatabase -Name $name
+        $conn.Close()
     }
 }
 
@@ -149,11 +150,21 @@ function Pop-Migration
 function Test-ShouldHandleFailureToConnect
 {
     $config = Get-Content -Raw -Path $RTConfigFilePath | ConvertFrom-Json
+    $originalSqlServerName = $config.SqlServerName
     $config.SqlServerName = '.\IDoNotExist'
     $config | ConvertTo-Json | Set-Content -Path $RTConfigFilePath
 
-    Invoke-Rivet -Push -ErrorAction SilentlyContinue
-    Assert-Error -Last -Regex 'failed to connect'
+    try
+    {
+        Invoke-Rivet -Push -ErrorAction SilentlyContinue
+        Assert-Error -Last -Regex 'failed to connect'
+    }
+    finally
+    {
+        $config = Get-Content -Raw -Path $RTConfigFilePath | ConvertFrom-Json
+        $config.SqlServerName = $originalSqlServerName
+        $config | ConvertTo-Json | Set-Content -Path $RTConfigFilePath
+    }
 }
 
 function Assert-OperationsReturned

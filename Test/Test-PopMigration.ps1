@@ -1,11 +1,13 @@
+
+& (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
+
 $migration1 = $null
 $migration2 = $null
 $migration3 = $null
 $migration4 = $null
 
-function Setup
+function Start-Test
 {
-    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve) -DatabaseName 'PopMigration' 
     Start-RivetTest
 
     $migration1 = @'
@@ -58,7 +60,7 @@ function Pop-Migration
     Assert-Equal $expectedCount (Measure-Migration)
 }
 
-function TearDown
+function Stop-Test
 {
     Stop-RivetTest
 }
@@ -152,7 +154,7 @@ function Test-ShouldSupportPoppingMoreThanAvailableMigrations
 
 function Test-ShouldStopPoppingMigrationsIfOneGivesAnError
 {
-    @'
+    $migrationFileInfo = @'
 function Push-Migration
 {
     Add-Table 'Migration5' {
@@ -166,20 +168,39 @@ function Pop-Migration
 }
 '@ | New-Migration -Name 'PopFails'
     
-    Invoke-Rivet -Push
-    Assert-LastProcessSucceeded
-    Assert-NoError
+    try
+    {
+        Invoke-Rivet -Push
+        Assert-LastProcessSucceeded
+        Assert-NoError
     
-    Invoke-Rivet -Pop (Measure-Migration) -ErrorAction SilentlyContinue -ErrorVariable rivetError
+        Invoke-Rivet -Pop (Measure-Migration) -ErrorAction SilentlyContinue -ErrorVariable rivetError
 
-    Assert-NotNull $rivetError
-    Assert-Like $rivetError[0] '*cannot drop the table*'
+        Assert-NotNull $rivetError
+        Assert-Like $rivetError[0] '*cannot drop the table*'
     
-    Assert-True (Test-Table -Name 'Migration5')
-    Assert-True (Test-Table -Name 'Migration4')
-    Assert-True (Test-Table -Name 'Migration3')
-    Assert-True (Test-Table -Name 'Migration2')
-    Assert-True (Test-Table -Name 'Migration1')
+        Assert-True (Test-Table -Name 'Migration5')
+        Assert-True (Test-Table -Name 'Migration4')
+        Assert-True (Test-Table -Name 'Migration3')
+        Assert-True (Test-Table -Name 'Migration2')
+        Assert-True (Test-Table -Name 'Migration1')
+    }
+    finally
+    {
+        @'
+function Push-Migration
+{
+    Add-Table 'Migration5' {
+        int 'ID' -Identity
+    }
+}
+
+function Pop-Migration
+{
+    Remove-Table 'Migration5'
+}
+'@ | Set-Content -Path $migrationFileInfo
+    }
 }
 
 function Test-ShouldPopByName

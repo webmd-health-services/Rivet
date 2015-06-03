@@ -1,14 +1,14 @@
 
+& (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
+
 function Start-Test
 {
-    & (Join-Path -Path $TestDir -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve) -DatabaseName 'RedoMigration' 
     Start-RivetTest
 }
 
 function Stop-Test
 {
     Stop-RivetTest
-    Remove-Module RivetTest
 }
 
 function Test-ShouldPopThenPushTopMigration
@@ -49,7 +49,7 @@ function Pop-Migration()
 }
 '@ | New-Migration -Name 'AddColumn'
 
-    Invoke-Rivet -Push
+    Invoke-Rivet -Push -Verbose
 
     $redoMigrationTable = Get-Table -Name 'RedoMigration'
     $secondTable = Get-Table -Name 'SecondTable'

@@ -1,6 +1,5 @@
 
 param(
-    [Parameter(Mandatory=$true)]
     [string]
     # The name of the database.
     $RTName
@@ -17,14 +16,18 @@ $RTConfigFilePath =
     $RTServer = 
     $RTRivetPath = 
     $RTRivetSchemaName = 
-    $RTDatabaseConnection = 
-    $RTMasterConnection = $RTnull
+    $RTDatabaseConnection = $null
                   
 $RTRivetSchemaName = 'rivet'
 
 $RTDatabasesSourcePath = Join-Path $PSScriptRoot ..\Databases -Resolve
 $RTDatabaseSourcePath = Join-Path $RTDatabasesSourcePath $RTName 
 $RTDatabaseSourcePath = [IO.Path]::GetFullPath( $RTDatabaseSourcePath )
+if( -not $RTName )
+{
+    $RTName = 'RivetTest'
+}
+
 $RTDatabaseSourceName = $RTName
 
 $RTServer = Get-Content (Join-Path $PSScriptRoot ..\Server.txt) -TotalCount 1
@@ -35,7 +38,10 @@ dir $PSScriptRoot *-*.ps1 |
     Where-Object { $_.BaseName -ne 'Import-RivetTest' } |
     ForEach-Object { . $_.FullName }
 
-$RTMasterConnection = New-SqlConnection -DatabaseName 'master'
+if( -not $RTDatabaseConnection -or $RTDatabaseConnection.State -ne [Data.ConnectionSTate]::Open )
+{
+    $RTDatabaseConnection = New-SqlConnection -Database 'master'
+}
 
 . (Join-Path $PSScriptRoot '..\..\Test\RivetTest\New-ConstraintName.ps1')
 . (Join-Path $PSScriptRoot '..\..\Test\RivetTest\New-ForeignKeyConstraintName.ps1')

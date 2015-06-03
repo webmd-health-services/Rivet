@@ -1,6 +1,8 @@
+
+& (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
+
 function Start-Test
 {
-    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve) -DatabaseName 'AddVarBinaryColumn' 
     Start-RivetTest
 }
 
@@ -21,7 +23,7 @@ function Push-Migration
 
 function Pop-Migration
 {
-    
+    Remove-Table 'Foobar'
 }
 
 '@ | New-Migration -Name 'CreateVarBinaryColumn'
@@ -45,7 +47,7 @@ function Push-Migration
 
 function Pop-Migration
 {
-    
+    Remove-Table 'Foobar'
 }
 
 '@ | New-Migration -Name 'CreateVarBinaryColumnWithFileStream'
@@ -68,7 +70,7 @@ function Push-Migration
 
 function Pop-Migration
 {
-    
+    Remove-Table 'Foobar'
 }
 
 '@ | New-Migration -Name 'CreateVarBinaryColumnWithNotNull'
@@ -91,7 +93,7 @@ function Push-Migration
 
 function Pop-Migration
 {
-    
+    Remove-Table 'Foobar'
 }
 
 '@ | New-Migration -Name 'ShouldCreateVarBinaryColumnWithCustomSize'

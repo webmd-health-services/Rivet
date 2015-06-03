@@ -1,6 +1,8 @@
+
+& (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
+
 function Setup
 {
-    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve) -DatabaseName 'UpdateView' 
     Start-RivetTest
 }
 
@@ -14,7 +16,7 @@ function Test-ShouldUpdateView
     @'
 function Push-Migration
 {
-         Add-Table -Name 'Person' -Description 'Testing Add-View' -Column {
+    Add-Table -Name 'Person' -Description 'Testing Add-View' -Column {
         VarChar 'FirstName' -Max -NotNull -Default "'default'" -Description 'varchar(max) constraint DF_AddTable_varchar default default'
         VarChar 'LastName' -Max -NotNull -Default "'default'" -Description 'varchar(max) constraint DF_AddTable_varchar default default'
     } -Option 'data_compression = none'
@@ -25,7 +27,8 @@ function Push-Migration
 
 function Pop-Migration
 {
-    
+    Remove-View 'customView'
+    Remove-Table 'Person'
 }
 
 '@ | New-Migration -Name 'UpdateView'

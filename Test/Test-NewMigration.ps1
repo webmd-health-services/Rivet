@@ -1,14 +1,12 @@
 
+& (Join-Path -Path $TestDir -ChildPath RivetTest\Import-RivetTest.ps1 -Resolve)
+
 $dbsRoot = $null
 $rivetPath = Join-Path $TestDir ..\Rivet\rivet.ps1 -Resolve
 
 function Start-Test
 {
-    & (Join-Path -Path $TestDir -ChildPath RivetTest\Import-RivetTest.ps1 -Resolve) -DatabaseName 'RivetTest'
     Start-RivetTest
-
-    Get-ChildItem -Path (Join-Path -Path $RTDatabasesRoot *\Migrations\*.ps1) |
-        Remove-Item
 }
 
 function Stop-Test

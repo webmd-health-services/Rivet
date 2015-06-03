@@ -1,10 +1,12 @@
-function Setup
+
+& (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
+
+function Start-Test
 {
-    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve) -DatabaseName 'RivetTest' 
     Start-RivetTest
 }
 
-function TearDown
+function Stop-Test
 {
     Stop-RivetTest
 }
@@ -27,6 +29,7 @@ function Push-Migration()
 
 function Pop-Migration()
 {
+    Remove-Table 'RemoveUniqueKey'
 }
 '@ | New-Migration -Name 'RemoveUniqueKey'
     Invoke-Rivet -Push 'RemoveUniqueKey'
@@ -49,6 +52,7 @@ function Push-Migration()
 
 function Pop-Migration()
 {
+    Remove-Table 'Remove-UniqueKey'
 }
 '@ | New-Migration -Name 'RemoveUniqueKey'
     Invoke-Rivet -Push 'RemoveUniqueKey'
@@ -71,6 +75,7 @@ function Push-Migration()
 
 function Pop-Migration()
 {
+    Remove-Table 'Add-UniqueKey'
 }
 '@ | New-Migration -Name 'AddUniqueKeyWithCustomName'
     Invoke-Rivet -Push 'AddUniqueKeyWithCustomName'

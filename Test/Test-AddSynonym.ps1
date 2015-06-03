@@ -1,6 +1,8 @@
+
+& (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
+
 function Start-Test
 {
-    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve) -DatabaseName 'AddSynonym' 
     Start-RivetTest
 }
 
@@ -23,7 +25,11 @@ function Push-Migration
 
 function Pop-Migration
 {
-    
+    Remove-Synonym 'Buzzed'
+    Remove-Synonym 'Buzz' -SchemaName 'fiz'
+    Remove-Synonym 'Buzz'
+    Remove-Schema 'baz'
+    Remove-Schema 'fiz'
 }
 
 '@ | New-Migration -Name 'AddSynonym'

@@ -1,6 +1,7 @@
-﻿function Start-Test
+﻿& (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
+
+function Start-Test
 {
-    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve) -DatabaseName 'RivetTest' 
     Start-RivetTest
 }
 
@@ -31,6 +32,9 @@ function Push-Migration()
 
 function Pop-Migration()
 {
+    Remove-ForeignKey 'SourceTable' 'ReferenceTable'
+    Remove-Table 'ReferenceTable'
+    Remove-Table 'SourceTable'
 }
 '@ | New-Migration -Name 'EnabledForeignKey'
 
@@ -62,6 +66,9 @@ function Push-Migration()
 
 function Pop-Migration()
 {
+    Remove-ForeignKey 'SourceTable' 'ReferenceTable'
+    Remove-Table 'ReferenceTable'
+    Remove-Table 'SourceTable'
 }
 '@ | New-Migration -Name 'EnabledForeignKey'
 
@@ -92,6 +99,9 @@ function Push-Migration()
 
 function Pop-Migration()
 {
+    Remove-ForeignKey -TableName 'SourceTable' -Name 'Foreign_Key_Example'
+    Remove-Table 'ReferenceTable'
+    Remove-Table 'SourceTable'
 }
 '@ | New-Migration -Name 'DisabledForeignKeyWithName'
 

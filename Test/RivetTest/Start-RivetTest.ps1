@@ -16,26 +16,12 @@ function Start-RivetTest
     $tempDir = New-TempDir -Prefix 'RivetTest'
 
     $script:RTDatabasesRoot = Join-Path $tempDir (Split-Path -Leaf $RTDatabasesSourcePath)
-    $script:RTDatabaseName = '{0}{1}' -f $RTDatabaseSourceName,(get-date).ToString('yyyyMMddHHmmss')
+    $script:RTDatabaseName = $RTDatabaseSourceName
     $script:RTDatabaseRoot = Join-Path $RTDatabasesRoot $RTDatabaseName
     $script:RTDatabaseMigrationRoot = Join-Path -Path $RTDatabaseRoot -ChildPath 'Migrations'
 
-    if( (Test-Path -Path (Join-Path -Path $RTDatabasesSourcePath -ChildPath $RTDatabaseSourceName) -PathType Container) )
-    {
-        Copy-Item -Path $RTDatabasesSourcePath -Destination $tempDir -Recurse
-        Rename-Item -Path (Join-Path $RTDatabasesRoot $RTDatabaseSourceName) -NewName $RTDatabaseName
-    }
-    else
-    {
-        $null = New-Item -Path $RTDatabaseMigrationRoot -ItemType Container -Force
-    }
+    $null = New-Item -Path $RTDatabaseMigrationRoot -ItemType Container -Force
     
-    Remove-RivetTestDatabase
-
-    New-Database
-
-    $script:RTDatabaseConnection = New-SqlConnection 
-
     $script:RTConfigFilePath = Join-Path -Path $tempDir -ChildPath 'rivet.json'
 
     $PluginPathClause = ''

@@ -24,6 +24,6 @@ function Get-Table
         s.name = '{0}' and t.name = '{1}'
 '@ -f $SchemaName,$Name
 
-    Invoke-RivetTestQuery -Query $query -Connection $RTDatabaseConnection
+    Invoke-RivetTestQuery -Query $query
 
 }

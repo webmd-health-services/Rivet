@@ -1,13 +1,14 @@
+
+& (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
 $floog = ''
 
-function Setup
+function Start-Test
 {
-    & (Join-Path $TestDir RivetTest\Import-RivetTest.ps1 -Resolve) -DatabaseName 'Test-RemoveSchema'
     Start-RivetTest
     $floog = 'blarg'
 }
 
-function TearDown
+function Stop-Test
 {
     Stop-RivetTest
 }

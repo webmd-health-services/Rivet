@@ -1,7 +1,8 @@
 
+& (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
+
 function Setup
 {
-    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve) -DatabaseName 'RivetTest' 
     Start-RivetTest
 }
 
@@ -22,25 +23,21 @@ function Push-Migration()
         VarChar 'varchar' -Size 50
         VarChar 'varcharmax' -Max
     }
+
+    $tableParam = @{ TableName = 'AddColumnNoDefaultsAllNull' }
+    Update-Table -SchemaName 'My-Schema' 'AddColumnNoDefaultsAllNull' -Remove 'varchar','varcharmax'
 }
 
 function Pop-Migration()
 {
-    $tableParam = @{ TableName = 'AddColumnNoDefaultsAllNull' }
-    Update-Table -SchemaName 'My-Schema' 'AddColumnNoDefaultsAllNull' -Remove 'varchar','varcharmax'
+    Remove-Table -SchemaName 'My-Schema' 'AddColumnNoDefaultsAllNull'
+    Remove-Schema 'My-Schema'
 }
 '@ | New-Migration -Name 'AddColumnNoDefaultsAllNull'
 
     Invoke-Rivet -Push 'AddColumnNoDefaultsAllNull'
     
-    Assert-True (Test-Table -SchemaName 'My-Schema' -Name 'AddColumnNoDefaultsAllNull')
-
     $commonArgs = @{ TableName = 'AddColumnNoDefaultsAllNull' ; SchemaName = 'My-Schema' }
-    Assert-True (Test-Column -Name 'varchar' @commonArgs)
-    Assert-True (Test-Column -Name 'varcharmax' @commonArgs)
-
-    Invoke-Rivet -Pop ([Int]::MaxValue)
-
     Assert-False (Test-Column -Name 'varchar' @commonArgs)
     Assert-False (Test-Column -Name 'varcharmax' @commonArgs)
 }

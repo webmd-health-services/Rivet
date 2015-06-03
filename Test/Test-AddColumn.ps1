@@ -1,7 +1,8 @@
 
+& (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
+
 function Setup
 {
-    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve) -DatabaseName 'RivetTest' 
     Start-RivetTest
 }
 
@@ -73,6 +74,7 @@ N'
 function Pop-Migration
 {
     Remove-Table 'AddColumnNoDefaultsAllNull'
+    Invoke-Ddl 'drop xml schema collection EmptyXsd'
 }
 "@ | New-Migration -Name 'AddColumnNoDefaultsAllNull'
 
@@ -177,6 +179,7 @@ N'
 function Pop-Migration()
 {
     Remove-Table 'AddColumnDefaultsNotNull'
+    Invoke-Ddl 'drop xml schema collection EmptyXsd'
 }
 "@ | New-Migration -Name 'AddColumnDefaultsNotNull'
 
@@ -332,6 +335,7 @@ N'
 function Pop-Migration()
 {
     Remove-Table 'WithXmlDocument'
+    Invoke-Ddl 'drop xml schema collection EmptyXsd'
 }
 "@ | New-Migration -Name 'AddColumnXmlDocument'
 
@@ -467,6 +471,7 @@ N'
 function Pop-Migration()
 {
     Remove-Table 'WithSparseColumns'
+    Invoke-Ddl 'drop xml schema collection EmptyXsd'
 }
 
 "@ | New-Migration -Name 'AddColumnSparse'

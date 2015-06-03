@@ -1,6 +1,8 @@
+
+& (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve) -DatabaseName 'AddDateTimeOffsetColumn' 
+
 function Start-Test
 {
-    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve) -DatabaseName 'AddDateTimeOffsetColumn' 
     Start-RivetTest
 }
 
@@ -21,7 +23,7 @@ function Push-Migration
 
 function Pop-Migration
 {
-    
+    Remove-Table 'Foobar'
 }
 
 '@ | New-Migration -Name 'CreateDateTimeOffsetColumn'
@@ -44,7 +46,7 @@ function Push-Migration
 
 function Pop-Migration
 {
-    
+    Remove-Table 'Foobar'
 }
 
 '@ | New-Migration -Name 'CreateDateTimeOffsetColumnWithSparse'
@@ -67,7 +69,7 @@ function Push-Migration
 
 function Pop-Migration
 {
-    
+    Remove-Table 'Foobar'
 }
 
 '@ | New-Migration -Name 'CreateDateTimeOffsetColumnWithNotNull'
@@ -90,7 +92,7 @@ function Push-Migration
 
 function Pop-Migration
 {
-    
+    Remove-Table 'Foobar'
 }
 
 '@ | New-Migration -Name 'ShouldCreateDateTimeOffsetColumnWithNoPrecision'

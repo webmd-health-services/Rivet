@@ -1,7 +1,8 @@
 
+& (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve) -DatabaseName 'RivetTest' 
+
 function Start-Test
 {
-    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve) -DatabaseName 'RivetTest' 
     Start-RivetTest
 }
 
@@ -53,6 +54,7 @@ function Push-Migration()
 
 function Pop-Migration()
 {
+    Remove-Table 'PrimaryKey'
 }
 '@ | New-Migration -Name 'AddTableWithPrimaryKeyWithMultipleColumns'
     Invoke-Rivet -Push 'AddTableWithPrimaryKeyWithMultipleColumns'
@@ -76,6 +78,7 @@ function Push-Migration()
 
 function Pop-Migration()
 {
+    Remove-Table 'PrimaryKey'
 }
 '@ | New-Migration -Name 'AddNonClusteredPrimaryKey'
     Invoke-Rivet -Push 'AddNonClusteredPrimaryKey'
@@ -99,6 +102,7 @@ function Push-Migration()
 
 function Pop-Migration()
 {
+    Remove-Table 'PrimaryKey'
 }
 '@ | New-Migration -Name 'SetIndexOptions'
     Invoke-Rivet -Push 'SetIndexOptions'
@@ -121,6 +125,7 @@ function Push-Migration()
 
 function Pop-Migration()
 {
+    Remove-Table 'PrimaryKey' -SchemaName 'rivet'
 }
 '@ | New-Migration -Name 'AddPrimaryKeyToTableInCustomSchema'
     Invoke-Rivet -Push 'AddPrimaryKeyToTableInCustomSchema'
@@ -142,6 +147,7 @@ function Push-Migration()
 
 function Pop-Migration()
 {
+    Remove-Table 'Add-PrimaryKey'
 }
 
 '@ | New-Migration -Name 'AddTableWithPrimaryKey'
@@ -163,6 +169,7 @@ function Push-Migration()
 
 function Pop-Migration()
 {
+    Remove-Table 'Add-PrimaryKey'
 }
 
 '@ | New-Migration -Name 'AddPrimaryKeyWithCustomName'

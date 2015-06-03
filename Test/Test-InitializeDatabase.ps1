@@ -1,21 +1,31 @@
 
-function Setup
+& (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
+
+function Start-Test
 {
-    & (Join-Path $TestDir RivetTest\Import-RivetTest.ps1 -Resolve) -DatabaseName 'RivetTest' 
-
     Start-RivetTest
-
-    Assert-True (Test-Database)
+    Remove-RivetTestDatabase
+    @'
+function Push-Migration
+{
+    Add-Schema 'initialize'
 }
 
-function TearDown
+function Pop-Migration
+{
+    Remove-Schema 'initialize'
+}
+'@ | New-Migration -Name 'First'
+}
+
+function Stop-Test
 {
     Stop-RivetTest
 }
 
 function Test-ShouldCreateRivetObjectsInDatabase
 {
-    Invoke-Rivet -Push
+    Invoke-Rivet -Push | Format-Table | Out-String | Write-Verbose
     
     Assert-NoError
 

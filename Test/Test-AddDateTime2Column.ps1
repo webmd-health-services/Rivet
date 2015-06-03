@@ -1,6 +1,8 @@
+
+& (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve) -DatabaseName 'AddDateTime2Column' 
+
 function Start-Test
 {
-    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve) -DatabaseName 'AddDateTime2Column' 
     Start-RivetTest
 }
 
@@ -21,7 +23,7 @@ function Push-Migration
 
 function Pop-Migration
 {
-    
+    Remove-Table 'Foobar'
 }
 
 '@ | New-Migration -Name 'CreateDateTime2Column'
@@ -44,7 +46,7 @@ function Push-Migration
 
 function Pop-Migration
 {
-    
+    Remove-Table 'Foobar'
 }
 
 '@ | New-Migration -Name 'CreateDateTime2ColumnWithSparse'
@@ -67,7 +69,7 @@ function Push-Migration
 
 function Pop-Migration
 {
-    
+    Remove-Table 'Foobar'
 }
 
 '@ | New-Migration -Name 'CreateDateTime2ColumnWithNotNull'
