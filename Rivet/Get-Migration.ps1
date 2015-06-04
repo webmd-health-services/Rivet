@@ -80,7 +80,7 @@ function Get-Migration
     {
         ('function:Push-Migration','function:Pop-Migration') |
             Where-Object { Test-Path -Path $_ } |
-            Remove-Item
+            Remove-Item -WhatIf:$false -Confirm:$false
     }
 
     Clear-Migration
