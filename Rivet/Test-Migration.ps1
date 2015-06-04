@@ -23,10 +23,11 @@ function Test-Migration
         $PassThru
     )
     
-    $query = 'select * from {0} where ID=@ID' -f $RivetMigrationsTableFullName,$ID
+    $query = 'select ID, Name, Who, AtUtc from {0} where ID=@ID' -f $RivetMigrationsTableFullName,$ID
     $info = Invoke-Query -Query $query -Parameter @{ ID = $ID } -Verbose:$false
     if( $info )
     {
+        Write-Verbose ('{0}   {1,-35} {2,14:00000000000000}_{3}' -f $info.AtUtc.ToLocalTime().ToString('yyyy-mm-dd HH:mm'),$info.Who,$info.ID,$info.Name)
         if( $PassThru )
         {
             return $info
