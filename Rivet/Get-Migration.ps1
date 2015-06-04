@@ -3,12 +3,18 @@ function Get-Migration
 {
     <#
     .SYNOPSIS
-    Gets the migrations for a given database.
+    Gets the migrations for all or specific databases.
 
     .DESCRIPTION
-    This function exposes Rivet's internal migration objects so you can do cool things with them.  You're welcome.  Enjoy!
+    The `Get-Migration` function returns `Rivet.Migration` objects for all the migrations in all or specific databases. With no parameters, looks in the current directory for a `rivet.json` file and returns all the migrations for all the databases based on that configuration. Use the `ConfigFilePath` to load and use a specific `rivet.json` file.
 
-    Each object returned represents one migration, and includes properties for the push and pop operations in that migration.
+    You can return migrations from specific databases by passing those database names as values to the `Database` parameter. 
+
+    The `Environment` parameter is used to load the correct environment-specific settings from the `rivet.json` file.
+
+    You can filter what migrations are returned using the `Include` or `Exclude` parameters, which support wildcards, and will match any part of the migration's filename, including the ID.
+
+    Use the `Before` and `After` parameters to return migrations whose timestamps/IDs come before and after the given dates.
 
     .OUTPUTS
     Rivet.Migration.
@@ -23,21 +29,30 @@ function Get-Migration
 
     Returns `Rivet.Migration` objects for each migration in the `StarWars` database.
     #>
-    [CmdletBinding(DefaultParameterSetName='Internal')]
+    [CmdletBinding(DefaultParameterSetName='External')]
+    [OutputType([Rivet.Migration])]
     param(
         [Parameter(ParameterSetName='External')]
         [string[]]
+        # The database whose migrations to get.
         $Database,
 
         [Parameter(ParameterSetName='External')]
         [string]
+        # The environment settings to use.
         $Environment,
 
         [Parameter(ParameterSetName='External')]
         [string]
+        # The path to the rivet.json file to use. Defaults to `rivet.json` in the current directory.
         $ConfigFilePath,
 
-        [Parameter(ParameterSetName='Internal')]
+        [Parameter(Mandatory=$true,ParameterSetName='Internal')]
+        [Rivet.Configuration.Configuration]
+        # The configuration to use.
+        $Configuration,
+
+        [Parameter(Mandatory=$true,ParameterSetName='Internal')]
         [string[]]
         # The path to a specific migration or directory of migrations.
         $Path,
@@ -68,62 +83,55 @@ function Get-Migration
             Remove-Item
     }
 
-    filter ConvertTo-Migration
-    {
-        [CmdletBinding()]
-        param(
-            [Parameter(Mandatory=$true,ValueFromPipeline=$true)]
-            [string]
-            # The path to a migration.
-            $Path
-        )
-
-        Set-StrictMode -Version 'Latest'
-
-    }
-
     Clear-Migration
 
-    Invoke-Command -ScriptBlock {
-            if( $PSCmdlet.ParameterSetName -eq 'External' )
-            {
-                $getRivetConfigParams = @{ }
-                if( $Database )
-                {
-                    $getRivetConfigParams['Database'] = $Database
-                }
+    if( $PSCmdlet.ParameterSetName -eq 'External' )
+    {
+        $getRivetConfigParams = @{ }
+        if( $Database )
+        {
+            $getRivetConfigParams['Database'] = $Database
+        }
 
-                if( $ConfigFilePath )
-                {
-                    $getRivetConfigParams['ConfigFilePath'] = $ConfigFilePath
-                }
+        if( $ConfigFilePath )
+        {
+            $getRivetConfigParams['Path'] = $ConfigFilePath
+        }
 
-                if( $Environment )
-                {
-                    $getRivetConfigParams['Environment'] = $Environment
-                }
+        if( $Environment )
+        {
+            $getRivetConfigParams['Environment'] = $Environment
+        }
 
-                $settings = Get-RivetConfig -Database $Database -Path $ConfigFilePath -Environment $Environment
-                if( $settings.PluginsRoot )
-                {
-                    Import-Plugin -Path $settings.PluginsRoot
-                }
+        $Configuration = Get-RivetConfig @getRivetConfigParams
+        if( -not $Configuration )
+        {
+            return
+        }
+    }
+
+    if( $Configuration.PluginsRoot )
+    {
+        Import-Plugin -Path $settings.PluginsRoot
+    }
                 
-                $settings.Databases | Select-Object -ExpandProperty 'MigrationsRoot'
-            }
-            else
+    Invoke-Command -ScriptBlock {
+            if( $PSCmdlet.ParameterSetName -eq 'Internal' )
             {
-                $Path
+                return $Path
             }
+
+            $Configuration.Databases | Select-Object -ExpandProperty 'MigrationsRoot'
         } | 
         ForEach-Object {
+            Write-Verbose $_ 
             if( (Test-Path -Path $_ -PathType Container) )
             {
                 Get-ChildItem -Path $_ -Filter '*_*.ps1'
             }
             elseif( (Test-Path -Path $_ -PathType Leaf) )
             {
-                Get-Item -Path
+                Get-Item -Path $_
             }
             else
             {

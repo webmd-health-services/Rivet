@@ -15,11 +15,14 @@ function New-Migration
 
         [string]
         # The name of the database.
-        $DatabaseName = $RTDatabaseName
+        $DatabaseName = $RTDatabaseName,
+
+        [string]
+        $ConfigFilePath = $RTConfigFilePath
     )
 
     $rivetPath = Join-Path -Path $PSScriptRoot -ChildPath '..\..\Rivet\rivet.ps1' -Resolve
-    $migration = & $rivetPath -New -Name $Name -Database $DatabaseName -ConfigFilePath $RTConfigFilePath -ErrorAction $ErrorActionPreference
+    $migration = & $rivetPath -New -Name $Name -Database $DatabaseName -ConfigFilePath $ConfigFilePath -ErrorAction $ErrorActionPreference
     if( $migration )
     {
         $InputObject | Set-Content -Path $migration

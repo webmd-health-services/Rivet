@@ -14,8 +14,8 @@ Demonstrates how to import the Rivet module.
 param(
 )
 
+#Requires -Version 4
 Set-StrictMode -Version Latest
-$PSScriptRoot = Split-Path -Parent -Path $MyInvocation.MyCommand.Definition
 
 if( (Get-Module Rivet) )
 {
