@@ -5,24 +5,16 @@ function Add-DefaultConstraint
     Creates a Default constraint to an existing column
 
     .DESCRIPTION
-    Creates a Default constraint to an existing column 
     The DEFAULT constraint is used to insert a default value into a column.  The default value will be added to all new records, if no other value is specified.
     
     .LINK
     Add-DefaultConstraint
 
     .EXAMPLE
-    Add-DefaultConstraint -TableName Cars -ColumnName Year
+    Add-DefaultConstraint -TableName Cars -ColumnName Year -Expression '2015'
 
     Adds an Default constraint on column 'Year' in the table 'Cars'
-
-    .EXAMPLE 
-    Add-DefaultConstraint -TableName 'Cars' -ColumnName 'Year' ##TODO###
-
-    Adds an Default constraint on column 'Year' in the table 'Cars' with specified options
-
     #>
-
     [CmdletBinding()]
     param(
         [Parameter(Mandatory=$true,Position=0)]
