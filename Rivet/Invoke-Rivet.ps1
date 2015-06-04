@@ -126,7 +126,7 @@ Found no databases to migrate. This can be a few things:
         
             try
             {
-                Initialize-Database
+                Initialize-Database -Configuration $settings
 
                 $updateParams = @{
                                     Path = $dbMigrationsPath;
