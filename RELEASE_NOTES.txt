@@ -3,8 +3,11 @@
 ## Enhancements
 
  * The Add-Schema operation is now idempotent.
- * Rivet now returns OperationResult objects for each query executed by an operation.
+ * Removed all Write-Host output.
+ * Rivet now returns OperationResult objects for each query executed by an operation. Default format included (i.e. this output replaces the old Write-Host output).
  * Renamed `Invoke-Query` operation to `Invoke-Ddl`.
+ * Renamed `Rivet.Operations.RawQueryOperation` to `Rivet.Operations.RawDdlOperation`.
+ * Moved `Rivet.Operations.Operation` object into `Rivet` namespace; so full type name is now `Rivet.Operation`.
 
 # 0.4.0
 
