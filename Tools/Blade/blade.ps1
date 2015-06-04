@@ -143,10 +143,12 @@ function Invoke-Test
     Set-StrictMode -Version 'Latest'
 
     [Blade.TestResult]$testInfo = New-Object 'Blade.TestResult' $fixture,$function
+    [Blade.TestResult]$stopTestResult = $null
 
     $Error.Clear()
 
-    $testFailed = $false
+    $stopTestSucceeded = $false
+    $testSucceeded = $false
     try
     {
         if( Test-path function:Start-Test )
@@ -162,50 +164,58 @@ function Invoke-Test
         {
             . $function | ForEach-Object { $testInfo.Output.Add( $_ ) }
         }
+        $testSucceeded = $true
     }
     catch [Blade.AssertionException]
     {
         $ex = $_.Exception
         $testInfo.Completed( $ex )
-        $testFailed = $true
     }
     catch
     {
         $testInfo.Completed( $_ )
-        $testFailed = $true
     }
     finally
     {
         try
         {
+            $stopTestResult = New-Object 'Blade.TestResult' $fixture,$function
             if( Test-Path function:Stop-Test )
             {
-                . Stop-Test | ForEach-Object { $testInfo.Output.Add( $_ ) }
+                . Stop-Test | ForEach-Object { $stopTestResult.Output.Add( $_ ) }
             }
             elseif( Test-Path -Path function:TearDown )
             {
-                . TearDown | ForEach-Object { $testInfo.Output.Add( $_ ) }
+                . TearDown | ForEach-Object { $stopTestResult.Output.Add( $_ ) }
             }
-
-            if( -not $testFailed )
-            {
-                $testInfo.Completed()
-            }
+            
+            $stopTestSucceeded = $true
         }
         catch [Blade.AssertionException]
         {
             $ex = $_.Exception
-            $testInfo.Completed( $ex )
+            $stopTestResult.Completed( $ex )
         }
         catch
         {
-            $testInfo.Completed( $_ )
+            $stopTestResult.Completed( $_ )
+        }
+        finally
+        {
+            if( $testSucceeded )
+            {
+                $testInfo.Completed()
+            }
         }
 
         $Error.Clear()
     }
 
-    return $testInfo
+    $testInfo
+    if( -not $stopTestSucceeded )
+    {
+        $stopTestResult
+    }
 }
 
 $getChildItemParams = @{ }
