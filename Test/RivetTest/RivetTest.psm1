@@ -1,25 +1,16 @@
 
 $RTConfigFilePath = 
-    $RTDatabasesSourcePath = 
-    $RTDatabaseSourcePath = 
-    $RTDatabaseSourceName = 
-    $RTDatabaseName = 
     $RTDatabasesRoot = 
     $RTDatabaseRoot = 
     $RTDatabaseMigrationRoot =
     $RTServer = 
     $RTRivetPath = 
     $RTRivetSchemaName = 
+    $RTDatabaseName =
     $RTDatabaseConnection = $null
                   
 $RTRivetSchemaName = 'rivet'
-$RTName = 'RivetTest'
-
-$RTDatabasesSourcePath = Join-Path $PSScriptRoot ..\Databases -Resolve
-$RTDatabaseSourcePath = Join-Path $RTDatabasesSourcePath $RTName 
-$RTDatabaseSourcePath = [IO.Path]::GetFullPath( $RTDatabaseSourcePath )
-
-$RTDatabaseSourceName = $RTName
+$RTDatabaseName = 'RivetTest'
 
 $RTServer = Get-Content (Join-Path $PSScriptRoot ..\Server.txt) -TotalCount 1
 

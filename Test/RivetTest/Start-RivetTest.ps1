@@ -15,8 +15,7 @@ function Start-RivetTest
     
     $tempDir = New-TempDir -Prefix 'RivetTest'
 
-    $script:RTDatabasesRoot = Join-Path $tempDir (Split-Path -Leaf $RTDatabasesSourcePath)
-    $script:RTDatabaseName = $RTDatabaseSourceName
+    $script:RTDatabasesRoot = Join-Path -Path $tempDir -ChildPath 'Databases'
     $script:RTDatabaseRoot = Join-Path $RTDatabasesRoot $RTDatabaseName
     $script:RTDatabaseMigrationRoot = Join-Path -Path $RTDatabaseRoot -ChildPath 'Migrations'
 
