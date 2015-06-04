@@ -112,7 +112,7 @@ function Get-Migration
 
     if( $Configuration.PluginsRoot )
     {
-        Import-Plugin -Path $settings.PluginsRoot
+        Import-Plugin -Path $Configuration.PluginsRoot
     }
                 
     Invoke-Command -ScriptBlock {
