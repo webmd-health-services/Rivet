@@ -1,3 +1,16 @@
+# 0.5.1
+
+## Enhancements
+
+ * Improving `WhatIf` support: some actions that shouldn't be conditional now ignore `WhatIf` flag.
+ * Invoke-SqlScript operation no longer splits script into batches, since that is now handled internally when executing all operations.
+ * Improving verbose output: adding a message for each already-applied migration.
+
+## Bug Fixes
+
+ * Get-Migration fails when run from Convert-Migration: it doesn't know the path to use to load migrations from.
+ 
+ 
 # 0.5.0
 
 ## Enhancements
