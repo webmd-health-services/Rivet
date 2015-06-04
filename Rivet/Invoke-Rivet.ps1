@@ -101,12 +101,6 @@ Found no databases to migrate. This can be a few things:
         return
     }
 
-    # Load our plugins.
-    if( $PSCmdlet.ParameterSetName -ne 'New' -and $settings.PluginsRoot )
-    {
-        Import-Plugin -Path $settings.PluginsRoot 
-    }
-
     try
     {
         if( $PSCmdlet.ParameterSetName -eq 'New' )
@@ -136,7 +130,8 @@ Found no databases to migrate. This can be a few things:
 
                 $updateParams = @{
                                     Path = $dbMigrationsPath;
-                                    }
+                                    Configuration = $settings;
+                                }
 
                 if( -not (Test-Path -Path $dbMigrationsPath -PathType Container) )
                 {

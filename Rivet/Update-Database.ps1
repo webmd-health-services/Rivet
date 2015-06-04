@@ -21,6 +21,10 @@ function Update-Database
     [CmdletBinding(DefaultParameterSetName='Push', SupportsShouldProcess=$True)]
     param(
         [Parameter(Mandatory=$true)]
+        [Rivet.Configuration.Configuration]
+        $Configuration,
+
+        [Parameter(Mandatory=$true)]
         [string[]]
         # The path to the migration.
         $Path,
@@ -123,7 +127,7 @@ function Update-Database
     $foundNameMatch = $false
     $who = ('{0}\{1}' -f $env:USERDOMAIN,$env:USERNAME);
 
-    Get-Migration -Path $Path -ErrorAction Stop |
+    Get-Migration -Path $Path -Configuration $Configuration -ErrorAction Stop |
         Sort-Object -Property 'ID' -Descending:$popping |
         Where-Object { 
             if( -not $PSBoundParameters.ContainsKey('Name') )

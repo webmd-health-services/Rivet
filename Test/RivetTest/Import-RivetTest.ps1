@@ -11,6 +11,8 @@ param(
 #Requires -Version 3
 Set-StrictMode -Version 'Latest'
 
+& (Join-Path -Path $PSScriptRoot -ChildPath '..\..\Rivet\Import-Rivet.ps1' -Resolve)
+
 $rivetTestPsd1Path = Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest.psd1' -Resolve
 
 $startedAt = Get-Date
