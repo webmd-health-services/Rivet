@@ -1,10 +1,12 @@
-function Setup
+
+& (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
+
+function Start-Test
 {
-    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve) -DatabaseName 'UpdateExtendedProperty' 
     Start-RivetTest
 }
 
-function TearDown
+function Stop-Test
 {
     Stop-RivetTest
 }
