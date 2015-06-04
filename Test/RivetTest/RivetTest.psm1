@@ -1,10 +1,4 @@
 
-param(
-    [string]
-    # The name of the database.
-    $RTName
-)
-
 $RTConfigFilePath = 
     $RTDatabasesSourcePath = 
     $RTDatabaseSourcePath = 
@@ -19,14 +13,11 @@ $RTConfigFilePath =
     $RTDatabaseConnection = $null
                   
 $RTRivetSchemaName = 'rivet'
+$RTName = 'RivetTest'
 
 $RTDatabasesSourcePath = Join-Path $PSScriptRoot ..\Databases -Resolve
 $RTDatabaseSourcePath = Join-Path $RTDatabasesSourcePath $RTName 
 $RTDatabaseSourcePath = [IO.Path]::GetFullPath( $RTDatabaseSourcePath )
-if( -not $RTName )
-{
-    $RTName = 'RivetTest'
-}
 
 $RTDatabaseSourceName = $RTName
 

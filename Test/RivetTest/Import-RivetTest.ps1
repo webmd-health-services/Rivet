@@ -4,10 +4,6 @@ Imports the RivetTest module.
 #>
 [CmdletBinding()]
 param(
-    [string]
-    # The name of the test database to use.
-    $DatabaseName = 'RivetTest',
-
     [Switch]
     $Force
 )
