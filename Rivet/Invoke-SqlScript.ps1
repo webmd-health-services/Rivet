@@ -63,10 +63,6 @@ function Invoke-SqlScript
 
     $Path = Resolve-Path -Path $Path | Select-Object -ExpandProperty 'ProviderPath'
     
-    Get-Content -Path $Path -Raw |
-        Split-SqlBatchQuery |
-        Where-Object { $_ } |
-        ForEach-Object {
-            New-Object 'Rivet.Operations.ScriptFileOperation' $Path,$_
-        }
+    $sql = Get-Content -Path $Path -Raw
+    New-Object 'Rivet.Operations.ScriptFileOperation' $Path,$sql
 }
