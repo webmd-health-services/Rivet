@@ -1,6 +1,4 @@
 
-# TODO: Rename this test Test-InvokeDdl.ps1
-
 & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
 
 function Start-Test
