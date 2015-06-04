@@ -59,7 +59,23 @@ function Test-ShouldGetMigrationsUsingCurrentRivetJsonFile
     {
         Remove-Item -Path $tempDir -Recurse
     }
+}
 
+function Test-ShouldProtectAgainstItemsReturnedFromPipeline
+{
+    @'
+function Push-Migration
+{
+}
+1 # See that guy? We should protect ourselves against shit like that.
+function Pop-Migration
+{
+}
+'@ | New-Migration -Name 'ShouldProtectAgainstItemsReturnedFromPipeline'
+
+    $m = Get-Migration -ConfigFilePath $RTConfigFilePath
+    Assert-NoError
+    Assert-Is $m ([Rivet.Migration])
 }
 
 function Assert-GetMigration
