@@ -6,7 +6,7 @@ function Start-Test
     Start-RivetTest
 }
 
-function Stop-RivetTest
+function Stop-Test
 {
     Stop-RivetTest
 }
