@@ -143,12 +143,10 @@ function Invoke-Test
     Set-StrictMode -Version 'Latest'
 
     [Blade.TestResult]$testInfo = New-Object 'Blade.TestResult' $fixture,$function
-    [Blade.TestResult]$stopTestResult = $null
 
     $Error.Clear()
 
-    $stopTestSucceeded = $false
-    $testSucceeded = $false
+    $testPassed = $false
     try
     {
         if( Test-path function:Start-Test )
@@ -164,7 +162,7 @@ function Invoke-Test
         {
             . $function | ForEach-Object { $testInfo.Output.Add( $_ ) }
         }
-        $testSucceeded = $true
+        $testPassed = $true
     }
     catch [Blade.AssertionException]
     {
@@ -177,45 +175,41 @@ function Invoke-Test
     }
     finally
     {
+        $tearDownResult = New-Object 'Blade.TestResult' $fixture,$function
+        $tearDownFailed = $false
         try
         {
-            $stopTestResult = New-Object 'Blade.TestResult' $fixture,$function
             if( Test-Path function:Stop-Test )
             {
-                . Stop-Test | ForEach-Object { $stopTestResult.Output.Add( $_ ) }
+                . Stop-Test | ForEach-Object { $tearDownResult.Output.Add( $_ ) }
             }
             elseif( Test-Path -Path function:TearDown )
             {
-                . TearDown | ForEach-Object { $stopTestResult.Output.Add( $_ ) }
+                . TearDown | ForEach-Object { $tearDownResult.Output.Add( $_ ) }
             }
-            
-            $stopTestSucceeded = $true
-        }
-        catch [Blade.AssertionException]
-        {
-            $ex = $_.Exception
-            $stopTestResult.Completed( $ex )
+            $tearDownResult.Completed()
         }
         catch
         {
-            $stopTestResult.Completed( $_ )
+            $tearDownResult.Completed( $_ )
+            $tearDownFailed = $true
         }
         finally
         {
-            if( $testSucceeded )
+            if( $testPassed )
             {
                 $testInfo.Completed()
+            }
+            $testInfo
+            if( $tearDownFailed )
+            {
+                $tearDownResult
             }
         }
 
         $Error.Clear()
     }
 
-    $testInfo
-    if( -not $stopTestSucceeded )
-    {
-        $stopTestResult
-    }
 }
 
 $getChildItemParams = @{ }
