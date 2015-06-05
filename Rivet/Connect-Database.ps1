@@ -19,6 +19,8 @@ function Connect-Database
     
     Set-StrictMode -Version 'Latest'
 
+    $startedAt = Get-Date
+
     if( -not $Connection -or $Connection.DataSource -ne $SqlServerName -or $Connection.State -eq [Data.ConnectionState]::Closed)
     {
         Disconnect-Database
@@ -42,28 +44,28 @@ function Connect-Database
         }
     }
 
-    if( $Connection.Database -ne 'master' )
-    {
-        $Connection.ChangeDatabase( 'master' )
-    }
-
-    $query = 'select 1 from sys.databases where name=''{0}''' -f $Database
-    $cmd = New-Object 'Data.SqlClient.SqlCommand' $query,$Connection
-    if( -not ($cmd.ExecuteScalar()) )
-    {
-        Write-Verbose ('Creating database {0}.{1}.' -f $SqlServerName,$Database)
-        $query = 'create database [{0}]' -f $Database
-        $cmd = New-Object 'Data.SqlClient.SqlCommand' $query,$Connection
-        [void]$cmd.ExecuteNonQuery()
-    }
-
-    $Connection.ChangeDatabase( $Database )
-    
     if( -not ($Connection | Get-Member -Name 'Transaction' ) )
     {
         $Connection |
             Add-Member -MemberType NoteProperty -Name 'Transaction' -Value $null
     }
 
+    if( $Connection.Database -ne 'master' )
+    {
+        $Connection.ChangeDatabase( 'master' )
+    }
+
+    $query = 'select 1 from sys.databases where name=''{0}''' -f $Database
+    $dbExists = Invoke-Query -Query $query -AsScalar
+    if( -not $dbExists )
+    {
+        Write-Verbose ('Creating database {0}.{1}.' -f $SqlServerName,$Database)
+        $query = 'create database [{0}]' -f $Database
+        Invoke-Query -Query $query -NonQuery
+    }
+
+    $Connection.ChangeDatabase( $Database )
+
+    Write-Verbose -Message ('{0,8} (ms)   Connect-Database' -f ([int]((Get-Date) - $startedAt).TotalMilliseconds)) -Verbose
     return $true
 }
