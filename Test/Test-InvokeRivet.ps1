@@ -1,4 +1,6 @@
+
 & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
+$db2Name = 'TestInvokeRivet'
 
 function Start-Test
 {
@@ -8,6 +10,7 @@ function Start-Test
 function Stop-Test
 {
     Stop-RivetTest
+    Clear-TestDatabase -Name $db2Name
 }
 
 function Test-ShouldHandleNewMigrationForIgnoredDatabase
@@ -18,12 +21,11 @@ function Test-ShouldHandleNewMigrationForIgnoredDatabase
 
 function Test-ShouldCreateDatabase
 {
-    $name = 'RivetConnectDatabase{0}' -f ((Get-Date).ToString('yyyyMMddHHMMss'))
-    $query = 'select 1 from sys.databases where name=''{0}''' -f $name
+    Remove-RivetTestDatabase
 
-    $conn = New-SqlConnection -Database 'master'
-    $cmd = New-Object 'Data.SqlClient.SqlCommand' ($query,$conn)
-    Assert-False $cmd.ExecuteScalar()
+    $query = 'select 1 from sys.databases where name=''{0}''' -f $RTDatabaseName
+
+    Assert-False (Invoke-RivetTestQuery -Query $query -Master -AsScalar)
 
     @'
 function Push-Migration
@@ -35,28 +37,19 @@ function Pop-Migration
 {
     Remove-Schema 'fubar'
 }
-'@ | New-Migration -Name 'CreateDatabase' -Database $name
+'@ | New-Migration -Name 'CreateDatabase'
 
-    try
-    {
-        $result = Invoke-RTRivet -Push -Database $name
-        Assert-NoError
-        Assert-OperationsReturned $result
+    $result = Invoke-RTRivet -Push
+    Assert-NoError
+    Assert-OperationsReturned $result
 
-        $cmd = New-Object 'Data.SqlClient.SqlCommand' ($query,$conn)
-        Assert-True $cmd.ExecuteScalar()
-    }
-    finally
-    {
-        Remove-RivetTestDatabase -Name $name
-        $conn.Close()
-    }
+    Assert-True (Invoke-RivetTestQuery -Query $query -Master -AsScalar)
 }
 
 function Test-ShouldApplyMigrationsToDuplicateDatabase
 {
     $config = Get-Content -Raw -Path $RTConfigFilePath | ConvertFrom-Json
-    $config | Add-Member -MemberType NoteProperty -Name 'TargetDatabases' -Value @{ $RTDatabaseName = @( 'InvokeRivet', 'InvokeRivet2' ) }
+    $config | Add-Member -MemberType NoteProperty -Name 'TargetDatabases' -Value @{ $RTDatabaseName = @( $RTDatabaseName, $db2Name ) }
     $config | ConvertTo-Json | Set-Content -Path $RTConfigFilePath
 
     @'
@@ -71,53 +64,34 @@ function Pop-Migration
 }
 '@ | New-Migration -Name 'TargetDatabases' -Database $RTDatabaseName
 
-    try
-    {
-        $result = Invoke-RTRivet -Push -Database $RTDatabaseName
-        Assert-NoError
-        Assert-OperationsReturned $result
+    $result = Invoke-RTRivet -Push -Database $RTDatabaseName
+    Assert-NoError
+    Assert-OperationsReturned $result
 
-        Assert-False (Test-Schema -Name 'TargetDatabases')
-
-        Assert-Schema -Name 'TargetDatabases' -DatabaseName 'InvokeRivet'
-
-        Assert-Schema -Name 'TargetDatabases' -DatabaseName 'InvokeRivet'
-    }
-    finally
-    {
-        Remove-RivetTestDatabase -Name 'InvokeRivet'
-        Remove-RivetTestDatabase -Name 'InvokeRivet2'
-    }
+    Assert-Schema -Name 'TargetDatabases'
+    Assert-Schema -Name 'TargetDatabases' -DatabaseName $db2Name
 }
 
-function Test-ShouldApplyMigrationsToDuplicateDatabasesWithNoMigrationsDirectory
+function Test-ShouldCreateTargetDatabases
 {
+    Remove-RivetTestDatabase
+    Remove-RivetTestDatabase -Name $db2Name
+
     $config = Get-Content -Raw -Path $RTConfigFilePath | ConvertFrom-Json
-    $config | Add-Member -MemberType NoteProperty -Name 'TargetDatabases' -Value @{ $RTDatabaseName = @( 'InvokeRivet', 'InvokeRivet2' ) }
+    $config | Add-Member -MemberType NoteProperty -Name 'TargetDatabases' -Value @{ $RTDatabaseName = @( $RTDatabaseName, $db2Name ) }
     $config | ConvertTo-Json | Set-Content -Path $RTConfigFilePath
 
     Remove-Item -Path $RTDatabaseMigrationRoot -Recurse
 
-    try
-    {
-        Remove-RivetTestDatabase -Name 'InvokeRivet'
-        Remove-RivetTestDatabase -Name 'InvokeRivet2'
-
-        $result = Invoke-RTRivet -Push -Database $RTDatabaseName
-        Assert-NoError 
-        Assert-OperationsReturned $result
-        Assert-True (Test-Database 'InvokeRivet')
-        Assert-True (Test-Database 'InvokeRivet2')
-    }
-    finally
-    {
-        Remove-RivetTestDatabase -Name 'InvokeRivet'
-        Remove-RivetTestDatabase -Name 'InvokeRivet2'
-    }
+    $result = Invoke-RTRivet -Push -Database $RTDatabaseName
+    Assert-NoError 
+    Assert-True (Test-Database)
+    Assert-True (Test-Database $db2Name)
 }
 
 function Test-ShouldProhibitReservedRivetMigrationIDs
 {
+    $startedAt = Get-Date
     $file = @'
 function Push-Migration
 {
@@ -142,7 +116,6 @@ function Pop-Migration
     Invoke-RTRivet -Push 
     Assert-NoError
     Assert-Schema -Name 'fubar'
-
 }
 
 function Test-ShouldHandleFailureToConnect

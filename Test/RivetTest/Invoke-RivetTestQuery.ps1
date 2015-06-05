@@ -53,6 +53,7 @@ function Invoke-RivetTestQuery
         }
     }
 
+    $cmdStartedAt = Get-Date
     try
     {
         $cmd = New-Object Data.SqlClient.SqlCommand ($Query,$Connection)
@@ -105,5 +106,8 @@ function Invoke-RivetTestQuery
     finally
     {
         $cmd.Dispose()
+        $queryLines = $Query -split ([TExt.RegularExpressions.Regex]::Escape([Environment]::NewLine))
+        Write-Verbose -Message ('{0,8} (ms)   {1}' -f ([int]((Get-Date) - $cmdStartedAt).TotalMilliseconds),($queryLines | Select-Object -First 1)) -Verbose
+        $queryLines | Select-Object -Skip 1 | ForEach-Object {  Write-Verbose -Message ('{0}   {1}' -f (' ' * 13),$_) -Verbose }
     }
 }
