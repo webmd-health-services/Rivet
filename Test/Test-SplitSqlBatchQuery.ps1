@@ -200,7 +200,7 @@ END
 
 "@
 
-    $result = Split-SqlBatchQuery ("{0}GO`n" -f $query) -Verbose
+    $result = Split-SqlBatchQuery ("{0}GO`n" -f $query)
     Assert-Equal $query $result    
 }
 

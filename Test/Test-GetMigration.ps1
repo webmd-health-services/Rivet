@@ -40,7 +40,7 @@ function Test-ShouldGetMigrationsUsingCurrentRivetJsonFile
     {
         Remove-Schema 'ShouldGetMigrationsUsingCurrentRivetJsonFile'
     }
-'@ | New-Migration -Name 'ShouldGetMigrationsUsingCurrentRivetJsonFile' -ConfigFilePath $rivetJsonPath
+'@ | New-Migration -Name 'ShouldGetMigrationsUsingCurrentRivetJsonFile' -ConfigFilePath $rivetJsonPath | Format-Table | Out-String | Write-Verbose
 
         Push-Location -Path $tempDir -StackName $PSCommandPath
         try

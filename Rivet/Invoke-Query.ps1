@@ -135,7 +135,7 @@ filter Invoke-Query
                     $cmd.Dispose()
                     $queryLines = $queryBatch -split ([TExt.RegularExpressions.Regex]::Escape([Environment]::NewLine))
                     Write-Verbose -Message ('{0,8} (ms)   {1}' -f ([int]([DateTime]::UtcNow - $cmdStartedAt).TotalMilliseconds),($queryLines | Select-Object -First 1))
-                    $queryLines | Select-Object -Skip 1 | ForEach-Object {  Write-Verbose -Message ('{0}   {1}' -f (' ' * 13),$_) }
+                    $queryLines | Select-Object -Skip 1 | ForEach-Object {  Write-Verbose -Message ('{0}   {1}' -f (' ' * 13),$_) } 
                 }
         }
 

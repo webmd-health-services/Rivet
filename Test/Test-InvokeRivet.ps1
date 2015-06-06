@@ -12,12 +12,6 @@ function Stop-Test
     Clear-TestDatabase -Name $RTDatabase2Name
 }
 
-function Test-ShouldHandleNewMigrationForIgnoredDatabase
-{
-    ' ' | New-Migration -Name 'Migration' -Database 'Ignored' -ErrorAction SilentlyContinue
-    Assert-Error -First 'ignored'
-}
-
 function Test-ShouldCreateDatabase
 {
     Remove-RivetTestDatabase

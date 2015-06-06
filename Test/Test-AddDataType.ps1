@@ -89,7 +89,7 @@ function Pop-Migration
 
 '@ | New-Migration -Name 'ByTable'
 
-    Invoke-RTRivet -Push 'ByTable' -Verbose
+    Invoke-RTRivet -Push 'ByTable'
 
     Assert-DataType -Name 'U s e r s' -UserDefined -TableType -NotNull
 }

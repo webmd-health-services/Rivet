@@ -1,5 +1,6 @@
 
 & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
+$rivetPath = Join-Path -Path $PSScriptRoot -ChildPath '..\Rivet\rivet.ps1' -Resolve
 $convertRivetMigration = Join-Path -Path $PSScriptRoot -ChildPath '..\Rivet\Extras\Convert-Migration.ps1' -Resolve
 $outputDir = $null
 $testedOperations = @{ }
@@ -417,7 +418,7 @@ function Pop-Migration
 }
 '@ | New-Migration -Name 'RemoveOperations'
 
-    Assert-ConvertMigration -Schema -CodeObject -Data -DependentObject -ExtendedProperty -Verbose
+    Assert-ConvertMigration -Schema -CodeObject -Data -DependentObject -ExtendedProperty
 
     try
     {
@@ -665,7 +666,7 @@ function Pop-Migration
 }
 '@ | New-Migration -Name 'ShouldRunPlugins'
 
-    Assert-ConvertMigration -Schema -ExtendedProperty -Verbose
+    Assert-ConvertMigration -Schema -ExtendedProperty
 
     try
     {
@@ -745,7 +746,7 @@ function Push-Migration
 function Pop-Migration
 {
     Remove-Table -SchemaName 'aggregate' 'Beta'
-    Remove-Table 'aggregate'
+    Remove-Schema 'aggregate'
 }
 '@ | New-Migration -Name 'AddTables'
 
@@ -922,8 +923,15 @@ function Pop-Migration
 
     Assert-ConvertMigration -Schema -Exclude '*Exc*'
 
-    Assert-Schema 'include'
-    Assert-False (Test-Schema 'exclude')
+    try
+    {
+        Assert-Schema 'include'
+        Assert-False (Test-Schema 'exclude')
+    }
+    finally
+    {
+        Pop-ConvertedScripts
+    }
 }
 
 function Test-ShouldIncludeMigrations
@@ -954,12 +962,20 @@ function Pop-Migration
 
     Assert-ConvertMigration -Schema -Include '*Inc*'
 
-    Assert-Schema 'include'
-    Assert-False (Test-Schema 'exclude')
+    try
+    {
+        Assert-Schema 'include'
+        Assert-False (Test-Schema 'exclude')
+    }
+    finally
+    {
+        Pop-ConvertedScripts
+    }
 }
 
 function Test-ShouldExcludeMigrationsBeforeDate
 {
+    $m1 = & $rivetPath -New -Name 'Include' -ConfigFilePath $RTConfigFilePath
     @'
 function Push-Migration
 {
@@ -970,12 +986,12 @@ function Pop-Migration
 {
     Remove-Schema 'include'
 }
-'@ | New-Migration -Name 'Include'
+'@ | Set-Content -Path $m1.FullName
 
     $before = Get-Date
     Start-Sleep -Seconds 1
 
-
+    $m2 = & $rivetPath -New -Name 'Exclude' -ConfigFilePath $RTConfigFilePath
     @'
 function Push-Migration
 {
@@ -986,16 +1002,25 @@ function Pop-Migration
 {
     Remove-Schema 'exclude'
 }
-'@ | New-Migration -Name 'Exclude'
+'@ | Set-Content -Path $m2.FullName
 
     Assert-ConvertMigration -Schema -Before $before
 
-    Assert-Schema 'include'
-    Assert-False (Test-Schema 'exclude')
+    try
+    {
+        Assert-Schema 'include'
+        Assert-False (Test-Schema 'exclude')
+    }
+    finally
+    {
+        Pop-ConvertedScripts
+    }
 }
 
 function Test-ShouldExcludeMigrationsAfterDate
 {
+    $m1 = & $rivetPath -New -Name 'Exclude' -ConfigFilePath $RTConfigFilePath
+
     @'
 function Push-Migration
 {
@@ -1006,10 +1031,13 @@ function Pop-Migration
 {
     Remove-Schema 'exclude'
 }
-'@ | New-Migration -Name 'Exclude'
+'@ | Set-Content -Path $m1.FullName
 
     Start-Sleep -Seconds 1
+
     $after = Get-Date
+
+    $m2 = & $rivetPath -New -Name 'Include' -ConfigFilePath $RTConfigFilePath
 
     @'
 function Push-Migration
@@ -1021,12 +1049,19 @@ function Pop-Migration
 {
     Remove-Schema 'include'
 }
-'@ | New-Migration -Name 'Include'
+'@ | Set-Content -Path $m2.FullName
 
     Assert-ConvertMigration -Schema -After $after
 
-    Assert-Schema 'include'
-    Assert-False (Test-Schema 'exclude')
+    try
+    {
+        Assert-Schema 'include'
+        Assert-False (Test-Schema 'exclude')
+    }
+    finally
+    {
+        Pop-ConvertedScripts
+    }
 }
 
 function Test-ShouldHandleNoPush
@@ -1199,7 +1234,7 @@ function Invoke-ConvertedScripts
             try
             {
                 # Run 'em twice.  Make sure they really *are* idempotent.
-                Write-Verbose (Get-Content -Raw -Path $_.FullName) -Verbose
+                Write-Verbose (Get-Content -Raw -Path $_.FullName)
                 $result = Invoke-Sqlcmd -ServerInstance $RTServer -Database $RTDatabaseName -InputFile $_.FullName
                 $result | Format-Table -AutoSize
 
@@ -1227,7 +1262,7 @@ function Pop-ConvertedScripts
         Select-Object -ExpandProperty 'PopOperations' |
         ForEach-Object { 
             $query = $_.ToIdempotentQuery()
-            Write-Verbose $query -Verbose
+            Write-Verbose $query
             Invoke-RivetTestQuery -Query $query
         }
 

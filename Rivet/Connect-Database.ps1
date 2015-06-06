@@ -66,6 +66,6 @@ function Connect-Database
 
     $Connection.ChangeDatabase( $Database )
 
-    Write-Verbose -Message ('{0,8} (ms)   Connect-Database' -f ([int]((Get-Date) - $startedAt).TotalMilliseconds)) -Verbose
+    Write-Verbose -Message ('{0,8} (ms)   Connect-Database' -f ([int]((Get-Date) - $startedAt).TotalMilliseconds))
     return $true
 }

@@ -49,7 +49,7 @@ function Pop-Migration()
 }
 '@ | New-Migration -Name 'AddColumn'
 
-    Invoke-RTRivet -Push -Verbose
+    Invoke-RTRivet -Push
 
     $redoMigrationTable = Get-Table -Name 'RedoMigration'
     $secondTable = Get-Table -Name 'SecondTable'
