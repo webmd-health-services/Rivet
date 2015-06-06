@@ -27,8 +27,6 @@ function Pop-Migration()
 }
 '@ | New-Migration -Name 'CreateTable'
 
-    Start-Sleep -Seconds 1
-
     @'
 function Push-Migration()
 {

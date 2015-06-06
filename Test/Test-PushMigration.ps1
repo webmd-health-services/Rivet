@@ -220,7 +220,6 @@ function Pop-Migration
 function Test-ShouldPushSpecificMigrationByName
 {
     $createdAfter = (Get-Date).ToUniversalTime()
-    #Start-Sleep -Seconds 1
     Get-MigrationScript | 
         Select-Object -First 1 |
         ForEach-Object {

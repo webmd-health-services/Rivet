@@ -3,14 +3,6 @@
 function Setup
 {
     Start-RivetTest
-
-    # yes, on PowerShell 2 these tests need a breather.  Not sure why.
-    <#
-    if( $PSVersionTable.PsVersion -eq '2.0' )
-    {
-        Start-Sleep -Milliseconds 200
-    }
-    #>
 }
 
 function TearDown

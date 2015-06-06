@@ -31,8 +31,6 @@ function Pop-Migration()
 '@ | New-Migration -Name 'AddDescription'
     Invoke-RTRivet -Push 'AddDescription'
 
-    Start-Sleep -Milliseconds 750
-
     @'
 function Push-Migration()
 {
