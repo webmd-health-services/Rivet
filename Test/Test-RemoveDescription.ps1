@@ -32,8 +32,6 @@ function Pop-Migration()
 
     Invoke-RTRivet -Push 'AddDescription'
 
-    Start-Sleep -Milliseconds 750
-
     Assert-Table -Name 'MS_Description' -Description 'new description'
     Assert-Column -Name 'add_description' 'varchar' -Description 'new description' -TableName MS_Description
 
@@ -52,8 +50,6 @@ function Pop-Migration()
 '@ | New-Migration -Name 'UpdateDescription'
 
     Invoke-RTRivet -Push 'UpdateDescription'
-
-    Start-Sleep -Milliseconds 750
 
     Assert-Table -Name 'MS_Description' -Description 'updated description'
     Assert-Column -Name 'add_description' 'varchar' -Description 'updated description' -TableName MS_Description
