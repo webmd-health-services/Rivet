@@ -21,23 +21,18 @@ function New-Migration
     )
 
     $id = $null
-    do
+    $id = [int64](Get-Date).ToString('yyyyMMddHHmmss')
+    while( (Test-Path -Path $Path -PathType Container) -and `
+           (Get-ChildItem -Path $Path -Filter ('{0}_*' -f $id) ) )
     {
-        $id = (Get-Date).ToString('yyyyMMddHHmmss')
-        if( -not (Test-Path -Path $Path -PathType Container) -or `
-            -not (Get-ChildItem -Path $Path -Filter ('{0}*' -f $id) ) )
-        {
-            break
-        }
-        Start-Sleep -Milliseconds 500
+        $id++
     }
-    while( $true )
 
     $filename = '{0}_{1}.ps1' -f $id,$Name
 
     $importRivetPath = Join-Path -Path $PSScriptRoot -ChildPath 'Import-Rivet.ps1' -Resolve
 
-    $migrationPath = Join-Path $Path $filename
+    $migrationPath = Join-Path -Path $Path -ChildPath $filename
     $migrationPath = [IO.Path]::GetFullPath( $migrationPath )
     New-Item -Path $migrationPath -Force -ItemType File
 
