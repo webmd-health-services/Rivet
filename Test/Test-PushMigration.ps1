@@ -208,8 +208,8 @@ function Pop-Migration
     Remove-Table 'Table1'
 }
 '@
-    $migration | New-Migration -Name 'ShouldPushMigrationsForMultipleDBs' | Format-Table | Out-String | Write-Verbose -Verbose
-    $migration | New-Migration -Name 'ShouldPushMigrationsForMultipleDBs' -DatabaseName $RTDatabase2Name | Format-Table | Out-String | Write-Verbose -Verbose
+    $migration | New-Migration -Name 'ShouldPushMigrationsForMultipleDBs' | Format-Table | Out-String | Write-Verbose
+    $migration | New-Migration -Name 'ShouldPushMigrationsForMultipleDBs' -DatabaseName $RTDatabase2Name | Format-Table | Out-String | Write-Verbose
 
     Invoke-RTRivet -Push -Database $RTDatabaseName,$RTDatabase2Name -ConfigFilePath $RTConfigFilePath  | Format-Table | Out-String | Write-Verbose
         

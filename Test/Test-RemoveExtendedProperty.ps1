@@ -103,6 +103,7 @@ function Push-Migration
 function Pop-Migration
 {
     Remove-View 'Foobar' -schemaname 'metric'
+    Remove-Schema 'metric'
 }
 
 '@ | New-Migration -Name 'RemoveExtendedPropertyToView'

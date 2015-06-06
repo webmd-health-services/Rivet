@@ -8,6 +8,8 @@ $RTConfigFilePath =
     $RTRivetSchemaName = 
     $RTDatabaseName =
     $RTDatabaseConnection = $null
+
+$RTTimestamp = 20150101000000
                   
 $RTRivetSchemaName = 'rivet'
 $RTDatabaseName = 'RivetTest'

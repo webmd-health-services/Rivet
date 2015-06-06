@@ -174,10 +174,9 @@ function Pop-Migration
         Assert-LastProcessSucceeded
         Assert-NoError
     
-        Invoke-RTRivet -Pop (Measure-Migration) -ErrorAction SilentlyContinue -ErrorVariable rivetError
+        Invoke-RTRivet -Pop (Measure-Migration) -ErrorAction SilentlyContinue
 
-        Assert-NotNull $rivetError
-        Assert-Like $rivetError[0] '*cannot drop the table*'
+        Assert-Error -Index 1 -Regex 'cannot drop the table'
     
         Assert-True (Test-Table -Name 'Migration5')
         Assert-True (Test-Table -Name 'Migration4')
@@ -247,7 +246,7 @@ function Test-ShouldPopByID
 
 function Test-ShouldPopByIDWithWildcard
 {
-    $name = '{0:yyyyMMdd}*' -f (Get-Date)
+    $name = '{0}*' -f $RTTimestamp.ToString().Substring(0,8)
     Invoke-RTRivet -Pop $name
     Assert-False (Test-Table -Name 'Migration4')
     Assert-False (Test-Table -Name 'Migration3')

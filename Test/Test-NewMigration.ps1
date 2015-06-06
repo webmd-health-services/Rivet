@@ -6,12 +6,11 @@ $rivetPath = Join-Path $TestDir ..\Rivet\rivet.ps1 -Resolve
 
 function Start-Test
 {
-    Start-RivetTest
+    Start-RivetTest -IgnoredDatabase 'ignored'
 }
 
 function Stop-Test
 {
-    Stop-RivetTest
 }
 
 function Test-ShouldCreateOneMigration
@@ -105,8 +104,8 @@ function Test-ShouldCreateDatabaseDirectoryIfItDoesNotExist
 
 function Test-ShouldCreateMigrationsWithUniqueIDs
 {
-    $m1 = ' ' | New-Migration -Name 'First'
-    $m2 = ' ' | New-Migration -Name 'Second'
+    $m1 = & $rivetPath -New -Name 'First' -ConfigFilePath $RTConfigFilePath
+    $m2 = & $rivetPath -New -Name 'Second' -ConfigFilePath $RTConfigFilePath
 
     Assert-True ($m1.BaseName -match '^(\d+)')
     $id1 = $Matches[1]
@@ -117,3 +116,28 @@ function Test-ShouldCreateMigrationsWithUniqueIDs
     Assert-NotEqual $id1 $id2
 
 }
+
+function Test-ShouldRejectMigrationsWithNamesThatAreTooLong
+{
+    $name = 'a' * 242
+
+    try
+    {
+        & $rivetPath -New -Name $name -ConfigFilePath $RTConfigFilePath
+        Fail 'Didn''t throw an exception with a name that''s too long.'
+    }
+    catch
+    {
+        $ex = $_.Exception
+        Assert-Equal 'System.Management.Automation.ParameterBindingValidationException' $ex.GetType().FullName 
+        Assert-Match $ex.Message 'parameter ''Name'''
+        Assert-Match $ex.Message 'is too long'
+    }
+}
+
+function Test-ShouldHandleNewMigrationForIgnoredDatabase
+{
+    & $rivetPath -New -Name 'Migration' -Database 'Ignored' -ConfigFilePath $RTConfigFilePath -ErrorAction SilentlyContinue
+    Assert-Error -First 'ignored'
+}
+
