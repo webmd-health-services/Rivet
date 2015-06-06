@@ -1,4 +1,5 @@
 
+& (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
 $convertRivetMigration = Join-Path -Path $PSScriptRoot -ChildPath '..\Rivet\Extras\Convert-Migration.ps1' -Resolve
 $outputDir = $null
 $testedOperations = @{ }
@@ -7,7 +8,6 @@ $testsRun = 0
 
 function Start-Test
 {
-    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
     $pluginsPath = New-TempDir -Prefix $PSCommandPath
     Start-RivetTest -PluginPath $pluginsPath
 
@@ -16,20 +16,20 @@ function Start-Test
     $outputDir = New-TempDir -Prefix 'Test-ConvertMigration'
     ++$testsRun
 
-    New-Database
+    Invoke-RTRivet -Push
 }
 
 function Stop-Test
 {
-    Remove-RivetTestDatabase
     Get-Migration -ConfigFilePath $RTConfigFilePath |
         Select-Object -ExpandProperty PushOperations |
         ForEach-Object { $testedOperations[$_.GetType()] = $true }
 
     Remove-Item -Path $outputDir -Recurse
+    Get-ChildItem -Path $RTDatabaseMigrationRoot -Filter '*.off' |
+        Rename-Item -NewName { $_.BaseName }
     Stop-RivetTest
     Remove-Item $pluginsPath -Recurse
-    Remove-Module 'RivetTest'
 }
  
 function Stop-TestFixture
@@ -125,18 +125,25 @@ function Pop-Migration
     Assert-ConvertMigration -DatabaseName 'Wellmed' -Schema -CodeObject
     Assert-NoError
 
-    Assert-Table -Name 'T' -Description 'Umm, a table.'
-    Assert-Column -TableName 'T' -Name 'ID' -DataType 'int' -NotNull -Increment 1 -Seed 1 -Description 'Umm, a column.'
-    Assert-Column -TableName 'T' -Name 'C' -DataType 'varchar' -NotNull -Size 50 -Description 'Umm, another column.'
-    Assert-View -Name 'vwT' -Description 'Umm, a view.'
-    Assert-NotNull (Invoke-RivetTestQuery -Query 'select ID, C from [T]')
-    Assert-NotNull (Invoke-RivetTestQuery -Query 'select * from sys.schemas where name = ''s''')
-    Assert-StoredProcedure -SchemaName 's' -Name 'prcT'
+    try
+    {
+        Assert-Table -Name 'T' -Description 'Umm, a table.'
+        Assert-Column -TableName 'T' -Name 'ID' -DataType 'int' -NotNull -Increment 1 -Seed 1 -Description 'Umm, a column.'
+        Assert-Column -TableName 'T' -Name 'C' -DataType 'varchar' -NotNull -Size 50 -Description 'Umm, another column.'
+        Assert-View -Name 'vwT' -Description 'Umm, a view.'
+        Assert-NotNull (Invoke-RivetTestQuery -Query 'select ID, C from [T]')
+        Assert-NotNull (Invoke-RivetTestQuery -Query 'select * from sys.schemas where name = ''s''')
+        Assert-StoredProcedure -SchemaName 's' -Name 'prcT'
 
-    [string[]]$lines = Get-Content -Path (Join-Path $outputDir 'Common.ExtendedProperty.sql') | 
-                       Where-Object { $_ -match 'Umm, a view' }
-    Assert-Equal 1 $lines.Count 'Get-Migration isn''t clearing Push-Migration/Pop-Migration functions left from previous migrations.'
-         
+        [string[]]$lines = Get-Content -Path (Join-Path $outputDir 'Common.ExtendedProperty.sql') | 
+                           Where-Object { $_ -match 'Umm, a view' }
+        Assert-Equal 1 $lines.Count 'Get-Migration isn''t clearing Push-Migration/Pop-Migration functions left from previous migrations.'
+    }
+    finally
+    {
+        Pop-ConvertedScripts -Database 'Common'
+        Pop-ConvertedScripts -Database 'Wellmed'
+    }         
 }
 
 function Test-ShouldCreateIdempotentQueryForAddOperations
@@ -230,34 +237,42 @@ function Pop-Migration
 
     Assert-ConvertMigration -Schema -CodeObject -Data -ExtendedProperty -Unknown
 
-    $schema = @{ SchemaName = 'idempotent' }
-    $crops = @{ TableName = 'Crops' }
-    $farmers = @{ TableName = 'Farmers' }
+    try
+    {
+        $schema = @{ SchemaName = 'idempotent' }
+        $crops = @{ TableName = 'Crops' }
+        $farmers = @{ TableName = 'Farmers' }
 
-    Assert-Schema -Name $schema.SchemaName
-    Assert-Table @schema $farmers.TableName
-    Assert-Column @schema @farmers -Name 'Name' -DataType 'varchar' -NotNull -Size 50
-    Assert-Column @schema @farmers -Name 'ZipCode' -DataType 'varchar' -Size 10
-    Assert-PrimaryKey @schema @farmers -ColumnName 'ID'
-    Assert-NotNull (Invoke-RivetTestQuery -Query ('select * from {0}.{1} where ID = 1 and Name = ''Blackbird''' -f $schema.SchemaName,$farmers.TableName))
+        Assert-Schema -Name $schema.SchemaName
+        Assert-Table @schema $farmers.TableName
+        Assert-Column @schema @farmers -Name 'Name' -DataType 'varchar' -NotNull -Size 50
+        Assert-Column @schema @farmers -Name 'ZipCode' -DataType 'varchar' -Size 10
+        Assert-PrimaryKey @schema @farmers -ColumnName 'ID'
+        Assert-NotNull (Invoke-RivetTestQuery -Query ('select * from {0}.{1} where ID = 1 and Name = ''Blackbird''' -f $schema.SchemaName,$farmers.TableName))
     
-    Assert-Table @schema -Name $crops.TableName -Descriptoin 'Yummy!'
-    Assert-CheckConstraint -Name 'CK_Crops_AllowedCrops' -Definition '([Name]=''Strawberries'' or [Name]=''Rasberries'')'
-    Assert-DefaultConstraint @schema @crops -ColumnName 'Name' -Definition '(''Strawberries'')'
-    Assert-ForeignKey @schema @crops -ReferencesSchema $schema.SchemaName -References $farmers.TableName
-    Assert-Index -Name 'IX_Crops_Name2' -ColumnName 'Name'
-    Assert-UniqueKey @schema @crops -ColumnName 'Name'
-    Assert-DataType @schema -Name 'GUID' -BaseTypeName 'uniqueidentifier' -UserDefined
-    Assert-StoredProcedure @schema -Name 'GetFarmers' -Definition 'AS select * from Farmers'
-    Assert-Synonym @schema -Name 'Crop' -TargetObjectName '[idempotent].[Crops]'
-    Assert-Trigger @schema -Name 'CropActivity' -Definition 'on idempotent.Crops after insert, update as return'
-    Assert-UserDefinedFunction @schema -Name 'GetInteger' -Definition '(@Number int) returns int as begin return @Number + @Number end'
-    Assert-View @schema -Name 'FarmerCrops' -Definition "as select Farmers.Name FarmerName, Crops.Name CropName from Crops join Farmers on Crops.FarmerID = Farmers.ID"
-    Assert-False (Test-Schema 'convertmigrationquery')
+        Assert-Table @schema -Name $crops.TableName -Descriptoin 'Yummy!'
+        Assert-CheckConstraint -Name 'CK_Crops_AllowedCrops' -Definition '([Name]=''Strawberries'' or [Name]=''Rasberries'')'
+        Assert-DefaultConstraint @schema @crops -ColumnName 'Name' -Definition '(''Strawberries'')'
+        Assert-ForeignKey @schema @crops -ReferencesSchema $schema.SchemaName -References $farmers.TableName
+        Assert-Index -Name 'IX_Crops_Name2' -ColumnName 'Name'
+        Assert-UniqueKey @schema @crops -ColumnName 'Name'
+        Assert-DataType @schema -Name 'GUID' -BaseTypeName 'uniqueidentifier' -UserDefined
+        Assert-StoredProcedure @schema -Name 'GetFarmers' -Definition 'AS select * from Farmers'
+        Assert-Synonym @schema -Name 'Crop' -TargetObjectName '[idempotent].[Crops]'
+        Assert-Trigger @schema -Name 'CropActivity' -Definition 'on idempotent.Crops after insert, update as return'
+        Assert-UserDefinedFunction @schema -Name 'GetInteger' -Definition '(@Number int) returns int as begin return @Number + @Number end'
+        Assert-View @schema -Name 'FarmerCrops' -Definition "as select Farmers.Name FarmerName, Crops.Name CropName from Crops join Farmers on Crops.FarmerID = Farmers.ID"
+        Assert-False (Test-Schema 'convertmigrationquery')
 
-    $scriptQuery = Get-Content -Path (Join-Path $outputDir -ChildPath ('{0}.Unknown.sql' -f $RTDatabaseName)) |
-                        Where-Object { $_ -match 'sp_executesql N''convertmigrationquery''' }
-    Assert-NotNull $scriptQuery
+        $scriptQuery = Get-Content -Path (Join-Path $outputDir -ChildPath ('{0}.Unknown.sql' -f $RTDatabaseName)) |
+                            Where-Object { $_ -match 'sp_executesql N''convertmigrationquery''' }
+        Assert-NotNull $scriptQuery
+    }
+    finally
+    {
+        Pop-ConvertedScripts
+    }
+
 }
 
 function Test-ShouldCreateIdempotentQueriesForRemoveOperations
@@ -335,7 +350,7 @@ function Pop-Migration
     Invoke-RTRivet -Push 'ShouldCreateIdempotentQueriesForRemoveOperations'
 
     Assert-Table -SchemaName 'idempotent' -Name 'removeme'
-    $migration | Remove-Item
+    $migration | Rename-Migration
 
     @'
 $schema = @{ SchemaName = 'idempotent' }
@@ -397,31 +412,40 @@ function Pop-Migration
     Add-Table @schema 'removeme' {
         int 'ID' -Identity
     }
+
+    Add-Schema 'empty'
 }
 '@ | New-Migration -Name 'RemoveOperations'
 
     Assert-ConvertMigration -Schema -CodeObject -Data -DependentObject -ExtendedProperty -Verbose
 
-    $schema = @{ SchemaName = 'idempotent' }
-    $crops = @{ TableName = 'Crops' }
-    $farmers = @{ TableName = 'Farmers' }
+    try
+    {
+        $schema = @{ SchemaName = 'idempotent' }
+        $crops = @{ TableName = 'Crops' }
+        $farmers = @{ TableName = 'Farmers' }
 
-    Assert-False (Test-CheckConstraint -Name 'CK_Crops_Allowed_Crops')
-    Assert-False (Test-Column @schema @farmers -Name 'RemoveMe')
-    Assert-False (Test-DataType @schema -Name 'GUID')
-    Assert-False (Test-DefaultConstraint @schema @crops -ColumnName 'Name')
-    Assert-False (Test-ExtendedProperty @schema @crops -ColumnName 'Name' -Name 'MS_Description')
-    Assert-False (Test-ForeignKey @schema @crops -ReferencesSchema $schema.SchemaName -References $farmers.TableName)
-    Assert-False (Test-Index @schema @crops -ColumnName 'Name')
-    Assert-False (Test-PrimaryKey @schema @crops)
-    Assert-False (Test-Schema -Name 'empty')
-    Assert-False (Test-StoredProcedure @schema -Name 'GetFarmers')
-    Assert-False (Test-Synonym @schema -Name 'Crop')
-    Assert-False (Test-Table @schema -Name 'removeme')
-    Assert-False (Test-Trigger @schema -Name 'CropActivity')
-    Assert-False (Test-UniqueKey @schema @crops -ColumnName 'Name')
-    Assert-False (Test-UserDefinedFunction @schema -Name 'GetInteger')
-    Assert-False (Test-View @schema -Name 'FarmerCrops')
+        Assert-False (Test-CheckConstraint -Name 'CK_Crops_Allowed_Crops')
+        Assert-False (Test-Column @schema @farmers -Name 'RemoveMe')
+        Assert-False (Test-DataType @schema -Name 'GUID')
+        Assert-False (Test-DefaultConstraint @schema @crops -ColumnName 'Name')
+        Assert-False (Test-ExtendedProperty @schema @crops -ColumnName 'Name' -Name 'MS_Description')
+        Assert-False (Test-ForeignKey @schema @crops -ReferencesSchema $schema.SchemaName -References $farmers.TableName)
+        Assert-False (Test-Index @schema @crops -ColumnName 'Name')
+        Assert-False (Test-PrimaryKey @schema @crops)
+        Assert-False (Test-Schema -Name 'empty')
+        Assert-False (Test-StoredProcedure @schema -Name 'GetFarmers')
+        Assert-False (Test-Synonym @schema -Name 'Crop')
+        Assert-False (Test-Table @schema -Name 'removeme')
+        Assert-False (Test-Trigger @schema -Name 'CropActivity')
+        Assert-False (Test-UniqueKey @schema @crops -ColumnName 'Name')
+        Assert-False (Test-UserDefinedFunction @schema -Name 'GetInteger')
+        Assert-False (Test-View @schema -Name 'FarmerCrops')
+    }
+    finally
+    {
+        Pop-ConvertedScripts
+    }
 }
 
 function Test-ShouldCreateIdempotentQueriesForDisableOperations
@@ -468,7 +492,7 @@ function Pop-Migration
 
     Invoke-RTRivet -Push 'ShouldCreateIdempotentQueriesForDisableOperations'
 
-    $migration | Remove-Item
+    $migration | Rename-Migration
 
     @'
 function Push-Migration
@@ -550,7 +574,7 @@ function Pop-Migration
 
     Invoke-RTRivet -Push 'ShouldCreateIdempotentQueriesForEnableOperations'
 
-    $migration | Remove-Item
+    $migration | Rename-Migration
 
     @'
 function Push-Migration
@@ -611,7 +635,14 @@ function Pop-Migration
 
     Assert-ConvertMigration -Schema -Data
 
-    Assert-Row -SchemaName 'idempotent' -TableName 'Idempotent' -Column @{ ID = 1 ; Name = 'First' ; Optional = 'Value' } -Where 'ID = 1'
+    try
+    {
+        Assert-Row -SchemaName 'idempotent' -TableName 'Idempotent' -Column @{ ID = 1 ; Name = 'First' ; Optional = 'Value' } -Where 'ID = 1'
+    }
+    finally
+    {
+        Pop-ConvertedScripts
+    }
 }
 
 
@@ -636,13 +667,20 @@ function Pop-Migration
 
     Assert-ConvertMigration -Schema -ExtendedProperty -Verbose
 
-    Assert-Table 'NeedsPluginStuff'
-    Assert-Column -TableName 'NeedsPluginStuff' -Name 'CreateDate' -DataType 'smalldatetime' -NotNull
-    Assert-Column -TableName 'NeedsPluginStuff' -Name 'LastUpdated' -DataType 'datetime' -NotNull
-    Assert-Column -TableName 'NeedsPluginStuff' -Name 'rowguid' -DataType 'uniqueIdentifier' -NotNull -RowGuidCol
-    Assert-Column -TableName 'NeedsPluginStuff' -Name 'SkipBit' -DataType 'bit'
-    Assert-Trigger 'trNeedsPluginStuff_Activity'
-    Assert-Index -TableName 'NeedsPluginStuff' -ColumnName 'rowguid' -Unique
+    try
+    {
+        Assert-Table 'NeedsPluginStuff'
+        Assert-Column -TableName 'NeedsPluginStuff' -Name 'CreateDate' -DataType 'smalldatetime' -NotNull
+        Assert-Column -TableName 'NeedsPluginStuff' -Name 'LastUpdated' -DataType 'datetime' -NotNull
+        Assert-Column -TableName 'NeedsPluginStuff' -Name 'rowguid' -DataType 'uniqueIdentifier' -NotNull -RowGuidCol
+        Assert-Column -TableName 'NeedsPluginStuff' -Name 'SkipBit' -DataType 'bit'
+        Assert-Trigger 'trNeedsPluginStuff_Activity'
+        Assert-Index -TableName 'NeedsPluginStuff' -ColumnName 'rowguid' -Unique
+    }
+    finally
+    {
+        Pop-ConvertedScripts
+    }
 }
 
 function Test-ShouldIncludeAuthorInOutputScripts
@@ -675,10 +713,17 @@ function Pop-Migration
 }
 '@ | New-Migration -Name 'CreateTableTwo'
 
-    Assert-ConvertMigration -Schema -Author @{ $migrationOne.BaseName = 'Joe Cool' }
+    try
+    {
+        Assert-ConvertMigration -Schema -Author @{ $migrationOne.BaseName = 'Joe Cool' }
 
-    Assert-Table 'TableOne'
-    Assert-Table 'TableTwo'
+        Assert-Table 'TableOne'
+        Assert-Table 'TableTwo'
+    }
+    finally
+    {
+        Pop-ConvertedScripts
+    }
 }
 
 function Test-ShouldAggregateChanges
@@ -727,29 +772,37 @@ function Push-Migration
 
 function Pop-Migration
 {
+    
 }
 '@ | New-Migration -Name 'UpdateTables'
 
     Assert-ConvertMigration -Schema
 
-    $schemaPath = Join-Path -Path $outputDir -ChildPath ('{0}.Schema.sql' -f $RTDatabaseName)
-    $content = Get-Content -Path $schemaPath -Raw
-    $expectedQuery = @'
+    try
+    {
+        $schemaPath = Join-Path -Path $outputDir -ChildPath ('{0}.Schema.sql' -f $RTDatabaseName)
+        $content = Get-Content -Path $schemaPath -Raw
+        $expectedQuery = @'
 create table [aggregate].[Beta] (
     [ID] int not null,
     [Name] nvarchar(500) not null,
     [LastName] nvarchar(500) not null
 )
 '@
-    Assert-Query -Schema -ExpectedQuery $expectedQuery
+        Assert-Query -Schema -ExpectedQuery $expectedQuery
 
-    $expectedQuery = 'alter table [aggregate].[Beta] add constraint [PK_aggregate_Beta] primary key clustered ([Name])'
-    Assert-Query -Schema -ExpectedQuery $expectedQuery 
+        $expectedQuery = 'alter table [aggregate].[Beta] add constraint [PK_aggregate_Beta] primary key clustered ([Name])'
+        Assert-Query -Schema -ExpectedQuery $expectedQuery 
 
-    $expectedQuery = 'alter table [aggregate].[Beta] add constraint [PK_aggregate_Beta] primary key clustered ([ID])'
-    Assert-Query -Schema -ExpectedQuery $expectedQuery -NotExists
+        $expectedQuery = 'alter table [aggregate].[Beta] add constraint [PK_aggregate_Beta] primary key clustered ([ID])'
+        Assert-Query -Schema -ExpectedQuery $expectedQuery -NotExists
 
-    Assert-PrimaryKey -SchemaName 'aggregate' -TableName 'Beta' -ColumnName 'Name'
+        Assert-PrimaryKey -SchemaName 'aggregate' -TableName 'Beta' -ColumnName 'Name'
+    }
+    finally
+    {
+        Pop-ConvertedScripts
+    }
 }
 
 function Test-ShouldAggregateMultipleTableUpdates
@@ -773,7 +826,7 @@ function Pop-Migration
     Invoke-RTRivet -Push 'ShouldAggregateMultipleTableUpdates'
 
     Assert-Table -Name 'FeedbackLog'
-    $migration | Remove-Item
+    $migration | Rename-Migration
 
     @'
 function Push-Migration
@@ -1097,7 +1150,6 @@ function Assert-ConvertMigration
     }
 
     Invoke-ConvertedScripts
-
 }
 
 function Assert-Query
@@ -1147,6 +1199,7 @@ function Invoke-ConvertedScripts
             try
             {
                 # Run 'em twice.  Make sure they really *are* idempotent.
+                Write-Verbose (Get-Content -Raw -Path $_.FullName) -Verbose
                 $result = Invoke-Sqlcmd -ServerInstance $RTServer -Database $RTDatabaseName -InputFile $_.FullName
                 $result | Format-Table -AutoSize
 
@@ -1161,4 +1214,42 @@ function Invoke-ConvertedScripts
             }
         }
     Assert-True $ranConvertedScripts
+}
+
+function Pop-ConvertedScripts
+{
+    param(
+        [string]
+        $DatabaseName = $RTDatabaseName
+    )
+
+    Get-Migration -ConfigFilePath $RTConfigFilePath -Database $DatabaseName |
+        Select-Object -ExpandProperty 'PopOperations' |
+        ForEach-Object { 
+            $query = $_.ToIdempotentQuery()
+            Write-Verbose $query -Verbose
+            Invoke-RivetTestQuery -Query $query
+        }
+
+}
+
+function Rename-Migration
+{
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory=$true,ValueFromPipeline=$true,ValueFromPipelineByPropertyName=$true)]
+        [Alias('FullName')]
+        [string]
+        $Path
+    )
+
+    begin
+    {
+        Set-StrictMode -Version 'Latest'
+    }
+
+    process
+    {
+        Rename-Item -Path $Path -NewName ('{0}.off' -f (Split-Path -Leaf -Path $Path))
+    }
 }
