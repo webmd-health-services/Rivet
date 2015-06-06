@@ -1,6 +1,5 @@
 
 & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
-$db2Name = 'TestInvokeRivet'
 
 function Start-Test
 {
@@ -10,7 +9,7 @@ function Start-Test
 function Stop-Test
 {
     Stop-RivetTest
-    Clear-TestDatabase -Name $db2Name
+    Clear-TestDatabase -Name $RTDatabase2Name
 }
 
 function Test-ShouldHandleNewMigrationForIgnoredDatabase
@@ -49,7 +48,7 @@ function Pop-Migration
 function Test-ShouldApplyMigrationsToDuplicateDatabase
 {
     $config = Get-Content -Raw -Path $RTConfigFilePath | ConvertFrom-Json
-    $config | Add-Member -MemberType NoteProperty -Name 'TargetDatabases' -Value @{ $RTDatabaseName = @( $RTDatabaseName, $db2Name ) }
+    $config | Add-Member -MemberType NoteProperty -Name 'TargetDatabases' -Value @{ $RTDatabaseName = @( $RTDatabaseName, $RTDatabase2Name ) }
     $config | ConvertTo-Json | Set-Content -Path $RTConfigFilePath
 
     @'
@@ -69,16 +68,16 @@ function Pop-Migration
     Assert-OperationsReturned $result
 
     Assert-Schema -Name 'TargetDatabases'
-    Assert-Schema -Name 'TargetDatabases' -DatabaseName $db2Name
+    Assert-Schema -Name 'TargetDatabases' -DatabaseName $RTDatabase2Name
 }
 
 function Test-ShouldCreateTargetDatabases
 {
     Remove-RivetTestDatabase
-    Remove-RivetTestDatabase -Name $db2Name
+    Remove-RivetTestDatabase -Name $RTDatabase2Name
 
     $config = Get-Content -Raw -Path $RTConfigFilePath | ConvertFrom-Json
-    $config | Add-Member -MemberType NoteProperty -Name 'TargetDatabases' -Value @{ $RTDatabaseName = @( $RTDatabaseName, $db2Name ) }
+    $config | Add-Member -MemberType NoteProperty -Name 'TargetDatabases' -Value @{ $RTDatabaseName = @( $RTDatabaseName, $RTDatabase2Name ) }
     $config | ConvertTo-Json | Set-Content -Path $RTConfigFilePath
 
     Remove-Item -Path $RTDatabaseMigrationRoot -Recurse
@@ -86,7 +85,7 @@ function Test-ShouldCreateTargetDatabases
     $result = Invoke-RTRivet -Push -Database $RTDatabaseName
     Assert-NoError 
     Assert-True (Test-Database)
-    Assert-True (Test-Database $db2Name)
+    Assert-True (Test-Database $RTDatabase2Name)
 }
 
 function Test-ShouldProhibitReservedRivetMigrationIDs
