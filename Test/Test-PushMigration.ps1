@@ -98,7 +98,14 @@ GO
 
 function Stop-Test
 {
-    Stop-RivetTest
+    try
+    {
+        Clear-TestDatabase -Name $RTDatabase2Name
+    }
+    finally
+    {
+        Stop-RivetTest
+    }
 }
 
 function Test-ShouldPushMigrations
@@ -180,70 +187,34 @@ function Test-ShouldPushMigrationAndAddToActivityTable
 
 function Test-ShouldPushMigrationsForMultipleDBs
 {
-    $createdAfter = (Get-Date).ToUniversalTime()
-
-    $db1Name = 'PushMigration1'
-    $db2Name = 'PushMigration2'
-    $migrationFileName = '20130703152600_CreateTable.ps1'
-    $tree = @'
-+ {0}
-  + Migrations
-    * {1}
-+ {2}
-  + Migrations
-    * {1}
-'@ -f $db1Name,$migrationFileName,$db2Name
-
-    $tempDir = New-TempDirectoryTree -Tree $tree -Prefix 'Rivet.Push-Migration'
+    $rivetJson = Get-Content -Raw -Path $RTConfigFilePath | ConvertFrom-Json
+    if( -not ($rivetJson | Get-Member -Name 'Databases') )
+    {
+        $rivetJson | Add-Member -MemberType NoteProperty -Name 'Databases' -Value @()
+    }
+    $rivetJson.Databases = @( $RTDatabaseName, $RTDatabase2Name )
+    $rivetJson | ConvertTo-Json -Depth 500 | Set-Content -Path $RTConfigFilePath
 
     $migration = @'
-        function Push-Migration 
-        {
-            Add-Table Table1 {
-                Int 'id' -Identity
-            }
-        }
-
-        function Pop-Migration
-        {
-            Remove-Table 'Table1'
-        }
-'@
-
-    $configFilePath = Join-Path -Path $tempDir -ChildPath 'rivet.json'
-    @"
+function Push-Migration 
 {
-    SqlServerName: "$($RTServer.Replace('\','\\'))",
-    DatabasesRoot: "$($tempDir.FullName.Replace('\','\\'))"
+    Add-Table Table1 {
+        Int 'id' -Identity
+    }
 }
-"@ | Set-Content -Path $configFilePath
 
-    $db1MigrationsDir = Join-Path $tempDir $db1Name\Migrations
-    $migration | Out-File (Join-Path $db1MigrationsDir $migrationFileName) -Encoding OEM
+function Pop-Migration
+{
+    Remove-Table 'Table1'
+}
+'@
+    $migration | New-Migration -Name 'ShouldPushMigrationsForMultipleDBs' | Format-Table | Out-String | Write-Verbose -Verbose
+    $migration | New-Migration -Name 'ShouldPushMigrationsForMultipleDBs' -DatabaseName $RTDatabase2Name | Format-Table | Out-String | Write-Verbose -Verbose
 
-    $db2MigrationsDir = Join-Path $tempDir $db2Name\Migrations
-    $migration | Out-File (Join-Path $db2MigrationsDir $migrationFileName) -Encoding OEM
-
-    $db1Conn = $null
-    $db2Conn = $null
-    try
-    {
-        Invoke-RTRivet -Push -Database $db1Name,$db2Name -ConfigFilePath $configFilePath  | Format-Table | Out-String | Write-Verbose
+    Invoke-RTRivet -Push -Database $RTDatabaseName,$RTDatabase2Name -ConfigFilePath $RTConfigFilePath  | Format-Table | Out-String | Write-Verbose
         
-        $db1Conn = New-SqlConnection -Database $db1Name
-        $db2Conn = New-SqlConnection -Database $db2Name
-
-        Assert-Migration -Path $db1MigrationsDir -Connection $db1Conn 
-        Assert-Migration -Path $db2MigrationsDir -Connection $db2Conn 
-    }
-    finally
-    {
-        Remove-RivetTestDatabase -Name $db1Name
-        $db1Conn.Close()
-
-        Remove-RivetTestDatabase -Name $db2Name
-        $db2Conn.Close()
-    }
+    Assert-Migration 
+    Assert-Migration -DatabaseName $RTDatabase2Name
 }
 
 function Test-ShouldPushSpecificMigrationByName
@@ -348,6 +319,7 @@ function Get-SqlServerUtcDate
 
 function Assert-Migration
 {
+    [CmdletBinding(DefaultParameterSetName='ByPath')]
     param(
         [Parameter(ParameterSetName='ByID')]
         $ID,
@@ -364,17 +336,18 @@ function Assert-Migration
         [Switch]
         $PassThru,
         
-        $Connection
+        $DatabaseName = $RTDatabaseName
     )
-    
-    $connParam = @{ }
-    if( $Connection )
-    {
-        $connParam.Connection = $Connection
-    }
 
+    Set-StrictMode -Version 'Latest'
+    
     if( $pscmdlet.ParameterSetName -eq 'ByPath' )
     {
+        if( -not $Path )
+        {
+            $Path = Join-Path -Path $RTDatabasesRoot -ChildPath ('{0}\Migrations' -f $DatabaseName)
+        }
+
         $count = 0
         Get-ChildItem $Path *.ps1 |
             Select-Object -ExpandProperty BaseName |
@@ -383,28 +356,21 @@ function Assert-Migration
                 $count++
                 $id  = $matches[1] 
                 $name = $matches[2]
-                Assert-Migration -ID $id -Name $name @connParam
+                Assert-Migration -ID $id -Name $name -DatabaseName $DatabaseName
             }
         Assert-True ($count -gt 0)
         return
     }
     
-    $migrationRow = Get-MigrationInfo -Name $Name @connParam
-    if( $Connection )
-    {
-        Assert-IsNotNull $migrationRow ('Migration ''{0}'' not found in {1}.{2}.' -f $Name,$Connection.DataSource,$Connection.Database)
-    }
-    else
-    {
-        Assert-IsNotNull $migrationRow ('Migration ''{0}'' not found.')
-    }
+    $migrationRow = Get-MigrationInfo -Name $Name -DatabaseName $DatabaseName
+    Assert-IsNotNull $migrationRow ('Migration ''{0}'' not found in {1}.' -f $Name,$DatabaseName)
 
     Assert-True ($migrationRow -is [PsObject]) 'not a PsObject'
-    Assert-Equal $id $migrationRow.ID
-    Assert-Equal $name $migrationRow.Name
-    Assert-Equal ('{0}\{1}' -f $env:USERDOMAIN,$env:USERNAME) $migrationRow.Who
-    Assert-Equal $env:ComputerName $migrationRow.ComputerName
-    Assert-True ($migrationRow.AtUtc.AddMilliseconds(500) -gt $CreatedAfter)
+    Assert-Equal $id $migrationRow.ID $DatabaseName
+    Assert-Equal $name $migrationRow.Name $DatabaseName
+    Assert-Equal ('{0}\{1}' -f $env:USERDOMAIN,$env:USERNAME) $migrationRow.Who $DatabaseName
+    Assert-Equal $env:ComputerName $migrationRow.ComputerName $DatabaseName
+    Assert-True ($migrationRow.AtUtc.AddMilliseconds(500) -gt $CreatedAfter) $DatabaseName
     $now = Get-SqlServerUtcDate
     Assert-True ($migrationRow.AtUtc.AddMilliseconds(-500) -lt $now) ('creation->migration: {0} migration->now: {1}' -f ($CreatedAfter - $migrationRow.AtUtc),($migrationRow.AtUTC - $now))
     

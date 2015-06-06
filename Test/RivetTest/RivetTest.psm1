@@ -11,6 +11,7 @@ $RTConfigFilePath =
                   
 $RTRivetSchemaName = 'rivet'
 $RTDatabaseName = 'RivetTest'
+$RTDatabase2Name = 'RivetTest2'
 
 $RTServer = Get-Content (Join-Path $PSScriptRoot ..\Server.txt) -TotalCount 1
 

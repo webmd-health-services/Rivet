@@ -6,7 +6,9 @@ function Get-MigrationInfo
         # The name of the migration whose info to get.  Otherwise, returns all migrations.
         $Name,
 
-        $Connection
+        $Connection,
+
+        $DatabaseName
     )
     
     Set-StrictMode -Version Latest
@@ -22,10 +24,16 @@ function Get-MigrationInfo
         $query = '{0} order by AtUtc' -f $query
     }
 
-    $connParam = @{ }
+    $optionalParam = @{ }
     if( $Connection )
     {
-        $connParam['Connection'] = $Connection
+        $optionalParam['Connection'] = $Connection
     }
-    Invoke-RivetTestQuery -Query $query @connParam
+
+    if( $DatabaseName )
+    {
+        $optionalParam['DatabaseName'] = $DatabaseName
+    }
+
+    Invoke-RivetTestQuery -Query $query @optionalParam
 }
