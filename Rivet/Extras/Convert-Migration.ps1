@@ -312,12 +312,17 @@ Get-Migration @getMigrationParams |
 
         $op = $_
 
+        $schemasScriptPath = Join-Path -Path $OutputPath -ChildPath ('{0}.Schemas.sql' -f $op.Database)
         $schemaScriptPath = Join-Path -Path $OutputPath -ChildPath ('{0}.Schema.sql' -f $op.Database)
         $dependentObjectScriptPath = Join-Path -Path $OutputPath -ChildPath ('{0}.DependentObject.sql' -f $op.Database)
         $extendedPropertyScriptPath = Join-Path -Path $OutputPath -ChildPath ('{0}.ExtendedProperty.sql' -f $op.Database)
         $codeObjectScriptPath = Join-Path -Path $OutputPath -ChildPath ('{0}.CodeObject.sql' -f $op.Database)
         $dataScriptPath = Join-Path -Path $OutputPath -ChildPath ('{0}.Data.sql' -f $op.Database)
         $unknownScriptPath = Join-Path -Path $OutputPath -ChildPath ('{0}.Unknown.sql' -f $op.Database)
+        $triggerScriptPath = Join-Path -Path $OutputPath -ChildPath ('{0}.Trigger.sql' -f $op.Database)
+        $constraintScriptPath = Join-Path -Path $OutputPath -ChildPath ('{0}.Constraint.sql' -f $op.Database)
+        $foreignKeyScriptPath = Join-Path -Path $OutputPath -ChildPath ('{0}.ForeignKey.sql' -f $op.Database)
+        $typeScriptPath = Join-Path -Path $OutputPath -ChildPath ('{0}.Type.sql' -f $op.Database)
 
         $header = $op.Migrations | ForEach-Object {
             $name = $_
@@ -339,13 +344,25 @@ Get-Migration @getMigrationParams |
                 break
             }
 
-            '(Add|Remove|Update)(DataType|Schema|Table|Trigger)'
+            '(Add|Remove|Update)Schema'
+            {
+                $schemasScriptPath
+                break
+            }
+
+            '(Add|Remove|Update)Table'
             {
                 $schemaScriptPath
                 break
             }
 
-            '(Add|Remove|Update|Disable|Enable)(CheckConstraint|DefaultConstraint|ForeignKey|Index|PrimaryKey|UniqueKey)'
+            '(Add|Remove|Update)Trigger'
+            {
+                $triggerScriptPath
+                break
+            }
+
+            '(Add|Remove|Update)(Index|PrimaryKey|UniqueKey)'
             {
                 $tableName = '{0}.{1}' -f $op.SchemaName,$op.TableName
                 if( $newTables.Contains( $tableName ) )
@@ -359,12 +376,30 @@ Get-Migration @getMigrationParams |
                 break
             }
 
+            '(Add|Remove|Disable|Enable)(CheckConstraint|DefaultConstraint)'
+            {
+                $constraintScriptPath
+                break
+            }
+
+            '(Add|Remove|Disable|Enable)ForeignKey'
+            {
+                $foreignKeyScriptPath
+                break
+            }
+
+            '(Add|Remove|Update)(DataType|Synonym)'
+            {
+                $typeScriptPath
+                break
+            }
+
             'Rename(Column|Constraint|Index)?Operation'
             {
                 $schemaScriptPath
             }
 
-            '(Add|Remove|Update)(CodeObjectMetadata|StoredProcedure|Synonym|UserDefinedFunction|View)'
+            '(Add|Remove|Update)(CodeObjectMetadata|StoredProcedure|UserDefinedFunction|View)'
             {
                 $codeObjectScriptPath
                 break
