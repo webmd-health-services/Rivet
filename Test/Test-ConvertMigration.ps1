@@ -123,7 +123,7 @@ function Pop-Migration
 
     Assert-ConvertMigration -DatabaseName 'Common' -Schema -CodeObject -Data -ExtendedProperty
     Assert-NoError
-    Assert-ConvertMigration -DatabaseName 'Wellmed' -Schema -CodeObject
+    Assert-ConvertMigration -DatabaseName 'Wellmed' -Schemas -CodeObject
     Assert-NoError
 
     try
@@ -236,7 +236,7 @@ function Pop-Migration
     $scriptPath = Join-Path -Path $scriptPath -ChildPath 'query.sql'
     "if not exists (select * from sys.schemas where name = 'convertmigrationquery')`n`t exec sp_executesql N'convertmigrationquery'" | Set-Content -Path $scriptPath
 
-    Assert-ConvertMigration -Schema -CodeObject -Data -ExtendedProperty -Unknown
+    Assert-ConvertMigration -Schemas -Schema -CodeObject -Data -ExtendedProperty -Unknown -Trigger -Constraint -ForeignKey -Type
 
     try
     {
@@ -252,7 +252,7 @@ function Pop-Migration
         Assert-NotNull (Invoke-RivetTestQuery -Query ('select * from {0}.{1} where ID = 1 and Name = ''Blackbird''' -f $schema.SchemaName,$farmers.TableName))
     
         Assert-Table @schema -Name $crops.TableName -Descriptoin 'Yummy!'
-        Assert-CheckConstraint -Name 'CK_Crops_AllowedCrops' -Definition '([Name]=''Strawberries'' or [Name]=''Rasberries'')'
+        Assert-CheckConstraint -Name 'CK_Farmers_AllowedCrops' -Definition '([Name]=''Strawberries'' or [Name]=''Rasberries'')'
         Assert-DefaultConstraint @schema @crops -ColumnName 'Name' -Definition '(''Strawberries'')'
         Assert-ForeignKey @schema @crops -ReferencesSchema $schema.SchemaName -References $farmers.TableName
         Assert-Index -Name 'IX_Crops_Name2' -ColumnName 'Name'
@@ -418,7 +418,7 @@ function Pop-Migration
 }
 '@ | New-Migration -Name 'RemoveOperations'
 
-    Assert-ConvertMigration -Schema -CodeObject -Data -DependentObject -ExtendedProperty
+    Assert-ConvertMigration -Schemas -Schema -CodeObject -Data -DependentObject -ExtendedProperty -Trigger -Constraint -ForeignKey -Type
 
     try
     {
@@ -517,7 +517,7 @@ function Pop-Migration
 }
 '@ | New-Migration -Name 'DisableOperations'
 
-    Assert-ConvertMigration -DependentObject
+    Assert-ConvertMigration -Constraint -ForeignKey
 
     $schema = @{ SchemaName = 'idempotent' }
     $crops = @{ TableName = 'Crops' }
@@ -599,7 +599,7 @@ function Pop-Migration
 }
 '@ | New-Migration -Name 'DisableOperations'
 
-    Assert-ConvertMigration -DependentObject
+    Assert-ConvertMigration -Constraint -ForeignKey
 
     $schema = @{ SchemaName = 'idempotent' }
     $crops = @{ TableName = 'Crops' }
@@ -634,7 +634,7 @@ function Pop-Migration
 }
 '@ | New-Migration -Name 'DataOperations'
 
-    Assert-ConvertMigration -Schema -Data
+    Assert-ConvertMigration -Schemas -Schema -Data
 
     try
     {
@@ -666,7 +666,7 @@ function Pop-Migration
 }
 '@ | New-Migration -Name 'ShouldRunPlugins'
 
-    Assert-ConvertMigration -Schema -ExtendedProperty
+    Assert-ConvertMigration -Schema -ExtendedProperty -Trigger 
 
     try
     {
@@ -777,7 +777,7 @@ function Pop-Migration
 }
 '@ | New-Migration -Name 'UpdateTables'
 
-    Assert-ConvertMigration -Schema
+    Assert-ConvertMigration -Schemas -Schema
 
     try
     {
@@ -921,7 +921,7 @@ function Pop-Migration
 }
 '@ | New-Migration -Name 'Exclude'
 
-    Assert-ConvertMigration -Schema -Exclude '*Exc*'
+    Assert-ConvertMigration -Schemas -Exclude '*Exc*'
 
     try
     {
@@ -960,7 +960,7 @@ function Pop-Migration
 }
 '@ | New-Migration -Name 'Exclude'
 
-    Assert-ConvertMigration -Schema -Include '*Inc*'
+    Assert-ConvertMigration -Schemas -Include '*Inc*'
 
     try
     {
@@ -1004,7 +1004,7 @@ function Pop-Migration
 }
 '@ | Set-Content -Path $m2.FullName
 
-    Assert-ConvertMigration -Schema -Before $before
+    Assert-ConvertMigration -Schemas -Before $before
 
     try
     {
@@ -1051,7 +1051,7 @@ function Pop-Migration
 }
 '@ | Set-Content -Path $m2.FullName
 
-    Assert-ConvertMigration -Schema -After $after
+    Assert-ConvertMigration -Schemas -After $after
 
     try
     {
@@ -1123,6 +1123,9 @@ function Assert-ConvertMigration
     param(
         [string]
         $DatabaseName = $RTDatabaseName,
+        
+        [Switch]
+        $Schemas,
 
         [Switch]
         $Schema,
@@ -1141,6 +1144,18 @@ function Assert-ConvertMigration
 
         [Switch]
         $Unknown,
+
+        [Switch]
+        $Trigger,
+
+        [Switch]
+        $Constraint,
+
+        [Switch]
+        $ForeignKey,
+
+        [Switch]
+        $Type,
 
         [string[]]
         $Include,
@@ -1170,7 +1185,7 @@ function Assert-ConvertMigration
 
     & $convertRivetMigration -ConfigFilePath $RTConfigFilePath -OutputPath $outputDir @convertRivetMigrationParams -Verbose:$VerbosePreference
 
-    ('Schema','DependentObject','ExtendedProperty','CodeObject','Data','Unknown') | ForEach-Object {
+    ('Schemas','Schema','DependentObject','ExtendedProperty','CodeObject','Data','Unknown','Trigger','Constraint','ForeignKey','Type') | ForEach-Object {
         $shouldExist = Get-Variable -Name $_ -ValueOnly
         $path = Join-Path -Path $outputDir -ChildPath ('{0}.{1}.sql' -f $DatabaseName,$_)
         Assert-Equal $shouldExist (Test-Path -Path $path) ('test if output file ''{0}'' exists' -f $path)
@@ -1222,11 +1237,17 @@ function Invoke-ConvertedScripts
 {
     $ranConvertedScripts = $false
     Invoke-Command {
+            Get-ChildItem -Path $outputDir -Filter '*.Schemas.sql'
             Get-ChildItem -Path $outputDir -Filter '*.Schema.sql'
             Get-ChildItem -Path $outputDir -Filter '*.DependentObject.sql'
             Get-ChildItem -Path $outputDir -Filter '*.CodeObject.sql'
             Get-ChildItem -Path $outputDir -Filter '*.ExtendedProperty.sql'
             Get-ChildItem -Path $outputDir -Filter '*.Data.sql'
+            Get-ChildItem -Path $outputDir -Filter '*.Trigger.sql'
+            Get-ChildItem -Path $outputDir -Filter '*.Constraint.sql'
+            Get-ChildItem -Path $outputDir -Filter '*.ForeignKey.sql'
+            Get-ChildItem -Path $outputDir -Filter '*.Type.sql'
+
         } |
         ForEach-Object {
             $ranConvertedScripts = $true
