@@ -91,7 +91,7 @@
                                     }
                                     elseif( ($op | Get-Member -Name 'Path') )
                                     {
-                                        $migrationRoot = Split-Path -Parent -Path $op.Migration.Path
+                                        $migrationRoot = Split-Path -Parent -Path $op.Path
                                         Push-Location -Path $migrationRoot -StackName 'RivetOperationView'
                                         try
                                         {

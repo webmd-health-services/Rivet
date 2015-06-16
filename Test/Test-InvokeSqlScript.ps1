@@ -169,4 +169,3 @@ create schema [invokesqlscript]
 
     Assert-Schema 'invokesqlscript'
 }
-
