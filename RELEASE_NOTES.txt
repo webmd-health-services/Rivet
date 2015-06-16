@@ -1,3 +1,16 @@
+# 0.6.0
+
+## Enhancements
+
+ * Improving verbose output to be more recognizable and include query timings.
+ * Convert-Migration.ps1 extra script now puts triggers, constraints, foreign keys, and types into separate files.
+ * New-Migration now increments timestamp if a migration with the same timestamp already exists instead of sleeping for half a second.
+
+## Bug Fixes
+
+ * Results from `Invoke-SqlScript` operations cause silent error when formatted as a table.
+ 
+ 
 # 0.5.1
 
 ## Enhancements
