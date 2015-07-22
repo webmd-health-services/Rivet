@@ -6,7 +6,7 @@ function Test-Migration
     Tests if a migration was applied to the database.
     
     .DESCRIPTION
-    Returns `true` if a migration witht he given ID has already been applied.  `False` otherwise.
+    Returns `true` if a migration with the given ID has already been applied.  `False` otherwise.
     
     .EXAMPLE
     Test-Migration -ID 20120211235838
