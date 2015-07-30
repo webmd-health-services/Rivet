@@ -28,6 +28,33 @@
                 </CustomEntries>
             </CustomControl>
         </Control>
+        <Control>
+            <Name>RivetMigrationResult-GroupingFormat</Name>
+            <CustomControl>
+                <CustomEntries>
+                    <CustomEntry>
+                        <CustomItem>
+                            <Frame>
+                                <LeftIndent>4</LeftIndent>
+                                <CustomItem>
+                                    <ExpressionBinding>
+                                        <ScriptBlock>
+                                            $dataSource = $_.DataSource
+                                            if( $dataSource )
+                                            {
+                                                $dataSource = '{0}.' -f $dataSource
+                                            }
+                                            '{0}{1}' -f $dataSource,$_.Database
+                                        </ScriptBlock>
+                                    </ExpressionBinding>
+                                    <NewLine/>
+                                </CustomItem>
+                            </Frame>
+                        </CustomItem>
+                    </CustomEntry>
+                </CustomEntries>
+            </CustomControl>
+        </Control>
     </Controls>
     <ViewDefinitions>
         <View>
@@ -151,14 +178,12 @@
             <ViewSelectedBy>
                 <TypeName>Rivet.Migration</TypeName>
             </ViewSelectedBy>
+            <GroupBy>
+                <PropertyName>Database</PropertyName>
+                <CustomControlName>RivetMigrationResult-GroupingFormat</CustomControlName>
+            </GroupBy>
             <TableControl>
                 <TableHeaders>
-                    <TableColumnHeader>
-                        <Label>DataSource</Label>
-                    </TableColumnHeader>
-                    <TableColumnHeader>
-                        <Label>Database</Label>
-                    </TableColumnHeader>
                     <TableColumnHeader>
                         <Label>ID</Label>
                         <Width>14</Width>
@@ -180,12 +205,6 @@
                 <TableRowEntries>
                     <TableRowEntry>
                         <TableColumnItems>
-                            <TableColumnItem>
-                                <PropertyName>DataSource</PropertyName>
-                            </TableColumnItem>
-                            <TableColumnItem>
-                                <PropertyName>Database</PropertyName>
-                            </TableColumnItem>
                             <TableColumnItem>
                                 <PropertyName>ID</PropertyName>
                             </TableColumnItem>
