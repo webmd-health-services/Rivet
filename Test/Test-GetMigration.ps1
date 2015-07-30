@@ -46,6 +46,8 @@ function Test-ShouldGetMigrationsUsingCurrentRivetJsonFile
         try
         {
             Assert-GetMigration (Get-Migration)
+            Assert-GetMigration (Get-Migration -Database $RTDatabaseName  -ConfigFilePath (Join-Path -Path $tempDir -ChildPath 'rivet.json'))
+            Assert-NoError
         }
         finally
         {
