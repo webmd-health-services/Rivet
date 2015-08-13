@@ -82,6 +82,12 @@ function Test-ShouldCreateTargetDatabases
     Assert-True (Test-Database $RTDatabase2Name)
 }
 
+function Test-ShouldWriteErrorIfMigratingIgnoredDatabase
+{
+    Invoke-RTRivet -Push -Database 'Ignored' -ErrorAction SilentlyContinue
+    Assert-Error -Last -Regex ([regex]::Escape($RTConfigFilePath))
+}
+
 function Test-ShouldProhibitReservedRivetMigrationIDs
 {
     $startedAt = Get-Date
