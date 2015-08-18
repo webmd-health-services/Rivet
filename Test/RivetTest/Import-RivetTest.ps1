@@ -8,10 +8,17 @@ param(
     $Force
 )
 
-#Requires -Version 3
+#Requires -Version 4
 Set-StrictMode -Version 'Latest'
 
-& (Join-Path -Path $PSScriptRoot -ChildPath '..\..\Rivet\Import-Rivet.ps1' -Resolve)
+Write-Debug -Message ('PSScriptRoot: {0}' -f $PSScriptRoot)
+Write-Debug -Message ('PSCommandPath: {0}' -f $PSCommandPath)
+$rivetRoot = @( '..\..\Rivet', '..\..' ) |
+                ForEach-Object { Join-Path -Path $PSScriptRoot -ChildPath $_ -Resolve -ErrorAction Ignore } |
+                Where-Object { (Test-Path -Path (Join-Path -Path $_ -ChildPath 'Import-Rivet.ps1') ) } |
+                Select-Object -First 1
+
+& (Join-Path -Path $rivetRoot -ChildPath 'Import-Rivet.ps1' -Resolve)
 
 $rivetTestPsd1Path = Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest.psd1' -Resolve
 
@@ -60,7 +67,7 @@ if( $Force -and $loadedModule )
 }
 
 Write-Verbose ('Importing RivetTest ({0}).' -f $rivetTestPsd1Path)
-Import-Module $rivetTestPsd1Path -ErrorAction Stop -Verbose:$false @importModuleParams
+Import-Module $rivetTestPsd1Path -ArgumentList $rivetRoot -ErrorAction Stop -Verbose:$false @importModuleParams
 
 if( -not (Get-Module -Name 'RivetTest' | Get-Member -Name 'ImportedAt') )
 {
