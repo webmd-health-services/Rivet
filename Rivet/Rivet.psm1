@@ -41,7 +41,10 @@ if( -not (Test-TypeDataMember -TypeName 'Rivet.OperationResult' -MemberName 'Mig
 }
 
 
-dir $PSScriptRoot *-*.ps1 |
+Invoke-Command -ScriptBlock {
+                                Get-ChildItem -Path $PSScriptRoot -Filter '*-*.ps1'
+                                Get-ChildItem -Path (Join-Path -Path $PSScriptRoot -ChildPath 'Operations' -Resolve) -Filter '*-*.ps1'
+                            } |
     Where-Object { $_.BaseName -ne 'Import-Rivet' -and $_.BaseName -ne 'Export-Row' } |
     ForEach-Object { . $_.FullName }
 
@@ -55,6 +58,7 @@ $publicFunctions = @(
                         'Add-Index',
                         'Add-PrimaryKey',
                         'Add-Row',
+                        'Add-RowGuidCol',
                         'Add-Schema',
                         'Add-StoredProcedure',
                         'Add-Synonym',
@@ -113,6 +117,7 @@ $publicFunctions = @(
                         'Remove-Index',
                         'Remove-PrimaryKey',
                         'Remove-Row',
+                        'Remove-RowGuidCol',
                         'Remove-Schema',
                         'Remove-StoredProcedure',
                         'Remove-Synonym',

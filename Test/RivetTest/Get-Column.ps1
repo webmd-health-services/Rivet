@@ -28,5 +28,5 @@ function Get-Column
     where
         s.name = '{0}' and t.name = '{1}' and c.name = '{2}'
 '@ -f $SchemaName, $TableName, $Name
-    Invoke-RivetTestQuery -Query $querY
+    Invoke-RivetTestQuery -Query $query
 }

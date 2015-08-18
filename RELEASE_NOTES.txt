@@ -7,6 +7,8 @@
  * `New-Migration` now increments timestamp if a migration with the same timestamp already exists instead of sleeping for half a second.
  * Added format for `Rivet.Migration` objects so they display nicely when running migrations.
  * Adding Rivet about help topics.
+ * Created `Add-RowGuidCol` operation for adding the `rowguidcol` property to a column.
+ * Created `Remove-RowGuidCol` operation for removing the `rowguidcol` property from a column.
 
 ## Bug Fixes
 

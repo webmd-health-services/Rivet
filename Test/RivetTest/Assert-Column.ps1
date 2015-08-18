@@ -136,6 +136,10 @@ function Assert-Column
     {
         Assert-True $column.is_rowguidcol ('column {0} rowguidcol flag not set' -f $Name)
     }
+    else
+    {
+        Assert-False $column.is_rowguidcol ('column {0} rowguidcol flag set' -f $Name)
+    }
 
     if( $Document )
     {
