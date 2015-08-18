@@ -30,7 +30,10 @@ function Test-FunctionsExported
                             'Write-RivetError' = $true;
                          }
 
-    $private = Get-ChildItem -Path (Join-Path -Path $TestDir -ChildPath ..\Rivet) *-*.ps1 |
+    $private = Invoke-Command -ScriptBlock {
+                                                Get-ChildItem -Path (Join-Path -Path $TestDir -ChildPath ..\Rivet) *-*.ps1
+                                                Get-ChildItem -Path (Join-Path -Path $TestDir -ChildPath ..\Rivet\Operations) *-*.ps1
+                                           } |
                     Where-Object { -not $privateFunctions.ContainsKey( $_.BaseName ) } |
                     Where-Object { -not (Get-Command -Module Rivet -Name $_.BaseName -ErrorAction Ignore) } |
                     Sort-Object -Property BaseName
