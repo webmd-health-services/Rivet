@@ -84,8 +84,16 @@ function Test-ShouldCreateTargetDatabases
 
 function Test-ShouldWriteErrorIfMigratingIgnoredDatabase
 {
-    Invoke-RTRivet -Push -Database 'Ignored' -ErrorAction SilentlyContinue
-    Assert-Error -Last -Regex ([regex]::Escape($RTConfigFilePath))
+    Push-Location -Path (Split-Path -Parent -Path $RTConfigFilePath)
+    try
+    {
+        & $RTRivetPath -Push -Database 'Ignored' -ErrorAction SilentlyContinue
+        Assert-Error -Last -Regex ([regex]::Escape($RTConfigFilePath))
+    }
+    finally
+    {
+        Pop-Location
+    }
 }
 
 function Test-ShouldProhibitReservedRivetMigrationIDs

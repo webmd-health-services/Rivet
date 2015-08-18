@@ -97,7 +97,7 @@ Found no databases to migrate. This can be a few things:
  * You supplied an explicit database name, but that database is on the ignore list. Remove it from the ignore list in ''{1}'' or enter a database name that isn't ignored.
  * You supplied an explicit database name, but no directory for migrations exist on the file system (under {0}). Create a migrations directory or enter the name of a database that exists.
 
-'@ -f $settings.DatabasesRoot,$ConfigFilePath)
+'@ -f $settings.DatabasesRoot,$settings.Path)
         return
     }
 
