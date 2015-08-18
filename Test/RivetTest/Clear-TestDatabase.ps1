@@ -21,7 +21,8 @@ function Clear-TestDatabase
 
     if( Test-Database -Name $Name )
     {
-        $expectedCount = Get-ChildItem -Path (Join-Path -Path $PSScriptRoot -ChildPath '..\..\Rivet\Migrations') -Filter '*.ps1' | Measure-Object | Select-Object -ExpandProperty 'Count'
+        Write-Debug -Message ('RTRivetRoot = {0}' -f $RTRivetRoot)
+        $expectedCount = Get-ChildItem -Path (Join-Path -Path $RTRivetRoot -ChildPath 'Migrations') -Filter '*.ps1' | Measure-Object | Select-Object -ExpandProperty 'Count'
         $query = 'select * from [{0}].[rivet].[Migrations] order by ID' -f $Name
         [object[]]$migrations = Invoke-RivetTestQuery -Query $query -DatabaseName $Name
         if( $migrations.Count -gt $expectedCount )

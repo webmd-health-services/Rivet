@@ -1,4 +1,10 @@
 
+param(
+    [Parameter(Mandatory=$true)]
+    [string]
+    $RivetRoot
+)
+
 $RTConfigFilePath = 
     $RTDatabasesRoot = 
     $RTDatabaseRoot = 
@@ -7,15 +13,18 @@ $RTConfigFilePath =
     $RTRivetPath = 
     $RTRivetSchemaName = 
     $RTDatabaseName =
-    $RTDatabaseConnection = $null
+    $RTDatabaseConnection = 
+    $RTRivetRoot = $null
 
 $RTTimestamp = 20150101000000
+
+$RTRivetRoot = $RivetRoot
                   
 $RTRivetSchemaName = 'rivet'
 $RTDatabaseName = 'RivetTest'
 $RTDatabase2Name = 'RivetTest2'
 
-$serverFilePath = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot ..\Server.txt))
+$serverFilePath = [IO.Path]::GetFullPath((Join-Path -Path $PSScriptRoot -ChildPath '..\Server.txt'))
 if( -not (Test-Path -Path $serverFilePath -PathType Leaf) )
 {
     Write-Error ('File ''{0}'' not found. Please create this file. It should contain the name of the SQL Server instance tests should use.' -f $serverFilePath)
@@ -30,8 +39,7 @@ else
     }
 }
 
-
-$RTRivetPath = Join-Path $PSScriptRoot ..\..\Rivet\rivet.ps1 -Resolve
+$RTRivetPath = Join-Path -Path $RivetRoot -ChildPath 'rivet.ps1' -Resolve
 
 dir $PSScriptRoot *-*.ps1 |
     Where-Object { $_.BaseName -ne 'Import-RivetTest' } |
