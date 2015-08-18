@@ -5,6 +5,8 @@ function Update-Table
     Adds new columns or alters existing columns on an existing table.
 
     .DESCRIPTION
+    The `Update-Table` operation adds, updates, and removes columns from a table. Columns are added, then updated, then removed.
+    
     The new columns for the table should be created and returned in a script block, which is passed as the value of the `AddColumn` parameter.  For example,
 
         Update-Table 'Suits' -AddColumn {
