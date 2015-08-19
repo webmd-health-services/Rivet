@@ -134,6 +134,7 @@ $publicFunctions = @(
                         'Set-StoredProcedure',
                         'Set-UserDefinedFunction',
                         'Set-View',
+                        'Stop-Migration',
                         'Update-CodeObjectMetadata',
                         'Update-Description',
                         'Update-ExtendedProperty',

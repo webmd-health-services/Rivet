@@ -54,6 +54,7 @@
     <Compile Include="Operations\AddForeignKeyOperation.cs" />
     <Compile Include="Operations\AddIndexOperation.cs" />
     <Compile Include="Operations\AddPrimaryKeyOperation.cs" />
+    <Compile Include="Operations\IrreversibleOperation.cs" />
     <Compile Include="Operations\RemoveRowGuidColOperation.cs" />
     <Compile Include="Operations\AddRowGuidColOperation.cs" />
     <Compile Include="Operations\AddSchemaOperation.cs" />
