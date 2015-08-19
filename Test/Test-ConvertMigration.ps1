@@ -66,7 +66,6 @@ function Test-ShouldCreateScriptsForDatabase
   + Migrations
     * 00000000000001_A.ps1
     * 00000000000002_B.ps1
-    * 00000000000003_C.ps1
 + Wellmed
   + Migrations
     * 00000000000001_A.ps1
@@ -104,7 +103,6 @@ function Pop-Migration
 }
 '@ | Set-Content -Path (Join-Path -Path $RTDatabasesRoot -ChildPath 'Common\Migrations\00000000000002_B.ps1')
 
-    '' | Set-Content -Path (Join-Path -Path $RTDatabasesRoot -ChildPath 'Common\Migrations\00000000000003_C.ps1')
 
 @'
 function Push-Migration
@@ -773,7 +771,7 @@ function Push-Migration
 
 function Pop-Migration
 {
-    
+    Remove-PrimaryKey -SchemaName 'aggregate' -TableName 'Beta'
 }
 '@ | New-Migration -Name 'UpdateTables'
 
@@ -1062,32 +1060,6 @@ function Pop-Migration
     {
         Pop-ConvertedScripts
     }
-}
-
-function Test-ShouldHandleNoPush
-{
-    @'
-function Pop-Migration
-{
-}
-'@ | New-Migration -Name 'NoPush'
-
-    & $convertRivetMigration -ConfigFilePath $RTConfigFilePath -OutputPath $outputDir
-    Assert-NoError
-    Assert-Equal 0 (Get-ChildItem $outputDir | Measure-Object | Select-Object -ExpandProperty count)
-}
-
-function Test-ShouldHandleNoPop
-{
-    @'
-function Push-Migration
-{
-}
-'@ | New-Migration -Name 'NoPop'
-
-    & $convertRivetMigration -ConfigFilePath $RTConfigFilePath -OutputPath $outputDir
-    Assert-NoError
-    Assert-Equal 0 (Get-ChildItem $outputDir | Measure-Object | Select-Object -ExpandProperty count)
 }
 
 function Test-ShouldHandleRemovingThenAddingColumn
