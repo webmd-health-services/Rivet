@@ -30,7 +30,7 @@ function Pop-Migration
     $count = Measure-Migration
     try
     {
-        Invoke-RTRivet -Pop
+        Invoke-RTRivet -Pop -ErrorAction SilentlyContinue
         Assert-Error -Last -regex ([regex]::Escape('This migration can''t be reversed. Sorry!'))
         Assert-Equal $count (Measure-Migration)
     }
