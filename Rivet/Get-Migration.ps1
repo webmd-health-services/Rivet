@@ -199,7 +199,6 @@ function Get-Migration
             $dbName = Split-Path -Leaf -Path $dbName
 
             $m = New-Object 'Rivet.Migration' $_.MigrationID,$_.MigrationName,$_.FullName,$dbName
-            $currentOp = 'Push'
 
             filter Add-Operation
             {
@@ -247,23 +246,59 @@ function Get-Migration
 
             try
             {
-                if( (Test-Path -Path 'function:Push-Migration') )
+                if( -not (Test-Path -Path 'function:Push-Migration') )
                 {
-                    Push-Migration | Add-Operation -OperationsList $m.PushOperations
+                    throw (@'
+Push-Migration function not found. All migrations are required to have a Push-Migration function that contains at least one operation. Here's some sample code to get you started:
+
+    function Push-Migration
+    {
+        Add-Table 'LetsCreateATable' {
+            int 'ID' -NotNull
+        }
+    }
+'@)
                 }
-                else
+
+                Push-Migration | Add-Operation -OperationsList $m.PushOperations
+                if( $m.PushOperations.Count -eq 0 )
                 {
-                    Write-Warning ('{0} migration''s ''Push-Migration'' function not found.' -f $_.FullName)
+                    throw (@'
+Push-Migration function is empty and contains no operations. Maybe you''d like to create a table? Here's some sample code to get you started:
+
+    function Push-Migration
+    {
+        Add-Table 'LetsCreateATable' {
+            int 'ID' -NotNull
+        }
+    }
+'@)
                 }
                 
-                $currentOp = 'Pop'
-                if( (Test-Path -Path 'function:Pop-Migration') )
+                if( -not (Test-Path -Path 'function:Pop-Migration') )
                 {
-                    Pop-Migration | Add-Operation  -OperationsList $m.PopOperations
+                    throw (@'
+Pop-Migration function not found. All migrations are required to have a Pop-Migration function that contains at least one operation. Here's some sample code to get you started:
+
+    function Pop-Migration
+    {
+        Remove-Table 'LetsCreateATable'
+    }
+'@)
+                    return
                 }
-                else
+
+                Pop-Migration | Add-Operation  -OperationsList $m.PopOperations
+                if( $m.PopOperations.Count -eq 0 )
                 {
-                    Write-Warning ('{0} migration''s ''Pop-Migration'' function not found.' -f $_.FullName)
+                    throw (@'
+Pop-Migration function is empty and contains no operations. Maybe you''d like to drop a table? Here's some sample code to get you started:
+
+    function Pop-Migration
+    {
+        Remove-Table 'LetsCreateATable'
+    }
+'@)
                 }
 
                 $m

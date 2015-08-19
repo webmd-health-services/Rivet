@@ -68,16 +68,112 @@ function Test-ShouldProtectAgainstItemsReturnedFromPipeline
     @'
 function Push-Migration
 {
+    Invoke-Ddl 'select 1'
 }
 1 # See that guy? We should protect ourselves against shit like that.
 function Pop-Migration
 {
+    Invoke-Ddl 'select 1'
 }
 '@ | New-Migration -Name 'ShouldProtectAgainstItemsReturnedFromPipeline'
 
     $m = Get-Migration -ConfigFilePath $RTConfigFilePath
     Assert-NoError
     Assert-Is $m ([Rivet.Migration])
+}
+
+function Test-ShouldRejectMigrationWithEmptyPush
+{
+    $m = @'
+function Push-Migration
+{
+    # I'm empty. That is bad!
+}
+
+function Pop-Migration
+{
+    Invoke-Ddl 'select 1'
+}
+'@ | New-Migration -Name 'EmptyPush'
+
+    try
+    {
+        $result = Get-Migration -ConfigFilePath $RTConfigFilePath -ErrorAction SilentlyContinue
+        Assert-Null $result
+        Assert-Error -Last -Regex 'Push-Migration.*empty'
+    }
+    finally
+    {
+        Remove-Item -Path $m.FullName
+    }
+}
+
+function Test-ShouldRejectMigrationWithEmptyPop
+{
+    $m = @'
+function Push-Migration
+{
+    Invoke-Ddl 'select 1'
+}
+
+function Pop-Migration
+{
+    # I'm empty. That is bad!
+}
+'@ | New-Migration -Name 'EmptyPop'
+
+    try
+    {
+        $result = Get-Migration -ConfigFilePath $RTConfigFilePath -ErrorAction SilentlyContinue
+        Assert-Null $result
+        Assert-Error -Last -Regex 'Pop-Migration.*empty'
+    }
+    finally
+    {
+        Remove-Item -Path $m.FullName
+    }
+}
+
+function Test-ShouldRejectMigrationWithNoPushMigrationFunction
+{
+    $m = @'
+function Pop-Migration
+{
+    Invoke-Ddl 'select 1'
+}
+'@ | New-Migration -Name 'MissingPush'
+
+    try
+    {
+        $result = Get-Migration -ConfigFilePath $RTConfigFilePath -ErrorAction SilentlyContinue
+        Assert-Null $result
+        Assert-Error -Last -Regex 'Push-Migration.*not found'
+    }
+    finally
+    {
+        Remove-Item -Path $m.FullName
+    }
+}
+
+function Test-ShouldRejectMigrationWithNoPopMigrationFunction
+{
+    $m = @'
+function Push-Migration
+{
+    Invoke-Ddl 'select 1'
+}
+'@ | New-Migration -Name 'MissingPop'
+
+    try
+    {
+        $result = Get-Migration -ConfigFilePath $RTConfigFilePath -ErrorAction SilentlyContinue
+        Assert-Null $result
+        Assert-Error -Last -Regex 'Pop-Migration.*not found'
+    }
+    finally
+    {
+        Remove-Item -Path $m.FullName
+    }
 }
 
 function Assert-GetMigration
