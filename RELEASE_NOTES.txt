@@ -10,6 +10,8 @@
  * Created `Add-RowGuidCol` operation for adding the `rowguidcol` property to a column.
  * Created `Remove-RowGuidCol` operation for removing the `rowguidcol` property from a column.
  * Created `Stop-Migration` operation for preventing a migration from getting popped/reversed.
+ * Migrations missing Push-Migration/Pop-Migration functions are no longer allowed and will fail when pushed/popped.
+ * Migrations with empty Push-Migration/Pop-Migration functions are no longer allowed and will fail when pushed/popped.
 
 ## Bug Fixes
 
