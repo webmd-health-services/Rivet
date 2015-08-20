@@ -34,14 +34,9 @@ function Remove-UniqueKey
         # The schema name of the target table.  Defaults to `dbo`.
         $SchemaName = 'dbo',
 
-        [Parameter(Mandatory=$true,Position=1,ParameterSetName='ByColumnName')]
-        [string[]]
-        # The column(s) on which the UniqueConstraint is based
-        $ColumnName,
-
         [Parameter(Mandatory=$true,ParameterSetName='ByExplicitName')]
         [string]
-        # The name for the <object type>. If not given, a sensible name will be created.
+        # The name for the unique key.
         $Name
     )
 

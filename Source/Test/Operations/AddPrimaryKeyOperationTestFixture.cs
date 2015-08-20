@@ -26,6 +26,7 @@ namespace Rivet.Test.Operations
 			Assert.AreEqual(options, op.Options);
 			Assert.AreNotEqual(smokeoptions, op.Options);
 			Assert.That(op.ObjectName, Is.EqualTo(string.Format("{0}.{1}.PK_{0}_{1}", schemaName, tableName)));
+			Assert.That(op.ConstraintType, Is.EqualTo(ConstraintType.PrimaryKey));
 		}
 
 		[Test]
@@ -93,5 +94,12 @@ namespace Rivet.Test.Operations
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}
 
+		[Test]
+		public void ShouldAllowChangingConstraintName()
+		{
+			var op = new AddPrimaryKeyOperation("schema", "table", new[] {"column"}, false, null);
+			op.SetConstraintName("new name");
+			Assert.That(op.Name, Is.EqualTo("new name"));
+		}
 	}
 }

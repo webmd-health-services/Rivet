@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using System;
+using NUnit.Framework;
 using Rivet.Operations;
 
 namespace Rivet.Test.Operations
@@ -36,6 +37,7 @@ namespace Rivet.Test.Operations
 			Assert.AreEqual(notForReplication, op.NotForReplication);
 			Assert.AreEqual(withNoCheck, op.WithNoCheck);
 			Assert.That(op.ObjectName, Is.EqualTo(string.Format("{0}.{1}.FK_{0}_{1}_{2}_{3}", schemaName, tableName, referencesSchemaName, referencesTableName)));
+			Assert.That(op.ConstraintType, Is.EqualTo(ConstraintType.ForeignKey));
 		}
 
 		[Test]
@@ -107,6 +109,14 @@ namespace Rivet.Test.Operations
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}
 
+		[Test]
+		public void ShouldAllowChangingConstraintName()
+		{
+			var op = new AddForeignKeyOperation("schema", "table", new[] { "column" }, "referencesSchema", "referencesTable",
+				new[] { "column" }, "OK", "OK", false, false);
+			op.SetConstraintName("new name");
+			Assert.That(op.Name, Is.EqualTo("new name"));
+		}
 	}
 
 }

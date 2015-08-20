@@ -1,0 +1,83 @@
+TOPIC
+    about_Rivet_Cookbooks
+
+SHORT DESCRIPTION
+    Contains a bunch of recipes showing how to use Rivet.
+
+LONG DESCRIPTION
+
+    ## How do I customize constraint/index names?
+    
+You can customize constraint/index names using the `Start-MigrationOperation` plug-in to modify a constraint's name before it gets applied to a database. (See `about_Rivet_Plugins` for instructions on setting up your plug-ins.)
+
+Each operation that adds/removes a constraint has a `SetConstraintName(string)` method. You can check what kind of constraint is being added/removed with the `ConstraintType` property. You can check if an operation is a constraint operation by testing if it is a `Rivert.Operations.ConstraintOperation`.  Here's an example:
+
+The add/remove index operation has a 'SetIndexName(string)' method. You can check if an operation is an index operation by testing if it is a `Rivet.Operations.IndexOperation` object.
+
+Here's some sample code demonstrating all this:
+
+    function Start-MigrationOperation
+    {
+        param(
+            [Parameter(Mandatory=$true)]
+            [Rivet.Operation]
+            # The operation which is about to be applied.
+            $Operation
+        )
+
+        Set-StrictMode -Version 'Latest'
+        
+        if( $Operation -is [Rivet.Operations.ConstraintOperation] )
+        {
+            switch( $Operation.ConstraintType )
+            {
+                [Rivet.ConstraintType]::Default
+                {
+                    $Operation.SetConstraintName( ('DF_{0}_{1}_{2}' -f $Operation.SchemaName,$Operation.TableName,$Operation.ColumnName) )
+                }
+                
+                [Rivet.ConstraintType]::PrimaryKey
+                {
+                    $Operation.SetConstraintName( ('PK_{0}_{1}' -f $Operation.SchemaName,$Operation.TableName) )
+                }
+                
+                [Rivet.ConstraintType]::ForeignKey
+                {
+                    $Operation.SetConstraintName( ('FK_{0}_{1}_{2}_{3}' -f $Operation.SchemaName,$Operation.TableName,$Operation.ReferencesSchemaName,$Operation.ReferencesTableName) )
+                }
+                
+                [Rivet.ConstraintType]::Check
+                {
+                    $Operation.SetConstraintName( ('CK_{0}_{1}_{2}', $Operation.SchemaName,$Operation.TableName,($Operation.Expression -replace '[A-Za-z0-9]','') )
+                }
+                
+                [Rivet.ConstraintType]::UniqueKey
+                {
+                    $Operation.SetConstraintName( ('UK_{0}_{1}_{2}' -f$Operation.SchemaName,$Operation.TableName,($Operation.ColumnName -join '_')) )
+                }
+                
+                default
+                {
+                    throw ('Rivet has added a new constraint type that we don''t handle. Please update {0} to handle this new constraint type.' -f $PSCommandPath)
+                }
+                
+            }
+        }
+        elseif( $Operation -is [Rivet.Operation.IndexOperation] )
+        {
+            $prefix = 'IX'
+            if( $Operation.Unique )
+            {
+                $prefix = 'UIX'
+            }
+            
+            $Operation.SetIndexName( ('{0}_{1}_{2}_{3}' -f $prefix,$Operation.SchemaName,$Operation.TableName,($Operation.ColumnName -join '_')) )
+        }
+    }
+
+
+    
+SEE ALSO
+    about_Rivet_Plugins 
+ 
+

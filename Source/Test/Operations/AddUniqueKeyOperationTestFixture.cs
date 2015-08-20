@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using System;
+using NUnit.Framework;
 using Rivet.Operations;
 
 namespace Rivet.Test.Operations
@@ -30,6 +31,7 @@ namespace Rivet.Test.Operations
 			Assert.AreNotEqual(smokeOptions, op.Options);
 			Assert.AreEqual(fileGroup, op.FileGroup);
 			Assert.That(op.ObjectName, Is.EqualTo(string.Format("{0}.{1}.AK_{0}_{1}_{2}", schemaName, tableName, string.Join("_", columnName))));
+			Assert.That(op.ConstraintType, Is.EqualTo(ConstraintType.UniqueKey));
 		}
 
 		[Test]
@@ -166,6 +168,13 @@ namespace Rivet.Test.Operations
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}
 
+		[Test]
+		public void ShouldAllowChangingConstraintName()
+		{
+			var op = new AddUniqueKeyOperation("schema", "table", new[] { "column" }, false, 0, null, null);
+			op.SetConstraintName("new name");
+			Assert.That(op.Name, Is.EqualTo("new name"));
+		}
 	}
 
 }

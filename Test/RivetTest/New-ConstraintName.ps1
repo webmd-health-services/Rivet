@@ -63,12 +63,7 @@ function New-ConstraintName
     
     if ($PSCmdlet.ParameterSetName -eq "IX")
     {
-        $type = [Rivet.ConstraintType]::Index
-        if( $Unique )
-        {
-            $type = [Rivet.ConstraintType]::UniqueIndex
-        }
-        $op = New-Object 'Rivet.ConstraintName' $SchemaName, $TableName, $ColumnName, $type
+        $op = New-Object 'Rivet.IndexName' $SchemaName, $TableName, $ColumnName, $Unique
     }
 
     if ($PSCmdlet.ParameterSetName -eq "AK")

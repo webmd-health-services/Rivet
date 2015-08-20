@@ -200,6 +200,12 @@ namespace Rivet.Test.Operations
 			Assert.That(op.ObjectName, Is.EqualTo(string.Format("{0}.{1}.IX_{0}_{1}_{2}", schemaName, tableName, String.Join("_", columnName))));
 		}
 
-
+		[Test]
+		public void ShouldAllowChangingIndexName()
+		{
+			var op = new AddIndexOperation("schema", "table", new[] {"column"}, false, false, null, null, null, null, null);
+			op.SetIndexName("new name");
+			Assert.That(op.Name, Is.EqualTo("new name"));
+		}
 	}
 }

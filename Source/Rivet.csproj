@@ -41,10 +41,12 @@
   <ItemGroup>
     <Compile Include="Configuration\Configuration.cs" />
     <Compile Include="Configuration\Database.cs" />
+    <Compile Include="ConstraintType.cs" />
     <Compile Include="ForeignKeyConstraintName.cs" />
     <Compile Include="Column.cs" />
     <Compile Include="DataType.cs" />
     <Compile Include="Identity.cs" />
+    <Compile Include="IndexName.cs" />
     <Compile Include="Migration.cs" />
     <Compile Include="Operation.cs" />
     <Compile Include="OperationQueryType.cs" />
@@ -54,6 +56,7 @@
     <Compile Include="Operations\AddForeignKeyOperation.cs" />
     <Compile Include="Operations\AddIndexOperation.cs" />
     <Compile Include="Operations\AddPrimaryKeyOperation.cs" />
+    <Compile Include="Operations\ConstraintOperation.cs" />
     <Compile Include="Operations\IrreversibleOperation.cs" />
     <Compile Include="Operations\RemoveRowGuidColOperation.cs" />
     <Compile Include="Operations\AddRowGuidColOperation.cs" />

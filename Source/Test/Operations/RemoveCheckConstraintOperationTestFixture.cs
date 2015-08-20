@@ -7,35 +7,32 @@ namespace Rivet.Test.Operations
 	[TestFixture]
 	public sealed class RemoveCheckConstraintOperationTestFixture
 	{
-		
+
+		// ReSharper disable InconsistentNaming
+		const string _schemaName = "schemaName";
+		const string _tableName = "tableName";
+		const string _constraintName = "constraintName";
+		// ReSharper restore InconsistentNaming
+
 		[Test]
 		public void ShouldSetPropertiesForRemoveCheckConstraint()
 		{
-			var schemaName = "schemaName";
-			var tableName = "tableName";
-			var constraintName = "constraintName";
 
-			var op = new RemoveCheckConstraintOperation(schemaName, tableName, constraintName);
-			Assert.AreEqual(schemaName, op.SchemaName);
-			Assert.AreEqual(tableName, op.TableName);
-			Assert.AreEqual(constraintName, op.Name);
-			Assert.That(op.ObjectName, Is.EqualTo(string.Format("{0}.{1}.{2}", schemaName, tableName, constraintName)));
+			var op = new RemoveCheckConstraintOperation(_schemaName, _tableName, _constraintName);
+			Assert.AreEqual(_schemaName, op.SchemaName);
+			Assert.AreEqual(_tableName, op.TableName);
+			Assert.AreEqual(_constraintName, op.Name);
+			Assert.That(op.ObjectName, Is.EqualTo(string.Format("{0}.{1}.{2}", _schemaName, _tableName, _constraintName)));
 		}
 
 		[Test]
 		public void ShouldWriteQueryForRemoveCheckConstraint()
 		{
-			var schemaName = "schemaName";
-			var tableName = "tableName";
-			var constraintName = "constraintName";
-
-			var op = new RemoveCheckConstraintOperation(schemaName, tableName, constraintName);
+			var op = new RemoveCheckConstraintOperation(_schemaName, _tableName, _constraintName);
 			Trace.WriteLine(op.ToQuery());
-			var expectedQuery = "alter table [schemaName].[tableName] drop constraint [constraintName]";
+			const string expectedQuery = "alter table [schemaName].[tableName] drop constraint [constraintName]";
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}
-		
-
 	}
 
 }

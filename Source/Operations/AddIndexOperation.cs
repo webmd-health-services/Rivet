@@ -7,7 +7,7 @@ namespace Rivet.Operations
 	{
 		// All Columns ASC
 		public AddIndexOperation(string schemaName, string tableName, string[] columnName, bool unique, bool clustered, string[] options, string where, string on, string fileStreamOn, string[] include)
-			: base(schemaName, tableName, new ConstraintName(schemaName, tableName, columnName, (unique) ? ConstraintType.UniqueIndex : ConstraintType.Index).ToString())
+			: base(schemaName, tableName, new IndexName(schemaName, tableName, columnName, unique).ToString())
 		{
 			ColumnName = new List<string>(columnName ?? new string[0]);
 			Unique = unique;
@@ -50,6 +50,11 @@ namespace Rivet.Operations
 		public string On { get; set; }
 		public string FileStreamOn { get; set; }
         public List<string> Include { get; set; }
+
+		public void SetIndexName(string name)
+		{
+			Name = name;
+		}
 
 		public override string ToIdempotentQuery()
 		{

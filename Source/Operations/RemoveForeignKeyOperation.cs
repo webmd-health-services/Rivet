@@ -4,12 +4,6 @@ namespace Rivet.Operations
 {
 	public sealed class RemoveForeignKeyOperation : TableObjectOperation
 	{
-		// System Generated Constraint Name
-		public RemoveForeignKeyOperation(string schemaName, string tableName, string referencesSchemaName, string referencesTableName)
-			: base(schemaName, tableName, new ForeignKeyConstraintName(schemaName, tableName, referencesSchemaName, referencesTableName).ToString())
-		{
-		}
-
 		// Custom Constraint Name
 		public RemoveForeignKeyOperation(string schemaName, string tableName, string name)
 			: base(schemaName, tableName, name)
