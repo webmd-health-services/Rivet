@@ -25,6 +25,7 @@ namespace Rivet.Test.Operations
 			Assert.AreEqual(notForReplication, op.NotForReplication);
 			Assert.AreEqual(withNoCheck, op.WithNoCheck);
 			Assert.That(op.ObjectName, Is.EqualTo(string.Format("{0}.{1}.{2}", schemaName, tableName, name)));
+			Assert.That(op.ConstraintType, Is.EqualTo(ConstraintType.Check));
 		}
 
 		[Test]
@@ -58,7 +59,13 @@ namespace Rivet.Test.Operations
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}
 
-		
+		[Test]
+		public void ShouldAllowChangingConstraintName()
+		{
+			var op = new AddCheckConstraintOperation("schema", "table", "name", "1", true, true);
+			op.SetConstraintName("new name");
+			Assert.That(op.Name, Is.EqualTo("new name"));
+		}
 	}
 
 }

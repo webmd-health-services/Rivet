@@ -63,6 +63,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ColumnTestFixture.cs" />
+    <Compile Include="IndexNameTestFixture.cs" />
     <Compile Include="Operations\AddCheckConstraintOperationTestFixture.cs" />
     <Compile Include="Operations\AddDataTypeOperationTestFixture.cs" />
     <Compile Include="Operations\AddDefaultConstraintOperationTestFixture.cs" />
@@ -76,6 +77,10 @@
     <Compile Include="Operations\AddTableOperationTestFixture.cs" />
     <Compile Include="Operations\AddTriggerOperationTestFixture.cs" />
     <Compile Include="Operations\AddRowOperationTestFixture.cs" />
+    <Compile Include="Operations\EnableForeignKeyOperationTestFixture.cs" />
+    <Compile Include="Operations\EnableCheckConstraintOperationTestFixture.cs" />
+    <Compile Include="Operations\DisableForeignKeyOperationTestFixture.cs" />
+    <Compile Include="Operations\DisableCheckConstraintOperationTestFixture.cs" />
     <Compile Include="Operations\AddUniqueKeyOperationTestFixture.cs" />
     <Compile Include="Operations\RemoveCheckConstraintOperationTestFixture.cs" />
     <Compile Include="Operations\RemoveDataTypeOperationTestFixture.cs" />

@@ -1,15 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 
 namespace Rivet.Operations
 {
-	public sealed class AddUniqueKeyOperation : TableObjectOperation
+	public sealed class AddUniqueKeyOperation : ConstraintOperation
 	{
 		//System Generated Constraint Name
 		public AddUniqueKeyOperation(string schemaName, string tableName, string[] columnName, bool clustered,
 		                                    int fillFactor, string[] options, string filegroup)
-			: base(schemaName, tableName, new ConstraintName(schemaName, tableName, columnName, ConstraintType.UniqueKey).ToString())
+			: base(schemaName, tableName, new ConstraintName(schemaName, tableName, columnName, ConstraintType.UniqueKey).ToString(), ConstraintType.UniqueKey)
 		{
 		    ColumnName = new List<string>(columnName);
 			Clustered = clustered;

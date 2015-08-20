@@ -3,13 +3,13 @@ using System.Collections.Generic;
 
 namespace Rivet.Operations
 {
-	public sealed class AddForeignKeyOperation : TableObjectOperation
+	public sealed class AddForeignKeyOperation : ConstraintOperation
 	{
 		// System Generated Constraint Name
 		public AddForeignKeyOperation(string schemaName, string tableName, string[] columnName, string referencesSchemaName,
 		                              string referencesTableName, string[] referencesColumnName, string onDelete,
 		                              string onUpdate, bool notForReplication, bool withNoCheck)
-			: base(schemaName, tableName, new ForeignKeyConstraintName(schemaName, tableName, referencesSchemaName, referencesTableName).ToString())
+			: base(schemaName, tableName, new ForeignKeyConstraintName(schemaName, tableName, referencesSchemaName, referencesTableName).ToString(), ConstraintType.ForeignKey)
 		{
             ColumnName = new List<string>(columnName);
 			ReferencesSchemaName = referencesSchemaName;
@@ -25,7 +25,7 @@ namespace Rivet.Operations
 		public AddForeignKeyOperation(string schemaName, string tableName, string[] columnName, string referencesSchemaName,
 							  string referencesTableName, string[] referencesColumnName, string name, string onDelete,
 							  string onUpdate, bool notForReplication, bool withNoCheck)
-			: base(schemaName, tableName, name)
+			: base(schemaName, tableName, name, ConstraintType.ForeignKey)
 		{
 			ColumnName = new List<string>(columnName);
 			ReferencesSchemaName = referencesSchemaName;
@@ -36,6 +36,7 @@ namespace Rivet.Operations
 			NotForReplication = notForReplication;
 			WithNoCheck = withNoCheck;
 		}
+
 
 		public List<string> ColumnName { get; private set; }
 		public string ReferencesSchemaName { get; set; }

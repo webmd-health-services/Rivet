@@ -1,22 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace Rivet.Operations
 {
 	public sealed class RemoveUniqueKeyOperation : TableObjectOperation
 	{
-		public RemoveUniqueKeyOperation(string schemaName, string tableName, string[] columnName)
-			: base(schemaName, tableName, new ConstraintName(schemaName, tableName, columnName, ConstraintType.UniqueKey).ToString())
-		{
-		    ColumnName = new List<string>(columnName);
-		}
-
 		public RemoveUniqueKeyOperation(string schemaName, string tableName, string name)
 			: base(schemaName, tableName, name)
 		{
 		}
-
-		public List<string> ColumnName { get; private set; }
 
 		public override string ToIdempotentQuery()
 		{

@@ -3,11 +3,11 @@ using System.Collections.Generic;
 
 namespace Rivet.Operations
 {
-	public sealed class AddPrimaryKeyOperation : TableObjectOperation
+	public sealed class AddPrimaryKeyOperation : ConstraintOperation
 	{
 		//System Generated Constraint Name
 		public AddPrimaryKeyOperation(string schemaName, string tableName, string [] columnName, bool nonClustered, string[] options)
-			: base(schemaName, tableName, new ConstraintName(schemaName, tableName, columnName, ConstraintType.PrimaryKey).ToString())
+			: base(schemaName, tableName, new ConstraintName(schemaName, tableName, columnName, ConstraintType.PrimaryKey).ToString(), ConstraintType.PrimaryKey)
 		{
 		    ColumnName = new List<string>(columnName);
 			NonClustered = nonClustered;
@@ -23,7 +23,7 @@ namespace Rivet.Operations
 
 		//Custom Constraint Name
 		public AddPrimaryKeyOperation(string schemaName, string tableName, string[] columnName, string customConstraintName, bool nonClustered, string[] options)
-			: base(schemaName, tableName, customConstraintName)
+			: base(schemaName, tableName, customConstraintName, ConstraintType.PrimaryKey)
 		{
             ColumnName = new List<string>(columnName);
 			NonClustered = nonClustered;

@@ -2,11 +2,11 @@
 
 namespace Rivet.Operations
 {
-	public sealed class AddDefaultConstraintOperation : TableObjectOperation
+	public sealed class AddDefaultConstraintOperation : ConstraintOperation
 	{
 		public AddDefaultConstraintOperation(string schemaName, string tableName, string expression, string columnName,
 		                                     bool withValues)
-			: base(schemaName, tableName, new ConstraintName(schemaName, tableName, new[]{columnName}, ConstraintType.Default).ToString())
+			: base(schemaName, tableName, new ConstraintName(schemaName, tableName, new[]{columnName}, ConstraintType.Default).ToString(), ConstraintType.Default)
 		{
 			Expression = expression;
 			ColumnName = columnName;

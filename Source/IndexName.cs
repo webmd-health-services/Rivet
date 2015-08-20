@@ -3,19 +3,19 @@ using System.Collections.Generic;
 
 namespace Rivet
 {
-	public class ConstraintName
+	public class IndexName
 	{
 		private readonly string _name;
 
-		public ConstraintName(string schemaName, string tableName, string[] columnName, ConstraintType type)
+		public IndexName(string schemaName, string tableName, string[] columnName, bool isUnique)
 		{
 			SchemaName = schemaName;
 			TableName = tableName;
 			ColumnName = new List<string>(columnName ?? new string[0]);
-			Type = type;
+			Unique = isUnique;
 		}
 
-		public ConstraintName(string name)
+		public IndexName(string name)
 		{
 			_name = name;
 		}
@@ -23,7 +23,7 @@ namespace Rivet
 		public string SchemaName { get; set; }
 		public string TableName { get; set; }
 		public List<string> ColumnName { get; private set; }
-		public ConstraintType Type { get; set; }
+		public bool Unique{ get; set; }
 		public string Name { get { return ToString(); } }
 
 		public override string ToString()
@@ -31,37 +31,14 @@ namespace Rivet
 			if (!string.IsNullOrEmpty(_name))
 				return _name;
 
-			string keyname;
-			switch(Type)
+			string keyname = "IX";
+			if (Unique)
 			{
-				case ConstraintType.Default:
-					keyname = "DF";
-					break;
-
-				case ConstraintType.PrimaryKey:
-					keyname = "PK";
-					break;
-
-				case ConstraintType.Check:
-					keyname = "CK";
-					break;
-
-				case ConstraintType.UniqueKey:
-					keyname = "AK";
-					break;
-
-				default:
-					keyname = "DF";
-					break;
+				keyname = "UIX";
 			}
-			
+
 			var columnClause = string.Join("_", ColumnName.ToArray());
 			columnClause = String.Format("_{0}", columnClause);
-
-			if( Type == ConstraintType.PrimaryKey )
-			{
-				columnClause = "";
-			}
 
 			var name = string.Format("{0}_{1}_{2}{3}", keyname, SchemaName, TableName, columnClause);
 			if (string.Equals(SchemaName, "dbo", StringComparison.InvariantCultureIgnoreCase))

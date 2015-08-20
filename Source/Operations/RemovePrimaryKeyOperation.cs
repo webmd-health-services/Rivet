@@ -4,11 +4,6 @@ namespace Rivet.Operations
 {
 	public sealed class RemovePrimaryKeyOperation : TableObjectOperation
 	{
-		public RemovePrimaryKeyOperation(string schemaName, string tableName)
-			: base(schemaName, tableName, new ConstraintName(schemaName, tableName, null, ConstraintType.PrimaryKey).ToString())
-		{
-		}
-
 		public RemovePrimaryKeyOperation(string schemaName, string tableName, string name)
 			: base(schemaName, tableName, name)
 		{

@@ -28,6 +28,7 @@ namespace Rivet.Test.Operations
 			Assert.AreEqual(expression, op.Expression);
 			Assert.AreEqual(withValues, op.WithValues);
 			Assert.That(op.ObjectName, Is.EqualTo(string.Format("{0}.{1}.DF_{0}_{1}_{2}", schemaName, tableName, columnName)));
+			Assert.That(op.ConstraintType, Is.EqualTo(ConstraintType.Default));
 		}
 
 		[Test]
@@ -92,6 +93,13 @@ namespace Rivet.Test.Operations
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}
 
+		[Test]
+		public void ShouldAllowChangingConstraintName()
+		{
+			var op = new AddDefaultConstraintOperation("schema", "table", "name", "1", false);
+			op.SetConstraintName("new name");
+			Assert.That(op.Name, Is.EqualTo("new name"));
+		}
 	}
 
 }

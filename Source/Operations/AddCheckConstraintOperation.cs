@@ -2,10 +2,10 @@
 
 namespace Rivet.Operations
 {
-	public sealed class AddCheckConstraintOperation : TableObjectOperation
+	public sealed class AddCheckConstraintOperation : ConstraintOperation
 	{
 		public AddCheckConstraintOperation(string schemaName, string tableName, string name, string expression, bool notForReplication, bool withNoCheck) 
-			:base(schemaName, tableName, name)
+			:base(schemaName, tableName, name, ConstraintType.Check)
 		{
 			Expression = expression;
 			NotForReplication = notForReplication;

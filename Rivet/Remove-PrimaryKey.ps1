@@ -12,16 +12,11 @@ function Remove-PrimaryKey
     Remove-PrimaryKey
 
     .EXAMPLE
-    Remove-PrimaryKey -TableName Cars 
-
-    Removes the primary key on the `Cars` table.
-
-    .EXAMPLE
     Remove-PrimaryKey 'Cars' -Name 'Car_PK'
 
-    Demonstrates how to remove a primary key whose name is different than the derived name Rivet creates for primary keys.
+    Demonstrates how to remove a primary key.
     #>
-    [CmdletBinding(DefaultParameterSetName='ByDefaultName')]
+    [CmdletBinding()]
     param(
         [Parameter(Mandatory=$true,Position=0)]
         [string]
@@ -33,20 +28,13 @@ function Remove-PrimaryKey
         # The schema name of the table.  Defaults to `dbo`.
         $SchemaName = 'dbo',
 
-        [Parameter(Mandatory=$true,ParameterSetName='ByCustomName')]
+        [Parameter(Mandatory=$true)]
         [string]
-        # The name for the <object type>. If not given, a sensible name will be created.
+        # The name for the primary key.
         $Name
     )
 
     Set-StrictMode -Version 'Latest'
 
-    if ($PSBoundParameters.containskey("Name"))
-    {
-        New-Object 'Rivet.Operations.RemovePrimaryKeyOperation' $SchemaName, $TableName, $Name
-    }
-    else 
-    {
-        New-Object 'Rivet.Operations.RemovePrimaryKeyOperation' $SchemaName, $TableName
-    }
+    New-Object 'Rivet.Operations.RemovePrimaryKeyOperation' $SchemaName, $TableName, $Name
 }

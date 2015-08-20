@@ -34,7 +34,7 @@ function Get-Migration
     param(
         [Parameter(ParameterSetName='External')]
         [string[]]
-        # The database whose migrations to get.
+        # The database whose migrations to get.np
         $Database,
 
         [Parameter(ParameterSetName='External')]
