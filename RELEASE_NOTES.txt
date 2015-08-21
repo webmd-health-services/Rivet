@@ -18,6 +18,7 @@
  * Updated and improved the `about_Rivet_Plugins` help topic.
  * Replaced `Enable-CheckConstraint` and `Enable-ForeignKeyConstraint` operations with `Enable-Constraint` operation. 
  * Replaced `Disable-CheckConstraint` and `Disable-ForeignKeyConstraint` operations with `Disable-Constraint` operation.
+ * You can now push, pop, or create multiple migrations at once (i.e. `rivet.ps1`'s `Name` parameter now accepts multiple names, IDs, or file names).
 
 ## Bug Fixes
 
