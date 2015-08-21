@@ -1,23 +1,27 @@
-﻿function Disable-CheckConstraint
+﻿
+function Disable-Constraint
 {
     <#
     .SYNOPSIS
-    Disable a check constraint on a table.
+    Disable a check of foreign key constraint on a table.
     
     .DESCRIPTION
-    Disabling check constraints removes validation for data in columns.
+    The `Disable-Constraint` operation disables a check or foreign key constraint on a table. Only check and foreign key constraints can be enabled/disabled.
     
+    .LINK
+    Enable-Constraint
+
     .EXAMPLE
     Disable-CheckConstraint 'Migrations' 'CK_Migrations_MigrationID'
     
-    Disables the check constraint named 'CK_Migrations_MigrationID' on the 'Migrations' table.
+    Demonstrates how to disable a constraint on a table. In this case, the `CK_Migrations_MigrationID` constraint on the `Migrations` table is disabled. Is it a check constraint? Foreign key constraint? It doesn't matter!
     #>
 
     [CmdletBinding()]
     param(
         [Parameter(Mandatory=$true,Position=0)]
         [string]
-        # The name of the check constraint's table.
+        # The name of the constraint's table.
         $TableName,
         
         [Parameter()]
@@ -27,11 +31,11 @@
         
         [Parameter(Mandatory=$true,Position=1)]
         [string]
-        # The name of the check constraint.
+        # The name of the constraint.
         $Name
     )
 
     Set-StrictMode -Version 'Latest'
 
-    New-Object 'Rivet.Operations.DisableCheckConstraintOperation' $SchemaName, $TableName, $Name
+    New-Object 'Rivet.Operations.DisableConstraintOperation' $SchemaName, $TableName, $Name
 }

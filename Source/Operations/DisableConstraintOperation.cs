@@ -2,9 +2,9 @@
 
 namespace Rivet.Operations
 {
-    public sealed class DisableCheckConstraintOperation : TableObjectOperation
+    public sealed class DisableConstraintOperation : TableObjectOperation
     {
-        public DisableCheckConstraintOperation(string schemaName, string tableName, string name)
+        public DisableConstraintOperation(string schemaName, string tableName, string name)
             : base(schemaName, tableName, name) { }
 
         public override string ToIdempotentQuery()

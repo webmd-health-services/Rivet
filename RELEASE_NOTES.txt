@@ -16,6 +16,8 @@
  * Improved object model so that customizing index/constraint names is easier. 
  * Added `about_Rivet_Cookbook` help topic to showing how to customize index/constraint names.
  * Updated and improved the `about_Rivet_Plugins` help topic.
+ * Replaced `Enable-CheckConstraint` and `Enable-ForeignKeyConstraint` operations with `Enable-Constraint` operation. 
+ * Replaced `Disable-CheckConstraint` and `Disable-ForeignKeyConstraint` operations with `Disable-Constraint` operation.
 
 ## Bug Fixes
 
