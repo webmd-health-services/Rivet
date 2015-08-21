@@ -10,7 +10,7 @@ function New-Migration
     #>
     param(
         [Parameter(Mandatory=$true)]
-        [string]
+        [string[]]
         # The name of the migration to create.
         $Name,
         
@@ -20,23 +20,25 @@ function New-Migration
         $Path
     )
 
-    $id = $null
-    $id = [int64](Get-Date).ToString('yyyyMMddHHmmss')
-    while( (Test-Path -Path $Path -PathType Container) -and `
-           (Get-ChildItem -Path $Path -Filter ('{0}_*' -f $id) ) )
+    foreach( $nameItem in $Name )
     {
-        $id++
-    }
+        $id = $null
+        $id = [int64](Get-Date).ToString('yyyyMMddHHmmss')
+        while( (Test-Path -Path $Path -PathType Container) -and `
+               (Get-ChildItem -Path $Path -Filter ('{0}_*' -f $id) ) )
+        {
+            $id++
+        }
 
-    $filename = '{0}_{1}.ps1' -f $id,$Name
+        $filename = '{0}_{1}.ps1' -f $id,$nameItem
 
-    $importRivetPath = Join-Path -Path $PSScriptRoot -ChildPath 'Import-Rivet.ps1' -Resolve
+        $importRivetPath = Join-Path -Path $PSScriptRoot -ChildPath 'Import-Rivet.ps1' -Resolve
 
-    $migrationPath = Join-Path -Path $Path -ChildPath $filename
-    $migrationPath = [IO.Path]::GetFullPath( $migrationPath )
-    New-Item -Path $migrationPath -Force -ItemType File
+        $migrationPath = Join-Path -Path $Path -ChildPath $filename
+        $migrationPath = [IO.Path]::GetFullPath( $migrationPath )
+        New-Item -Path $migrationPath -Force -ItemType File
 
-    $template = @"
+        $template = @"
 <#
 Your migration is ready to go!  For the best development experience, please 
 write your migration in the PowerShell 3 ISE.  Run the following at a 
@@ -66,5 +68,6 @@ function Pop-Migration
 }}
 "@ -f $migrationPath,$importRivetPath 
 
-    $template | Set-Content -Path $migrationPath
+        $template | Set-Content -Path $migrationPath
+    }
 }
