@@ -18,6 +18,7 @@ Here's some sample code demonstrating all this:
 
     function Start-MigrationOperation
     {
+        [CmdletBinding()]
         param(
             [Parameter(Mandatory=$true)]
             [Rivet.Operation]
@@ -33,27 +34,27 @@ Here's some sample code demonstrating all this:
             {
                 [Rivet.ConstraintType]::Default
                 {
-                    $Operation.SetConstraintName( ('DF_{0}_{1}_{2}' -f $Operation.SchemaName,$Operation.TableName,$Operation.ColumnName) )
+                    $Operation.Name = 'DF_{0}_{1}_{2}' -f $Operation.SchemaName,$Operation.TableName,$Operation.ColumnName
                 }
                 
                 [Rivet.ConstraintType]::PrimaryKey
                 {
-                    $Operation.SetConstraintName( ('PK_{0}_{1}' -f $Operation.SchemaName,$Operation.TableName) )
+                    $Operation.Name = 'PK_{0}_{1}' -f $Operation.SchemaName,$Operation.TableName
                 }
                 
                 [Rivet.ConstraintType]::ForeignKey
                 {
-                    $Operation.SetConstraintName( ('FK_{0}_{1}_{2}_{3}' -f $Operation.SchemaName,$Operation.TableName,$Operation.ReferencesSchemaName,$Operation.ReferencesTableName) )
+                    $Operation.Name = 'FK_{0}_{1}_{2}_{3}' -f $Operation.SchemaName,$Operation.TableName,$Operation.ReferencesSchemaName,$Operation.ReferencesTableName
                 }
                 
                 [Rivet.ConstraintType]::Check
                 {
-                    $Operation.SetConstraintName( ('CK_{0}_{1}_{2}', $Operation.SchemaName,$Operation.TableName,($Operation.Expression -replace '[A-Za-z0-9]','') )
+                    $Operation.Name = 'CK_{0}_{1}_{2}', $Operation.SchemaName,$Operation.TableName,($Operation.Expression -replace '[A-Za-z0-9]','')
                 }
                 
                 [Rivet.ConstraintType]::UniqueKey
                 {
-                    $Operation.SetConstraintName( ('UK_{0}_{1}_{2}' -f$Operation.SchemaName,$Operation.TableName,($Operation.ColumnName -join '_')) )
+                    $Operation.Name = 'UK_{0}_{1}_{2}' -f$Operation.SchemaName,$Operation.TableName,($Operation.ColumnName -join '_')
                 }
                 
                 default
@@ -71,7 +72,7 @@ Here's some sample code demonstrating all this:
                 $prefix = 'UIX'
             }
             
-            $Operation.SetIndexName( ('{0}_{1}_{2}_{3}' -f $prefix,$Operation.SchemaName,$Operation.TableName,($Operation.ColumnName -join '_')) )
+            $Operation.Name = '{0}_{1}_{2}_{3}' -f $prefix,$Operation.SchemaName,$Operation.TableName,($Operation.ColumnName -join '_')
         }
     }
 

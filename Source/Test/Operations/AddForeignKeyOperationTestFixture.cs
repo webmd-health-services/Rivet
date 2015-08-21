@@ -114,7 +114,7 @@ namespace Rivet.Test.Operations
 		{
 			var op = new AddForeignKeyOperation("schema", "table", new[] { "column" }, "referencesSchema", "referencesTable",
 				new[] { "column" }, "OK", "OK", false, false);
-			op.SetConstraintName("new name");
+			op.Name = "new name";
 			Assert.That(op.Name, Is.EqualTo("new name"));
 		}
 	}

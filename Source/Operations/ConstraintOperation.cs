@@ -10,10 +10,5 @@
 		}
 
 		public ConstraintType ConstraintType { get; private set; }
-
-		public void SetConstraintName(string name)
-		{
-			Name = name;
-		}
 	}
 }

@@ -97,7 +97,7 @@ namespace Rivet.Test.Operations
 		public void ShouldAllowChangingConstraintName()
 		{
 			var op = new AddDefaultConstraintOperation("schema", "table", "name", "1", false);
-			op.SetConstraintName("new name");
+			op.Name = "new name";
 			Assert.That(op.Name, Is.EqualTo("new name"));
 		}
 	}

@@ -204,7 +204,7 @@ namespace Rivet.Test.Operations
 		public void ShouldAllowChangingIndexName()
 		{
 			var op = new AddIndexOperation("schema", "table", new[] {"column"}, false, false, null, null, null, null, null);
-			op.SetIndexName("new name");
+			op.Name = "new name";
 			Assert.That(op.Name, Is.EqualTo("new name"));
 		}
 	}
