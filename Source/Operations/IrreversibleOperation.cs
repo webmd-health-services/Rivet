@@ -10,7 +10,7 @@ namespace Rivet.Operations
 			ErrorMessage = errorMessage;
 		}
 
-		public string ErrorMessage { get; private set; }
+		public string ErrorMessage { get; set; }
 
 		public override string ToQuery()
 		{
