@@ -34,7 +34,7 @@ function Remove-UniqueKey
         # The schema name of the target table.  Defaults to `dbo`.
         $SchemaName = 'dbo',
 
-        [Parameter(Mandatory=$true,ParameterSetName='ByExplicitName')]
+        [Parameter(Mandatory=$true,Position=1)]
         [string]
         # The name for the unique key.
         $Name
@@ -42,13 +42,5 @@ function Remove-UniqueKey
 
     Set-StrictMode -Version 'Latest'
 
-    if ($PSBoundParameters.ContainsKey("Name"))
-    {
-        New-Object 'Rivet.Operations.RemoveUniqueKeyOperation' $SchemaName, $TableName, $Name
-    }
-    else 
-    {
-        $ColumnClause = $ColumnName -join ','
-        New-Object 'Rivet.Operations.RemoveUniqueKeyOperation' $SchemaName, $TableName, $ColumnName
-    }
+    New-Object 'Rivet.Operations.RemoveUniqueKeyOperation' $SchemaName, $TableName, $Name
 }

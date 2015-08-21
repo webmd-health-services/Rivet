@@ -212,7 +212,7 @@ function Pop-Migration
 
 function Test-ShouldMakeForeignKeyNotForReplication
 {
-    $m = @'
+    $m = @"
 function Push-Migration
 {
     Add-Table Foo -Description 'Test' {
@@ -230,11 +230,11 @@ function Push-Migration
 
 function Pop-Migration
 {
-    Remove-ForeignKey -TableName 'Foo' -References 'Bar'
+    Remove-ForeignKey -TableName 'Foo' -Name '$(New-ForeignKeyConstraintName 'Foo' 'Bar')'
     Remove-Table 'Bar'
     Remove-Table 'Foo'
 }
-'@ | New-Migration -Name 'ValidateMigrations'
+"@ | New-Migration -Name 'ValidateMigrations'
 
     Invoke-RTRivet -Push 'ValidateMigrations'
 

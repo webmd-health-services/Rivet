@@ -8,24 +8,6 @@ function New-ConstraintName
     [CmdletBinding(DefaultParameterSetName='DF')]
     param(
         [Parameter(Mandatory=$true,ParameterSetName='DF')]
-        [Parameter(Mandatory=$true,ParameterSetName='IX')]
-        [Parameter(Mandatory=$true,ParameterSetName='AK')]
-        [Parameter(Mandatory=$true,ParameterSetName='UIX')]
-        [string[]]
-        # The column name.
-        $ColumnName,
-
-        [Parameter(Mandatory=$true)]
-        [string]
-        # The table name.
-        $TableName,
-
-        [Parameter()]
-        [string]
-        # The table's schema.  Default is `dbo`.
-        $SchemaName = 'dbo',
-
-        [Parameter(Mandatory=$true,ParameterSetName='DF')]
         [Switch]
         # Creates a default constraint name.
         $Default,
@@ -48,7 +30,25 @@ function New-ConstraintName
         [Parameter(Mandatory=$true,ParameterSetName='AK')]
         [Switch]
         # Creates an unique key/alternate key constraint name.
-        $UniqueKey
+        $UniqueKey,
+
+        [Parameter()]
+        [string]
+        # The table's schema.  Default is `dbo`.
+        $SchemaName = 'dbo',
+
+        [Parameter(Mandatory=$true,Position=0)]
+        [string]
+        # The table name.
+        $TableName,
+
+        [Parameter(Mandatory=$true,ParameterSetName='DF',Position=1)]
+        [Parameter(Mandatory=$true,ParameterSetName='IX',Position=1)]
+        [Parameter(Mandatory=$true,ParameterSetName='AK',Position=1)]
+        [Parameter(Mandatory=$true,ParameterSetName='UIX',Position=1)]
+        [string[]]
+        # The column name.
+        $ColumnName
     )
 
     if ($PSCmdlet.ParameterSetName -eq "DF")

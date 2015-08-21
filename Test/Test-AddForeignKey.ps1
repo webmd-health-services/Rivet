@@ -12,7 +12,7 @@ function Stop-Test
 
 function Test-ShouldAddForeignKeyFromSingleColumnToSingleColumn
 {
-    @'
+    @"
 function Push-Migration()
 {
     # Yes.  Spaces in the name so we check the name gets quoted.
@@ -30,18 +30,18 @@ function Push-Migration()
 
 function Pop-Migration()
 {
-    Remove-ForeignKey 'Source Table' 'Reference Table'
+    Remove-ForeignKey 'Source Table' '$(New-ForeignKeyConstraintName 'Source Table' 'REference Table')'
     Remove-Table 'Reference Table'
     Remove-Table 'Source Table'
 }
-'@ | New-Migration -Name 'AddForeignKeyFromSingleColumnToSingleColumn'
+"@ | New-Migration -Name 'AddForeignKeyFromSingleColumnToSingleColumn'
     Invoke-RTRivet -Push 'AddForeignKeyFromSingleColumnToSingleColumn'
     Assert-ForeignKey -TableName 'Source Table' -References 'Reference Table'
 }
 
 function Test-ShouldAddForeignKeyFromMultipleColumnToMultipleColumn
 {
-    @'
+    @"
 function Push-Migration()
 {
     Add-Table -Name 'Source' {
@@ -60,18 +60,18 @@ function Push-Migration()
 
 function Pop-Migration()
 {
-    Remove-ForeignKey 'Source' 'Reference'
+    Remove-ForeignKey 'Source' '$(New-ForeignKeyConstraintName 'Source' 'Reference')'
     Remove-Table 'Reference'
     Remove-Table 'Source'
 }
-'@ | New-Migration -Name 'AddForeignKeyFromMultipleColumnToMultipleColumn'
+"@ | New-Migration -Name 'AddForeignKeyFromMultipleColumnToMultipleColumn'
     Invoke-RTRivet -Push 'AddForeignKeyFromMultipleColumnToMultipleColumn'
     Assert-ForeignKey -TableName 'Source' -References 'Reference'
 }
 
 function Test-ShouldAddForeignKeyWithCustomSchema
 {
-    @'
+    @"
 function Push-Migration()
 {
     Add-Table -Name 'Source' -SchemaName 'rivet' {
@@ -88,18 +88,18 @@ function Push-Migration()
 
 function Pop-Migration()
 {
-    Remove-ForeignKey 'Source' -SchemaName 'rivet' 'Reference' -ReferencesSchema 'rivet'
+    Remove-ForeignKey 'Source' -SchemaName 'rivet' '$(New-ForeignKeyConstraintName -SourceSchema 'rivet' 'Source' -TargetSchema 'rivet' 'Reference')'
     Remove-Table 'Reference' -SchemaName 'rivet'
     Remove-Table 'Source' -SchemaName 'rivet'
 }
-'@ | New-Migration -Name 'AddForeignKeyWithCustomSchema'
+"@ | New-Migration -Name 'AddForeignKeyWithCustomSchema'
     Invoke-RTRivet -Push 'AddForeignKeyWithCustomSchema'
     Assert-ForeignKey -TableName 'Source' -SchemaName 'rivet' -References 'Reference' -ReferencesSchema 'rivet'
 }
 
 function Test-ShouldAddForeignKeyWithOnDelete
 {
-    @'
+    @"
 function Push-Migration()
 {
     Add-Table -Name 'Source' {
@@ -116,11 +116,11 @@ function Push-Migration()
 
 function Pop-Migration()
 {
-    Remove-ForeignKey 'Source' 'Reference'
+    Remove-ForeignKey 'Source' '$(New-ForeignKeyConstraintName 'Source' 'Reference')'
     Remove-Table 'Reference'
     Remove-Table 'Source'
 }
-'@ | New-Migration -Name 'AddForeignKeyWithOnDelete'
+"@ | New-Migration -Name 'AddForeignKeyWithOnDelete'
     Invoke-RTRivet -Push 'AddForeignKeyWithOnDelete'
     Assert-ForeignKey -TableName 'Source' -References 'Reference' -OnDelete 'CASCADE'
 
@@ -128,7 +128,7 @@ function Pop-Migration()
 
 function Test-ShouldAddForeignKeyWithOnUpdate
 {
-    @'
+    @"
 function Push-Migration()
 {
     Add-Table -Name 'Source' {
@@ -145,18 +145,18 @@ function Push-Migration()
 
 function Pop-Migration()
 {
-    Remove-ForeignKey 'Source' 'Reference' 
+    Remove-ForeignKey 'Source' '$(New-ForeignKeyConstraintName 'Source' 'Reference')'
     Remove-Table 'Reference'
     Remove-Table 'Source'
 }
-'@ | New-Migration -Name 'AddForeignKeyWithOnUpdate'
+"@ | New-Migration -Name 'AddForeignKeyWithOnUpdate'
     Invoke-RTRivet -Push 'AddForeignKeyWithOnUpdate'
     Assert-ForeignKey -TableName 'Source' -References 'Reference' -OnDelete 'CASCADE' -OnUpdate 'CASCADE'
 }
 
 function Test-ShouldAddForeignKeyNotForReplication
 {
-    @'
+    @"
 function Push-Migration()
 {
     Add-Table -Name 'Source' {
@@ -173,11 +173,11 @@ function Push-Migration()
 
 function Pop-Migration()
 {
-    Remove-ForeignKey 'Source' 'Reference' 
+    Remove-ForeignKey 'Source' '$(New-ForeignKeyConstraintName 'Source' 'Reference')'
     Remove-Table 'Reference'
     Remove-Table 'Source'
 }
-'@ | New-Migration -Name 'AddForeignKeyNotForReplication'
+"@ | New-Migration -Name 'AddForeignKeyNotForReplication'
     Invoke-RTRivet -Push 'AddForeignKeyNotForReplication'
     Assert-ForeignKey -TableName 'Source' -References 'Reference' -OnDelete 'CASCADE' -OnUpdate 'CASCADE' -NotForReplication
 
@@ -185,7 +185,7 @@ function Pop-Migration()
 
 function Test-ShouldQuoteForeignKeyName
 {
-    @'
+    @"
 function Push-Migration()
 {
     Add-Table -Name 'Add-ForeignKey' {
@@ -202,50 +202,18 @@ function Push-Migration()
 
 function Pop-Migration()
 {
-    Remove-ForeignKey 'Add-ForeignKey' 'Reference' 
+    Remove-ForeignKey 'Add-ForeignKey' '$(New-ForeignKeyConstraintName 'Add-ForeignKey' 'Reference')'
     Remove-Table 'Reference'
     Remove-Table 'Add-ForeignKey'
 }
-'@ | New-Migration -Name 'AddForeignKeyFromSingleColumnToSingleColumn'
+"@ | New-Migration -Name 'AddForeignKeyFromSingleColumnToSingleColumn'
     Invoke-RTRivet -Push 'AddForeignKeyFromSingleColumnToSingleColumn'
     Assert-ForeignKey -TableName 'Add-ForeignKey' -References 'Reference'
 }
 
-function Test-ShouldAddForeignKeyWithOptionalConstraintName
-{
-    @'
-function Push-Migration()
-{
-    Add-Table -Name 'Add-ForeignKey' {
-        Int 'source_id' -NotNull
-    }
-
-    Add-Table -Name 'Reference' {
-        Int 'reference_id' -NotNull
-    }
-
-    Add-PrimaryKey -TableName 'Reference' -ColumnName 'reference_id'
-    Add-ForeignKey -TableName 'Add-ForeignKey' -ColumnName 'source_id' -References 'Reference' -ReferencedColumn 'reference_id' -Name 'OptionalName'
-}
-
-function Pop-Migration()
-{
-    Remove-ForeignKey 'Add-ForeignKey' -Name 'OptionalName'
-    Remove-Table 'Add-ForeignKey'
-    Remove-Table 'Reference'
-}
-'@ | New-Migration -Name 'AddForeignKeyWithOptionalConstraintName'
-    Invoke-RTRivet -Push 'AddForeignKeyWithOptionalConstraintName'
-    
-    $ForeignKeys = @(Invoke-RivetTestQuery -Query 'select * from sys.foreign_keys')
-
-    Assert-Equal 'OptionalName' $ForeignKeys.Name
-}
-
-
 function Test-ShouldAddForeignKeyWithNoCheck
 {
-    @'
+    @"
 function Push-Migration()
 {
     Add-Table -Name 'Source Table' {
@@ -267,11 +235,11 @@ function Push-Migration()
 
 function Pop-Migration()
 {
-    Remove-ForeignKey 'Source Table' 'Reference Table' 
+    Remove-ForeignKey 'Source Table' '$(New-ForeignKeyConstraintName 'Source Table' 'Reference Table')'
     Remove-Table 'Reference Table'
     Remove-Table 'Source Table'
 }
-'@ | New-Migration -Name 'AddForeignKeyFromSingleColumnToSingleColumn'
+"@ | New-Migration -Name 'AddForeignKeyFromSingleColumnToSingleColumn'
     Invoke-RTRivet -Push 'AddForeignKeyFromSingleColumnToSingleColumn'
 
     $SourceRow = Get-Row -SchemaName 'dbo' -TableName 'Source Table'

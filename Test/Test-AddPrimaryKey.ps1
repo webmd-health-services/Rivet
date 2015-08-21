@@ -14,7 +14,7 @@ function Stop-Test
 function Test-ShouldAddPrimaryKey
 {
     # Yes.  Spaces in the name so we check the name gets quoted.
-    @'
+    @"
 function Push-Migration()
 {
     Add-Table -Name 'Primary Key' {
@@ -26,11 +26,11 @@ function Push-Migration()
 
 function Pop-Migration()
 {
-    Remove-PrimaryKey -TableName 'Primary Key'
+    Remove-PrimaryKey -TableName 'Primary Key' '$(New-ConstraintName -PrimaryKey -TableName 'Primary Key')'
     Remove-Table -Name 'Primary Key'
 }
 
-'@ | New-Migration -Name 'AddTableWithPrimaryKey'
+"@ | New-Migration -Name 'AddTableWithPrimaryKey'
     Invoke-RTRivet -Push 'AddTableWithPrimaryKey'
     Assert-True (Test-Table 'Primary Key')
     Assert-PrimaryKey -TableName 'Primary Key' -ColumnName 'PK ID'

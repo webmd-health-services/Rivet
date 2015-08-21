@@ -276,24 +276,24 @@ function Pop-Migration
 
 function Test-ShouldCreateIdempotentQueriesForRemoveOperations
 {
-    $migration = @'
+    $migration = @"
 function Push-Migration
 {
-    $idempotent = @{ SchemaName = 'idempotent' }
-    $crops = @{ TableName = 'Crops' }
-    $farmers = @{ TableName = 'Farmers' }
+    `$idempotent = @{ SchemaName = 'idempotent' }
+    `$crops = @{ TableName = 'Crops' }
+    `$farmers = @{ TableName = 'Farmers' }
 
     Add-Schema 'empty'
-    Add-Schema $idempotent.SchemaName
+    Add-Schema `$idempotent.SchemaName
     
-    Add-Table @idempotent $farmers.TableName {
+    Add-Table @idempotent `$farmers.TableName {
         int 'ID' -NotNull
         varchar 'Name' -NotNull -Size 500
         varchar 'ZipCode' -Size 10
     }
     Add-PrimaryKey @idempotent @farmers -ColumnName 'ID'
 
-    Add-Table @idempotent $crops.TableName {
+    Add-Table @idempotent `$crops.TableName {
         int 'ID' -Identity
         varchar 'Name' -Size 50
         int 'FarmerID' -NotNull
@@ -302,13 +302,12 @@ function Push-Migration
     Add-CheckConstraint @idempotent @crops -Name 'CK_Crops_AllowedCrops' -Expression 'Name = ''Strawberries'' or Name = ''Rasberries'''
     Add-DefaultConstraint @idempotent @crops -ColumnName 'Name' -Expression '''Strawberries'''
     Add-Description @idempotent @crops -ColumnName 'Name' 'Yumm!'
-    Add-ForeignKey @idempotent @crops -ColumnName 'FarmerID' `
-                   -ReferencesSchema $idempotent.SchemaName -References $farmers.TableName -ReferencedColumn 'ID'
+    Add-ForeignKey @idempotent @crops -ColumnName 'FarmerID' -ReferencesSchema `$idempotent.SchemaName -References `$farmers.TableName -ReferencedColumn 'ID'
     Add-Index @idempotent @crops -ColumnName 'Name'
     Add-UniqueKey @idempotent @crops 'Name'
 
     Add-DataType @idempotent -Name 'GUID' -From 'uniqueidentifier'
-    Add-Synonym -Name 'Crop' @idempotent -TargetSchemaName $idempotent.SchemaName 'Crops'
+    Add-Synonym -Name 'Crop' @idempotent -TargetSchemaName `$idempotent.SchemaName 'Crops'
 
     Add-StoredProcedure 'GetFarmers' @idempotent -Definition 'AS select * from Crops'
     Add-Trigger 'CropActivity' @idempotent -Definition "on idempotent.Crops after insert as return"
@@ -322,9 +321,9 @@ function Push-Migration
 
 function Pop-Migration
 {
-    $idempotent = @{ SchemaName = 'idempotent' }
-    $crops = @{ TableName = 'Crops' }
-    $farmers = @{ TableName = 'Farmers' }
+    `$idempotent = @{ SchemaName = 'idempotent' }
+    `$crops = @{ TableName = 'Crops' }
+    `$farmers = @{ TableName = 'Farmers' }
 
     Remove-Table @idempotent 'removeme'
 
@@ -336,57 +335,57 @@ function Pop-Migration
     Remove-Synonym -Name 'Crop' @idempotent
     Remove-DataType @idempotent -Name 'GUID'
     
-    Remove-UniqueKey @idempotent @crops 'Name'
-    Remove-Index @idempotent @crops 'Name'
-    Remove-ForeignKey @idempotent @crops -ReferencesSchema $idempotent.SchemaName -References $farmers.TableName
-    Remove-Table @idempotent $crops.TableName
-    Remove-Table @idempotent $farmers.TableName
+    Remove-UniqueKey @idempotent @crops '$(New-ConstraintName -UniqueKey -SchemaName 'idempotent' 'Crops' 'Name')'
+    Remove-Index @idempotent @crops '$(New-ConstraintName -Index -SchemaName 'idempotent' 'Crops' 'Name')'
+    Remove-ForeignKey @idempotent @crops '$(New-ForeignKeyConstraintName -SourceSchema 'idempotent' 'Crops' -TargetSchema 'idempotent' 'Farmers')'
+    Remove-Table @idempotent `$crops.TableName
+    Remove-Table @idempotent `$farmers.TableName
     Remove-Schema 'empty'
-    Remove-Schema $idempotent.SchemaName
+    Remove-Schema `$idempotent.SchemaName
 }
-'@ | New-Migration -Name 'ShouldCreateIdempotentQueriesForRemoveOperations'
+"@ | New-Migration -Name 'ShouldCreateIdempotentQueriesForRemoveOperations'
 
     Invoke-RTRivet -Push 'ShouldCreateIdempotentQueriesForRemoveOperations'
 
     Assert-Table -SchemaName 'idempotent' -Name 'removeme'
     $migration | Rename-Migration
 
-    @'
-$schema = @{ SchemaName = 'idempotent' }
-$crops = @{ TableName = 'Crops' }
-$farmers = @{ TableName = 'Farmers' }
+    @"
+`$schema = @{ SchemaName = 'idempotent' }
+`$crops = @{ TableName = 'Crops' }
+`$farmers = @{ TableName = 'Farmers' }
 
 function Push-Migration
 {
     Remove-CheckConstraint @schema @crops -Name 'CK_Crops_AllowedCrops'
-    Update-Table @schema -Name $farmers.TableName -Remove 'RemoveMe'
+    Update-Table @schema -Name `$farmers.TableName -Remove 'RemoveMe'
     Remove-DataType @schema -Name 'GUID'
-    Remove-DefaultConstraint @schema @crops -ColumnName 'Name'
+    Remove-DefaultConstraint @schema @crops '$(New-ConstraintName -Default -SchemaName 'idempotent' 'Crops' 'Name')'
     Remove-Description @schema @crops -ColumnName 'Name'
-    Remove-ForeignKey @schema @crops -References $farmers.TableName -ReferencesSchema $schema.SchemaName
-    Remove-Index @schema @crops -ColumnName 'Name'
-    Remove-PrimaryKey @schema @crops
+    Remove-ForeignKey @schema @crops '$(New-ForeignKeyConstraintName -SourceSchema 'idempotent' 'Crops' -TargetSchema 'idempotent' 'Farmers')'
+    Remove-Index @schema @crops '$(New-ConstraintName -Index -SchemaName 'idempotent' 'Crops' 'Name')'
+    Remove-PrimaryKey @schema @crops '$(New-ConstraintName -PrimaryKey -SchemaName 'schema' 'Crops')'
     Remove-Row @schema @farmers -Where 'ID = 1'
     Remove-Schema 'empty'
     Remove-StoredProcedure @schema -Name 'GetFarmers'
     Remove-Synonym @schema -Name 'Crop'
     Remove-Table @schema -Name 'removeme'
     Remove-Trigger @schema -Name 'CropActivity'
-    Remove-UniqueKey @schema @crops -ColumnName 'Name'
+    Remove-UniqueKey @schema @crops '$(New-ConstraintName -UniqueKey -SchemaName 'idempotent' 'Crops' 'Name')'
     Remove-UserDefinedFunction @schema -Name 'GetInteger'
     Remove-View @schema -Name 'FarmerCrops'
 }
 
 function Pop-Migration
 {
-    Add-Table @schema $farmers.TableName {
+    Add-Table @schema `$farmers.TableName {
         int 'ID' -NotNull
         varchar 'Name' -NotNull -Size 500
         varchar 'ZipCode' -Size 10
     }
     Add-PrimaryKey @schema @farmers -ColumnName 'ID'
 
-    Add-Table @schema $crops.TableName {
+    Add-Table @schema `$crops.TableName {
         int 'ID' -Identity
         varchar 'Name' -Size 50
         int 'FarmerID' -NotNull
@@ -395,13 +394,12 @@ function Pop-Migration
     Add-CheckConstraint @schema @crops -Name 'CK_Crops_AllowedCrops' -Expression 'Name = ''Strawberries'' or Name = ''Rasberries'''
     Add-DefaultConstraint @schema @crops -ColumnName 'Name' -Expression '''Strawberries'''
     Add-Description @schema @crops -ColumnName 'Name' 'Yumm!'
-    Add-ForeignKey @schema @crops -ColumnName 'FarmerID' `
-                   -ReferencesSchema $schema.SchemaName -References $farmers.TableName -ReferencedColumn 'ID'
+    Add-ForeignKey @schema @crops -ColumnName 'FarmerID' -ReferencesSchema `$schema.SchemaName -References `$farmers.TableName -ReferencedColumn 'ID'
     Add-Index @schema @crops -ColumnName 'Name'
     Add-UniqueKey @schema @crops 'Name'
 
     Add-DataType @schema -Name 'GUID' -From 'uniqueidentifier'
-    Add-Synonym -Name 'Crop' @schema -TargetSchemaName $schema.SchemaName 'Crops'
+    Add-Synonym -Name 'Crop' @schema -TargetSchemaName `$schema.SchemaName 'Crops'
 
     Add-StoredProcedure 'GetFarmers' @schema -Definition 'AS select * from Crops'
     Add-Trigger 'CropActivity' @schema -Definition "on idempotent.Crops after insert as return"
@@ -414,7 +412,7 @@ function Pop-Migration
 
     Add-Schema 'empty'
 }
-'@ | New-Migration -Name 'RemoveOperations'
+"@ | New-Migration -Name 'RemoveOperations'
 
     Assert-ConvertMigration -Schemas -Schema -CodeObject -Data -DependentObject -ExtendedProperty -Trigger -Constraint -ForeignKey -Type
 
@@ -449,45 +447,44 @@ function Pop-Migration
 
 function Test-ShouldCreateIdempotentQueriesForDisableOperations
 {
-    $migration = @'
+    $migration = @"
 function Push-Migration
 {
-    $idempotent = @{ SchemaName = 'idempotent' }
-    $crops = @{ TableName = 'Crops' }
-    $farmers = @{ TableName = 'Farmers' }
+    `$idempotent = @{ SchemaName = 'idempotent' }
+    `$crops = @{ TableName = 'Crops' }
+    `$farmers = @{ TableName = 'Farmers' }
 
-    Add-Schema $idempotent.SchemaName
+    Add-Schema `$idempotent.SchemaName
     
-    Add-Table @idempotent $farmers.TableName {
+    Add-Table @idempotent `$farmers.TableName {
         int 'ID' -NotNull
         varchar 'Name' -NotNull -Size 500
         varchar 'ZipCode' -Size 10
     }
     Add-PrimaryKey @idempotent @farmers -ColumnName 'ID'
 
-    Add-Table @idempotent $crops.TableName {
+    Add-Table @idempotent `$crops.TableName {
         int 'ID' -Identity
         varchar 'Name' -Size 50
         int 'FarmerID' -NotNull
     }
     Add-CheckConstraint @idempotent @crops -Name 'CK_Crops_AllowedCrops' -Expression 'Name = ''Strawberries'' or Name = ''Rasberries'''
 
-    Add-ForeignKey @idempotent @crops -ColumnName 'FarmerID' `
-                   -ReferencesSchema $idempotent.SchemaName -References $farmers.TableName -ReferencedColumn 'ID'
+    Add-ForeignKey @idempotent @crops -ColumnName 'FarmerID' -ReferencesSchema `$idempotent.SchemaName -References `$farmers.TableName -ReferencedColumn 'ID'
 }
 
 function Pop-Migration
 {
-    $idempotent = @{ SchemaName = 'idempotent' }
-    $crops = @{ TableName = 'Crops' }
-    $farmers = @{ TableName = 'Farmers' }
+    `$idempotent = @{ SchemaName = 'idempotent' }
+    `$crops = @{ TableName = 'Crops' }
+    `$farmers = @{ TableName = 'Farmers' }
 
-    Remove-ForeignKey @idempotent @crops -ReferencesSchema $idempotent.SchemaName -References $farmers.TableName
-    Remove-Table @idempotent $crops.TableName
-    Remove-Table @idempotent $farmers.TableName
-    Remove-Schema $idempotent.SchemaName
+    Remove-ForeignKey @idempotent @crops '$(New-ForeignKeyConstraintName -SourceSchema 'idempotent' 'Crops' -TargetSchema 'idempotent' 'Farmers')' 
+    Remove-Table @idempotent `$crops.TableName
+    Remove-Table @idempotent `$farmers.TableName
+    Remove-Schema `$idempotent.SchemaName
 }
-'@ | New-Migration -Name 'ShouldCreateIdempotentQueriesForDisableOperations'
+"@ | New-Migration -Name 'ShouldCreateIdempotentQueriesForDisableOperations'
 
     Invoke-RTRivet -Push 'ShouldCreateIdempotentQueriesForDisableOperations'
 
@@ -500,8 +497,8 @@ function Push-Migration
     $crops = @{ TableName = 'Crops' }
     $farmers = @{ TableName = 'Farmers' }
 
-    Disable-CheckConstraint @schema @crops -Name 'CK_Crops_AllowedCrops'
-    Disable-ForeignKey @schema @crops -References $farmers.TableName -ReferencesSchema $schema.SchemaName -ColumnName 'FarmerID'
+    Disable-Constraint @schema @crops -Name 'CK_Crops_AllowedCrops'
+    Disable-Constraint @schema @crops -Name 'FK_Farmers_idempotent_Crops'
 }
 
 function Pop-Migration
@@ -510,8 +507,8 @@ function Pop-Migration
     $crops = @{ TableName = 'Crops' }
     $farmers = @{ TableName = 'Farmers' }
 
-    Enable-CheckConstraint @schema @crops -Name 'CK_Crops_AllowedCrops'
-    Enable-ForeignKey @schema @crops -References $farmers.TableName -ReferencesSchema $schema.SchemaName -ColumnName 'FarmerID'
+    Enable-Constraint @schema @crops -Name 'CK_Crops_AllowedCrops'
+    Enable-Constraint @schema @crops -Name 'FK_Farmers_idempotent_Crops'
 }
 '@ | New-Migration -Name 'DisableOperations'
 
@@ -527,49 +524,48 @@ function Pop-Migration
 
 function Test-ShouldCreateIdempotentQueriesForEnableOperations
 {
-    $migration = @'
+    $migration = @"
 function Push-Migration
 {
-    $idempotent = @{ SchemaName = 'idempotent' }
-    $crops = @{ TableName = 'Crops' }
-    $farmers = @{ TableName = 'Farmers' }
+    `$idempotent = @{ SchemaName = 'idempotent' }
+    `$crops = @{ TableName = 'Crops' }
+    `$farmers = @{ TableName = 'Farmers' }
 
-    Add-Schema $idempotent.SchemaName
+    Add-Schema `$idempotent.SchemaName
     
-    Add-Table @idempotent $farmers.TableName {
+    Add-Table @idempotent `$farmers.TableName {
         int 'ID' -NotNull
         varchar 'Name' -NotNull -Size 500
         varchar 'ZipCode' -Size 10
     }
     Add-PrimaryKey @idempotent @farmers -ColumnName 'ID'
 
-    Add-Table @idempotent $crops.TableName {
+    Add-Table @idempotent `$crops.TableName {
         int 'ID' -Identity
         varchar 'Name' -Size 50
         int 'FarmerID' -NotNull
     }
     Add-CheckConstraint @idempotent @crops -Name 'CK_Crops_AllowedCrops' -Expression 'Name = ''Strawberries'' or Name = ''Rasberries'''
-    Add-ForeignKey @idempotent @crops -ColumnName 'FarmerID' `
-                   -ReferencesSchema $idempotent.SchemaName -References $farmers.TableName -ReferencedColumn 'ID'
+    Add-ForeignKey @idempotent @crops -ColumnName 'FarmerID' -ReferencesSchema `$idempotent.SchemaName -References `$farmers.TableName -ReferencedColumn 'ID'
 
-    Disable-CheckConstraint @idempotent @crops -Name 'CK_Crops_AllowedCrops'
-    Disable-ForeignKey @idempotent @crops -References $farmers.TableName -ReferencesSchema $idempotent.SchemaName -ColumnName 'FarmerID'
+    Disable-Constraint @idempotent @crops -Name 'CK_Crops_AllowedCrops'
+    Disable-Constraint @idempotent @crops -Name 'FK_Farmers_idempotent_SchemaName_FarmerID' 
 }
 
 function Pop-Migration
 {
-    $idempotent = @{ SchemaName = 'idempotent' }
-    $crops = @{ TableName = 'Crops' }
-    $farmers = @{ TableName = 'Farmers' }
+    `$idempotent = @{ SchemaName = 'idempotent' }
+    `$crops = @{ TableName = 'Crops' }
+    `$farmers = @{ TableName = 'Farmers' }
 
-    Enable-CheckConstraint @idempotent @crops -Name 'CK_Crops_AllowedCrops'
-    Enable-ForeignKey @idempotent @crops -References $farmers.TableName -ReferencesSchema $idempotent.SchemaName -ColumnName 'FarmerID'
-    Remove-ForeignKey @idempotent @crops -References $farmers.TableName -REferencesSchema $idempotent.SchemaName
-    Remove-Table @idempotent $crops.TableName
-    Remove-Table @idempotent $farmers.TableName
-    Remove-Schema $idempotent.SchemaName
+    Enable-Constraint @idempotent @crops -Name 'CK_Crops_AllowedCrops'
+    Enable-Constraint @idempotent @crops -Name 'FK_Farmers_idempotent_Crops_ID'
+    Remove-ForeignKey @idempotent @crops '$(New-ForeignKeyConstraintName -SourceSchema 'idempotent' 'Crops' -TargetSchema 'idempotent' 'Farmers')'
+    Remove-Table @idempotent `$crops.TableName
+    Remove-Table @idempotent `$farmers.TableName
+    Remove-Schema `$idempotent.SchemaName
 }
-'@ | New-Migration -Name 'ShouldCreateIdempotentQueriesForEnableOperations'
+"@ | New-Migration -Name 'ShouldCreateIdempotentQueriesForEnableOperations'
 
     Invoke-RTRivet -Push 'ShouldCreateIdempotentQueriesForEnableOperations'
 
@@ -582,8 +578,8 @@ function Push-Migration
     $crops = @{ TableName = 'Crops' }
     $farmers = @{ TableName = 'Farmers' }
 
-    Enable-CheckConstraint @schema @crops -Name 'CK_Crops_AllowedCrops'
-    Enable-ForeignKey @schema @crops -References $farmers.TableName -ReferencesSchema $schema.SchemaName -ColumnName 'FarmerID'
+    Enable-Constraint @schema @crops -Name 'CK_Crops_AllowedCrops'
+    Enable-Constraint @schema @crops -Name 'FK_Farmers_idempotent_Crops_FarmerID'
 }
 
 function Pop-Migration
@@ -592,8 +588,8 @@ function Pop-Migration
     $crops = @{ TableName = 'Crops' }
     $farmers = @{ TableName = 'Farmers' }
 
-    Disable-CheckConstraint @schema @crops -Name 'CK_Crops_AllowedCrops'
-    Disable-ForeignKey @schema @crops -References $farmers.TableName -ReferencesSchema $schema.SchemaName -ColumnName 'FarmerID'
+    Disable-Constraint @schema @crops -Name 'CK_Crops_AllowedCrops'
+    Disable-Constraint @schema @crops -Name 'FK_Farmers_idempotent_Crops_FarmerID'
 }
 '@ | New-Migration -Name 'DisableOperations'
 
@@ -748,10 +744,10 @@ function Pop-Migration
 }
 '@ | New-Migration -Name 'AddTables'
 
-    @'
+    @"
 function Push-Migration
 {
-    Remove-PrimaryKey -SchemaName 'aggregate' -TableName 'Beta'
+    Remove-PrimaryKey -SchemaName 'aggregate' -TableName 'Beta' '$(New-ConstraintName -PrimaryKey -SchemaName 'aggregate' -TableName 'Beta')'
     Add-PrimaryKey -SchemaName 'aggregate' -TableName 'Beta' -ColumnName 'Name'
 
     Update-Table -SchemaName 'aggregate' 'Beta' -UpdateColumn {
@@ -771,9 +767,9 @@ function Push-Migration
 
 function Pop-Migration
 {
-    Remove-PrimaryKey -SchemaName 'aggregate' -TableName 'Beta'
+    Remove-PrimaryKey -SchemaName 'aggregate' -TableName 'Beta' '$(New-ConstraintName -PrimaryKey -SchemaName 'aggregate' -TableName 'Beta')'
 }
-'@ | New-Migration -Name 'UpdateTables'
+"@ | New-Migration -Name 'UpdateTables'
 
     Assert-ConvertMigration -Schemas -Schema
 
