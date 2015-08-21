@@ -39,7 +39,7 @@ function Update-Database
 
         [Parameter(ParameterSetName='Push')]
         [Parameter(Mandatory=$true,ParameterSetName='PopByName')]
-        [string]
+        [string[]]
         $Name,
 
         [Parameter(Mandatory=$true,ParameterSetName='PopByCount')]
@@ -124,21 +124,17 @@ function Update-Database
     $popping = ($PSCmdlet.ParameterSetName -like 'Pop*')
     $numPopped = 0
 
-    $foundNameMatch = $false
     $who = ('{0}\{1}' -f $env:USERDOMAIN,$env:USERNAME);
 
-    Get-Migration -Path $Path -Configuration $Configuration -ErrorAction Stop |
-        Sort-Object -Property 'ID' -Descending:$popping |
-        Where-Object { 
-            if( -not $PSBoundParameters.ContainsKey('Name') )
-            {
-                return $true
-            }
+    #$matchedNames = @{ }
+    $byName = @{ }
+    if( $PSBoundParameters.ContainsKey('Name') )
+    {
+        $byName['Include'] = $Name
+    }
 
-            $matchesName =  ( $_.Name -like $Name -or $_.ID -like $Name )
-            $foundNameMatch = $foundNameMatch -or $matchesName
-            return $matchesName
-        } |
+    Get-Migration -Path $Path -Configuration $Configuration @byName -ErrorAction Stop |
+        Sort-Object -Property 'ID' -Descending:$popping |
         Where-Object {
 
             if( $RivetSchema )
@@ -269,9 +265,4 @@ function Update-Database
                 $Connection.Transaction = $null
             }
         }
-
-    if( $PSBoundParameters.ContainsKey('Name') -and -not $foundNameMatch )
-    {
-        Write-Error ('Migration ''{0}'' not found.' -f $Name)
-    }
 }

@@ -145,6 +145,53 @@ function Test-ShouldHandleFailureToConnect
     }
 }
 
+function Test-ShouldCreateMultipleMigrations
+{
+    $m = Invoke-Rivet -New -Name 'One','Two' -ConfigFilePath $RTConfigFilePath
+    try
+    {
+        Assert-NoError
+        Assert-Is $m ([object[]])
+        Assert-Like $m[0].Name '*_One.ps1'
+        Assert-Like $m[1].Name '*_Two.ps1'
+    }
+    finally
+    {
+        $m | Remove-Item
+    }
+}
+
+function Test-ShouldPushMultipleMigrations
+{
+    $m = @( 'One', 'Two', 'Three' ) |
+            ForEach-Object {
+                                @'
+function Push-Migration { Invoke-Ddl 'select 1' }
+function Pop-Migration { Invoke-Ddl 'select 1' }
+'@ | New-Migration -Name $_
+            }
+    [Rivet.OperationResult[]]$result = Invoke-Rivet -Push -Name 'One','Three' -ConfigFilePath $RTConfigFilePath
+    Assert-OperationsReturned $result
+    Assert-Equal 'One' $result[0].Migration.Name
+    Assert-Equal 'Three' $result[1].Migration.Name
+}
+
+function Test-ShouldPopMultipleMigrations
+{
+    $m = @( 'One', 'Two', 'Three' ) |
+            ForEach-Object {
+                                @'
+function Push-Migration { Invoke-Ddl 'select 1' }
+function Pop-Migration { Invoke-Ddl 'select 1' }
+'@ | New-Migration -Name $_
+            }
+    Invoke-Rivet -Push -Name 'One','Three' -ConfigFilePath $RTConfigFilePath
+    [Rivet.OperationResult[]]$result = Invoke-Rivet -Pop -Name 'One','Three' -ConfigFilePath $RTConfigFilePath
+    Assert-OperationsReturned $result
+    Assert-Equal 'Three' $result[0].Migration.Name
+    Assert-Equal 'One' $result[1].Migration.Name
+}
+
 function Assert-OperationsReturned
 {
     param(
