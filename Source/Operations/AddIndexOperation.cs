@@ -51,11 +51,6 @@ namespace Rivet.Operations
 		public string FileStreamOn { get; set; }
         public List<string> Include { get; set; }
 
-		public void SetIndexName(string name)
-		{
-			Name = name;
-		}
-
 		public override string ToIdempotentQuery()
 		{
 			return

@@ -7,7 +7,7 @@ namespace Rivet.Test.Operations
 	public sealed class EnableConstraintOperationTestFixture
 	{
 		[Test]
-		public void ShouldAllowChangingConstraintName()
+		public void ShouldInitializeOperation()
 		{
 			const string schemaName = "schema";
 			const string tableName = "table";
@@ -18,7 +18,7 @@ namespace Rivet.Test.Operations
 			Assert.That(op.TableName, Is.EqualTo(tableName));
 			Assert.That(op.WithNoCheck, Is.True);
 			Assert.That(op.ToQuery(),
-				Is.EqualTo(string.Format("alter table [{0}].[{1}] with nocheck check constraint [{2}]", schemaName, tableName, constraintName)));
+				Is.EqualTo(string.Format("alter table [{0}].[{1}] check constraint [{2}]", schemaName, tableName, constraintName)));
 		}
 	}
 
