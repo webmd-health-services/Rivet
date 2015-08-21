@@ -9,7 +9,7 @@ namespace Rivet.Operations
 
         public override string ToIdempotentQuery()
         {
-            return String.Format("if objectproperty (object_id('{0}.{1}', 'C'), 'CnstIsDisabled') = 0{2}\t{3}",
+            return String.Format("if objectproperty (object_id('{0}.{1}'), 'CnstIsDisabled') = 0{2}\t{3}",
                 SchemaName, Name, Environment.NewLine, ToQuery());
         }
 
