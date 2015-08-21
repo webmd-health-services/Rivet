@@ -176,6 +176,206 @@ function Push-Migration
     }
 }
 
+function Test-ShouldWriteAnErrorIfIncludedMigrationNotFound
+{
+    $result = Get-Migration -ConfigFilePath $RTConfigFilePath -Include 'nomigrationbythisname' -ErrorAction SilentlyContinue
+    Assert-Null $result
+    Assert-Error -Last -Regex 'Migration ''nomigrationbythisname'' not found\.'
+}
+
+function Test-ShouldNotWriteAnErrorIfIncludedWildcardedMigrationNotFound
+{
+    $result = Get-Migration -ConfigFilePath $RTConfigFilePath -Include '*fubar*'
+    Assert-Null $result
+    Assert-NoError
+}
+
+function Test-ShouldIncludeMigrationByNameOrID
+{
+    $m = @'
+function Push-Migration
+{
+    Invoke-Ddl 'select 1'
+}
+
+function Pop-Migration
+{
+    Invoke-Ddl 'select 1'
+}
+'@ | New-Migration -Name 'ShouldIncludeMigrationByNameOrID'
+
+    $id = ($m.BaseName -split '_')[0]
+
+    $result = Get-Migration -ConfigFilePath $RTConfigFilePath -Include 'ShouldIncludeMigrationByNameOrID'
+    Assert-NotNull $result
+    Assert-Equal $result.ID $id
+    Assert-Equal $result.Name 'ShouldIncludeMigrationByNameOrID'
+    Assert-Equal $result.FullName $m.BaseName
+
+    $result = Get-Migration -ConfigFilePath $RTConfigFilePath -Include $id
+    Assert-NotNull $result
+    Assert-Equal $result.ID $id
+    Assert-Equal $result.Name 'ShouldIncludeMigrationByNameOrID'
+    Assert-Equal $result.FullName $m.BaseName
+}
+
+function Test-ShouldIncludeMigrationWildcardID
+{
+    $m = @'
+function Push-Migration
+{
+    Invoke-Ddl 'select 1'
+}
+
+function Pop-Migration
+{
+    Invoke-Ddl 'select 1'
+}
+'@ | New-Migration -Name 'ShouldIncludeMigrationWildcardID'
+
+    $id = ($m.BaseName -split '_')[0]
+
+    $result = Get-Migration -ConfigFilePath $RTConfigFilePath -Include ('{0}*' -f $id.Substring(0,10))
+    Assert-NotNull $result
+    Assert-Equal $result.ID $id
+    Assert-Equal $result.Name 'ShouldIncludeMigrationWildcardID'
+    Assert-Equal $result.FullName $m.BaseName
+}
+
+function Test-ShouldGetAMigrationByBaseName
+{
+    $m = @'
+function Push-Migration
+{
+    Invoke-Ddl 'select 1'
+}
+
+function Pop-Migration
+{
+    Invoke-Ddl 'select 1'
+}
+'@ | New-Migration -Name 'ShouldGetAMigrationByBaseName'
+
+    $id = ($m.BaseName -split '_')[0]
+
+    $result = Get-Migration -ConfigFilePath $RTConfigFilePath -Include $m.BaseName
+    Assert-NotNull $result
+    Assert-Equal $result.ID $id
+    Assert-Equal $result.Name 'ShouldGetAMigrationByBaseName'
+    Assert-Equal $result.FullName $m.BaseName
+}
+
+function Test-ShouldGetAMigrationByBaseNameWithWildcard
+{
+    $m = @'
+function Push-Migration
+{
+    Invoke-Ddl 'select 1'
+}
+
+function Pop-Migration
+{
+    Invoke-Ddl 'select 1'
+}
+'@ | New-Migration -Name 'ShouldGetAMigrationByBaseNameWithWildcard'
+
+    $id = ($m.BaseName -split '_')[0]
+
+    $result = Get-Migration -ConfigFilePath $RTConfigFilePath -Include ('{0}*' -f $m.BaseName.Substring(0,20))
+    Assert-NotNull $result
+    Assert-Equal $result.ID $id
+    Assert-Equal $result.Name 'ShouldGetAMigrationByBaseNameWithWildcard'
+    Assert-Equal $result.FullName $m.BaseName
+}
+
+function Test-ShouldExcludeMigrationByNameOrID
+{
+    $m = @'
+function Push-Migration
+{
+    Invoke-Ddl 'select 1'
+}
+
+function Pop-Migration
+{
+    Invoke-Ddl 'select 1'
+}
+'@ | New-Migration -Name 'ShouldExcludeMigrationByNameOrID'
+
+
+    $result = Get-Migration -ConfigFilePath $RTConfigFilePath -Exclude 'ShouldExcludeMigrationByNameOrID'
+    Assert-NoError
+    Assert-Null $result
+
+    $id = ($m.BaseName -split '_')[0]
+    $result = Get-Migration -ConfigFilePath $RTConfigFilePath -Exclude $id
+    Assert-NoError
+    Assert-Null $result
+}
+
+function Test-ShouldExcludeMigrationWildcardID
+{
+    $m = @'
+function Push-Migration
+{
+    Invoke-Ddl 'select 1'
+}
+
+function Pop-Migration
+{
+    Invoke-Ddl 'select 1'
+}
+'@ | New-Migration -Name 'ShouldExcludeMigrationWildcardID'
+
+    $id = ($m.BaseName -split '_')[0]
+
+    $result = Get-Migration -ConfigFilePath $RTConfigFilePath -Exclude ('{0}*' -f $id.Substring(0,10))
+    Assert-NoError
+    Assert-Null $result
+}
+
+function Test-ShouldExcludeAMigrationByBaseName
+{
+    $m = @'
+function Push-Migration
+{
+    Invoke-Ddl 'select 1'
+}
+
+function Pop-Migration
+{
+    Invoke-Ddl 'select 1'
+}
+'@ | New-Migration -Name 'ShouldExcludeAMigrationByBaseName'
+
+    $id = ($m.BaseName -split '_')[0]
+
+    $result = Get-Migration -ConfigFilePath $RTConfigFilePath -Exclude $m.BaseName
+    Assert-NoError
+    Assert-Null $result
+}
+
+function Test-ShouldExcludeAMigrationByBaseNameWithWildcard
+{
+    $m = @'
+function Push-Migration
+{
+    Invoke-Ddl 'select 1'
+}
+
+function Pop-Migration
+{
+    Invoke-Ddl 'select 1'
+}
+'@ | New-Migration -Name 'ShouldExcludeAMigrationByBaseNameWithWildcard'
+
+    $id = ($m.BaseName -split '_')[0]
+
+    $result = Get-Migration -ConfigFilePath $RTConfigFilePath -Exclude ('{0}*' -f $m.BaseName.Substring(0,20))
+    Assert-NoError
+    Assert-Null $result
+}
+
 function Assert-GetMigration
 {
     param(
