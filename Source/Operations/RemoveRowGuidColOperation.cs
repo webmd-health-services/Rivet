@@ -10,7 +10,7 @@ namespace Rivet.Operations
 			ColumnName = columnName;
 		}
 
-		public string ColumnName { get; private set; }
+		public string ColumnName { get; set; }
 
 		public override string ToQuery()
 		{

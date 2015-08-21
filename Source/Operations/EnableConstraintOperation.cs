@@ -10,7 +10,7 @@ namespace Rivet.Operations
 		    WithNoCheck = withNoCheck;
 	    }
 
-	    public bool WithNoCheck { get; private set; }
+	    public bool WithNoCheck { get; set; }
 
 	    public override string ToIdempotentQuery()
         {
