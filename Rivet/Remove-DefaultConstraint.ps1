@@ -28,7 +28,7 @@ function Remove-DefaultConstraint
         # The schema name of the target table.  Defaults to `dbo`.
         $SchemaName = 'dbo',
 
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory=$true,Position=1)]
         [string]
         # The name for the default constraint.
         $Name

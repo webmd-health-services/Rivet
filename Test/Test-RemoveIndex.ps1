@@ -13,7 +13,7 @@ function Stop-Test
 
 function Test-ShouldRemoveIndex
 {
-    @'
+    @"
 function Push-Migration()
 {
     Add-Table -Name 'AddIndex' {
@@ -23,14 +23,14 @@ function Push-Migration()
     #Add an Index to 'IndexMe'
     Add-Index -TableName 'AddIndex' -ColumnName 'IndexMe'
 
-    Remove-Index 'AddIndex' 'IndexMe'
+    Remove-Index 'AddIndex' -Name '$(New-ConstraintName -Index 'AddIndex' 'IndexMe')'
 }
 
 function Pop-Migration()
 {
     Remove-Table 'AddIndex'
 }
-'@ | New-Migration -Name 'RemoveIndex'
+"@ | New-Migration -Name 'RemoveIndex'
 
     Invoke-RTRivet -Push 'RemoveIndex'
     Assert-True (Test-Table 'AddIndex')
@@ -40,7 +40,7 @@ function Pop-Migration()
 
 function Test-ShouldQuoteIndexName
 {
-    @'
+    @"
 function Push-Migration()
 {
     Add-Table -Name 'Remove-Index' {
@@ -48,45 +48,23 @@ function Push-Migration()
     }
 
     Add-Index -TableName 'Remove-Index' -ColumnName 'IndexMe'
-    Remove-Index -TableName 'Remove-Index' -ColumnName 'IndexMe'
+    Remove-Index -TableName 'Remove-Index' -Name '$(New-ConstraintName -Index 'Remove-Index' 'IndexMe')'
 }
 
 function Pop-Migration()
 {
     Remove-Table 'Remove-Index'
 }
-'@ | New-Migration -Name 'RemoveIndex'
+"@ | New-Migration -Name 'RemoveIndex'
 
     Invoke-RTRivet -Push 'RemoveIndex'
     Assert-False (Test-Index -TableName 'Remove-Index' -ColumnName 'IndexMe')
 }
 
-function Test-ShouldRemoveIndexWithOptionalName
-{
-    @'
-function Push-Migration()
-{
-    Add-Table -Name 'Add-Index' {
-        Int 'IndexMe' -NotNull
-    }
-
-    Add-Index -TableName 'Add-Index' -ColumnName 'IndexMe' -Name 'Example'
-    Remove-Index -TableName 'Add-Index' -Name 'Example'
-}
-
-function Pop-Migration()
-{
-    Remove-Table 'Add-Index'
-}
-'@ | New-Migration -Name 'RemoveIndexWithOptionalName'
-
-    Invoke-RTRivet -Push 'RemoveIndexWithOptionalName'
-    Assert-False (Test-Index -TableName 'Add-Index' -ColumnName 'IndexMe')
-}
 
 function Test-ShouldRemoveUniqueIndex
 {
-    @'
+    @"
 function Push-Migration()
 {
     Add-Table -Name 'AddIndex' {
@@ -95,14 +73,14 @@ function Push-Migration()
 
     #Add an Index to 'IndexMe'
     Add-Index -TableName 'AddIndex' -ColumnName 'IndexMe' -Unique
-    Remove-Index 'AddIndex' 'IndexMe' -Unique
+    Remove-Index 'AddIndex' -Name '$(New-ConstraintName -Index -Unique 'AddIndex' 'IndexMe')'
 }
 
 function Pop-Migration()
 {
     Remove-Table 'AddIndex'
 }
-'@ | New-Migration -Name 'RemoveIndex'
+"@ | New-Migration -Name 'RemoveIndex'
 
     Invoke-RTRivet -Push 'RemoveIndex'
     Assert-True (Test-Table 'AddIndex')

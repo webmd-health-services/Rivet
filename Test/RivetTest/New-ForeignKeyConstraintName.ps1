@@ -13,7 +13,7 @@ function New-ForeignKeyConstraintName
         # The source table's schema.  Default is `dbo`.
         $SourceSchema = 'dbo',
 
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory=$true,Position=0)]
         [string]
         # The SourceTable Name
         $SourceTable,
@@ -23,7 +23,7 @@ function New-ForeignKeyConstraintName
         # The target table's schema.  Default is `dbo`.
         $TargetSchema = 'dbo',
 
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory=$true,Position=1)]
         [string]
         # The TargetTable Name
         $TargetTable

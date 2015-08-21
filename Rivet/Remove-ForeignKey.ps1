@@ -28,7 +28,7 @@ function Remove-ForeignKey
         # The schema name of the table.  Defaults to `dbo`.
         $SchemaName = 'dbo',
 
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory=$true,Position=1)]
         [string]
         # The name for the foreign key.
         $Name
