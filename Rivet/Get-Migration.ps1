@@ -28,6 +28,28 @@ function Get-Migration
     Get-Migration -Database StarWars
 
     Returns `Rivet.Migration` objects for each migration in the `StarWars` database.
+
+    .EXAMPLE
+    Get-Migration -Include 'CreateDeathStarTable','20150101000648','20150101150448_CreateRebelBaseTable','*Hoth*','20150707*'
+
+    Demonstrates how to get use the `Include` parameter to find migrations by name, ID, or file name. In this case, the following migrations will be returned:
+    
+     * The migration whose name is `CreateDeathStarTable`.
+     * The migration whose ID is `20150101000648`.
+     * The migration whose full name is `20150101150448_CreateRebelBaseTable`.
+     * Any migration whose contains `Hoth`.
+     * Any migration created on July 7th, 2015.
+
+    .EXAMPLE
+    Get-Migration -Exclude 'CreateDeathStarTable','20150101000648','20150101150448_CreateRebelBaseTable','*Hoth*','20150707*'
+
+    Demonstrates how to get use the `Exclude` parameter to skip/not return certain migrations by name, ID, or file name. In this case, the following migrations will be *not* be returned:
+    
+     * The migration whose name is `CreateDeathStarTable`.
+     * The migration whose ID is `20150101000648`.
+     * The migration whose full name is `20150101150448_CreateRebelBaseTable`.
+     * Any migration whose contains `Hoth`.
+     * Any migration created on July 7th, 2015.
     #>
     [CmdletBinding(DefaultParameterSetName='External')]
     [OutputType([Rivet.Migration])]
@@ -58,11 +80,11 @@ function Get-Migration
         $Path,
 
         [string[]]
-        # A list of migrations to include. Only migrations that match are returned.  Wildcards permitted.
+        # A list of migrations to include. Matches against the migration's ID or Name or the migration's file name (without extension). Wildcards permitted.
         $Include,
 
         [string[]]
-        # Migrations to exclude.  Wildcards permitted.
+        # A list of migrations to exclude. Matches against the migration's ID or Name or the migration's file name (without extension). Wildcards permitted.
         $Exclude,
 
         [DateTime]
@@ -114,6 +136,20 @@ function Get-Migration
     {
         Import-Plugin -Path $Configuration.PluginsRoot
     }
+
+    $requiredMatches = @{ }
+    if( $PSBoundParameters.ContainsKey('Include') )
+    {
+        foreach( $includeItem in $Include )
+        {
+            if( -not [Management.Automation.WildcardPattern]::ContainsWildcardCharacters($includeItem) )
+            {
+                $requiredMatches[$includeItem] = $true
+            }
+        }
+    }
+
+    $foundMatches = @{ }
                 
     Invoke-Command -ScriptBlock {
             if( $PSCmdlet.ParameterSetName -eq 'Internal' )
@@ -124,7 +160,7 @@ function Get-Migration
             $Configuration.Databases | Select-Object -ExpandProperty 'MigrationsRoot'
         } | 
         ForEach-Object {
-            Write-Verbose $_ 
+            Write-Debug -Message $_ 
             if( (Test-Path -Path $_ -PathType Container) )
             {
                 Get-ChildItem -Path $_ -Filter '*_*.ps1'
@@ -133,32 +169,7 @@ function Get-Migration
             {
                 Get-Item -Path $_
             }
-            else
-            {
-                #Write-Error ('Migration path ''{0}'' not found.' -f $_)
-            }
-        
         } | 
-        Where-Object {
-            $script = $_
-            if( -not ($PSBoundParameters.ContainsKey( 'Include' )) )
-            {
-                return $true
-            }
-
-            $Include | Where-Object { $script.BaseName -like $_ }
-        } |
-        Where-Object { 
-            $script = $_
-
-            if( -not ($PSBoundParameters.ContainsKey( 'Exclude' )) )
-            {
-                return $true
-            }
-
-            $foundMatch = $Exclude | Where-Object { $script.BaseName -like $_ }
-            return -not $foundMatch
-        } |
         ForEach-Object {
             if( $_.BaseName -notmatch '^(\d{14})_(.+)' )
             {
@@ -172,6 +183,35 @@ function Get-Migration
             $_ | 
                 Add-Member -MemberType NoteProperty -Name 'MigrationID' -Value $id -PassThru |
                 Add-Member -MemberType NoteProperty -Name 'MigrationName' -Value $name -PassThru
+        } |
+        Where-Object {
+            if( -not ($PSBoundParameters.ContainsKey( 'Include' )) )
+            {
+                return $true
+            }
+
+            $migration = $_
+            foreach( $includeItem in $Include )
+            {
+                $foundMatch = $migration.MigrationID -like $includeItem -or $migration.MigrationName -like $includeItem -or $migration.BaseName -like $includeItem
+                if( $foundMatch )
+                {
+                    $foundMatches[$includeItem] = $true
+                    return $true
+                } 
+            }
+
+            return $false
+        } |
+        Where-Object { 
+
+            if( -not ($PSBoundParameters.ContainsKey( 'Exclude' )) )
+            {
+                return $true
+            }
+
+            $migration = $_
+            $Exclude | Where-Object { $migration.MigrationID -notlike $_ -and $migration.MigrationName -notlike $_ -and $migration.BaseName -notlike $_ }
         } |
         Where-Object {
             if( $PSBoundParameters.ContainsKey( 'Before' ) )
@@ -317,4 +357,12 @@ Pop-Migration function is empty and contains no operations. Maybe you''d like to
             }
         } | 
         Where-Object { $_ -is [Rivet.Migration] }
+
+    foreach( $requiredMatch in $requiredMatches.Keys )
+    {
+        if( -not $foundMatches.ContainsKey( $requiredMatch ) )
+        {
+            Write-Error ('Migration ''{0}'' not found.' -f $requiredMatch)
+        }
+    }
 }
