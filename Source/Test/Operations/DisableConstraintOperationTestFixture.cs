@@ -4,7 +4,7 @@ using Rivet.Operations;
 namespace Rivet.Test.Operations
 {
 	[TestFixture]
-	public sealed class DisableCheckConstraintOperationTestFixture
+	public sealed class DisableConstraintOperationTestFixture
 	{
 		[Test]
 		public void ShouldAllowChangingConstraintName()

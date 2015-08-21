@@ -21,7 +21,7 @@ function Push-Migration()
     }
 
     Add-CheckConstraint 'Migrations' 'CK_Migrations_Example' 'Example > 0'
-    Disable-CheckConstraint 'Migrations' 'CK_Migrations_Example'
+    Disable-Constraint 'Migrations' 'CK_Migrations_Example'
 
     # Will fail if Check Constraint is enabled
     Add-Row 'Migrations' @( @{ Example = -1 } )

@@ -1,23 +1,26 @@
-﻿function Enable-CheckConstraint
+﻿
+function Enable-Constraint
 {
     <#
     .SYNOPSIS
-    Enable a check constraint on a table that has been previously disabled.
+    Enable a check or foreign key constraint.
     
     .DESCRIPTION
-    Enabling check constraints reapplies validation for data in columns.
+    The `Enable-Constraint` operation enables a check or foreign key constraint on a table. Only check and foreign key constraints can be enabled/disabled.
     
-    .EXAMPLE
-    Enable-CheckConstraint 'Migrations' 'CK_Migrations_MigrationID'
-    
-    Enables the disabled check constraint named 'CK_Migrations_MigrationID' on the 'Migrations' table.
-    #>
+    .LINK
+    Disable-Constraint
 
+    .EXAMPLE
+    Enable-Constraint 'Migrations' 'FK_Migrations_MigrationID'
+    
+    Demonstrates how to disable a constraint on a table. In this case, the `FK_Migrations_MigrationID` constraint on the `Migrations` table is disabled. Is it a check constraint? Foreign key constraint? It doesn't matter!
+    #>
     [CmdletBinding()]
     param(
         [Parameter(Mandatory=$true,Position=0)]
         [string]
-        # The name of the check constraint's table.
+        # The name of the constraint's table.
         $TableName,
         
         [Parameter()]
@@ -27,11 +30,11 @@
         
         [Parameter(Mandatory=$true,Position=1)]
         [string]
-        # The name of the check constraint.
+        # The name of the constraint.
         $Name
     )
 
     Set-StrictMode -Version 'Latest'
 
-    New-Object 'Rivet.Operations.EnableCheckConstraintOperation' $SchemaName, $TableName, $Name
+    New-Object 'Rivet.Operations.EnableConstraintOperation' $SchemaName, $TableName, $Name, $false
 }
