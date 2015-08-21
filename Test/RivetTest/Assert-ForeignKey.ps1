@@ -88,7 +88,8 @@ function Assert-ForeignKey
         Assert-Equal "False" $fk.is_not_for_replication
     }
 
-    if ($IsDisabled) {
+    if ($IsDisabled) 
+    {
         Assert-True $fk.is_disabled
     }
     else

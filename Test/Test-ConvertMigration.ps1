@@ -490,29 +490,29 @@ function Pop-Migration
 
     $migration | Rename-Migration
 
-    @'
+    @"
 function Push-Migration
 {
-    $schema = @{ SchemaName = 'idempotent' }
-    $crops = @{ TableName = 'Crops' }
-    $farmers = @{ TableName = 'Farmers' }
+    `$schema = @{ SchemaName = 'idempotent' }
+    `$crops = @{ TableName = 'Crops' }
+    `$farmers = @{ TableName = 'Farmers' }
 
     Disable-Constraint @schema @crops -Name 'CK_Crops_AllowedCrops'
-    Disable-Constraint @schema @crops -Name 'FK_Farmers_idempotent_Crops'
+    Disable-Constraint @schema @crops -Name '$(New-ForeignKeyConstraintName -SourceSchema 'idempotent' 'Crops' -TargetSchema 'idempotent' 'Farmers')'
 }
 
 function Pop-Migration
 {
-    $schema = @{ SchemaName = 'idempotent' }
-    $crops = @{ TableName = 'Crops' }
-    $farmers = @{ TableName = 'Farmers' }
+    `$schema = @{ SchemaName = 'idempotent' }
+    `$crops = @{ TableName = 'Crops' }
+    `$farmers = @{ TableName = 'Farmers' }
 
     Enable-Constraint @schema @crops -Name 'CK_Crops_AllowedCrops'
-    Enable-Constraint @schema @crops -Name 'FK_Farmers_idempotent_Crops'
+    Enable-Constraint @schema @crops -Name '$(New-ForeignKeyConstraintName -SourceSchema 'idempotent' 'Crops' -TargetSchema 'idempotent' 'Farmers')'
 }
-'@ | New-Migration -Name 'DisableOperations'
+"@ | New-Migration -Name 'DisableOperations'
 
-    Assert-ConvertMigration -Constraint -ForeignKey
+    Assert-ConvertMigration -Constraint 
 
     $schema = @{ SchemaName = 'idempotent' }
     $crops = @{ TableName = 'Crops' }
@@ -549,7 +549,7 @@ function Push-Migration
     Add-ForeignKey @idempotent @crops -ColumnName 'FarmerID' -ReferencesSchema `$idempotent.SchemaName -References `$farmers.TableName -ReferencedColumn 'ID'
 
     Disable-Constraint @idempotent @crops -Name 'CK_Crops_AllowedCrops'
-    Disable-Constraint @idempotent @crops -Name 'FK_Farmers_idempotent_SchemaName_FarmerID' 
+    Disable-Constraint @idempotent @crops -Name '$(New-ForeignKeyConstraintName -SourceSchema 'idempotent' 'Crops' -TargetSchema 'idempotent' 'Farmers')'
 }
 
 function Pop-Migration
@@ -559,7 +559,7 @@ function Pop-Migration
     `$farmers = @{ TableName = 'Farmers' }
 
     Enable-Constraint @idempotent @crops -Name 'CK_Crops_AllowedCrops'
-    Enable-Constraint @idempotent @crops -Name 'FK_Farmers_idempotent_Crops_ID'
+    Enable-Constraint @idempotent @crops -Name '$(New-ForeignKeyConstraintName -SourceSchema 'idempotent' 'Crops' -TargetSchema 'idempotent' 'Farmers')'
     Remove-ForeignKey @idempotent @crops '$(New-ForeignKeyConstraintName -SourceSchema 'idempotent' 'Crops' -TargetSchema 'idempotent' 'Farmers')'
     Remove-Table @idempotent `$crops.TableName
     Remove-Table @idempotent `$farmers.TableName
@@ -571,29 +571,29 @@ function Pop-Migration
 
     $migration | Rename-Migration
 
-    @'
+    @"
 function Push-Migration
 {
-    $schema = @{ SchemaName = 'idempotent' }
-    $crops = @{ TableName = 'Crops' }
-    $farmers = @{ TableName = 'Farmers' }
+    `$schema = @{ SchemaName = 'idempotent' }
+    `$crops = @{ TableName = 'Crops' }
+    `$farmers = @{ TableName = 'Farmers' }
 
     Enable-Constraint @schema @crops -Name 'CK_Crops_AllowedCrops'
-    Enable-Constraint @schema @crops -Name 'FK_Farmers_idempotent_Crops_FarmerID'
+    Enable-Constraint @schema @crops -Name '$(New-ForeignKeyConstraintName -SourceSchema 'idempotent' 'Crops' -TargetSchema 'idempotent' 'Farmers')'
 }
 
 function Pop-Migration
 {
-    $schema = @{ SchemaName = 'idempotent' }
-    $crops = @{ TableName = 'Crops' }
-    $farmers = @{ TableName = 'Farmers' }
+    `$schema = @{ SchemaName = 'idempotent' }
+    `$crops = @{ TableName = 'Crops' }
+    `$farmers = @{ TableName = 'Farmers' }
 
     Disable-Constraint @schema @crops -Name 'CK_Crops_AllowedCrops'
-    Disable-Constraint @schema @crops -Name 'FK_Farmers_idempotent_Crops_FarmerID'
+    Disable-Constraint @schema @crops -Name '$(New-ForeignKeyConstraintName -SourceSchema 'idempotent' 'Crops' -TargetSchema 'idempotent' 'Farmers')'
 }
-'@ | New-Migration -Name 'DisableOperations'
+"@ | New-Migration -Name 'DisableOperations'
 
-    Assert-ConvertMigration -Constraint -ForeignKey
+    Assert-ConvertMigration -Constraint
 
     $schema = @{ SchemaName = 'idempotent' }
     $crops = @{ TableName = 'Crops' }

@@ -376,7 +376,13 @@ Get-Migration @getMigrationParams |
                 break
             }
 
-            '(Add|Remove|Disable|Enable)(CheckConstraint|DefaultConstraint)'
+            '(Add|Remove)(CheckConstraint|DefaultConstraint)'
+            {
+                $constraintScriptPath
+                break
+            }
+
+            '(Enable|Disable)Constraint'
             {
                 $constraintScriptPath
                 break
