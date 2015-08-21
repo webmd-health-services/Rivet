@@ -57,6 +57,8 @@
     <Compile Include="Operations\AddIndexOperation.cs" />
     <Compile Include="Operations\AddPrimaryKeyOperation.cs" />
     <Compile Include="Operations\ConstraintOperation.cs" />
+    <Compile Include="Operations\DisableConstraintOperation.cs" />
+    <Compile Include="Operations\EnableConstraintOperation.cs" />
     <Compile Include="Operations\IrreversibleOperation.cs" />
     <Compile Include="Operations\RemoveRowGuidColOperation.cs" />
     <Compile Include="Operations\AddRowGuidColOperation.cs" />
@@ -69,10 +71,6 @@
     <Compile Include="Operations\AddSynonymOperation.cs" />
     <Compile Include="Operations\AddDataTypeOperation.cs" />
     <Compile Include="Operations\AddCheckConstraintOperation.cs" />
-    <Compile Include="Operations\DisableCheckConstraintOperation.cs" />
-    <Compile Include="Operations\DisableForeignKeyOperation.cs" />
-    <Compile Include="Operations\EnableCheckConstraintOperation.cs" />
-    <Compile Include="Operations\EnableForeignKeyOperation.cs" />
     <Compile Include="Operations\ExtendedPropertyOperation.cs" />
     <Compile Include="Operations\ObjectOperation.cs" />
     <Compile Include="Operations\RemoveCheckConstraintOperation.cs" />

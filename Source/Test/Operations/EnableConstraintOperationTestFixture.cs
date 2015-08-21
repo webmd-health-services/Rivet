@@ -12,7 +12,7 @@ namespace Rivet.Test.Operations
 			const string schemaName = "schema";
 			const string tableName = "table";
 			const string constraintName = "name";
-			var op = new EnableCheckConstraintOperation(schemaName, tableName, constraintName);
+			var op = new EnableConstraintOperation(schemaName, tableName, constraintName);
 			Assert.That(op.Name, Is.EqualTo(constraintName));
 			Assert.That(op.SchemaName, Is.EqualTo(schemaName));
 			Assert.That(op.TableName, Is.EqualTo(tableName));
