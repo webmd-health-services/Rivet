@@ -24,7 +24,7 @@ $RTRivetSchemaName = 'rivet'
 $RTDatabaseName = 'RivetTest'
 $RTDatabase2Name = 'RivetTest2'
 
-$serverFilePath = [IO.Path]::GetFullPath((Join-Path -Path $RTRivetRoot -ChildPath '..\Server.txt'))
+$serverFilePath = [IO.Path]::GetFullPath((Join-Path -Path $PSScriptRoot -ChildPath '..\Server.txt'))
 if( -not (Test-Path -Path $serverFilePath -PathType Leaf) )
 {
     Write-Error ('File ''{0}'' not found. Please create this file. It should contain the name of the SQL Server instance tests should use.' -f $serverFilePath)
