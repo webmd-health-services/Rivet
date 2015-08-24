@@ -13,6 +13,8 @@ function Test-FunctionsExported
     $privateFunctions = @{
                             'Connect-Database' = $true;
                             'Disconnect-Database' = $true;
+                            'Enable-ForeignKey' = $true;  #OBSOLETE
+                            'Disable-ForeignKey' = $true; #OBSOLETE
                             'Export-Row' = $true;
                             'Get-MigrationScript' = $true;
                             'Import-Rivet' = $true;

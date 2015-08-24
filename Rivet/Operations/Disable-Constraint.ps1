@@ -39,3 +39,5 @@ function Disable-Constraint
 
     New-Object 'Rivet.Operations.DisableConstraintOperation' $SchemaName, $TableName, $Name
 }
+
+Set-Alias -Name 'Disable-CheckConstraint' -Value 'Disable-Constraint'

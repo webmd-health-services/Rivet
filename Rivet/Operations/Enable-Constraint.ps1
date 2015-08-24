@@ -38,3 +38,5 @@ function Enable-Constraint
 
     New-Object 'Rivet.Operations.EnableConstraintOperation' $SchemaName, $TableName, $Name, $false
 }
+
+Set-Alias -Name 'Enable-CheckConstraint' -Value 'Enable-Constraint'
