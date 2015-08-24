@@ -19,6 +19,90 @@ function Update-Table
             VarChar 'Color' 256 -NotNull
         }
 
+    .LINK
+    bigint
+
+    .LINK
+    binary
+
+    .LINK
+    bit
+
+    .LINK
+    char
+
+    .LINK
+    date
+
+    .LINK
+    datetime
+
+    .LINK
+    datetime2
+
+    .LINK
+    datetimeoffset
+
+    .LINK
+    decimal
+
+    .LINK
+    float
+
+    .LINK
+    hierarchyid
+
+    .LINK
+    int
+
+    .LINK
+    money
+
+    .LINK
+    nchar
+
+    .LINK
+    numeric
+
+    .LINK
+    nvarchar
+
+    .LINK
+    real
+
+    .LINK
+    rowversion
+
+    .LINK
+    smalldatetime
+
+    .LINK
+    smallint
+
+    .LINK
+    smallmoney
+
+    .LINK
+    sqlvariant
+
+    .LINK
+    time
+
+    .LINK
+    tinyint
+
+    .LINK
+    uniqueidentifier
+
+    .LINK
+    varbinary
+
+    .LINK
+    varchar
+
+    .LINK
+    xml
+
     .EXAMPLE
     Update-Table -Name 'Ties' -AddColumn { VarChar 'Color' 50 -NotNull }
 
