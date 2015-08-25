@@ -12,12 +12,13 @@
  * Created `Stop-Migration` operation for preventing a migration from getting popped/reversed.
  * Migrations missing Push-Migration/Pop-Migration functions are no longer allowed and will fail when pushed/popped.
  * Migrations with empty Push-Migration/Pop-Migration functions are no longer allowed and will fail when pushed/popped.
- * Updated `Remove-CheckConstraint`, `Remove-DefaulConstraint`, `Remove-ForeignKey`, `Remove-Index`, `Remove-PrimaryKey`, and `Remove-UniqueKey` operations to no longer infer constraint/index names. The constraint/index name to drop is now required.
+ * Obsoleted the parameter sets of the `Remove-CheckConstraint`, `Remove-DefaulConstraint`, `Remove-ForeignKey`, `Remove-Index`, `Remove-PrimaryKey`, and `Remove-UniqueKey` operations that use an inferred constraint/index name. These operations now expect the name of the constraint/index to drop with the `Name` parameter.
  * Improved object model so that customizing index/constraint names is easier. 
  * Added `about_Rivet_Cookbook` help topic to showing how to customize index/constraint names.
  * Updated and improved the `about_Rivet_Plugins` help topic.
- * Replaced `Enable-CheckConstraint` and `Enable-ForeignKeyConstraint` operations with `Enable-Constraint` operation. 
- * Replaced `Disable-CheckConstraint` and `Disable-ForeignKeyConstraint` operations with `Disable-Constraint` operation.
+ * Obsoleted the `Enable-ForeignKey` and `Disable-ForeignKey` operations. Use the `Enable-Constraint` and `Disable-Constraint` operations instead.
+ * Renamed the `Enable-CheckConstraint` operation to `Enable-Constraint`, with a backwards-compatible alias.
+ * Renamed the `Disable-CheckConstraint` operation to `Disable-Constraint`, with a backwards-compatible alias.
  * You can now push, pop, or create multiple migrations at once (i.e. `rivet.ps1`'s `Name` parameter now accepts multiple names, IDs, or file names).
 
 ## Bug Fixes
