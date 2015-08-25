@@ -335,9 +335,9 @@ function Pop-Migration
     Remove-Synonym -Name 'Crop' @idempotent
     Remove-DataType @idempotent -Name 'GUID'
     
-    Remove-UniqueKey @idempotent @crops '$(New-ConstraintName -UniqueKey -SchemaName 'idempotent' 'Crops' 'Name')'
-    Remove-Index @idempotent @crops '$(New-ConstraintName -Index -SchemaName 'idempotent' 'Crops' 'Name')'
-    Remove-ForeignKey @idempotent @crops '$(New-ForeignKeyConstraintName -SourceSchema 'idempotent' 'Crops' -TargetSchema 'idempotent' 'Farmers')'
+    Remove-UniqueKey @idempotent @crops -Name '$(New-ConstraintName -UniqueKey -SchemaName 'idempotent' 'Crops' 'Name')'
+    Remove-Index @idempotent @crops -Name '$(New-ConstraintName -Index -SchemaName 'idempotent' 'Crops' 'Name')'
+    Remove-ForeignKey @idempotent @crops -Name '$(New-ForeignKeyConstraintName -SourceSchema 'idempotent' 'Crops' -TargetSchema 'idempotent' 'Farmers')'
     Remove-Table @idempotent `$crops.TableName
     Remove-Table @idempotent `$farmers.TableName
     Remove-Schema 'empty'
@@ -360,18 +360,18 @@ function Push-Migration
     Remove-CheckConstraint @schema @crops -Name 'CK_Crops_AllowedCrops'
     Update-Table @schema -Name `$farmers.TableName -Remove 'RemoveMe'
     Remove-DataType @schema -Name 'GUID'
-    Remove-DefaultConstraint @schema @crops '$(New-ConstraintName -Default -SchemaName 'idempotent' 'Crops' 'Name')'
+    Remove-DefaultConstraint @schema @crops -Name '$(New-ConstraintName -Default -SchemaName 'idempotent' 'Crops' 'Name')'
     Remove-Description @schema @crops -ColumnName 'Name'
-    Remove-ForeignKey @schema @crops '$(New-ForeignKeyConstraintName -SourceSchema 'idempotent' 'Crops' -TargetSchema 'idempotent' 'Farmers')'
-    Remove-Index @schema @crops '$(New-ConstraintName -Index -SchemaName 'idempotent' 'Crops' 'Name')'
-    Remove-PrimaryKey @schema @crops '$(New-ConstraintName -PrimaryKey -SchemaName 'schema' 'Crops')'
+    Remove-ForeignKey @schema @crops -Name '$(New-ForeignKeyConstraintName -SourceSchema 'idempotent' 'Crops' -TargetSchema 'idempotent' 'Farmers')'
+    Remove-Index @schema @crops -Name '$(New-ConstraintName -Index -SchemaName 'idempotent' 'Crops' 'Name')'
+    Remove-PrimaryKey @schema @crops -Name '$(New-ConstraintName -PrimaryKey -SchemaName 'schema' 'Crops')'
     Remove-Row @schema @farmers -Where 'ID = 1'
     Remove-Schema 'empty'
     Remove-StoredProcedure @schema -Name 'GetFarmers'
     Remove-Synonym @schema -Name 'Crop'
     Remove-Table @schema -Name 'removeme'
     Remove-Trigger @schema -Name 'CropActivity'
-    Remove-UniqueKey @schema @crops '$(New-ConstraintName -UniqueKey -SchemaName 'idempotent' 'Crops' 'Name')'
+    Remove-UniqueKey @schema @crops -Name '$(New-ConstraintName -UniqueKey -SchemaName 'idempotent' 'Crops' 'Name')'
     Remove-UserDefinedFunction @schema -Name 'GetInteger'
     Remove-View @schema -Name 'FarmerCrops'
 }
@@ -479,7 +479,7 @@ function Pop-Migration
     `$crops = @{ TableName = 'Crops' }
     `$farmers = @{ TableName = 'Farmers' }
 
-    Remove-ForeignKey @idempotent @crops '$(New-ForeignKeyConstraintName -SourceSchema 'idempotent' 'Crops' -TargetSchema 'idempotent' 'Farmers')' 
+    Remove-ForeignKey @idempotent @crops -Name '$(New-ForeignKeyConstraintName -SourceSchema 'idempotent' 'Crops' -TargetSchema 'idempotent' 'Farmers')' 
     Remove-Table @idempotent `$crops.TableName
     Remove-Table @idempotent `$farmers.TableName
     Remove-Schema `$idempotent.SchemaName
@@ -560,7 +560,7 @@ function Pop-Migration
 
     Enable-Constraint @idempotent @crops -Name 'CK_Crops_AllowedCrops'
     Enable-Constraint @idempotent @crops -Name '$(New-ForeignKeyConstraintName -SourceSchema 'idempotent' 'Crops' -TargetSchema 'idempotent' 'Farmers')'
-    Remove-ForeignKey @idempotent @crops '$(New-ForeignKeyConstraintName -SourceSchema 'idempotent' 'Crops' -TargetSchema 'idempotent' 'Farmers')'
+    Remove-ForeignKey @idempotent @crops -Name '$(New-ForeignKeyConstraintName -SourceSchema 'idempotent' 'Crops' -TargetSchema 'idempotent' 'Farmers')'
     Remove-Table @idempotent `$crops.TableName
     Remove-Table @idempotent `$farmers.TableName
     Remove-Schema `$idempotent.SchemaName
@@ -747,7 +747,7 @@ function Pop-Migration
     @"
 function Push-Migration
 {
-    Remove-PrimaryKey -SchemaName 'aggregate' -TableName 'Beta' '$(New-ConstraintName -PrimaryKey -SchemaName 'aggregate' -TableName 'Beta')'
+    Remove-PrimaryKey -SchemaName 'aggregate' -TableName 'Beta' -Name '$(New-ConstraintName -PrimaryKey -SchemaName 'aggregate' -TableName 'Beta')'
     Add-PrimaryKey -SchemaName 'aggregate' -TableName 'Beta' -ColumnName 'Name'
 
     Update-Table -SchemaName 'aggregate' 'Beta' -UpdateColumn {
@@ -767,7 +767,7 @@ function Push-Migration
 
 function Pop-Migration
 {
-    Remove-PrimaryKey -SchemaName 'aggregate' -TableName 'Beta' '$(New-ConstraintName -PrimaryKey -SchemaName 'aggregate' -TableName 'Beta')'
+    Remove-PrimaryKey -SchemaName 'aggregate' -TableName 'Beta' -Name '$(New-ConstraintName -PrimaryKey -SchemaName 'aggregate' -TableName 'Beta')'
 }
 "@ | New-Migration -Name 'UpdateTables'
 

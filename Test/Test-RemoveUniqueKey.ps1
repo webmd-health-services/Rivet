@@ -34,7 +34,6 @@ function Pop-Migration()
 "@ | New-Migration -Name 'RemoveUniqueKey'
     Invoke-RTRivet -Push 'RemoveUniqueKey'
     Assert-False (Test-UniqueKey -TableName 'RemoveUniqueKey' -ColumnName 'RemoveMyUniqueKey')
-
 }
 
 function Test-ShouldRemoveUniqueKey
@@ -59,3 +58,30 @@ function Pop-Migration()
     Assert-False (Test-UniqueKey -TableName 'Remove-UniqueKey' -ColumnName 'RemoveMyUniqueKey')
 
 }
+
+function Test-ShouldRemoveUniqueKeyWithDefaultName
+{
+    @"
+function Push-Migration()
+{
+    Add-Table -Name 'RemoveUniqueKey' {
+        Int 'RemoveMyUniqueKey' -NotNull
+    }
+
+    #Add an Index to 'IndexMe'
+    Add-UniqueKey -TableName 'RemoveUniqueKey' -ColumnName 'RemoveMyUniqueKey'
+
+    #Remove Index
+    Remove-UniqueKey -TableName 'RemoveUniqueKey' 'RemoveMyUniqueKey'
+}
+
+function Pop-Migration()
+{
+    Remove-Table 'RemoveUniqueKey'
+}
+"@ | New-Migration -Name 'RemoveUniqueKey'
+    Invoke-RTRivet -Push 'RemoveUniqueKey'
+    Assert-False (Test-UniqueKey -TableName 'RemoveUniqueKey' -ColumnName 'RemoveMyUniqueKey')
+
+}
+

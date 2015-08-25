@@ -30,7 +30,7 @@ function Push-Migration()
 
 function Pop-Migration()
 {
-    Remove-ForeignKey 'Source Table' '$(New-ForeignKeyConstraintName 'Source Table' 'REference Table')'
+    Remove-ForeignKey 'Source Table' -Name '$(New-ForeignKeyConstraintName 'Source Table' 'REference Table')'
     Remove-Table 'Reference Table'
     Remove-Table 'Source Table'
 }
@@ -60,7 +60,7 @@ function Push-Migration()
 
 function Pop-Migration()
 {
-    Remove-ForeignKey 'Source' '$(New-ForeignKeyConstraintName 'Source' 'Reference')'
+    Remove-ForeignKey 'Source' -Name '$(New-ForeignKeyConstraintName 'Source' 'Reference')'
     Remove-Table 'Reference'
     Remove-Table 'Source'
 }
@@ -88,7 +88,7 @@ function Push-Migration()
 
 function Pop-Migration()
 {
-    Remove-ForeignKey 'Source' -SchemaName 'rivet' '$(New-ForeignKeyConstraintName -SourceSchema 'rivet' 'Source' -TargetSchema 'rivet' 'Reference')'
+    Remove-ForeignKey 'Source' -SchemaName 'rivet' -Name '$(New-ForeignKeyConstraintName -SourceSchema 'rivet' 'Source' -TargetSchema 'rivet' 'Reference')'
     Remove-Table 'Reference' -SchemaName 'rivet'
     Remove-Table 'Source' -SchemaName 'rivet'
 }
@@ -116,7 +116,7 @@ function Push-Migration()
 
 function Pop-Migration()
 {
-    Remove-ForeignKey 'Source' '$(New-ForeignKeyConstraintName 'Source' 'Reference')'
+    Remove-ForeignKey 'Source' -Name '$(New-ForeignKeyConstraintName 'Source' 'Reference')'
     Remove-Table 'Reference'
     Remove-Table 'Source'
 }
@@ -145,7 +145,7 @@ function Push-Migration()
 
 function Pop-Migration()
 {
-    Remove-ForeignKey 'Source' '$(New-ForeignKeyConstraintName 'Source' 'Reference')'
+    Remove-ForeignKey 'Source' -Name '$(New-ForeignKeyConstraintName 'Source' 'Reference')'
     Remove-Table 'Reference'
     Remove-Table 'Source'
 }
@@ -173,7 +173,7 @@ function Push-Migration()
 
 function Pop-Migration()
 {
-    Remove-ForeignKey 'Source' '$(New-ForeignKeyConstraintName 'Source' 'Reference')'
+    Remove-ForeignKey 'Source' -Name '$(New-ForeignKeyConstraintName 'Source' 'Reference')'
     Remove-Table 'Reference'
     Remove-Table 'Source'
 }
@@ -202,7 +202,7 @@ function Push-Migration()
 
 function Pop-Migration()
 {
-    Remove-ForeignKey 'Add-ForeignKey' '$(New-ForeignKeyConstraintName 'Add-ForeignKey' 'Reference')'
+    Remove-ForeignKey 'Add-ForeignKey' -Name '$(New-ForeignKeyConstraintName 'Add-ForeignKey' 'Reference')'
     Remove-Table 'Reference'
     Remove-Table 'Add-ForeignKey'
 }
@@ -235,7 +235,7 @@ function Push-Migration()
 
 function Pop-Migration()
 {
-    Remove-ForeignKey 'Source Table' '$(New-ForeignKeyConstraintName 'Source Table' 'Reference Table')'
+    Remove-ForeignKey 'Source Table' -Name '$(New-ForeignKeyConstraintName 'Source Table' 'Reference Table')'
     Remove-Table 'Reference Table'
     Remove-Table 'Source Table'
 }

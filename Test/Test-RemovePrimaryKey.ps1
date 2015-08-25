@@ -62,3 +62,25 @@ function Pop-Migration()
     Invoke-RTRivet -Pop
     Assert-False (Test-PrimaryKey -TableName 'Remove-PrimaryKey')
 }
+
+function Test-ShouldRemovePrimaryKeyWithDefaultName
+{
+@"
+function Push-Migration()
+{
+    Add-PrimaryKey -TableName 'PrimaryKey' -ColumnName 'id'
+}
+
+function Pop-Migration()
+{
+    Remove-PrimaryKey -TableName 'PrimaryKey'
+}
+"@ | New-Migration -Name 'SetandRemovePrimaryKey'
+    Invoke-RTRivet -Push
+    Assert-True (Test-Table 'PrimaryKey')
+    Assert-PrimaryKey -TableName 'PrimaryKey' -ColumnName 'id'
+
+    Invoke-RTRivet -Pop
+    Assert-False (Test-PrimaryKey -TableName 'PrimaryKey')
+}
+
