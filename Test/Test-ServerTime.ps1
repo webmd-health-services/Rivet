@@ -13,8 +13,7 @@ function Stop-Test
 
 function Test-PastPresentFuture
 {
-
-    $createdAt = (Get-Date).ToUniversalTime()
+    $createdAt = Invoke-RivetTestQuery -Query 'select getutcdate()' -AsScalar
 
     @'
 function Push-Migration
