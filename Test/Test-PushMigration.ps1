@@ -1,6 +1,8 @@
 
 & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
 
+$testStartedAt = $null
+
 function Start-Test
 {
     Start-RivetTest
@@ -94,6 +96,8 @@ BEGIN
 END
 GO
 '@ | Set-Content -Path $objectMadeWithRelativePathath
+
+    $testStartedAt = Invoke-RivetTestQuery -Query 'select getutcdate()' -AsScalar
 }
 
 function Stop-Test
@@ -219,7 +223,6 @@ function Pop-Migration
 
 function Test-ShouldPushSpecificMigrationByName
 {
-    $createdAfter = (Get-Date).ToUniversalTime()
     Get-MigrationScript | 
         Select-Object -First 1 |
         ForEach-Object {
@@ -227,7 +230,7 @@ function Test-ShouldPushSpecificMigrationByName
             
             Invoke-RTRivet -Push $Name
             
-            Assert-Migration -ID $id -Name $name -CreatedAfter $CreatedAfter
+            Assert-Migration -ID $id -Name $name
         }
         
     $count = Measure-Migration
@@ -236,13 +239,11 @@ function Test-ShouldPushSpecificMigrationByName
 
 function Test-ShouldPushSpecificMigrationWithWildcard
 {
-    $createdAfter = (Get-Date).ToUniversalTime()
-    
     Invoke-RTRivet -Push 'Invoke*'
     
     $migration = Get-MigrationScript | Where-Object { $_.Name -like '*_Invoke*.ps1' }
     $id,$name = $migration.BaseName -split '_'
-    Assert-Migration -ID $id -Name $name -CreatedAfter $CreatedAfter
+    Assert-Migration -ID $id -Name $name
         
     $count = Measure-Migration
     Assert-Equal 1 $count 'applied too many migrations'
@@ -250,7 +251,6 @@ function Test-ShouldPushSpecificMigrationWithWildcard
 
 function Test-ShouldNotReapplyASpecificMigration
 {
-    $createdAfter = (Get-Date).ToUniversalTime()
     Get-MigrationScript | 
         Select-Object -First 1 |
         ForEach-Object {
@@ -258,13 +258,13 @@ function Test-ShouldNotReapplyASpecificMigration
             
             Invoke-RTRivet -Push $name
             
-            Assert-Migration -ID $id -Name $name -CreatedAfter $CreatedAfter
+            Assert-Migration -ID $id -Name $name
             
             $createdBefore = Get-SqlServerUtcDate
 
             Invoke-RTRivet -Push $name            
 
-            $row = Assert-Migration -ID $id -Name $name -CreatedAfter $CreatedAfter -PassThru
+            $row = Assert-Migration -ID $id -Name $name -PassThru
             Assert-True ($row.AtUtc.AddMilliseconds(-500) -lt $createdBefore)
         }
         
@@ -327,7 +327,7 @@ function Assert-Migration
         $Name,
 
         [Parameter(ParameterSetName='ByID')]
-        $CreatedAfter,
+        $CreatedAfter = $testStartedAt,
         
         [Parameter(ParameterSetName='ByPath')]
         $Path,
