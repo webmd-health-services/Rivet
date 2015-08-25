@@ -2,15 +2,15 @@ function Remove-CheckConstraint
 {
     <#
     .SYNOPSIS
-    Drops a check constraint from a table.
+    Removes a check constraint from a table.
     
     .DESCRIPTION
-    Check constraints add validation for data in columns.  This removes those constraints.
+    The `Remove-CheckConstraint` operation removes a check constraint from a table. Check constraints add validation for data in columns.
     
     .EXAMPLE
     Remove-CheckConstraint 'Migrations' 'CK_Migrations_MigrationID'
     
-    Demonstrates how to remove a check constraint from a table.
+    Demonstrates how to remove a check constraint from a table. In this case, the `CK_Migrations_MigrationID` constraint will be removed from the `Migrations` table.
     #>
     [CmdletBinding()]
     param(
@@ -26,7 +26,7 @@ function Remove-CheckConstraint
         
         [Parameter(Mandatory=$true,Position=1)]
         [string]
-        # The name of the check constraint.
+        # The name of the check constraint to remove.
         $Name
     )
 

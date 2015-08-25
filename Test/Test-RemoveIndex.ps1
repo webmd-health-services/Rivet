@@ -87,3 +87,36 @@ function Pop-Migration()
     Assert-True (Test-Column -Name 'IndexMe' -TableName 'AddIndex')
     Assert-False (Test-Index -TableName 'AddIndex' -ColumnName 'IndexMe' -Unique)
 }
+
+function Test-ShouldRemoveIndexWithDefaultName
+{
+    @"
+function Push-Migration()
+{
+    Add-Table -Name 'AddIndex' {
+        Int 'IndexMe' -NotNull
+        Int 'IndexMeUnique' -NotNull
+    }
+
+    #Add an Index to 'IndexMe'
+    Add-Index -TableName 'AddIndex' -ColumnName 'IndexMe'
+    Add-Index -TableName 'AddIndex' -ColumnName 'IndexMeUnique' -Unique
+
+    Remove-Index 'AddIndex' 'IndexMe'
+    Remove-Index 'AddIndex' 'IndexMeUnique' -Unique
+}
+
+function Pop-Migration()
+{
+    Remove-Table 'AddIndex'
+}
+"@ | New-Migration -Name 'RemoveIndex'
+
+    Invoke-RTRivet -Push 'RemoveIndex'
+    Assert-True (Test-Table 'AddIndex')
+    Assert-True (Test-Column -Name 'IndexMe' -TableName 'AddIndex')
+    Assert-True (Test-Column -Name 'IndexMeUnique' -TableName 'AddIndex')
+    Assert-False (Test-Index -TableName 'AddIndex' -ColumnName 'IndexMe')
+    Assert-False (Test-Index -TableName 'AddIndex' -ColumnName 'IndexMeUnique')
+}
+
