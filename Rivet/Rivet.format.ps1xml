@@ -102,6 +102,7 @@
                             <TableColumnItem>
                                 <ScriptBlock>
                                     $op = $_.Operation
+                                    $migration = $_.Migration
 
                                     if( ($op -is [Rivet.Operations.ExtendedPropertyOperation]) )
                                     {
@@ -118,7 +119,17 @@
                                     }
                                     elseif( ($op | Get-Member -Name 'Path') )
                                     {
-                                        $migrationRoot = Split-Path -Parent -Path $op.Path
+                                        if( -not $op.Path )
+                                        {
+                                            return
+                                        }
+
+                                        $migrationRoot = Split-Path -Parent -Path $migration.Path
+                                        if( -not (Test-Path -Path $migrationRoot -PathType Container) -or -not (Test-Path -Path $op.Path -PathType Leaf) )
+                                        {
+                                            return Split-Path -Leaf -Path $op.Path
+                                        }
+
                                         Push-Location -Path $migrationRoot -StackName 'RivetOperationView'
                                         try
                                         {
