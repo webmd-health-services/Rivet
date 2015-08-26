@@ -10,7 +10,7 @@ function New-PluginsRoot
 
     $tempDir = New-TempDirectory -Prefix $Prefix
 
-    $rivetJson = Get-Content -Path $RTConfigFilePath | ConvertFrom-Json
+    $rivetJson = Get-Content -Path $RTConfigFilePath -Raw | ConvertFrom-Json
     if( -not $rivetJson )
     {
         return
