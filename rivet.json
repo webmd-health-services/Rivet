@@ -1,9 +1,0 @@
-{
-    SqlServerName: '.\\HS_A',
-    DatabasesRoot: '.\\Test\\Databases',
-    DatabaseScriptsRoot: '.\\Test\\Databases',
-    PluginsRoot: '.\\Plugins',
-    ConnectionTimeout: 15,
-    CommandTimeout: 30,
-    IgnoreDatabases: [ 'Shared' ]
-}
