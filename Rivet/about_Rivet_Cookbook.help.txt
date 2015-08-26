@@ -5,6 +5,23 @@ SHORT DESCRIPTION
     Contains a bunch of recipes showing how to use Rivet.
 
 LONG DESCRIPTION
+    ## How do I create my own operations?
+    
+    It is possible to create Rivet operations. Each operation must be in its own file. 
+    The name of the file must match the name of the operation, with a .ps1 extension. 
+    Put your custom operations in the `Operations` directory under the Rivet module.
+
+    So, if you want to create a custom `Add-StandardTable` operation, you would create 
+    an `Operations\Add-StandardTable.ps1` file that looked like this:
+    
+        function Add-StandardTable
+        {
+        }
+        
+    Operations take no parameters. They should return one or more `Rivet.Operation` 
+    objects. See the `Rivet.Operations` namespace for available operations.
+    
+    
     ## How do I customize constraint/index names?
     
     You can customize constraint/index names using the `Start-MigrationOperation` 

@@ -40,15 +40,18 @@ if( -not (Test-TypeDataMember -TypeName 'Rivet.OperationResult' -MemberName 'Mig
     Update-TypeData -TypeName 'Rivet.OperationResult' -MemberType ScriptProperty -MemberName 'MigrationID' -Value { $this.Migration.ID }
 }
 
-
+$publicFunctions = @()
 Invoke-Command -ScriptBlock {
                                 Get-ChildItem -Path $PSScriptRoot -Filter '*-*.ps1'
-                                Get-ChildItem -Path (Join-Path -Path $PSScriptRoot -ChildPath 'Operations' -Resolve) -Filter '*-*.ps1'
+                                Get-ChildItem -Path (Join-Path -Path $PSScriptRoot -ChildPath 'Operations' -Resolve) -Filter '*-*.ps1' |
+                                    Tee-Object -Variable 'script:publicFunctions'
                             } |
     Where-Object { $_.BaseName -ne 'Import-Rivet' -and $_.BaseName -ne 'Export-Row' } |
     ForEach-Object { . $_.FullName }
 
-$publicFunctions = @(
+$publicFunctions = $publicFunctions | Select-Object -ExpandProperty 'BaseName'
+
+$publicFunctions += @(
                         'Add-CheckConstraint',
                         'Add-DataType',
                         'Add-DefaultConstraint',
@@ -58,7 +61,6 @@ $publicFunctions = @(
                         'Add-Index',
                         'Add-PrimaryKey',
                         'Add-Row',
-                        'Add-RowGuidCol',
                         'Add-Schema',
                         'Add-StoredProcedure',
                         'Add-Synonym',
@@ -67,8 +69,6 @@ $publicFunctions = @(
                         'Add-UniqueKey',
                         'Add-UserDefinedFunction',
                         'Add-View',
-                        'Disable-Constraint',
-                        'Enable-Constraint',
                         'Get-Migration',
                         'Get-RivetConfig',
                         'Invoke-Ddl',
@@ -115,7 +115,6 @@ $publicFunctions = @(
                         'Remove-Index',
                         'Remove-PrimaryKey',
                         'Remove-Row',
-                        'Remove-RowGuidCol',
                         'Remove-Schema',
                         'Remove-StoredProcedure',
                         'Remove-Synonym',
@@ -132,7 +131,6 @@ $publicFunctions = @(
                         'Set-StoredProcedure',
                         'Set-UserDefinedFunction',
                         'Set-View',
-                        'Stop-Migration',
                         'Update-CodeObjectMetadata',
                         'Update-Description',
                         'Update-ExtendedProperty',

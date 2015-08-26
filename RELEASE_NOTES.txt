@@ -21,6 +21,7 @@
  * Renamed the `Disable-CheckConstraint` operation to `Disable-Constraint`, with a backwards-compatible alias.
  * You can now push, pop, or create multiple migrations at once (i.e. `rivet.ps1`'s `Name` parameter now accepts multiple names, IDs, or file names).
  * Plug-ins now get passed a `Rivet.Migration` object for the operation being processed.
+ * Rivet now supports writing custom operations.
 
 ## Bug Fixes
 
