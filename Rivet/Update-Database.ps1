@@ -133,8 +133,8 @@ function Update-Database
         $byName['Include'] = $Name
     }
 
-    Get-Migration -Path $Path -Configuration $Configuration @byName -ErrorAction Stop |
-        Sort-Object -Property 'ID' -Descending:$popping |
+    Get-MigrationFile -Path $Path -Configuration $Configuration @byName -ErrorAction Stop |
+        Sort-Object -Property 'MigrationID' -Descending:$popping |
         Where-Object {
 
             if( $RivetSchema )
@@ -142,9 +142,9 @@ function Update-Database
                 return $true
             }
 
-            if( [int64]$_.ID -lt 1000000000000 )
+            if( [int64]$_.MigrationID -lt 1000000000000 )
             {
-                Write-Error ('Migration ''{0}'' has an invalid ID. IDs lower than 01000000000000 are reserved for internal use.' -f $_.Path)
+                Write-Error ('Migration ''{0}'' has an invalid ID. IDs lower than 01000000000000 are reserved for internal use.' -f $_.FullName)
                 $stopMigrating = $true
                 return $false
             }
@@ -155,7 +155,7 @@ function Update-Database
             $preErrorCount = $Global:Error.Count
             try
             {
-                $migration = Test-Migration -ID $_.ID -PassThru #-ErrorAction Ignore
+                $migration = Test-Migration -ID $_.MigrationID -PassThru #-ErrorAction Ignore
             }
             catch
             {
@@ -193,12 +193,17 @@ function Update-Database
             }
         } |
         ForEach-Object {
-        
             if( $stopMigrating )
             {
                 return
             }
-        
+            else
+            {
+                return $_
+            }
+        } |
+        Convert-FileInfoToMigration -Configuration $Configuration |
+        ForEach-Object {
             $migrationInfo = $_
             $migrationInfo.DataSource = $Connection.DataSource
 

@@ -69,16 +69,6 @@ function Get-Migration
         # The path to the rivet.json file to use. Defaults to `rivet.json` in the current directory.
         $ConfigFilePath,
 
-        [Parameter(Mandatory=$true,ParameterSetName='Internal')]
-        [Rivet.Configuration.Configuration]
-        # The configuration to use.
-        $Configuration,
-
-        [Parameter(Mandatory=$true,ParameterSetName='Internal')]
-        [string[]]
-        # The path to a specific migration or directory of migrations.
-        $Path,
-
         [string[]]
         # A list of migrations to include. Matches against the migration's ID or Name or the migration's file name (without extension). Wildcards permitted.
         $Include,
@@ -96,7 +86,7 @@ function Get-Migration
         $After
     )
 
-    Set-StrictMode -Version Latest
+    Set-StrictMode -Version 'Latest'
 
     function Clear-Migration
     {
@@ -107,112 +97,37 @@ function Get-Migration
 
     Clear-Migration
 
-    if( $PSCmdlet.ParameterSetName -eq 'External' )
+    $getRivetConfigParams = @{ }
+    if( $Database )
     {
-        $getRivetConfigParams = @{ }
-        if( $Database )
-        {
-            $getRivetConfigParams['Database'] = $Database
-        }
-
-        if( $ConfigFilePath )
-        {
-            $getRivetConfigParams['Path'] = $ConfigFilePath
-        }
-
-        if( $Environment )
-        {
-            $getRivetConfigParams['Environment'] = $Environment
-        }
-
-        $Configuration = Get-RivetConfig @getRivetConfigParams
-        if( -not $Configuration )
-        {
-            return
-        }
+        $getRivetConfigParams['Database'] = $Database
     }
 
-    if( $Configuration.PluginsRoot )
+    if( $ConfigFilePath )
     {
-        Import-Plugin -Path $Configuration.PluginsRoot
+        $getRivetConfigParams['Path'] = $ConfigFilePath
     }
 
-    $requiredMatches = @{ }
-    if( $PSBoundParameters.ContainsKey('Include') )
+    if( $Environment )
     {
-        foreach( $includeItem in $Include )
-        {
-            if( -not [Management.Automation.WildcardPattern]::ContainsWildcardCharacters($includeItem) )
-            {
-                $requiredMatches[$includeItem] = $true
-            }
-        }
+        $getRivetConfigParams['Environment'] = $Environment
     }
 
-    $foundMatches = @{ }
-                
-    Invoke-Command -ScriptBlock {
-            if( $PSCmdlet.ParameterSetName -eq 'Internal' )
-            {
-                return $Path
-            }
+    $Configuration = Get-RivetConfig @getRivetConfigParams
+    if( -not $Configuration )
+    {
+        return
+    }
 
-            $Configuration.Databases | Select-Object -ExpandProperty 'MigrationsRoot'
-        } | 
-        ForEach-Object {
-            Write-Debug -Message $_ 
-            if( (Test-Path -Path $_ -PathType Container) )
-            {
-                Get-ChildItem -Path $_ -Filter '*_*.ps1'
-            }
-            elseif( (Test-Path -Path $_ -PathType Leaf) )
-            {
-                Get-Item -Path $_
-            }
-        } | 
-        ForEach-Object {
-            if( $_.BaseName -notmatch '^(\d{14})_(.+)' )
-            {
-                Write-Error ('Migration {0} has invalid name.  Must be of the form `YYYYmmddhhMMss_MigrationName.ps1' -f $_.FullName)
-                return
-            }
-        
-            $id = [UInt64]$matches[1]
-            $name = $matches[2]
-        
-            $_ | 
-                Add-Member -MemberType NoteProperty -Name 'MigrationID' -Value $id -PassThru |
-                Add-Member -MemberType NoteProperty -Name 'MigrationName' -Value $name -PassThru
-        } |
-        Where-Object {
-            if( -not ($PSBoundParameters.ContainsKey( 'Include' )) )
-            {
-                return $true
-            }
+    $getMigrationFileParams = @{}
+    @( 'Include', 'Exclude' ) | ForEach-Object {
+                                                    if( $PSBoundParameters.ContainsKey($_) )
+                                                    {
+                                                        $getMigrationFileParams[$_] = $PSBoundParameters[$_]
+                                                    }
+                                                }
 
-            $migration = $_
-            foreach( $includeItem in $Include )
-            {
-                $foundMatch = $migration.MigrationID -like $includeItem -or $migration.MigrationName -like $includeItem -or $migration.BaseName -like $includeItem
-                if( $foundMatch )
-                {
-                    $foundMatches[$includeItem] = $true
-                    return $true
-                } 
-            }
-
-            return $false
-        } |
-        Where-Object { 
-
-            if( -not ($PSBoundParameters.ContainsKey( 'Exclude' )) )
-            {
-                return $true
-            }
-
-            $migration = $_
-            $Exclude | Where-Object { $migration.MigrationID -notlike $_ -and $migration.MigrationName -notlike $_ -and $migration.BaseName -notlike $_ }
-        } |
+    Get-MigrationFile -Configuration $Configuration @getMigrationFileParams |
         Where-Object {
             if( $PSBoundParameters.ContainsKey( 'Before' ) )
             {
@@ -233,136 +148,5 @@ function Get-Migration
             }
             return $true
         } |
-        ForEach-Object {
-            $dbName = Split-Path -Parent -Path $_.FullName
-            $dbName = Split-Path -Parent -Path $dbName
-            $dbName = Split-Path -Leaf -Path $dbName
-
-            $m = New-Object 'Rivet.Migration' $_.MigrationID,$_.MigrationName,$_.FullName,$dbName
-
-            filter Add-Operation
-            {
-                param(
-                    [Parameter(Mandatory=$true,ValueFromPipeline=$true)]
-                    [object]
-                    # The migration object to invoke.
-                    $Operation,
-
-                    [Parameter(ParameterSetName='Push',Mandatory=$true)]
-                    [Collections.Generic.List[Rivet.Operation]]
-                    [AllowEmptyCollection()]
-                    $OperationsList,
-
-                    [Parameter(ParameterSetName='Pop',Mandatory=$true)]
-                    [Switch]
-                    $Pop
-                )
-
-                Set-StrictMode -Version 'Latest'
-
-                $Operation |
-                    Where-Object { $_ -is [Rivet.Operation] } |
-                    ForEach-Object {
-                        if( (Test-Path -Path 'function:Start-MigrationOperation') )
-                        {
-                            Start-MigrationOperation -Operation $_
-                        }
-
-                        $_
-
-                        if( (Test-Path -Path 'function:Complete-MigrationOperation') )
-                        {
-                            Complete-MigrationOperation -Operation $_
-                        }
-                    } |
-                    Where-Object { $_ -is [Rivet.Operation] } |
-                    ForEach-Object { $OperationsList.Add( $_ ) } |
-                    Out-Null
-            }
-
-            $DBMigrationsRoot = Split-Path -Parent -Path $_.FullName
-
-            . $_.FullName
-
-            try
-            {
-                if( -not (Test-Path -Path 'function:Push-Migration') )
-                {
-                    throw (@'
-Push-Migration function not found. All migrations are required to have a Push-Migration function that contains at least one operation. Here's some sample code to get you started:
-
-    function Push-Migration
-    {
-        Add-Table 'LetsCreateATable' {
-            int 'ID' -NotNull
-        }
-    }
-'@)
-                }
-
-                Push-Migration | Add-Operation -OperationsList $m.PushOperations
-                if( $m.PushOperations.Count -eq 0 )
-                {
-                    throw (@'
-Push-Migration function is empty and contains no operations. Maybe you''d like to create a table? Here's some sample code to get you started:
-
-    function Push-Migration
-    {
-        Add-Table 'LetsCreateATable' {
-            int 'ID' -NotNull
-        }
-    }
-'@)
-                }
-                
-                if( -not (Test-Path -Path 'function:Pop-Migration') )
-                {
-                    throw (@'
-Pop-Migration function not found. All migrations are required to have a Pop-Migration function that contains at least one operation. Here's some sample code to get you started:
-
-    function Pop-Migration
-    {
-        Remove-Table 'LetsCreateATable'
-    }
-'@)
-                    return
-                }
-
-                Pop-Migration | Add-Operation  -OperationsList $m.PopOperations
-                if( $m.PopOperations.Count -eq 0 )
-                {
-                    throw (@'
-Pop-Migration function is empty and contains no operations. Maybe you''d like to drop a table? Here's some sample code to get you started:
-
-    function Pop-Migration
-    {
-        Remove-Table 'LetsCreateATable'
-    }
-'@)
-                }
-
-                $m
-            }
-            catch
-            {
-                Write-RivetError -Message ('Loading migration ''{0}'' failed' -f $m.Path) `
-                                 -CategoryInfo $_.CategoryInfo.Category `
-                                 -ErrorID $_.FullyQualifiedErrorID `
-                                 -Exception $_.Exception `
-                                 -CallStack ($_.ScriptStackTrace) 
-            }
-            finally
-            {
-                Clear-Migration
-            }
-        } | 
-        Where-Object { $_ -is [Rivet.Migration] }
-
-    foreach( $requiredMatch in $requiredMatches.Keys )
-    {
-        if( -not $foundMatches.ContainsKey( $requiredMatch ) )
-        {
-            Write-Error ('Migration ''{0}'' not found.' -f $requiredMatch)
-        }
-    }
+        Convert-FileInfoToMigration -Configuration $Configuration
 }

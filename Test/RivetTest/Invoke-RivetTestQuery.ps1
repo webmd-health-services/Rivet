@@ -32,7 +32,7 @@ function Invoke-RivetTestQuery
         $DatabaseName = $RTDatabaseName
     }
     
-    if( -not $RTDatabaseConnection )
+    if( -not $RTDatabaseConnection -or $RTDatabaseConnection.State -ne [Data.ConnectionState]::Open )
     {
         $script:RTDatabaseConnection = New-SqlConnection -Database $DatabaseName
     }
