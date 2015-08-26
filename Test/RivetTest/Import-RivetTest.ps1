@@ -26,6 +26,12 @@ $startedAt = Get-Date
 $loadedModule = Get-Module -Name 'RivetTest'
 if( $loadedModule )
 {
+    if( -not $Force -and $loadedModule.Path -ne $PSScriptRoot )
+    {
+        Write-Verbose ('Reloading RivetTest module. Currently loaded from {0}, but need to re-load from {1}.' -f $loadedModule.Path, $PSScriptRoot) -Verbose
+        $Force = $true
+    }
+
     if( -not $Force -and ($loadedModule | Get-Member 'ImportedAt') )
     {
         $importedAt = $loadedModule.ImportedAt
