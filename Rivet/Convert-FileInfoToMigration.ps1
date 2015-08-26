@@ -72,14 +72,14 @@ function Convert-FileInfoToMigration
                         ForEach-Object {
                             if( (Test-Path -Path 'function:Start-MigrationOperation') )
                             {
-                                Start-MigrationOperation -Operation $_
+                                Start-MigrationOperation -Migration $m -Operation $_
                             }
 
                             $_
 
                             if( (Test-Path -Path 'function:Complete-MigrationOperation') )
                             {
-                                Complete-MigrationOperation -Operation $_
+                                Complete-MigrationOperation -Migration $m -Operation $_
                             }
                         } |
                         Where-Object { $_ -is [Rivet.Operation] } |

@@ -69,6 +69,7 @@ function Start-MigrationOperation
 {
     [CmdletBinding()]
     param(
+        $Migration,
         $Operation
     )
 

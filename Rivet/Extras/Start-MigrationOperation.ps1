@@ -1,12 +1,20 @@
 
 function Start-MigrationOperation
 {
+    [CmdletBinding()]
     param(
+        [Parameter(Mandatory=$true)]
+        [Rivet.Migration]
+        # The migration the operation is part of.
+        $Migration,
+
         [Parameter(Mandatory=$true)]
         [Rivet.Operation]
         # The operation which is about to be applied.
         $Operation
     )
+
+    Set-StrictMode -Version 'Latest'
 
     $problems = $false
     if( ($Operation -is [Rivet.Operations.AddTableOperation]) )

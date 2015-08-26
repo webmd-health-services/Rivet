@@ -41,7 +41,13 @@ LONG DESCRIPTION
 
         function Start-MigrationOperation
         {
+            [CmdletBinding()]
             param(
+                [Parameter(Mandatory=$true)]
+                [Rivet.Migration]
+                # The migration the operation is part of.
+                $Migration,
+                
                 [Parameter(Mandatory=$true)]
                 [Rivet.Operation]
                 # The operation which is about to be applied.
@@ -59,7 +65,13 @@ LONG DESCRIPTION
 
         function Complete-MigrationOperation
         {
+            [CmdletBinding()]
             param(
+                [Parameter(Mandatory=$true)]
+                [Rivet.Migration]
+                # The migration the operation is part of.
+                $Migration,
+                
                 [Parameter(Mandatory=$true)]
                 [Rivet.Operation]
                 # The operation which was just applied.
@@ -73,8 +85,13 @@ LONG DESCRIPTION
         
     Rivet ships with some sample plug-ins. Look in the `Extras` directory.
 
-    Each plug-in accepts one parameter: the operation about to be applied to the 
-    database. Each operation in Rivet is represented by a unique C# object that you 
+    Each plug-in should have two parameters: the first is a `Rivet.Migration` 
+    object representing the migration getting run. The second is a 
+    `Rivet.Operation` object representing the specific operation getting run. Each 
+    plug-in will get called for each operation in a migration. You'll get the same 
+    migration object for each operation in that migration.
+    
+    Each operation in Rivet is represented by a unique C# object that you 
     can modify. You can't remove operations from being run. Instead, throw an 
     exception to reject the operation. You are allowed to run additional operations 
     and/or return additional C# operation objects. See the sample plug-ins in the 
