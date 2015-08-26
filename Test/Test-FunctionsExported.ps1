@@ -43,3 +43,29 @@ function Test-FunctionsExported
                     Sort-Object -Property BaseName
     Assert-Null $private ('These functions are not public.  Please update Rivet.psm1 to include these functions in the export list, or add them to the list of private functions in this test.')
 }
+
+function Test-ShouldExportCustomOperations
+{
+    $operationPath = Join-Path -Path $PSScriptRoot -ChildPath '..\Rivet\Operations\Add-MyOperation.ps1'
+    New-Item -Path $operationPath -ItemType 'File'
+
+    @'
+function Add-MyOperation
+{
+}
+'@ | Set-Content -Path $operationPath
+    try
+    {
+        if( (Get-Module -Name 'Rivet') )
+        {
+            Remove-Module -Name 'Rivet'
+        }
+        & (Join-Path -Path $PSScriptRoot -ChildPath '..\Rivet\Import-Rivet.ps1' -Resolve)
+        Assert-True (Get-Command -Name 'Add-MyOperation' -Module 'Rivet')
+    }
+    finally
+    {
+        Remove-Item -Path $operationPath
+    }
+
+}
