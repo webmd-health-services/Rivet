@@ -27,6 +27,11 @@ LONG DESCRIPTION
             [CmdletBinding()]
             param(
                 [Parameter(Mandatory=$true)]
+                [Rivet.Migration]
+                # The migration the operation is part of.
+                $Migration,
+                
+                [Parameter(Mandatory=$true)]
                 [Rivet.Operation]
                 # The operation which is about to be applied.
                 $Operation

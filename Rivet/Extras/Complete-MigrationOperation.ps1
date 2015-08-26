@@ -3,10 +3,17 @@ function Complete-MigrationOperation
 {
     param(
         [Parameter(Mandatory=$true)]
+        [Rivet.Migration]
+        # The migration the operation is part of.
+        $Migration,
+
+        [Parameter(Mandatory=$true)]
         [Rivet.Operation]
         # The operation which was just applied.
         $Operation
     )
+
+    Set-StrictMode -Version 'Latest'
 
     if( $Operation -isnot [Rivet.Operations.AddTableOperation] )
     {
