@@ -16,6 +16,8 @@ function Test-FunctionsExported
                             'Enable-ForeignKey' = $true;  #OBSOLETE
                             'Disable-ForeignKey' = $true; #OBSOLETE
                             'Export-Row' = $true;
+                            'Get-MigrationFile' = $true;
+                            'Convert-FileInfoToMigration' = $true;
                             'Get-MigrationScript' = $true;
                             'Import-Rivet' = $true;
                             'Import-Plugin' = $true;

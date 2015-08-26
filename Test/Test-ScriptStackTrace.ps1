@@ -30,10 +30,9 @@ function Pop-Migration
 
     try
     {
-        Invoke-RTRivet -Push 'BogusMigration' -ErrorAction SilentlyContinue -ErrorVariable rivetError
-        Assert-True ($rivetError.Count -gt 0)
-        Assert-Like $rivetError[-1] 'TestingScriptStackTrace'
-        Assert-Like $rivetError[-1] 'STACKTRACE'
+        Invoke-RTRivet -Push 'BogusMigration' -ErrorAction SilentlyContinue
+        Assert-Error -Last -Regex 'TestingScriptStackTrace'
+        Assert-Error -Last -Regex 'STACKTRACE'
     }
     finally
     {

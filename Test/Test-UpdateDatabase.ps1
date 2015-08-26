@@ -1,6 +1,8 @@
 
 & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
 
+$pluginsRoot = $null
+
 function Start-Test
 {
     Start-RivetTest
@@ -9,6 +11,10 @@ function Start-Test
 function Stop-Test
 {
     Stop-RivetTest
+    if( $pluginsRoot -and (Test-Path -Path $pluginsRoot -PathType Container) )
+    {
+        $pluginsRoot | Remove-Item -Recurse
+    }
 }
 
 function Test-ShouldAllowLongMigrationNames
@@ -35,4 +41,66 @@ function Pop-Migration
     Invoke-RTRivet -Push
     Assert-NoError
     Assert-True (Test-Table 'Foobar')
+}
+
+function Test-ShouldNotRunPluginsOnAlreadyAppliedMigrations
+{
+    @'
+function Push-Migration
+{
+    Add-Table 'ShouldNotValidateAlreadyAppliedMigrations' {
+        int 'ID'
+    }
+}
+
+function Pop-Migration
+{
+    Remove-Table 'ShouldNotValidateAlreadyAppliedMigrations'
+}
+'@ | New-Migration -Name 'Original'
+
+    Invoke-RTRivet -Push
+
+    $pluginsRoot = New-PluginsRoot -Prefix $PSCommandPath
+
+    $startMigrationOperationPath = Join-Path -Path $pluginsRoot -ChildPath 'Start-MigrationOperation.ps1'
+    @'
+function Start-MigrationOperation
+{
+    [CmdletBinding()]
+    param(
+        $Operation
+    )
+
+    Set-StrictMode -Version 'Latest'
+
+    if( $Operation -is [Rivet.Operations.AddTableOperation] )
+    {
+        throw 'BOOM!'
+    }
+}
+'@ | Set-Content -Path $startMigrationOperationPath
+
+    try
+    {
+        @'
+function Push-Migration
+{
+    Add-Schema 'ShouldNotValidateAlreadyAppliedMigrations'
+}
+
+function Pop-Migration
+{
+    Remove-Schema 'ShouldNotValidateAlreadyAppliedMigrations'
+}
+'@ | New-Migration -Name 'Second'
+
+        Invoke-RTRivet -Push
+        Assert-NoError
+        Assert-Schema 'ShouldNotValidateAlreadyAppliedMigrations'
+    }
+    finally
+    {
+        Remove-Item -Path $startMigrationOperationPath
+    }
 }
