@@ -27,7 +27,7 @@ function Test-Migration
     $info = Invoke-Query -Query $query -Parameter @{ ID = $ID } -Verbose:$false
     if( $info )
     {
-        Write-Verbose ('{0}   {1,-35} {2,14:00000000000000}_{3}' -f $info.AtUtc.ToLocalTime().ToString('yyyy-mm-dd HH:mm'),$info.Who,$info.ID,$info.Name)
+        Write-Debug -Message ('{0}   {1,-35} {2,14:00000000000000}_{3}' -f $info.AtUtc.ToLocalTime().ToString('yyyy-mm-dd HH:mm'),$info.Who,$info.ID,$info.Name)
         if( $PassThru )
         {
             return $info

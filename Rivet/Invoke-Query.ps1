@@ -67,7 +67,6 @@ filter Invoke-Query
         ForEach-Object {
                 
                 $queryBatch = $_
-                #Write-Verbose $queryBatch
                 $cmd = New-Object 'Data.SqlClient.SqlCommand' ($queryBatch,$Connection,$Connection.Transaction)
 
                 $cmdStartedAt = [DateTime]::UtcNow
