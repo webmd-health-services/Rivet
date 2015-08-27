@@ -179,7 +179,7 @@ Get-Migration @getMigrationParams |
         {
             $authorMsg = ' by {0}' -f $Author[$migrationName]
         }
-        Write-Verbose ('{0}{1}' -f $migrationName,$authorMsg)
+        Write-Debug -Message ('{0}{1}' -f $migrationName,$authorMsg)
 
         $migration.PushOperations |
             Add-Member -MemberType NoteProperty -Name 'Migrations' -Value @() -PassThru |

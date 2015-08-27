@@ -39,7 +39,7 @@ function Split-SqlBatchQuery
 
         function Complete-Line
         {
-            Write-Verbose ("inMultiLineComment: {0}; inSingleLineComment: {1}; inString {2}; {3}" -f $inMultiLineComment,$inSingleLineComment,$inString,$currentLine.ToString())
+            Write-Debug -Message ("inMultiLineComment: {0}; inSingleLineComment: {1}; inString {2}; {3}" -f $inMultiLineComment,$inSingleLineComment,$inString,$currentLine.ToString())
             $trimmedLine = $currentLine.ToString().Trim() 
             if( $trimmedLine -notmatch "^GO\b" )
             {
@@ -85,20 +85,20 @@ function Split-SqlBatchQuery
                 [void] $currentLine.Append( $currentChar )
                 if( $prevChar -eq '/' -and $currentChar -eq '*' )
                 {
-                    Write-Verbose ('Entering nested multi-line comment.')
+                    Write-Debug -Message ('Entering nested multi-line comment.')
                     $commentDepth++
                     continue
                 }
                 elseif( $prevChar -eq '*' -and $currentChar -eq '/' )
                 {
-                    Write-Verbose ('Leaving multi-line comment.')
+                    Write-Debug -Message ('Leaving multi-line comment.')
                     $commentDepth--
                     $inMultiLineComment = ($commentDepth -gt 0)
                 }
 
                 if( -not $inMultiLineComment )
                 {
-                    Write-Verbose ('Multi-line comment closed.')
+                    Write-Debug -Message ('Multi-line comment closed.')
                 }
                 continue
             }
@@ -107,7 +107,7 @@ function Split-SqlBatchQuery
             {
                 if( $currentChar -eq "`n" )
                 {
-                    Write-Verbose ('Leaving single-line comment.')
+                    Write-Debug -Message ('Leaving single-line comment.')
                     $inSingleLineComment = $false
                 }
                 else
@@ -125,12 +125,12 @@ function Split-SqlBatchQuery
                     if( $currentChar -eq "'" )
                     {
                         [void] $currentLine.Append( $currentChar )
-                        Write-Verbose ('Found escaped quote.')
+                        Write-Debug -Message ('Found escaped quote.')
                         continue
                     }
                     else
                     {
-                        Write-Verbose ('Leaving string.')
+                        Write-Debug -Message ('Leaving string.')
                         $inString = $false
                     }
                 }
@@ -149,18 +149,18 @@ function Split-SqlBatchQuery
 
             if( $prevChar -eq "/" -and $currentChar -eq "*" )
             {
-                Write-Verbose ('Entering multi-line comment.')
+                Write-Debug -Message ('Entering multi-line comment.')
                 $inMultiLineComment = $true
                 $commentDepth++
             }
             elseif( $prevChar -eq '-' -and $currentChar -eq '-' )
             {
-                Write-Verbose ('Entering single-line comment.')
+                Write-Debug -Message ('Entering single-line comment.')
                 $inSingleLineComment = $true
             }
             elseif( $currentChar -eq "'" )
             {
-                Write-Verbose ('Entering string.')
+                Write-Debug -Message ('Entering string.')
                 $inString = $true
             }
 

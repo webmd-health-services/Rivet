@@ -59,13 +59,13 @@ function Connect-Database
     $dbExists = Invoke-Query -Query $query -AsScalar
     if( -not $dbExists )
     {
-        Write-Verbose ('Creating database {0}.{1}.' -f $SqlServerName,$Database)
+        Write-Debug -Message ('Creating database {0}.{1}.' -f $SqlServerName,$Database)
         $query = 'create database [{0}]' -f $Database
         Invoke-Query -Query $query -NonQuery
     }
 
     $Connection.ChangeDatabase( $Database )
 
-    Write-Verbose -Message ('{0,8} (ms)   Connect-Database' -f ([int]((Get-Date) - $startedAt).TotalMilliseconds))
+    Write-Debug -Message ('{0,8} (ms)   Connect-Database' -f ([int]((Get-Date) - $startedAt).TotalMilliseconds))
     return $true
 }
