@@ -1,3 +1,10 @@
+# 0.6.1
+
+## Bug Fixes
+
+ * `Rename-Column`, `Rename-DataType`, `Rename-Index`, and `Rename-Object` operations didn't properly quote schema and object names.
+
+
 # 0.6.0
 
 ## Enhancements

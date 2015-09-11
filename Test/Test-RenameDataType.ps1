@@ -16,35 +16,35 @@ function Test-ShouldUpdateMetadata
     @'
 function Push-Migration
 {
-    Add-Schema 'refresh'
+    Add-Schema 'refresh.part2'
 
-    Add-DataType -SchemaName 'refresh' -Name 'mytype' -From 'nvarchar(5)'
+    Add-DataType -SchemaName 'refresh.part2' -Name 'my.type' -From 'nvarchar(5)'
 }
 
 function Pop-Migration
 {
-    Remove-DataType -SchemaName 'refresh' -Name 'mytype'
-    Remove-Schema 'refresh'
+    Remove-DataType -SchemaName 'refresh.part2' -Name 'my.type'
+    Remove-Schema 'refresh.part2'
 }
 '@ | New-Migration -Name 'CreateMyType'
 
     Invoke-RTRivet -Push
 
-    Assert-DataType -SchemaName 'refresh' -Name 'mytype' -BaseType 'nvarchar' -UserDefined
+    Assert-DataType -SchemaName 'refresh.part2' -Name 'my.type' -BaseType 'nvarchar' -UserDefined
 
     @'
 function Push-Migration
 {
-    Rename-DataType -SchemaName 'refresh' -Name 'mytype' -NewName 'myoldtype'
+    Rename-DataType -SchemaName 'refresh.part2' -Name 'my.type' -NewName 'myoldtype'
 }
 
 function Pop-Migration
 {
-    Rename-DataType -SchemaName 'refresh' -Name 'myoldtype' -NewName 'mytype'
+    Rename-DataType -SchemaName 'refresh.part2' -Name 'myoldtype' -NewName 'my.type'
 }
 '@ | New-Migration -Name 'IncreaseToUpperLength'
 
     Invoke-RTRivet -Push
 
-    Assert-DataType -SchemaName 'refresh' -Name 'myoldtype' -BaseType 'nvarchar' -UserDefined
+    Assert-DataType -SchemaName 'refresh.part2' -Name 'myoldtype' -BaseType 'nvarchar' -UserDefined
 }

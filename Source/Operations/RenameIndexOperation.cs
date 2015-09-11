@@ -22,7 +22,7 @@ namespace Rivet.Operations
 
 		protected override string GetObjectName()
 		{
-			return String.Format("{0}.{1}.{2}", SchemaName, TableName, Name);
+			return String.Format("[{0}].[{1}].[{2}]", SchemaName, TableName, Name);
 		}
 	}
 }

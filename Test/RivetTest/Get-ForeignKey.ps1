@@ -6,30 +6,38 @@ function Get-ForeignKey
     Contains a row per object that is a FOREIGN KEY constraint, with sys.object.type = F.
     #>
     param(
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory=$true,ParameterSetName='ByDefaultName')]
         [string]
         # The name of the table whose foreign key to get.
         $TableName,
 
-        [Parameter()]
+        [Parameter(ParameterSetName='ByDefaultName')]
         [string]
         # The schema name of the table.  Defaults to `dbo`.
         $SchemaName = 'dbo',
 
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory=$true,ParameterSetName='ByDefaultName')]
         [string]
         # The table that the foreign key references
         $References,
 
-        [Parameter()]
+        [Parameter(ParameterSetName='ByDefaultName')]
         [string]
         # The schema name of the reference table.  Defaults to `dbo`.
-        $ReferencesSchema = 'dbo'        
+        $ReferencesSchema = 'dbo',
+
+        [Parameter(Mandatory=$true,ParameterSetName='ByExplicitName')]
+        [string]
+        # The name of the foreign key.
+        $Name
     )
     
     Set-StrictMode -Version Latest
 
-    $name = New-Object 'Rivet.ForeignKeyConstraintName' ($SchemaName,$TableName,$ReferencesSchema,$References)
+    if( $PSCmdlet.ParameterSetName -eq 'ByDefaultName' )
+    {
+        $Name = New-Object 'Rivet.ForeignKeyConstraintName' ($SchemaName,$TableName,$ReferencesSchema,$References)
+    }
 
     $query = @'
     select 
@@ -39,7 +47,7 @@ function Get-ForeignKey
         sys.tables t on fk.parent_object_id=t.object_id join
         sys.tables reft on fk.referenced_object_id=reft.object_id
     where fk.name = '{0}'
-'@ -f $name
+'@ -f $Name
 
     $fk = Invoke-RivetTestQuery -Query $query
 
