@@ -17,26 +17,28 @@ function Test-ShouldRenameTable
 @'
 function Push-Migration
 {
-    Add-Table -Name 'AddTable' -Description 'Testing Add-Table migration' -Column {
+    Add-Schema 'do.i.get.escaped'
+    Add-Table -SchemaName 'do.i.get.escaped' -Name 'Add.Table' -Description 'Testing Add-Table migration' -Column {
         VarChar 'varchar' -Max -NotNull -Default "'default'" -Description 'varchar(max) constraint DF_AddTable_varchar default default'
         BigInt 'id' -Identity
     } -Option 'data_compression = none'
 
-    Rename-Object 'AddTable' 'RenameTable'
+    Rename-Object -SchemaName 'do.i.get.escaped' 'Add.Table' 'Rename Table'
 }
 
 function Pop-Migration
 {
-    Remove-Table 'RenameTable'
+    Remove-Table -SchemaName 'do.i.get.escaped' 'Rename Table'
+    Remove-Schema 'do.i.get.escaped'
 }
 
 '@ | New-Migration -Name 'RenameTable'
 
     Invoke-RTRivet -Push 'RenameTable'
 
-    Assert-Table 'RenameTable' -Description 'Testing Add-Table migration'
-    Assert-Column -Name 'varchar' 'varchar' -NotNull -Description 'varchar(max) constraint DF_AddTable_varchar default default' -TableName 'RenameTable'
-    Assert-Column -Name 'id' 'bigint' -NotNull -Seed 1 -Increment 1 -TableName 'RenameTable'
+    Assert-Table -SchemaName 'do.i.get.escaped' 'Rename Table' -Description 'Testing Add-Table migration'
+    Assert-Column -Name 'varchar' 'varchar' -NotNull -Description 'varchar(max) constraint DF_AddTable_varchar default default' -TableName 'Rename Table' -SchemaName 'do.i.get.escaped'
+    Assert-Column -Name 'id' 'bigint' -NotNull -Seed 1 -Increment 1 -TableName 'Rename Table' -SchemaName 'do.i.get.escaped'
 
 }
 
@@ -46,26 +48,26 @@ function Test-ShouldRenameColumn
 @'
 function Push-Migration
 {
-    Add-Table -Name 'Table' -Column {
-        VarChar 'buzz' -Max
+    Add-Table -Name 'Table.Name' -Column {
+        VarChar 'bu.zz' -Max
         BigInt 'id' -Identity
     } -Option 'data_compression = none'
 
-    Rename-Column 'Table' 'buzz' 'fizz'
+    Rename-Column 'Table.Name' 'bu.zz' 'fizz'
 }
 
 function Pop-Migration
 {
-    Remove-Table 'Table'
+    Remove-Table 'Table.Name'
 }
 
 '@ | New-Migration -Name 'RenameColumn'
 
     Invoke-RTRivet -Push 'RenameColumn'
 
-    Assert-Table 'Table'
-    Assert-Column -Name 'fizz' -TableName 'Table' -DataType 'varchar'
-    Assert-Column -Name 'id' 'bigint' -NotNull -Seed 1 -Increment 1 -TableName 'Table'
+    Assert-Table 'Table.Name'
+    Assert-Column -Name 'fizz' -TableName 'Table.Name' -DataType 'varchar'
+    Assert-Column -Name 'id' 'bigint' -NotNull -Seed 1 -Increment 1 -TableName 'Table.Name'
 
 }
 
@@ -75,18 +77,20 @@ function Test-ShouldRenameIndex
 @'
 function Push-Migration
 {
-    Add-Table -Name 'AddIndex' {
-        Int 'IndexMe' -NotNull
+    Add-Schema 'the.schema'
+    Add-Table -SchemaName 'the.schema' -Name 'Add.Index' {
+        Int 'Index.Me' -NotNull
     }
 
-    #Add an Index to 'IndexMe'
-    Add-Index -TableName 'AddIndex' -ColumnName 'IndexMe'
-    Rename-Index -TableName 'AddIndex' -Name 'IX_AddIndex_IndexMe' -NewName 'IX_AddIndex_Renamed'
+    #Add an Index to 'Index.Me'
+    Add-Index -SchemaName 'the.schema' -TableName 'Add.Index' -ColumnName 'Index.Me'
+    Rename-Index -SchemaName 'the.schema' -TableName 'Add.Index' -Name 'IX_the.schema_Add.Index_Index.Me' -NewName 'IX_AddIndex_Renamed'
 }
 
 function Pop-Migration
 {
-    Remove-Table 'AddIndex'
+    Remove-Table -SchemaName 'the.schema' 'Add.Index'
+    Remove-SChema 'the.schema'
 }
 
 '@ | New-Migration -Name 'RenameIndex'
@@ -94,11 +98,11 @@ function Pop-Migration
     Invoke-RTRivet -Push 'RenameIndex'
 
     ##Assert Table and Column
-    Assert-True (Test-Table 'AddIndex')
-    Assert-True (Test-Column -Name 'IndexMe' -TableName 'AddIndex')
+    Assert-True (Test-Table 'Add.Index' -SchemaName 'the.schema')
+    Assert-True (Test-Column -Name 'Index.Me' -TableName 'Add.Index' -SchemaName 'the.schema')
 
     ##Assert Index
-    Assert-Index -Name 'IX_AddIndex_Renamed' -ColumnName 'IndexMe'
+    Assert-Index -Name 'IX_AddIndex_Renamed' -ColumnName 'Index.Me'
 
 }
 
@@ -108,30 +112,33 @@ function Test-ShouldRenameConstraint
 @'
 function Push-Migration
 {
-    Add-Table -Name 'Source' {
-        Int 'source_id' -NotNull
+    Add-Schema 'the.schema'
+
+    Add-Table -SchemaName 'the.schema' -Name 'Source.Table' {
+        Int 'source.id' -NotNull
     }
 
-    Add-Table -Name 'Reference' {
-        Int 'reference_id' -NotNull
+    Add-Table -SchemaName 'the.schema' -Name 'Reference.Table' {
+        Int 'reference.id' -NotNull
     }
 
-    Add-PrimaryKey -TableName 'Reference' -ColumnName 'reference_id'
-    Add-ForeignKey -TableName 'Source' -ColumnName 'source_id' -References 'Reference' -ReferencedColumn 'reference_id'
-    Rename-Object -Name 'FK_Source_Reference' -NewName 'FK_Reference_Source'
+    Add-PrimaryKey -SchemaName 'the.schema' -TableName 'Reference.Table' -ColumnName 'reference.id'
+    Add-ForeignKey -SchemaName 'the.schema' -TableName 'Source.Table' -ColumnName 'source.id' -ReferencesSchema 'the.schema' -References 'Reference.Table' -ReferencedColumn 'reference.id'
+    Rename-Object -SchemaName 'the.schema' -Name 'FK_the.schema_Source.Table_the.schema_Reference.Table' -NewName 'FK_Reference.Table_Source.Table'
 }
 
 function Pop-Migration
 {
-    Remove-ForeignKey 'Source' -Name 'FK_Reference_Source'
-    Remove-Table 'Reference'
-    Remove-Table 'Source'
+    Remove-ForeignKey -SchemaName 'the.schema' 'Source.Table' -Name 'FK_Reference.Table_Source.Table'
+    Remove-Table -SchemaName 'the.schema' 'Reference.Table'
+    Remove-Table -SchemaName 'the.schema' 'Source.Table'
+    Remove-Schema 'the.schema'
 }
 
 '@ | New-Migration -Name 'RenameConstraint'
 
     Invoke-RTRivet -Push 'RenameConstraint'
 
-    Assert-ForeignKey -TableName 'Reference' -References 'Source'
+    Assert-ForeignKey -Name 'FK_Reference.Table_Source.Table'
 
 }

@@ -6,25 +6,30 @@ function Assert-ForeignKey
     Tests that a foreign key exists and the columns that are a part of it.
     #>
     param(
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory=$true,ParameterSetName='ByDefaultName')]
         [string]
         # The name of the table whose foreign key to get.
         $TableName,
 
-        [Parameter()]
+        [Parameter(ParameterSetName='ByDefaultName')]
         [string]
         # The schema name of the table.  Defaults to `dbo`.
         $SchemaName = 'dbo',
 
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory=$true,ParameterSetName='ByDefaultName')]
         [string]
         # The table that the foreign key references
         $References,
 
-        [Parameter()]
+        [Parameter(ParameterSetName='ByDefaultName')]
         [string]
         # The schema name of the reference table.  Defaults to `dbo`.
         $ReferencesSchema = 'dbo',
+
+        [Parameter(Mandatory=$true,ParameterSetName='ByExplicitName')]
+        [string]
+        # The name of the foreign key.
+        $Name,
 
         [Parameter()]
         [string]
@@ -49,7 +54,14 @@ function Assert-ForeignKey
     
     Set-StrictMode -Version Latest
 
-    $fk = Get-ForeignKey -SchemaName $SchemaName -TableName $TableName -ReferencesSchema $ReferencesSchema -References $References
+    if( $PSCmdlet.ParameterSetName -eq 'ByDefaultName' )
+    {
+        $fk = Get-ForeignKey -SchemaName $SchemaName -TableName $TableName -ReferencesSchema $ReferencesSchema -References $References
+    }
+    else
+    {
+        $fk = Get-ForeignKey -Name $Name
+    }
 
     #Test for non-null objects
     Assert-NotNull $fk ('foreign Key on table {0}.{1} doesn''t exist.' -f $SchemaName,$TableName)

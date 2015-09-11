@@ -22,7 +22,7 @@ namespace Rivet.Operations
 
 		protected virtual string GetObjectName()
 		{
-			return string.Format("{0}.{1}", SchemaName, Name);
+			return string.Format("[{0}].[{1}]", SchemaName, Name);
 		}
 
 		public override string ToIdempotentQuery()
