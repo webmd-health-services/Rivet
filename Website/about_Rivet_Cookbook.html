@@ -1,0 +1,135 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <title>PowerShell - about_Rivet_Cookbook - Rivet</title>
+    <link href="silk.css" type="text/css" rel="stylesheet" />
+	<link href="styles.css" type="text/css" rel="stylesheet" />
+</head>
+<body>
+
+    <ul id="SiteNav">
+		<li><a href="index.html">Get-Rivet</a></li>
+        <!--<li><a href="about_Carbon_Installation.html">-Install</a></li>-->
+		<li><a href="documentation.html">-Documentation</a></li>
+        <!--<li><a href="about_Carbon_Support.html">-Support</a></li>-->
+        <li><a href="releasenotes.html">-ReleaseNotes</a></li>
+		<li><a href="http://pshdo.com">-Blog</a></li>
+    </ul>
+
+        <h1>about_Rivet_Cookbooks</h1>
+
+    <p>Contains a bunch of recipes showing how to use Rivet.</p>
+
+    <h2>Description</h2>
+<h2>How do I create my own operations?</h2>
+
+<p>It is possible to create Rivet operations. Each operation must be in its own file. 
+The name of the file must match the name of the operation, with a .ps1 extension. 
+Put your custom operations in the <code>Operations</code> directory under the Rivet module.</p>
+
+<p>So, if you want to create a custom <code>Add-StandardTable</code> operation, you would create 
+an <code>Operations\Add-StandardTable.ps1</code> file that looked like this:</p>
+
+<pre><code>function Add-StandardTable
+{
+}
+</code></pre>
+
+<p>Operations take no parameters. They should return one or more <code>Rivet.Operation</code> 
+objects. See the <code>Rivet.Operations</code> namespace for available operations.</p>
+
+<h2>How do I customize constraint/index names?</h2>
+
+<p>You can customize constraint/index names using the <code>Start-MigrationOperation</code> 
+plug-in to modify a constraint's name before it gets applied to a database. (See 
+<a href="about_Rivet_Plugins.html">about_Rivet_Plugins</a> for instructions on setting up your plug-ins.)</p>
+
+<p>Each operation that adds/removes a constraint has a <code>SetConstraintName(string)</code> 
+method. You can check what kind of constraint is being added/removed with the 
+<code>ConstraintType</code> property. You can check if an operation is a constraint operation 
+by testing if it is a <code>Rivert.Operations.ConstraintOperation</code>.  Here's an example:</p>
+
+<p>The add/remove index operation has a 'SetIndexName(string)' method. You can check 
+if an operation is an index operation by testing if it is a 
+<code>Rivet.Operations.IndexOperation</code> object.</p>
+
+<p>Here's some sample code demonstrating all this:</p>
+
+<pre><code>function Start-MigrationOperation
+{
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory=$true)]
+        [Rivet.Migration]
+        # The migration the operation is part of.
+        $Migration,
+
+        [Parameter(Mandatory=$true)]
+        [Rivet.Operation]
+        # The operation which is about to be applied.
+        $Operation
+    )
+
+    Set-StrictMode -Version 'Latest'
+
+    if( $Operation -is [Rivet.Operations.ConstraintOperation] )
+    {
+        switch( $Operation.ConstraintType )
+        {
+            [Rivet.ConstraintType]::Default
+            {
+                $Operation.Name = 'DF_{0}_{1}_{2}' -f $Operation.SchemaName,$Operation.TableName,$Operation.ColumnName
+            }
+
+            [Rivet.ConstraintType]::PrimaryKey
+            {
+                $Operation.Name = 'PK_{0}_{1}' -f $Operation.SchemaName,$Operation.TableName
+            }
+
+            [Rivet.ConstraintType]::ForeignKey
+            {
+                $Operation.Name = 'FK_{0}_{1}_{2}_{3}' -f $Operation.SchemaName,$Operation.TableName,$Operation.ReferencesSchemaName,$Operation.ReferencesTableName
+            }
+
+            [Rivet.ConstraintType]::Check
+            {
+                $Operation.Name = 'CK_{0}_{1}_{2}', $Operation.SchemaName,$Operation.TableName,($Operation.Expression -replace '[A-Za-z0-9]','')
+            }
+
+            [Rivet.ConstraintType]::UniqueKey
+            {
+                $Operation.Name = 'UK_{0}_{1}_{2}' -f$Operation.SchemaName,$Operation.TableName,($Operation.ColumnName -join '_')
+            }
+
+            default
+            {
+                throw ('Rivet has added a new constraint type that we don''t handle. Please update {0} to handle this new constraint type.' -f $PSCommandPath)
+            }
+
+        }
+    }
+    elseif( $Operation -is [Rivet.Operation.IndexOperation] )
+    {
+        $prefix = 'IX'
+        if( $Operation.Unique )
+        {
+            $prefix = 'UIX'
+        }
+
+        $Operation.Name = '{0}_{1}_{2}_{3}' -f $prefix,$Operation.SchemaName,$Operation.TableName,($Operation.ColumnName -join '_')
+    }
+}
+</code></pre>
+<h2>See Also</h2>
+    <ul>
+        <li><a href="about_Rivet_Plugins.html">about_Rivet_Plugins</a></li>
+    </ul>
+
+
+
+	<div class="Footer">
+		Copyright 2013 - 2016 <a href="http://pshdo.com">Aaron Jensen</a>.
+	</div>
+
+</body>
+</html>

@@ -1,0 +1,85 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <title>PowerShell - Add-Trigger - Rivet</title>
+    <link href="silk.css" type="text/css" rel="stylesheet" />
+	<link href="styles.css" type="text/css" rel="stylesheet" />
+</head>
+<body>
+
+    <ul id="SiteNav">
+		<li><a href="index.html">Get-Rivet</a></li>
+        <!--<li><a href="about_Carbon_Installation.html">-Install</a></li>-->
+		<li><a href="documentation.html">-Documentation</a></li>
+        <!--<li><a href="about_Carbon_Support.html">-Support</a></li>-->
+        <li><a href="releasenotes.html">-ReleaseNotes</a></li>
+		<li><a href="http://pshdo.com">-Blog</a></li>
+    </ul>
+
+    <h1>Add-Trigger</h1>
+<div class="Synopsis">
+<p>Creates a new trigger.</p>
+</div>
+
+<h2>Syntax</h2>
+<pre class="Syntax"><code>Add-Trigger [-Name] &lt;String&gt; [-SchemaName &lt;String&gt;] [-Definition] &lt;String&gt; [&lt;CommonParameters&gt;]</code></pre>
+
+<h2>Description</h2>
+<div class="Description">
+<p>Creates a new trigger.  If updating an existing trigger, use <code>Remove-Trigger</code> to remove it first, then <code>New-Trigger</code> to re-create it.</p>
+</div>
+
+<h2>Related Commands</h2>
+
+<ul class="RelatedCommands">
+<li>Remove-Trigger.</li>
+</ul>
+
+<h2> Parameters </h2>
+<table id="Parameters">
+<tr>
+	<th>Name</th>
+    <th>Type</th>
+	<th>Description</th>
+	<th>Required?</th>
+	<th>Pipeline Input</th>
+	<th>Default Value</th>
+</tr>
+<tr valign='top'>
+	<td>Name</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.string.aspx">String</a></td>
+	<td class="ParamDescription"><p>The name of the trigger.</p></td>
+	<td>true</td>
+	<td>false</td>
+    <td></td>
+</tr>
+<tr valign='top'>
+	<td>SchemaName</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.string.aspx">String</a></td>
+	<td class="ParamDescription"><p>The schema of the trigger.</p></td>
+	<td>false</td>
+	<td>false</td>
+    <td>dbo</td>
+</tr>
+<tr valign='top'>
+	<td>Definition</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.string.aspx">String</a></td>
+	<td class="ParamDescription"><p>The body of the trigger.  Everything after and including the <code>ON</code> clause.</p></td>
+	<td>true</td>
+	<td>false</td>
+    <td></td>
+</tr>
+
+</table>
+
+<h2>EXAMPLE 1</h2>
+<pre><code>Add-Trigger 'PrintMessage' 'ON rivet.Migrations for insert as print ''Migration applied!'''</code></pre>
+<p>Creates a trigger that prints a method when a row gets inserted into the <code>rivet.Migrations</code> table.</p>
+
+
+	<div class="Footer">
+		Copyright 2013 - 2016 <a href="http://pshdo.com">Aaron Jensen</a>.
+	</div>
+
+</body>
+</html>

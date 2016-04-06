@@ -1,0 +1,108 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <title>PowerShell - Add-CheckConstraint - Rivet</title>
+    <link href="silk.css" type="text/css" rel="stylesheet" />
+	<link href="styles.css" type="text/css" rel="stylesheet" />
+</head>
+<body>
+
+    <ul id="SiteNav">
+		<li><a href="index.html">Get-Rivet</a></li>
+        <!--<li><a href="about_Carbon_Installation.html">-Install</a></li>-->
+		<li><a href="documentation.html">-Documentation</a></li>
+        <!--<li><a href="about_Carbon_Support.html">-Support</a></li>-->
+        <li><a href="releasenotes.html">-ReleaseNotes</a></li>
+		<li><a href="http://pshdo.com">-Blog</a></li>
+    </ul>
+
+    <h1>Add-CheckConstraint</h1>
+<div class="Synopsis">
+<p>Add a check constraint to a table.</p>
+</div>
+
+<h2>Syntax</h2>
+<pre class="Syntax"><code>Add-CheckConstraint [-TableName] &lt;String&gt; [-SchemaName &lt;String&gt;] [-Name] &lt;String&gt; [-Expression] &lt;String&gt; [-NotForReplication] [-NoCheck] [&lt;CommonParameters&gt;]</code></pre>
+
+<h2>Description</h2>
+<div class="Description">
+<p>Check constraints add validation for data in columns.</p>
+</div>
+
+<h2> Parameters </h2>
+<table id="Parameters">
+<tr>
+	<th>Name</th>
+    <th>Type</th>
+	<th>Description</th>
+	<th>Required?</th>
+	<th>Pipeline Input</th>
+	<th>Default Value</th>
+</tr>
+<tr valign='top'>
+	<td>TableName</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.string.aspx">String</a></td>
+	<td class="ParamDescription"><p>The name of the check constraint's table.</p></td>
+	<td>true</td>
+	<td>false</td>
+    <td></td>
+</tr>
+<tr valign='top'>
+	<td>SchemaName</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.string.aspx">String</a></td>
+	<td class="ParamDescription"><p>The schema of the table.  Default is <code>dbo</code>.</p></td>
+	<td>false</td>
+	<td>false</td>
+    <td>dbo</td>
+</tr>
+<tr valign='top'>
+	<td>Name</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.string.aspx">String</a></td>
+	<td class="ParamDescription"><p>The name of the check constraint.</p></td>
+	<td>true</td>
+	<td>false</td>
+    <td></td>
+</tr>
+<tr valign='top'>
+	<td>Expression</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.string.aspx">String</a></td>
+	<td class="ParamDescription"><p>The expression to use for the constraint.</p></td>
+	<td>true</td>
+	<td>false</td>
+    <td></td>
+</tr>
+<tr valign='top'>
+	<td>NotForReplication</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.management.automation.switchparameter.aspx">SwitchParameter</a></td>
+	<td class="ParamDescription"><p>Don't use the check constraint when inserting, updating, or deleting rows during replication.</p></td>
+	<td>false</td>
+	<td>false</td>
+    <td>False</td>
+</tr>
+<tr valign='top'>
+	<td>NoCheck</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.management.automation.switchparameter.aspx">SwitchParameter</a></td>
+	<td class="ParamDescription"><p>Specifies that the data in the table is not validated against a newly added CHECK constraint. If not specified, WITH CHECK is assumed for new constraints.</p></td>
+	<td>false</td>
+	<td>false</td>
+    <td>False</td>
+</tr>
+
+</table>
+
+<h2>EXAMPLE 1</h2>
+<pre><code>0'</code></pre>
+<p>Demonstrates how to add a check constraint to a column that requires the value to be greater than 0.</p>
+
+
+<h2>EXAMPLE 2</h2>
+<pre><code>0' -NoCheck</code></pre>
+<p>Demonstrates how to add a check constraint to a column without validating the current contents of the table against this check.</p>
+
+
+	<div class="Footer">
+		Copyright 2013 - 2016 <a href="http://pshdo.com">Aaron Jensen</a>.
+	</div>
+
+</body>
+</html>

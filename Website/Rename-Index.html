@@ -1,0 +1,108 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <title>PowerShell - Rename-Index - Rivet</title>
+    <link href="silk.css" type="text/css" rel="stylesheet" />
+	<link href="styles.css" type="text/css" rel="stylesheet" />
+</head>
+<body>
+
+    <ul id="SiteNav">
+		<li><a href="index.html">Get-Rivet</a></li>
+        <!--<li><a href="about_Carbon_Installation.html">-Install</a></li>-->
+		<li><a href="documentation.html">-Documentation</a></li>
+        <!--<li><a href="about_Carbon_Support.html">-Support</a></li>-->
+        <li><a href="releasenotes.html">-ReleaseNotes</a></li>
+		<li><a href="http://pshdo.com">-Blog</a></li>
+    </ul>
+
+    <h1>Rename-Index</h1>
+<div class="Synopsis">
+<p>Renames an index.</p>
+</div>
+
+<h2>Syntax</h2>
+<pre class="Syntax"><code>Rename-Index [-TableName] &lt;String&gt; [-Name] &lt;String&gt; [-NewName] &lt;String&gt; [-SchemaName &lt;String&gt;] [&lt;CommonParameters&gt;]</code></pre>
+
+<h2>Description</h2>
+<div class="Description">
+<p>SQL Server ships with a stored procedure which is used to rename certain objects.  This operation wraps that stored procedure.</p>
+
+<p>Use <code>Rename-Column</code> to rename a column.  Use <code>Rename-DataType</code> to rename a data type.  Use <code>Rename-Object</code> to rename an object.</p>
+</div>
+
+<h2>Related Commands</h2>
+
+<ul class="RelatedCommands">
+<li><a href="http://technet.microsoft.com/en-us/library/ms188351.aspx">http://technet.microsoft.com/en-us/library/ms188351.aspx</a></li>
+<li><a href="Rename-Column.html">Rename-Column</a></li>
+<li><a href="Rename-DataType.html">Rename-DataType</a></li>
+<li><a href="Rename-Object.html">Rename-Object</a></li>
+</ul>
+
+<h2> Parameters </h2>
+<table id="Parameters">
+<tr>
+	<th>Name</th>
+    <th>Type</th>
+	<th>Description</th>
+	<th>Required?</th>
+	<th>Pipeline Input</th>
+	<th>Default Value</th>
+</tr>
+<tr valign='top'>
+	<td>TableName</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.string.aspx">String</a></td>
+	<td class="ParamDescription"><p>The name of the table of the index to rename.</p></td>
+	<td>true</td>
+	<td>false</td>
+    <td></td>
+</tr>
+<tr valign='top'>
+	<td>Name</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.string.aspx">String</a></td>
+	<td class="ParamDescription"><p>The current name of the index.</p></td>
+	<td>true</td>
+	<td>false</td>
+    <td></td>
+</tr>
+<tr valign='top'>
+	<td>NewName</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.string.aspx">String</a></td>
+	<td class="ParamDescription"><p>The new name of the index.</p></td>
+	<td>true</td>
+	<td>false</td>
+    <td></td>
+</tr>
+<tr valign='top'>
+	<td>SchemaName</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.string.aspx">String</a></td>
+	<td class="ParamDescription"><p>The schema of the table.  Default is <code>dbo</code>.</p></td>
+	<td>false</td>
+	<td>false</td>
+    <td>dbo</td>
+</tr>
+
+</table>
+
+<h2>EXAMPLE 1</h2>
+<pre><code>Rename-Index -TableName 'FooBar' -Name 'IX_Fizz' -NewName 'Buzz'</code></pre>
+<p>Changes the name of the <code>Fizz</code> index on the <code>FooBar</code> table to <code>Buzz</code>.</p>
+
+
+<h2>EXAMPLE 2</h2>
+<pre><code>Rename-Index -SchemaName 'fizz' -TableName 'FooBar' -Name 'IX_Buzz' -NewName 'Fizz'</code></pre>
+<p>Demonstrates how to rename an index on a table that is in a schema other than <code>dbo</code>.</p>
+
+
+<h2>EXAMPLE 3</h2>
+<pre><code>Rename-Index 'FooBar' 'IX_Fizz' 'Buzz'</code></pre>
+<p>Demonstrates how to use the short form to rename the <code>Fizz</code> index on the <code>FooBar</code> table to <code>Buzz</code>: table name is first, then existing index name, then new index name.</p>
+
+
+	<div class="Footer">
+		Copyright 2013 - 2016 <a href="http://pshdo.com">Aaron Jensen</a>.
+	</div>
+
+</body>
+</html>

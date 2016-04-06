@@ -1,0 +1,92 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <title>PowerShell - Update-Description - Rivet</title>
+    <link href="silk.css" type="text/css" rel="stylesheet" />
+	<link href="styles.css" type="text/css" rel="stylesheet" />
+</head>
+<body>
+
+    <ul id="SiteNav">
+		<li><a href="index.html">Get-Rivet</a></li>
+        <!--<li><a href="about_Carbon_Installation.html">-Install</a></li>-->
+		<li><a href="documentation.html">-Documentation</a></li>
+        <!--<li><a href="about_Carbon_Support.html">-Support</a></li>-->
+        <li><a href="releasenotes.html">-ReleaseNotes</a></li>
+		<li><a href="http://pshdo.com">-Blog</a></li>
+    </ul>
+
+    <h1>Update-Description</h1>
+<div class="Synopsis">
+<p>Updates the <code>MS_Description</code> extended property of a table or column.</p>
+</div>
+
+<h2>Syntax</h2>
+<pre class="Syntax"><code>Update-Description [-Description] &lt;String&gt; [-SchemaName &lt;String&gt;] -TableName &lt;String&gt; [-ColumnName &lt;String&gt;] [&lt;CommonParameters&gt;]</code></pre>
+
+<h2>Description</h2>
+<div class="Description">
+<p>The <code>sys.sp_updateextendedproperty</code> stored procedure is used to update a table/column's description (i.e. the <code>MS_Description</code> extended property), but the syntax is weird.  This function hides that weirdness from you.  You're welcome.</p>
+</div>
+
+<h2> Parameters </h2>
+<table id="Parameters">
+<tr>
+	<th>Name</th>
+    <th>Type</th>
+	<th>Description</th>
+	<th>Required?</th>
+	<th>Pipeline Input</th>
+	<th>Default Value</th>
+</tr>
+<tr valign='top'>
+	<td>Description</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.string.aspx">String</a></td>
+	<td class="ParamDescription"><p>The value for the MS_Description extended property.</p></td>
+	<td>true</td>
+	<td>false</td>
+    <td></td>
+</tr>
+<tr valign='top'>
+	<td>SchemaName</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.string.aspx">String</a></td>
+	<td class="ParamDescription"><p>The schema.  Defaults to <code>dbo</code>.</p></td>
+	<td>false</td>
+	<td>false</td>
+    <td>dbo</td>
+</tr>
+<tr valign='top'>
+	<td>TableName</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.string.aspx">String</a></td>
+	<td class="ParamDescription"><p>The name of the table where the extended property is getting updated.</p></td>
+	<td>true</td>
+	<td>false</td>
+    <td></td>
+</tr>
+<tr valign='top'>
+	<td>ColumnName</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.string.aspx">String</a></td>
+	<td class="ParamDescription"><p>The name of the column where the extended property is getting updated.</p></td>
+	<td>false</td>
+	<td>false</td>
+    <td></td>
+</tr>
+
+</table>
+
+<h2>EXAMPLE 1</h2>
+<pre><code>Update-Description -Description 'Whoseit's whatsits table.' -TableName WhoseitsWhatsits</code></pre>
+<p>Updates the description (i.e. the <code>MS_Description</code> extended property) on the <code>WhoseitsWhatsits</code> table.</p>
+
+
+<h2>EXAMPLE 2</h2>
+<pre><code>Update-Description  -Description 'Is it a snarfblat?' -TableName WhoseitsWhatsits -ColumnName IsSnarfblat</code></pre>
+<p>Updates the description (i.e. the <code>MS_Description</code> extended property) on the <code>WhoseitsWhatsits</code> table's <code>IsSnarfblat</code> column.</p>
+
+
+	<div class="Footer">
+		Copyright 2013 - 2016 <a href="http://pshdo.com">Aaron Jensen</a>.
+	</div>
+
+</body>
+</html>

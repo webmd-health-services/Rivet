@@ -2,9 +2,6 @@ TOPIC
     about_Rivet
 
 SHORT DESCRIPTION
-    Explains Rivet.
-
-LONG DESCRIPTION
     Rivet is a database migration/change management/versioning tool inspired by 
     Ruby on Rails' Migrations. It creates and applies migration scripts for SQL 
     Server databases. Migration scripts describe changes to make to your 

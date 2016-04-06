@@ -1,0 +1,164 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <title>PowerShell - New-Column - Rivet</title>
+    <link href="silk.css" type="text/css" rel="stylesheet" />
+	<link href="styles.css" type="text/css" rel="stylesheet" />
+</head>
+<body>
+
+    <ul id="SiteNav">
+		<li><a href="index.html">Get-Rivet</a></li>
+        <!--<li><a href="about_Carbon_Installation.html">-Install</a></li>-->
+		<li><a href="documentation.html">-Documentation</a></li>
+        <!--<li><a href="about_Carbon_Support.html">-Support</a></li>-->
+        <li><a href="releasenotes.html">-ReleaseNotes</a></li>
+		<li><a href="http://pshdo.com">-Blog</a></li>
+    </ul>
+
+    <h1>New-Column</h1>
+<div class="Synopsis">
+<p>Creates a column object of an explicit datatype which can be used with the <code>Add-Table</code> or <code>Update-Table</code> migrations.</p>
+</div>
+
+<h2>Syntax</h2>
+<pre class="Syntax"><code>New-Column [-Name] &lt;String&gt; [-DataType] &lt;String&gt; [-Sparse] [-Default &lt;Object&gt;] [-Description &lt;String&gt;] [&lt;CommonParameters&gt;]</code></pre>
+<pre class="Syntax"><code>New-Column [-Name] &lt;String&gt; [-DataType] &lt;String&gt; [-NotNull] [-Default &lt;Object&gt;] [-Description &lt;String&gt;] [&lt;CommonParameters&gt;]</code></pre>
+
+<h2>Description</h2>
+<div class="Description">
+<p>Use this function in the <code>Column</code> script block for <code>Add-Table</code>:</p>
+
+<pre><code>Add-Table 'Members' {
+    New-Column 'Birthday' 'datetime' 
+}
+</code></pre>
+
+<p>This column is useful for creating columns of custom types or types for which Rivet doesn't have a specific function.</p>
+
+<p>Returns an object that can be used when adding columns or creating tables to get the SQL needed to create that column.</p>
+</div>
+
+<h2>Related Commands</h2>
+
+<ul class="RelatedCommands">
+<li><a href="New-BigIntColumn.html">New-BigIntColumn</a></li>
+<li><a href="New-BinaryColumn.html">New-BinaryColumn</a></li>
+<li><a href="New-BitColumn.html">New-BitColumn</a></li>
+<li><a href="New-CharColumn.html">New-CharColumn</a></li>
+<li><a href="New-DateColumn.html">New-DateColumn</a></li>
+<li><a href="New-DateTime2Column.html">New-DateTime2Column</a></li>
+<li><a href="New-DateTimeOffsetColumn.html">New-DateTimeOffsetColumn</a></li>
+<li><a href="New-DecimalColumn.html">New-DecimalColumn</a></li>
+<li><a href="New-FloatColumn.html">New-FloatColumn</a></li>
+<li><a href="New-HierarchyIDColumn.html">New-HierarchyIDColumn</a></li>
+<li><a href="New-IntColumn.html">New-IntColumn</a></li>
+<li><a href="New-MoneyColumn.html">New-MoneyColumn</a></li>
+<li><a href="New-NCharColumn.html">New-NCharColumn</a></li>
+<li><a href="New-NVarCharColumn.html">New-NVarCharColumn</a></li>
+<li><a href="New-RealColumn.html">New-RealColumn</a></li>
+<li><a href="New-RowVersionColumn.html">New-RowVersionColumn</a></li>
+<li><a href="New-SmallDateTimeColumn.html">New-SmallDateTimeColumn</a></li>
+<li><a href="New-SmallIntColumn.html">New-SmallIntColumn</a></li>
+<li><a href="New-SmallMoneyColumn.html">New-SmallMoneyColumn</a></li>
+<li><a href="New-SqlVariantColumn.html">New-SqlVariantColumn</a></li>
+<li><a href="New-TimeColumn.html">New-TimeColumn</a></li>
+<li><a href="New-TinyIntColumn.html">New-TinyIntColumn</a></li>
+<li><a href="New-UniqueIdentifierColumn.html">New-UniqueIdentifierColumn</a></li>
+<li><a href="New-VarBinaryColumn.html">New-VarBinaryColumn</a></li>
+<li><a href="New-VarCharColumn.html">New-VarCharColumn</a></li>
+<li><a href="New-XmlColumn.html">New-XmlColumn</a></li>
+</ul>
+
+<h2> Parameters </h2>
+<table id="Parameters">
+<tr>
+	<th>Name</th>
+    <th>Type</th>
+	<th>Description</th>
+	<th>Required?</th>
+	<th>Pipeline Input</th>
+	<th>Default Value</th>
+</tr>
+<tr valign='top'>
+	<td>Name</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.string.aspx">String</a></td>
+	<td class="ParamDescription"><p>The Name of the new column.</p></td>
+	<td>true</td>
+	<td>false</td>
+    <td></td>
+</tr>
+<tr valign='top'>
+	<td>DataType</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.string.aspx">String</a></td>
+	<td class="ParamDescription"><p>The datatype of the new column, including precision/scale/size specifiers.</p></td>
+	<td>true</td>
+	<td>false</td>
+    <td></td>
+</tr>
+<tr valign='top'>
+	<td>Sparse</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.management.automation.switchparameter.aspx">SwitchParameter</a></td>
+	<td class="ParamDescription"><p>Optimizes the column storage for null values. Cannot be used with the <code>NotNull</code> switch.</p></td>
+	<td>false</td>
+	<td>false</td>
+    <td>False</td>
+</tr>
+<tr valign='top'>
+	<td>NotNull</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.management.automation.switchparameter.aspx">SwitchParameter</a></td>
+	<td class="ParamDescription"><p>Makes the column not nullable.  Canno be used with the <code>Sparse</code> switch.</p></td>
+	<td>false</td>
+	<td>false</td>
+    <td>False</td>
+</tr>
+<tr valign='top'>
+	<td>Default</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.object.aspx">Object</a></td>
+	<td class="ParamDescription"><p>A SQL Server expression for the column's default value.</p></td>
+	<td>false</td>
+	<td>false</td>
+    <td></td>
+</tr>
+<tr valign='top'>
+	<td>Description</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.string.aspx">String</a></td>
+	<td class="ParamDescription"><p>A description of the column.</p></td>
+	<td>false</td>
+	<td>false</td>
+    <td></td>
+</tr>
+
+</table>
+
+<h2>EXAMPLE 1</h2>
+<pre><code>Add-Table 'Members' { New-Column 'Birthday' 'datetime' -NotNull }</code></pre>
+<p>Demonstrates how to create a required <code>datetime</code> column.</p>
+
+
+<h2>EXAMPLE 2</h2>
+<pre><code>Add-Table 'Members' { New-Column 'Birthday' 'float(7)' -NotNull }</code></pre>
+<p>Demonstrates that the value of the <code>DataType</code> parameter should also include any precision/scale/size specifiers.</p>
+
+
+<h2>EXAMPLE 3</h2>
+<pre><code>Add-Table 'Members' { New-Column 'Birthday' 'datetime' -Sparse }</code></pre>
+<p>Demonstrate show to create a nullable, sparse <code>datetime</code> column when adding a new table.</p>
+
+
+<h2>EXAMPLE 4</h2>
+<pre><code>Add-Table 'Members' { New-Column 'Birthday' 'datetime' -NotNull -Default 'getdate()' }</code></pre>
+<p>Demonstrates how to create a date column with a default value, in this case the current date.  (You alwyas use UTC dates, right?)  Probably not a great example, setting someone's birthday to the current date. Reasons are left as an exercise for the reader.</p>
+
+
+<h2>EXAMPLE 5</h2>
+<pre><code>Add-Table 'Members' { New-Column 'Birthday' 'datetime' -Description 'The members birthday.' }</code></pre>
+<p>Demonstrates how to create an optional date column with a description.</p>
+
+
+	<div class="Footer">
+		Copyright 2013 - 2016 <a href="http://pshdo.com">Aaron Jensen</a>.
+	</div>
+
+</body>
+</html>

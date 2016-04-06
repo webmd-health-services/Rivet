@@ -1,0 +1,100 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <title>PowerShell - Update-CodeObjectMetadata - Rivet</title>
+    <link href="silk.css" type="text/css" rel="stylesheet" />
+	<link href="styles.css" type="text/css" rel="stylesheet" />
+</head>
+<body>
+
+    <ul id="SiteNav">
+		<li><a href="index.html">Get-Rivet</a></li>
+        <!--<li><a href="about_Carbon_Installation.html">-Install</a></li>-->
+		<li><a href="documentation.html">-Documentation</a></li>
+        <!--<li><a href="about_Carbon_Support.html">-Support</a></li>-->
+        <li><a href="releasenotes.html">-ReleaseNotes</a></li>
+		<li><a href="http://pshdo.com">-Blog</a></li>
+    </ul>
+
+    <h1>Update-CodeObjectMetadata</h1>
+<div class="Synopsis">
+<p>Updates the metadata for a stored procedure, user-defined function, view, trigger, etc.</p>
+</div>
+
+<h2>Syntax</h2>
+<pre class="Syntax"><code>Update-CodeObjectMetadata [-SchemaName &lt;String&gt;] [-Name] &lt;String&gt; [&lt;CommonParameters&gt;]</code></pre>
+<pre class="Syntax"><code>Update-CodeObjectMetadata [-SchemaName &lt;String&gt;] [-Name] &lt;String&gt; -DatabaseDdlTrigger [&lt;CommonParameters&gt;]</code></pre>
+<pre class="Syntax"><code>Update-CodeObjectMetadata [-SchemaName &lt;String&gt;] [-Name] &lt;String&gt; -ServerDdlTrigger [&lt;CommonParameters&gt;]</code></pre>
+
+<h2>Description</h2>
+<div class="Description">
+<p>SQL Server has a stored procedure, <code>sys.sp_refreshsqlmodule</code>, which will refresh/update a the objects used by a code object (stored procedure, user-defined function, view, etc.) if that object has changed since the code object was created.</p>
+</div>
+
+<h2>Related Commands</h2>
+
+<ul class="RelatedCommands">
+<li><a href="http://technet.microsoft.com/en-us/library/bb326754.aspx">http://technet.microsoft.com/en-us/library/bb326754.aspx</a></li>
+</ul>
+
+<h2> Parameters </h2>
+<table id="Parameters">
+<tr>
+	<th>Name</th>
+    <th>Type</th>
+	<th>Description</th>
+	<th>Required?</th>
+	<th>Pipeline Input</th>
+	<th>Default Value</th>
+</tr>
+<tr valign='top'>
+	<td>SchemaName</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.string.aspx">String</a></td>
+	<td class="ParamDescription"><p>The code object's schema name.  Default is <code>dbo</code>.</p></td>
+	<td>false</td>
+	<td>false</td>
+    <td>dbo</td>
+</tr>
+<tr valign='top'>
+	<td>Name</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.string.aspx">String</a></td>
+	<td class="ParamDescription"><p>The name of the code object.</p></td>
+	<td>true</td>
+	<td>false</td>
+    <td></td>
+</tr>
+<tr valign='top'>
+	<td>DatabaseDdlTrigger</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.management.automation.switchparameter.aspx">SwitchParameter</a></td>
+	<td class="ParamDescription"><p>The object is a database DDL trigger.</p></td>
+	<td>true</td>
+	<td>false</td>
+    <td>False</td>
+</tr>
+<tr valign='top'>
+	<td>ServerDdlTrigger</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.management.automation.switchparameter.aspx">SwitchParameter</a></td>
+	<td class="ParamDescription"><p>The object is a server DDL trigger.</p></td>
+	<td>true</td>
+	<td>false</td>
+    <td>False</td>
+</tr>
+
+</table>
+
+<h2>EXAMPLE 1</h2>
+<pre><code>Update-CodeObjectMetadata 'GetUsers'</code></pre>
+<p>Demonstrates how to update the <code>GetUsers</code> code object.</p>
+
+
+<h2>EXAMPLE 2</h2>
+<pre><code>Update-CodeObjectMetadata -SchemaName 'example' 'GetUsers'</code></pre>
+<p>Demonstrates how to update a code object in a custom schema, in this case the <code>example</code> schema.</p>
+
+
+	<div class="Footer">
+		Copyright 2013 - 2016 <a href="http://pshdo.com">Aaron Jensen</a>.
+	</div>
+
+</body>
+</html>

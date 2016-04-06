@@ -1,0 +1,97 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <title>PowerShell - Add-Row - Rivet</title>
+    <link href="silk.css" type="text/css" rel="stylesheet" />
+	<link href="styles.css" type="text/css" rel="stylesheet" />
+</head>
+<body>
+
+    <ul id="SiteNav">
+		<li><a href="index.html">Get-Rivet</a></li>
+        <!--<li><a href="about_Carbon_Installation.html">-Install</a></li>-->
+		<li><a href="documentation.html">-Documentation</a></li>
+        <!--<li><a href="about_Carbon_Support.html">-Support</a></li>-->
+        <li><a href="releasenotes.html">-ReleaseNotes</a></li>
+		<li><a href="http://pshdo.com">-Blog</a></li>
+    </ul>
+
+    <h1>Add-Row</h1>
+<div class="Synopsis">
+<p>Inserts a row of data in a table.</p>
+</div>
+
+<h2>Syntax</h2>
+<pre class="Syntax"><code>Add-Row [-TableName] &lt;String&gt; [-SchemaName &lt;String&gt;] [-Column] &lt;Hashtable[]&gt; [-IdentityInsert] [&lt;CommonParameters&gt;]</code></pre>
+
+<h2>Description</h2>
+<div class="Description">
+<p>To specify which columns to insert into the new row, pass a hashtable as a value to the <code>Column</code> parameter.  This hashtable should have keys that map to column names, and the value of each key will be used as the value for that column in the row.</p>
+</div>
+
+<h2> Parameters </h2>
+<table id="Parameters">
+<tr>
+	<th>Name</th>
+    <th>Type</th>
+	<th>Description</th>
+	<th>Required?</th>
+	<th>Pipeline Input</th>
+	<th>Default Value</th>
+</tr>
+<tr valign='top'>
+	<td>TableName</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.string.aspx">String</a></td>
+	<td class="ParamDescription"><p>The name of the table.</p></td>
+	<td>true</td>
+	<td>false</td>
+    <td></td>
+</tr>
+<tr valign='top'>
+	<td>SchemaName</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.string.aspx">String</a></td>
+	<td class="ParamDescription"><p>The schema name of the table.  Default is <code>dbo</code>.</p></td>
+	<td>false</td>
+	<td>false</td>
+    <td>dbo</td>
+</tr>
+<tr valign='top'>
+	<td>Column</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.collections.hashtable.aspx">Hashtable[]</a></td>
+	<td class="ParamDescription"><p>A hashtable of name/value pairs that map to column names/values that will inserted.</p></td>
+	<td>true</td>
+	<td>true (ByValue)</td>
+    <td></td>
+</tr>
+<tr valign='top'>
+	<td>IdentityInsert</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.management.automation.switchparameter.aspx">SwitchParameter</a></td>
+	<td class="ParamDescription"><p>Allow inserting identies.</p></td>
+	<td>false</td>
+	<td>false</td>
+    <td>False</td>
+</tr>
+
+</table>
+
+<h2>EXAMPLE 1</h2>
+<pre><code>Add-Row -SchemaName 'rivet' 'Migrations' @{ ID = 2013093131104 ; Name = 'AMadeUpMigrationDoNotDoThis' ; Who = 'abadbadman' ; ComputerName 'abadbadcomputer' }</code></pre>
+<p>Demonstrates how to insert a row into the <code>rivet.Migrations</code> table.  This is for illustrative purposes only.  If you do this yourself, a butterfly loses its wings.</p>
+
+
+<h2>EXAMPLE 2</h2>
+<pre><code>Add-Row 'Cars' @( @{ Make = 'Toyota' ; Model = 'Celica' }, @{ Make = 'Toyota' ; Model = 'Camry' } )</code></pre>
+<p>Demonstrates how to insert multiple rows into a table by passing an array of hashtables.</p>
+
+
+<h2>EXAMPLE 3</h2>
+<pre><code>@( @{ Make = 'Toyota' ; Model = 'Celica' }, @{ Make = 'Toyota' ; Model = 'Camry' } ) | New-Row 'Cars'</code></pre>
+<p>Demonstrates how to pipe data into <code>New-Row</code> to insert a bunch of rows into the database.</p>
+
+
+	<div class="Footer">
+		Copyright 2013 - 2016 <a href="http://pshdo.com">Aaron Jensen</a>.
+	</div>
+
+</body>
+</html>

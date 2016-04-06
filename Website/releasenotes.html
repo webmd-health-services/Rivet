@@ -1,0 +1,169 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <title>Release Notes - Rivet: Evolutionary Database Migration Tool for SQL Server</title>
+    <link href="silk.css" type="text/css" rel="stylesheet" />
+	<link href="styles.css" type="text/css" rel="stylesheet" />
+</head>
+<body>
+
+    <ul id="SiteNav">
+		<li><a href="index.html">Get-Rivet</a></li>
+        <!--<li><a href="about_Carbon_Installation.html">-Install</a></li>-->
+		<li><a href="documentation.html">-Documentation</a></li>
+        <!--<li><a href="about_Carbon_Support.html">-Support</a></li>-->
+        <li><a href="releasenotes.html">-ReleaseNotes</a></li>
+		<li><a href="http://pshdo.com">-Blog</a></li>
+    </ul>
+
+    <h1>0.6.1</h1>
+
+<h2>Bug Fixes</h2>
+
+<ul>
+<li><a href="Rename-Column.html">Rename-Column</a>, <a href="Rename-DataType.html">Rename-DataType</a>, <a href="Rename-Index.html">Rename-Index</a>, and <a href="Rename-Object.html">Rename-Object</a> operations didn't properly quote schema and object names.</li>
+</ul>
+
+<h1>0.6.0</h1>
+
+<h2>Enhancements</h2>
+
+<ul>
+<li>Improving verbose output to be more recognizable and include query timings.</li>
+<li><code>Convert-Migration.ps1</code> extra script now puts triggers, constraints, foreign keys, and types into separate files.</li>
+<li><code>New-Migration</code> now increments timestamp if a migration with the same timestamp already exists instead of sleeping for half a second.</li>
+<li>Added format for <code>Rivet.Migration</code> objects so they display nicely when running migrations.</li>
+<li>Adding Rivet about help topics.</li>
+<li>Created <code>Add-RowGuidCol</code> operation for adding the <code>rowguidcol</code> property to a column.</li>
+<li>Created <code>Remove-RowGuidCol</code> operation for removing the <code>rowguidcol</code> property from a column.</li>
+<li>Created <code>Stop-Migration</code> operation for preventing a migration from getting popped/reversed.</li>
+<li>Migrations missing Push-Migration/Pop-Migration functions are no longer allowed and will fail when pushed/popped.</li>
+<li>Migrations with empty Push-Migration/Pop-Migration functions are no longer allowed and will fail when pushed/popped.</li>
+<li>Obsoleted the parameter sets of the <a href="Remove-CheckConstraint.html">Remove-CheckConstraint</a>, <code>Remove-DefaulConstraint</code>, <a href="Remove-ForeignKey.html">Remove-ForeignKey</a>, <a href="Remove-Index.html">Remove-Index</a>, <a href="Remove-PrimaryKey.html">Remove-PrimaryKey</a>, and <a href="Remove-UniqueKey.html">Remove-UniqueKey</a> operations that use an inferred constraint/index name. These operations now expect the name of the constraint/index to drop with the <code>Name</code> parameter.</li>
+<li>Improved object model so that customizing index/constraint names is easier. </li>
+<li>Added <a href="about_Rivet_Cookbook.html">about_Rivet_Cookbook</a> help topic to showing how to customize index/constraint names.</li>
+<li>Updated and improved the <a href="about_Rivet_Plugins.html">about_Rivet_Plugins</a> help topic.</li>
+<li>Obsoleted the <code>Enable-ForeignKey</code> and <code>Disable-ForeignKey</code> operations. Use the <code>Enable-Constraint</code> and <code>Disable-Constraint</code> operations instead.</li>
+<li>Renamed the <a href="Enable-Constraint.html">Enable-CheckConstraint</a> operation to <code>Enable-Constraint</code>, with a backwards-compatible alias.</li>
+<li>Renamed the <a href="Disable-Constraint.html">Disable-CheckConstraint</a> operation to <code>Disable-Constraint</code>, with a backwards-compatible alias.</li>
+<li>You can now push, pop, or create multiple migrations at once (i.e. <code>rivet.ps1</code>'s <code>Name</code> parameter now accepts multiple names, IDs, or file names).</li>
+<li>Plug-ins now get passed a <code>Rivet.Migration</code> object for the operation being processed.</li>
+<li>Rivet now supports writing custom operations.</li>
+</ul>
+
+<h2>Bug Fixes</h2>
+
+<ul>
+<li>Results from <a href="Invoke-SqlScript.html">Invoke-SqlScript</a> operations cause silent error when formatted as a table.</li>
+<li>Path to rivet.json file not showing in an error message when using implicit path.</li>
+</ul>
+
+<h1>0.5.1</h1>
+
+<h2>Enhancements</h2>
+
+<ul>
+<li>Improving <code>WhatIf</code> support: some actions that shouldn't be conditional now ignore <code>WhatIf</code> flag.</li>
+<li>Invoke-SqlScript operation no longer splits script into batches, since that is now handled internally when executing all operations.</li>
+<li>Improving verbose output: adding a message for each already-applied migration.</li>
+</ul>
+
+<h2>Bug Fixes</h2>
+
+<ul>
+<li>Get-Migration fails when run from Convert-Migration: it doesn't know the path to use to load migrations from.</li>
+</ul>
+
+<h1>0.5.0</h1>
+
+<h2>Enhancements</h2>
+
+<ul>
+<li>The Add-Schema operation is now idempotent.</li>
+<li>Removed all Write-Host output.</li>
+<li>Rivet now returns OperationResult objects for each query executed by an operation. Default format included (i.e. this output replaces the old Write-Host output).</li>
+<li>Renamed <code>Invoke-Query</code> operation to <a href="Invoke-Ddl.html">Invoke-Ddl</a>.</li>
+<li>Renamed <code>Rivet.Operations.RawQueryOperation</code> to <code>Rivet.Operations.RawDdlOperation</code>.</li>
+<li>Moved <code>Rivet.Operations.Operation</code> object into <a href="Invoke-Rivet.html">Rivet</a> namespace; so full type name is now <code>Rivet.Operation</code>.</li>
+</ul>
+
+<h1>0.4.0</h1>
+
+<h2>Enhancements</h2>
+
+<ul>
+<li>NOCHECK parameter has been added to <a href="Add-ForeignKey.html">Add-ForeignKey</a> and <a href="Add-CheckConstraint.html">Add-CheckConstraint</a> operations</li>
+<li><a href="Disable-Constraint.html">Disable-CheckConstraint</a> and <a href="Enable-Constraint.html">Enable-CheckConstraint</a> functions have been added.</li>
+<li><code>Disable-ForeignKey</code> and <code>Enable-ForeignKey</code> functions have been added.</li>
+</ul>
+
+<h2>Bug Fixes</h2>
+
+<ul>
+<li>Convert-Migration.ps1 generates incorrect SQL if a migration removes then re-adds a column.</li>
+</ul>
+
+<h1>0.3.3</h1>
+
+<ul>
+<li>Improved error message when failing to connect to SQL Server.</li>
+<li><a href="Add-Index.html">Add-Index</a> operation now supports INCLUDE clause.</li>
+</ul>
+
+<h1>0.3.2</h1>
+
+<h2>Bug Fixes</h2>
+
+<ul>
+<li><a href="Invoke-SqlScript.html">Invoke-SqlScript</a> fails when <code>NonQuery</code> switch is used.</li>
+</ul>
+
+<h1>0.3.1</h1>
+
+<h2>Enhancements</h2>
+
+<ul>
+<li><a href="Get-RivetConfig.html">Get-RivetConfig</a> is now a publicly exposed function.  Use this method to parse a Rivet JSON configuration file. It returns a <code>Rivet.Configuration.Configuration</code> object.</li>
+</ul>
+
+<h1>0.3.0</h1>
+
+<h2>Enhancements</h2>
+
+<ul>
+<li><a href="Get-Migration.html">Get-Migration</a> now returns a <code>Rivet.Operations.ScriptFileOperation</code> object instead of a <code>Rivet.Operations.RawQueryOperation</code> for <code>Invoke-SqlQuery</code> operations.</li>
+</ul>
+
+<h2>Bug Fixes</h2>
+
+<ul>
+<li><a href="Invoke-SqlScript.html">Invoke-SqlScript</a> ignoring <code>CommandTimeout</code> parameter.</li>
+<li><a href="Invoke-SqlScript.html">Invoke-SqlScript</a> didn't rollback migration if the script file was not found.</li>
+<li><a href="Get-Migration.html">Get-Migration</a> fails if a migration doesn't contain a <code>Push-Migration</code> or <code>Pop-Migration</code> function.</li>
+<li><code>Get-Migratoin</code> duplicates output of previous migration if a migration is missing a <code>Push-Migration</code> or <code>Pop-Migration</code> function.</li>
+</ul>
+
+<h1>0.2.1</h1>
+
+<h2>Bug Fixes</h2>
+
+<ul>
+<li>If a database has multipe target databases and no migrations directory, Rivet stops after the first target database.</li>
+</ul>
+
+<h1>0.2.0</h1>
+
+<ul>
+<li>Databases are now created if they don't exist.</li>
+<li>A single database connection is now re-used when migrating multiple databases, instead of establishing a new connection for each database.</li>
+<li>A database's migrations can now be applied to multiple target databases via the new <code>TargetDatabases</code> configuration option. See <a href="about_Rivet_Configuration.html">about_Rivet_Configuration</a> for more information.</li>
+<li>Rivet now updates its internal objects using migrations (i.e. it is now self-migrating). It uses (and reserves) migration IDs below 01000000000000. If you have migrations with these IDs, you'll need to give them new IDs and update IDs in any rivet.Migrations table that uses that ID.</li>
+<li>Migration name maximum length increased to 241 characters (the theoretical maximum allowed by Windows).</li>
+</ul>
+
+	<div class="Footer">
+		Copyright 2013 - 2016 <a href="http://pshdo.com">Aaron Jensen</a>.
+	</div>
+
+</body>
+</html>

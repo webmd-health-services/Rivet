@@ -1,0 +1,111 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <title>PowerShell - Add-Synonym - Rivet</title>
+    <link href="silk.css" type="text/css" rel="stylesheet" />
+	<link href="styles.css" type="text/css" rel="stylesheet" />
+</head>
+<body>
+
+    <ul id="SiteNav">
+		<li><a href="index.html">Get-Rivet</a></li>
+        <!--<li><a href="about_Carbon_Installation.html">-Install</a></li>-->
+		<li><a href="documentation.html">-Documentation</a></li>
+        <!--<li><a href="about_Carbon_Support.html">-Support</a></li>-->
+        <li><a href="releasenotes.html">-ReleaseNotes</a></li>
+		<li><a href="http://pshdo.com">-Blog</a></li>
+    </ul>
+
+    <h1>Add-Synonym</h1>
+<div class="Synopsis">
+<p>Creates a synonym.</p>
+</div>
+
+<h2>Syntax</h2>
+<pre class="Syntax"><code>Add-Synonym [-Name] &lt;String&gt; [-SchemaName &lt;String&gt;] [-TargetDatabaseName &lt;String&gt;] [-TargetSchemaName &lt;String&gt;] [-TargetObjectName] &lt;String&gt; [&lt;CommonParameters&gt;]</code></pre>
+
+<h2>Description</h2>
+<div class="Description">
+<p>SQL Server lets you create synonyms so you can reference an object with a different name, or reference an object in another database with a local name.</p>
+</div>
+
+<h2>Related Commands</h2>
+
+<ul class="RelatedCommands">
+<li><a href="http://technet.microsoft.com/en-us/library/ms177544.aspx">http://technet.microsoft.com/en-us/library/ms177544.aspx</a></li>
+</ul>
+
+<h2> Parameters </h2>
+<table id="Parameters">
+<tr>
+	<th>Name</th>
+    <th>Type</th>
+	<th>Description</th>
+	<th>Required?</th>
+	<th>Pipeline Input</th>
+	<th>Default Value</th>
+</tr>
+<tr valign='top'>
+	<td>Name</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.string.aspx">String</a></td>
+	<td class="ParamDescription"><p>The name of the synonym.</p></td>
+	<td>true</td>
+	<td>false</td>
+    <td></td>
+</tr>
+<tr valign='top'>
+	<td>SchemaName</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.string.aspx">String</a></td>
+	<td class="ParamDescription"><p>The name of the schema where the synonym should be created.</p></td>
+	<td>false</td>
+	<td>false</td>
+    <td>dbo</td>
+</tr>
+<tr valign='top'>
+	<td>TargetDatabaseName</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.string.aspx">String</a></td>
+	<td class="ParamDescription"><p>The database where the target object is located.  Defaults to the current database.</p></td>
+	<td>false</td>
+	<td>false</td>
+    <td></td>
+</tr>
+<tr valign='top'>
+	<td>TargetSchemaName</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.string.aspx">String</a></td>
+	<td class="ParamDescription"><p>The scheme of the target object.  Defaults to <code>dbo</code>.</p></td>
+	<td>false</td>
+	<td>false</td>
+    <td>dbo</td>
+</tr>
+<tr valign='top'>
+	<td>TargetObjectName</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.string.aspx">String</a></td>
+	<td class="ParamDescription"><p>The target object's name the synonym will refer to.</p></td>
+	<td>true</td>
+	<td>false</td>
+    <td></td>
+</tr>
+
+</table>
+
+<h2>EXAMPLE 1</h2>
+<pre><code>Add-Synonym -Name 'Buzz' -TargetObjectName 'Fizz'</code></pre>
+<p>Creates a synonym called <code>Buzz</code> to the object <code>Fizz</code>.</p>
+
+
+<h2>EXAMPLE 2</h2>
+<pre><code>Add-Synonym -SchemaName 'fiz' -Name 'Buzz' -TargetSchemaName 'baz' -TargetObjectName 'Buzz'</code></pre>
+<p>Demonstrates how to create a synonym in a different schema.  Creates a synonym to the <code>baz.Buzz</code> object so that it can referenced as <code>fiz.Buzz</code>.</p>
+
+
+<h2>EXAMPLE 3</h2>
+<pre><code>Add-Synonym -Name 'Buzz' -TargetDatabaseName 'Fizzy' -TargetObjectName 'Buzz'</code></pre>
+<p>Demonstrates how to create a synonym to an object in a different database.</p>
+
+
+	<div class="Footer">
+		Copyright 2013 - 2016 <a href="http://pshdo.com">Aaron Jensen</a>.
+	</div>
+
+</body>
+</html>

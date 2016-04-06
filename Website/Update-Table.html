@@ -1,0 +1,152 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <title>PowerShell - Update-Table - Rivet</title>
+    <link href="silk.css" type="text/css" rel="stylesheet" />
+	<link href="styles.css" type="text/css" rel="stylesheet" />
+</head>
+<body>
+
+    <ul id="SiteNav">
+		<li><a href="index.html">Get-Rivet</a></li>
+        <!--<li><a href="about_Carbon_Installation.html">-Install</a></li>-->
+		<li><a href="documentation.html">-Documentation</a></li>
+        <!--<li><a href="about_Carbon_Support.html">-Support</a></li>-->
+        <li><a href="releasenotes.html">-ReleaseNotes</a></li>
+		<li><a href="http://pshdo.com">-Blog</a></li>
+    </ul>
+
+    <h1>Update-Table</h1>
+<div class="Synopsis">
+<p>Adds new columns or alters existing columns on an existing table.</p>
+</div>
+
+<h2>Syntax</h2>
+<pre class="Syntax"><code>Update-Table [-Name] &lt;String&gt; [-SchemaName &lt;String&gt;] [-AddColumn &lt;ScriptBlock&gt;] [-UpdateColumn &lt;ScriptBlock&gt;] [-RemoveColumn &lt;String[]&gt;] [&lt;CommonParameters&gt;]</code></pre>
+
+<h2>Description</h2>
+<div class="Description">
+<p>The <code>Update-Table</code> operation adds, updates, and removes columns from a table. Columns are added, then updated, then removed.</p>
+
+<p>The new columns for the table should be created and returned in a script block, which is passed as the value of the <code>AddColumn</code> parameter.  For example,</p>
+
+<pre><code>Update-Table 'Suits' -AddColumn {
+    Bit 'HasVest' -NotNull -Default 0
+}
+</code></pre>
+
+<p>The new definitions for existing columns should be created and returned in a script block, which is passed as the value of the <code>UpdateColumn</code> parameter.  For example,</p>
+
+<pre><code>Update-Table 'Suits' -UpdateColumn {
+    VarChar 'Color' 256 -NotNull
+}
+</code></pre>
+</div>
+
+<h2>Related Commands</h2>
+
+<ul class="RelatedCommands">
+<li><a href="New-BigIntColumn.html">bigint</a></li>
+<li><a href="New-BinaryColumn.html">binary</a></li>
+<li><a href="New-BitColumn.html">bit</a></li>
+<li><a href="New-CharColumn.html">char</a></li>
+<li><a href="New-DateColumn.html">date</a></li>
+<li><a href="New-DateTimeColumn.html">datetime</a></li>
+<li><a href="New-DateTime2Column.html">datetime2</a></li>
+<li><a href="New-DateTimeOffsetColumn.html">datetimeoffset</a></li>
+<li><a href="New-DecimalColumn.html">decimal</a></li>
+<li><a href="New-FloatColumn.html">float</a></li>
+<li><a href="New-HierarchyIDColumn.html">hierarchyid</a></li>
+<li><a href="New-IntColumn.html">int</a></li>
+<li><a href="New-MoneyColumn.html">money</a></li>
+<li><a href="New-NCharColumn.html">nchar</a></li>
+<li><a href="New-DecimalColumn.html">numeric</a></li>
+<li><a href="New-NVarCharColumn.html">nvarchar</a></li>
+<li><a href="New-RealColumn.html">real</a></li>
+<li><a href="New-RowVersionColumn.html">rowversion</a></li>
+<li><a href="New-SmallDateTimeColumn.html">smalldatetime</a></li>
+<li><a href="New-SmallIntColumn.html">smallint</a></li>
+<li><a href="New-SmallMoneyColumn.html">smallmoney</a></li>
+<li><a href="New-SqlVariantColumn.html">sqlvariant</a></li>
+<li><a href="New-TimeColumn.html">time</a></li>
+<li><a href="New-TinyIntColumn.html">tinyint</a></li>
+<li><a href="New-UniqueIdentifierColumn.html">uniqueidentifier</a></li>
+<li><a href="New-VarBinaryColumn.html">varbinary</a></li>
+<li><a href="New-VarCharColumn.html">varchar</a></li>
+<li><a href="New-XmlColumn.html">xml</a></li>
+</ul>
+
+<h2> Parameters </h2>
+<table id="Parameters">
+<tr>
+	<th>Name</th>
+    <th>Type</th>
+	<th>Description</th>
+	<th>Required?</th>
+	<th>Pipeline Input</th>
+	<th>Default Value</th>
+</tr>
+<tr valign='top'>
+	<td>Name</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.string.aspx">String</a></td>
+	<td class="ParamDescription"><p>The name of the table.</p></td>
+	<td>true</td>
+	<td>false</td>
+    <td></td>
+</tr>
+<tr valign='top'>
+	<td>SchemaName</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.string.aspx">String</a></td>
+	<td class="ParamDescription"><p>The table's schema.  Defaults to <code>dbo</code>.</p></td>
+	<td>false</td>
+	<td>false</td>
+    <td>dbo</td>
+</tr>
+<tr valign='top'>
+	<td>AddColumn</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.management.automation.scriptblock.aspx">ScriptBlock</a></td>
+	<td class="ParamDescription"><p>A script block that returns the new columns to add to a table.</p></td>
+	<td>false</td>
+	<td>false</td>
+    <td></td>
+</tr>
+<tr valign='top'>
+	<td>UpdateColumn</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.management.automation.scriptblock.aspx">ScriptBlock</a></td>
+	<td class="ParamDescription"><p>A script block that returns new column definitions for existing columns</p></td>
+	<td>false</td>
+	<td>false</td>
+    <td></td>
+</tr>
+<tr valign='top'>
+	<td>RemoveColumn</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.string.aspx">String[]</a></td>
+	<td class="ParamDescription"><p>Columns to remove.</p></td>
+	<td>false</td>
+	<td>false</td>
+    <td></td>
+</tr>
+
+</table>
+
+<h2>EXAMPLE 1</h2>
+<pre><code>Update-Table -Name 'Ties' -AddColumn { VarChar 'Color' 50 -NotNull }</code></pre>
+<p>Adds a new <code>Color</code> column to the <code>Ties</code> table.  Pretty!</p>
+
+
+<h2>EXAMPLE 2</h2>
+<pre><code>Update-Table -Name 'Ties' -UpdateColumn { VarChar 'Color' 100 -NotNull }</code></pre>
+<p>Demonstrates how to change the definition of an existing column.</p>
+
+
+<h2>EXAMPLE 3</h2>
+<pre><code>Update-Table -Name 'Ties' -RemoveColumn 'Pattern','Manufacturer'</code></pre>
+<p>Demonstrates how to remove columns from a table.</p>
+
+
+	<div class="Footer">
+		Copyright 2013 - 2016 <a href="http://pshdo.com">Aaron Jensen</a>.
+	</div>
+
+</body>
+</html>

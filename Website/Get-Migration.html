@@ -1,0 +1,155 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <title>PowerShell - Get-Migration - Rivet</title>
+    <link href="silk.css" type="text/css" rel="stylesheet" />
+	<link href="styles.css" type="text/css" rel="stylesheet" />
+</head>
+<body>
+
+    <ul id="SiteNav">
+		<li><a href="index.html">Get-Rivet</a></li>
+        <!--<li><a href="about_Carbon_Installation.html">-Install</a></li>-->
+		<li><a href="documentation.html">-Documentation</a></li>
+        <!--<li><a href="about_Carbon_Support.html">-Support</a></li>-->
+        <li><a href="releasenotes.html">-ReleaseNotes</a></li>
+		<li><a href="http://pshdo.com">-Blog</a></li>
+    </ul>
+
+    <h1>Get-Migration</h1>
+<div class="Synopsis">
+<p>Gets the migrations for all or specific databases.</p>
+</div>
+
+<h2>Syntax</h2>
+<pre class="Syntax"><code>Get-Migration [-Database &lt;String[]&gt;] [-Environment &lt;String&gt;] [-ConfigFilePath &lt;String&gt;] [-Include &lt;String[]&gt;] [-Exclude &lt;String[]&gt;] [-Before &lt;DateTime&gt;] [-After &lt;DateTime&gt;] [&lt;CommonParameters&gt;]</code></pre>
+
+<h2>Description</h2>
+<div class="Description">
+<p>The <code>Get-Migration</code> function returns <code>Rivet.Migration</code> objects for all the migrations in all or specific databases. With no parameters, looks in the current directory for a <code>rivet.json</code> file and returns all the migrations for all the databases based on that configuration. Use the <code>ConfigFilePath</code> to load and use a specific <code>rivet.json</code> file.</p>
+
+<p>You can return migrations from specific databases by passing those database names as values to the <code>Database</code> parameter. </p>
+
+<p>The <code>Environment</code> parameter is used to load the correct environment-specific settings from the <code>rivet.json</code> file.</p>
+
+<p>You can filter what migrations are returned using the <code>Include</code> or <code>Exclude</code> parameters, which support wildcards, and will match any part of the migration's filename, including the ID.</p>
+
+<p>Use the <code>Before</code> and <code>After</code> parameters to return migrations whose timestamps/IDs come before and after the given dates.</p>
+</div>
+
+<h2> Parameters </h2>
+<table id="Parameters">
+<tr>
+	<th>Name</th>
+    <th>Type</th>
+	<th>Description</th>
+	<th>Required?</th>
+	<th>Pipeline Input</th>
+	<th>Default Value</th>
+</tr>
+<tr valign='top'>
+	<td>Database</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.string.aspx">String[]</a></td>
+	<td class="ParamDescription"><p>The database whose migrations to get.np</p></td>
+	<td>false</td>
+	<td>false</td>
+    <td></td>
+</tr>
+<tr valign='top'>
+	<td>Environment</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.string.aspx">String</a></td>
+	<td class="ParamDescription"><p>The environment settings to use.</p></td>
+	<td>false</td>
+	<td>false</td>
+    <td></td>
+</tr>
+<tr valign='top'>
+	<td>ConfigFilePath</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.string.aspx">String</a></td>
+	<td class="ParamDescription"><p>The path to the rivet.json file to use. Defaults to <code>rivet.json</code> in the current directory.</p></td>
+	<td>false</td>
+	<td>false</td>
+    <td></td>
+</tr>
+<tr valign='top'>
+	<td>Include</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.string.aspx">String[]</a></td>
+	<td class="ParamDescription"><p>A list of migrations to include. Matches against the migration's ID or Name or the migration's file name (without extension). Wildcards permitted.</p></td>
+	<td>false</td>
+	<td>false</td>
+    <td></td>
+</tr>
+<tr valign='top'>
+	<td>Exclude</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.string.aspx">String[]</a></td>
+	<td class="ParamDescription"><p>A list of migrations to exclude. Matches against the migration's ID or Name or the migration's file name (without extension). Wildcards permitted.</p></td>
+	<td>false</td>
+	<td>false</td>
+    <td></td>
+</tr>
+<tr valign='top'>
+	<td>Before</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.datetime.aspx">DateTime</a></td>
+	<td class="ParamDescription"><p>Only get migrations before this date.  Default is all.</p></td>
+	<td>false</td>
+	<td>false</td>
+    <td></td>
+</tr>
+<tr valign='top'>
+	<td>After</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.datetime.aspx">DateTime</a></td>
+	<td class="ParamDescription"><p>Only get migrations after this date.  Default is all.</p></td>
+	<td>false</td>
+	<td>false</td>
+    <td></td>
+</tr>
+
+</table>
+
+<h2>Return Values</h2>
+<div class="ReturnValues">
+<p>Rivet.Migration. </p>
+</div>
+
+<h2>EXAMPLE 1</h2>
+<pre><code>Get-Migration</code></pre>
+<p>Returns <code>Rivet.Migration</code> objects for each migration in each database.</p>
+
+
+<h2>EXAMPLE 2</h2>
+<pre><code>Get-Migration -Database StarWars</code></pre>
+<p>Returns <code>Rivet.Migration</code> objects for each migration in the <code>StarWars</code> database.</p>
+
+
+<h2>EXAMPLE 3</h2>
+<pre><code>Get-Migration -Include 'CreateDeathStarTable','20150101000648','20150101150448_CreateRebelBaseTable','*Hoth*','20150707*'</code></pre>
+<p>Demonstrates how to get use the <code>Include</code> parameter to find migrations by name, ID, or file name. In this case, the following migrations will be returned:</p>
+
+<ul>
+<li>The migration whose name is <code>CreateDeathStarTable</code>.</li>
+<li>The migration whose ID is <code>20150101000648</code>.</li>
+<li>The migration whose full name is <code>20150101150448_CreateRebelBaseTable</code>.</li>
+<li>Any migration whose contains <code>Hoth</code>.</li>
+<li>Any migration created on July 7th, 2015.</li>
+</ul>
+
+
+<h2>EXAMPLE 4</h2>
+<pre><code>Get-Migration -Exclude 'CreateDeathStarTable','20150101000648','20150101150448_CreateRebelBaseTable','*Hoth*','20150707*'</code></pre>
+<p>Demonstrates how to get use the <code>Exclude</code> parameter to skip/not return certain migrations by name, ID, or file name. In this case, the following migrations will be <em>not</em> be returned:</p>
+
+<ul>
+<li>The migration whose name is <code>CreateDeathStarTable</code>.</li>
+<li>The migration whose ID is <code>20150101000648</code>.</li>
+<li>The migration whose full name is <code>20150101150448_CreateRebelBaseTable</code>.</li>
+<li>Any migration whose contains <code>Hoth</code>.</li>
+<li>Any migration created on July 7th, 2015.</li>
+</ul>
+
+
+	<div class="Footer">
+		Copyright 2013 - 2016 <a href="http://pshdo.com">Aaron Jensen</a>.
+	</div>
+
+</body>
+</html>
