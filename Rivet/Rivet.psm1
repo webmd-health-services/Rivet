@@ -40,18 +40,17 @@ if( -not (Test-TypeDataMember -TypeName 'Rivet.OperationResult' -MemberName 'Mig
     Update-TypeData -TypeName 'Rivet.OperationResult' -MemberType ScriptProperty -MemberName 'MigrationID' -Value { $this.Migration.ID }
 }
 
-$publicFunctions = @()
-Invoke-Command -ScriptBlock {
-                                Get-ChildItem -Path (Join-Path -Path $PSScriptRoot -ChildPath 'Functions' -Resolve) -Filter '*-*.ps1'
-                                Get-ChildItem -Path (Join-Path -Path $PSScriptRoot -ChildPath 'Operations' -Resolve) -Filter '*-*.ps1' |
-                                    Tee-Object -Variable 'script:publicFunctions'
-                            } |
+$functionRoot = Join-Path -Path $PSScriptRoot -ChildPath 'Functions' -Resolve
+@(
+    $functionRoot,
+    (Join-Path -Path $functionRoot -ChildPath 'Operations' -Resolve),
+    (Join-Path -Path $functionRoot -ChildPath 'Columns' -Resolve)
+) | 
+    Get-ChildItem -Filter '*-*.ps1' |
     Where-Object { $_.BaseName -ne 'Export-Row' } |
     ForEach-Object { . $_.FullName }
 
-$publicFunctions = $publicFunctions | Select-Object -ExpandProperty 'BaseName'
-
-$publicFunctions += @(
+$publicFunctions = @(
                         'Add-CheckConstraint',
                         'Add-DataType',
                         'Add-DefaultConstraint',
