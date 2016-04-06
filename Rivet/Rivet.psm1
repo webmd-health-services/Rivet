@@ -42,11 +42,11 @@ if( -not (Test-TypeDataMember -TypeName 'Rivet.OperationResult' -MemberName 'Mig
 
 $publicFunctions = @()
 Invoke-Command -ScriptBlock {
-                                Get-ChildItem -Path $PSScriptRoot -Filter '*-*.ps1'
+                                Get-ChildItem -Path (Join-Path -Path $PSScriptRoot -ChildPath 'Functions' -Resolve) -Filter '*-*.ps1'
                                 Get-ChildItem -Path (Join-Path -Path $PSScriptRoot -ChildPath 'Operations' -Resolve) -Filter '*-*.ps1' |
                                     Tee-Object -Variable 'script:publicFunctions'
                             } |
-    Where-Object { $_.BaseName -ne 'Import-Rivet' -and $_.BaseName -ne 'Export-Row' } |
+    Where-Object { $_.BaseName -ne 'Export-Row' } |
     ForEach-Object { . $_.FullName }
 
 $publicFunctions = $publicFunctions | Select-Object -ExpandProperty 'BaseName'

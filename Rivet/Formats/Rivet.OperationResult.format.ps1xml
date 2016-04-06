@@ -1,61 +1,5 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <Configuration>
-    <Controls>
-        <Control>
-            <Name>RivetOperationResult-GroupingFormat</Name>
-            <CustomControl>
-                <CustomEntries>
-                    <CustomEntry>
-                        <CustomItem>
-                            <Frame>
-                                <LeftIndent>4</LeftIndent>
-                                <CustomItem>
-                                    <ExpressionBinding>
-                                        <ScriptBlock>
-                                            $dataSource = $_.Migration.DataSource
-                                            if( $dataSource )
-                                            {
-                                                $dataSource = '{0}.' -f $dataSource
-                                            }
-                                            '{0}{1}: {2}' -f $dataSource,$_.Migration.Database,$_.Migration.FullName
-                                        </ScriptBlock>
-                                    </ExpressionBinding>
-                                    <NewLine/>
-                                </CustomItem>
-                            </Frame>
-                        </CustomItem>
-                    </CustomEntry>
-                </CustomEntries>
-            </CustomControl>
-        </Control>
-        <Control>
-            <Name>RivetMigrationResult-GroupingFormat</Name>
-            <CustomControl>
-                <CustomEntries>
-                    <CustomEntry>
-                        <CustomItem>
-                            <Frame>
-                                <LeftIndent>4</LeftIndent>
-                                <CustomItem>
-                                    <ExpressionBinding>
-                                        <ScriptBlock>
-                                            $dataSource = $_.DataSource
-                                            if( $dataSource )
-                                            {
-                                                $dataSource = '{0}.' -f $dataSource
-                                            }
-                                            '{0}{1}' -f $dataSource,$_.Database
-                                        </ScriptBlock>
-                                    </ExpressionBinding>
-                                    <NewLine/>
-                                </CustomItem>
-                            </Frame>
-                        </CustomItem>
-                    </CustomEntry>
-                </CustomEntries>
-            </CustomControl>
-        </Control>
-    </Controls>
     <ViewDefinitions>
         <View>
             <Name>Rivet.OperationResult</Name>
@@ -178,55 +122,6 @@
                                         return $op.Value
                                     }
                                 </ScriptBlock>
-                            </TableColumnItem>
-                        </TableColumnItems>
-                    </TableRowEntry>
-                </TableRowEntries>
-            </TableControl>
-        </View>
-        <View>
-            <Name>Rivet.Migration</Name>
-            <ViewSelectedBy>
-                <TypeName>Rivet.Migration</TypeName>
-            </ViewSelectedBy>
-            <GroupBy>
-                <PropertyName>Database</PropertyName>
-                <CustomControlName>RivetMigrationResult-GroupingFormat</CustomControlName>
-            </GroupBy>
-            <TableControl>
-                <TableHeaders>
-                    <TableColumnHeader>
-                        <Label>ID</Label>
-                        <Width>14</Width>
-                    </TableColumnHeader>
-                    <TableColumnHeader>
-                        <Label>Name</Label>
-                    </TableColumnHeader>
-                    <TableColumnHeader>
-                        <Label>Push</Label>
-                        <Width>4</Width>
-                        <Alignment>Right</Alignment>
-                    </TableColumnHeader>
-                    <TableColumnHeader>
-                        <Label>Pull</Label>
-                        <Width>4</Width>
-                        <Alignment>Right</Alignment>
-                    </TableColumnHeader>
-                </TableHeaders>
-                <TableRowEntries>
-                    <TableRowEntry>
-                        <TableColumnItems>
-                            <TableColumnItem>
-                                <PropertyName>ID</PropertyName>
-                            </TableColumnItem>
-                            <TableColumnItem>
-                                <PropertyName>Name</PropertyName>
-                            </TableColumnItem>
-                            <TableColumnItem>
-                                <ScriptBlock>$_.PushOperations.Count</ScriptBlock>
-                            </TableColumnItem>
-                            <TableColumnItem>
-                                <ScriptBlock>$_.PopOperations.Count</ScriptBlock>
                             </TableColumnItem>
                         </TableColumnItems>
                     </TableRowEntry>
