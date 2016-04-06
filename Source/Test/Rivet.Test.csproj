@@ -62,6 +62,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\Properties\AssemblyVersion.cs">
+      <Link>AssemblyVersion.cs</Link>
+    </Compile>
     <Compile Include="ColumnTestFixture.cs" />
     <Compile Include="IndexNameTestFixture.cs" />
     <Compile Include="Operations\AddCheckConstraintOperationTestFixture.cs" />

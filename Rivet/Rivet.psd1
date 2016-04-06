@@ -8,7 +8,7 @@
 
 @{
     # Script module or binary module file associated with this manifest
-    ModuleToProcess = 'Rivet.psm1'
+    RootModule = 'Rivet.psm1'
 
     # Version number of this module.
     ModuleVersion = '0.6.1'
@@ -23,10 +23,12 @@
     CompanyName = ''
 
     # Copyright statement for this module
-    Copyright = '(c) 2013 Aaron Jensen. All rights reserved.'
+    Copyright = 'Copyright 2013 - 2016 Aaron Jensen.'
 
     # Description of the functionality provided by this module
-    Description = 'Database Migration Module'
+    Description = @'
+Rivet is a database migration/change management/versioning tool inspired by Ruby on Rails' Migrations. It creates and applies migration scripts for SQL Server databases. Migration scripts describe changes to make to your database, e.g. add a table, add a column, remove an index, etc. Migrations scripts should get added to your version control system so they can be packaged and deployed with your application's code.
+'@
 
     # Minimum version of the Windows PowerShell engine required by this module
     PowerShellVersion = ''
@@ -50,7 +52,7 @@
     RequiredModules = @()
 
     # Assemblies that must be loaded prior to importing this module
-    RequiredAssemblies = @( (Join-Path -Path $PSScriptRoot -ChildPath 'bin\Rivet.dll') )
+    RequiredAssemblies = @( 'bin\Rivet.dll' )
 
     # Script files (.ps1) that are run in the caller's environment prior to importing this module
     ScriptsToProcess = @()
@@ -59,7 +61,7 @@
     #TypesToProcess = ''
 
     # Format files (.ps1xml) to be loaded when importing this module
-    FormatsToProcess = @( (Join-Path -Path $PSScriptRoot -ChildPath 'Rivet.format.ps1xml' -Resolve) )
+    FormatsToProcess = @( 'Rivet.format.ps1xml' )
 
     # Modules to import as nested modules of the module specified in ModuleToProcess
     NestedModules = @()

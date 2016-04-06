@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<!--
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+   
+       http://www.apache.org/licenses/LICENSE-2.0
+   
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
+<package>
+  <metadata>
+    <id>Rivet</id>
+    <version>0.6.1</version>
+    <authors>Aaron Jensen</authors>
+    <owners>Aaron Jensen</owners>
+    <licenseUrl>http://www.apache.org/licenses/LICENSE-2.0</licenseUrl>
+    <projectUrl>http://get-rivet.org</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <summary>Rivet is an evolutionary database tool for writing and applying SQL Server database migration scripts.</summary>
+    <description>Rivet is a database migration/change management/versioning tool inspired by Ruby on Rails' Migrations. It creates and applies migration scripts for SQL Server databases. Migration scripts describe changes to make to your database, e.g. add a table, add a column, remove an index, etc. Migrations scripts should get added to your version control system so they can be packaged and deployed with your application's code.</description>
+    <language>en-us</language>
+    <releaseNotes>
+ </releaseNotes>
+    <copyright>Copyright 2013 - 2016 Aaron Jensen.</copyright>
+    <tags>sql-server evolutionary-database database migrations</tags>
+  </metadata>
+  <files>
+    <file src=".\Rivet\**\*" target="Rivet" exclude="**\*.pdb" />
+    <file src=".\Website\**\*" target="Website" />
+    <file src=".\Tools\chocolateyInstall.ps1" target="Tools" />
+    <file src=".\Tools\chocolateyUninstall.ps1" target="Tools" />
+    <file src=".\LICENSE.txt" target="" />
+    <file src=".\NOTICE.txt" target="" />
+    <file src=".\LICENSE.txt" target="Carbon" />
+    <file src=".\NOTICE.txt" target="Carbon" />
+    <file src=".\RELEASE_NOTES.txt" target="" />
+  </files>
+</package>
