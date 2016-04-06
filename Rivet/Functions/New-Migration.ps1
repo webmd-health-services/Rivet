@@ -32,7 +32,7 @@ function New-Migration
 
         $filename = '{0}_{1}.ps1' -f $id,$nameItem
 
-        $importRivetPath = Join-Path -Path $PSScriptRoot -ChildPath 'Import-Rivet.ps1' -Resolve
+        $importRivetPath = Join-Path -Path $PSScriptRoot -ChildPath '..\Import-Rivet.ps1' -Resolve
 
         $migrationPath = Join-Path -Path $Path -ChildPath $filename
         $migrationPath = [IO.Path]::GetFullPath( $migrationPath )
