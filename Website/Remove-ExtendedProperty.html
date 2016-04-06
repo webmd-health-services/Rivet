@@ -1,0 +1,131 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <title>PowerShell - Remove-ExtendedProperty - Rivet</title>
+    <link href="silk.css" type="text/css" rel="stylesheet" />
+	<link href="styles.css" type="text/css" rel="stylesheet" />
+</head>
+<body>
+
+    <ul id="SiteNav">
+		<li><a href="index.html">Get-Rivet</a></li>
+        <!--<li><a href="about_Carbon_Installation.html">-Install</a></li>-->
+		<li><a href="documentation.html">-Documentation</a></li>
+        <!--<li><a href="about_Carbon_Support.html">-Support</a></li>-->
+        <li><a href="releasenotes.html">-ReleaseNotes</a></li>
+		<li><a href="http://pshdo.com">-Blog</a></li>
+    </ul>
+
+    <h1>Remove-ExtendedProperty</h1>
+<div class="Synopsis">
+<p>Drops an extended property for a schema, table, or column.</p>
+</div>
+
+<h2>Syntax</h2>
+<pre class="Syntax"><code>Remove-ExtendedProperty [-Name] &lt;String&gt; [-SchemaName &lt;String&gt;] -ViewName &lt;String&gt; -ColumnName &lt;String&gt; [&lt;CommonParameters&gt;]</code></pre>
+<pre class="Syntax"><code>Remove-ExtendedProperty [-Name] &lt;String&gt; [-SchemaName &lt;String&gt;] -ViewName &lt;String&gt; [&lt;CommonParameters&gt;]</code></pre>
+<pre class="Syntax"><code>Remove-ExtendedProperty [-Name] &lt;String&gt; [-SchemaName &lt;String&gt;] -TableName &lt;String&gt; -ColumnName &lt;String&gt; [&lt;CommonParameters&gt;]</code></pre>
+<pre class="Syntax"><code>Remove-ExtendedProperty [-Name] &lt;String&gt; [-SchemaName &lt;String&gt;] -TableName &lt;String&gt; [&lt;CommonParameters&gt;]</code></pre>
+<pre class="Syntax"><code>Remove-ExtendedProperty [-Name] &lt;String&gt; [-SchemaName &lt;String&gt;] [&lt;CommonParameters&gt;]</code></pre>
+
+<h2>Description</h2>
+<div class="Description">
+<p>SQL Server has a special stored procedure for removing extended property metatdata about an object.  Unfortunately, it has a really clunky interface.  This function is an attempt to wrap <code>sp_dropextendedproperty</code> with a saner interface.</p>
+
+<p>Currently, this function only supports dropping properties for schemas, tables, and columns. Submit a patch!</p>
+</div>
+
+<h2>Related Commands</h2>
+
+<ul class="RelatedCommands">
+<li><a href="Add-Description.html">Add-Description</a></li>
+<li><a href="Add-ExtendedProperty.html">Add-ExtendedProperty</a></li>
+<li><a href="Remove-Description.html">Remove-Description</a></li>
+<li><a href="Update-Description.html">Update-Description</a></li>
+<li><a href="Update-ExtendedProperty.html">Update-ExtendedProperty</a></li>
+</ul>
+
+<h2> Parameters </h2>
+<table id="Parameters">
+<tr>
+	<th>Name</th>
+    <th>Type</th>
+	<th>Description</th>
+	<th>Required?</th>
+	<th>Pipeline Input</th>
+	<th>Default Value</th>
+</tr>
+<tr valign='top'>
+	<td>Name</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.string.aspx">String</a></td>
+	<td class="ParamDescription"><p>The name of the extended property to add.</p></td>
+	<td>true</td>
+	<td>false</td>
+    <td></td>
+</tr>
+<tr valign='top'>
+	<td>SchemaName</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.string.aspx">String</a></td>
+	<td class="ParamDescription"><p>The schema of the object.</p></td>
+	<td>false</td>
+	<td>false</td>
+    <td>dbo</td>
+</tr>
+<tr valign='top'>
+	<td>TableName</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.string.aspx">String</a></td>
+	<td class="ParamDescription"><p>The table name.</p></td>
+	<td>true</td>
+	<td>false</td>
+    <td></td>
+</tr>
+<tr valign='top'>
+	<td>ViewName</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.string.aspx">String</a></td>
+	<td class="ParamDescription"><p>The table name.</p></td>
+	<td>true</td>
+	<td>false</td>
+    <td></td>
+</tr>
+<tr valign='top'>
+	<td>ColumnName</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.string.aspx">String</a></td>
+	<td class="ParamDescription"><p>The column name.</p></td>
+	<td>true</td>
+	<td>false</td>
+    <td></td>
+</tr>
+
+</table>
+
+<h2>EXAMPLE 1</h2>
+<pre><code>Remove-ExtendedProperty -Name 'Deploy' -SchemaName 'spike'</code></pre>
+<p>Drops the custom <code>Deploy</code> metadata for the <code>spike</code> schema.</p>
+
+
+<h2>EXAMPLE 2</h2>
+<pre><code>Remove-ExtendedProperty -Name 'Deploy' -TableName 'Food'</code></pre>
+<p>Drops the custom <code>Deploy</code> metadata on the <code>Food</code> table in the <code>dbo</code> schema.</p>
+
+
+<h2>EXAMPLE 3</h2>
+<pre><code>Remove-ExtendedProperty -Name 'IsEncrypted' -TableName 'User' -ColumnName 'Password'</code></pre>
+<p>Drops the custom <code>IsEncrypted</code> metadata on the <code>User</code> table's <code>Password</code> column.</p>
+
+
+<h2>EXAMPLE 4</h2>
+<pre><code>Remove-ExtendedProperty -Name 'ContainsPII' -View 'LoggedInUsers'</code></pre>
+<p>Demonstrates how to remove custom metadata on the <code>LoggedInUsers</code> view</p>
+
+
+<h2>EXAMPLE 5</h2>
+<pre><code>Remove-ExtendedProperty -Name 'IsEncrypted' -View 'LoggedInUsers' -ColumnName 'Password'</code></pre>
+<p>Demonstrates how to remove custom metadata for a view's column</p>
+
+
+	<div class="Footer">
+		Copyright 2013 - 2016 <a href="http://pshdo.com">Aaron Jensen</a>.
+	</div>
+
+</body>
+</html>

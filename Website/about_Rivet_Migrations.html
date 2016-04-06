@@ -1,0 +1,161 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <title>PowerShell - about_Rivet_Migrations - Rivet</title>
+    <link href="silk.css" type="text/css" rel="stylesheet" />
+	<link href="styles.css" type="text/css" rel="stylesheet" />
+</head>
+<body>
+
+    <ul id="SiteNav">
+		<li><a href="index.html">Get-Rivet</a></li>
+        <!--<li><a href="about_Carbon_Installation.html">-Install</a></li>-->
+		<li><a href="documentation.html">-Documentation</a></li>
+        <!--<li><a href="about_Carbon_Support.html">-Support</a></li>-->
+        <li><a href="releasenotes.html">-ReleaseNotes</a></li>
+		<li><a href="http://pshdo.com">-Blog</a></li>
+    </ul>
+
+        <h1>about_Rivet_migrations</h1>
+
+    <p>Explains how to write Rivet migrations.</p>
+
+    <h2>Description</h2>
+<h2>Variables</h2>
+
+<p>You can use the following special variables in your <code>Push-Migration</code> and 
+<code>Pop-Migration</code> functions:</p>
+
+<ul>
+<li><code>$DBScriptRoot</code>: the path to the script root directory of the database you're 
+migrating.</li>
+</ul>
+
+<h2>Tables</h2>
+
+<p>The following functions are available for managing tables:</p>
+
+<ul>
+<li>Add-Table</li>
+<li>Remove-Table </li>
+</ul>
+
+<p>The <code>Add-(DataType)Column</code>'s  <code>Column</code> parameter is a script block that should 
+return columns as column objects, e.g.,</p>
+
+<pre><code>Add-Table Customer {
+    Int 'ID' -Identity
+    NVarChar 'Name' -NotNull
+    Int 'ZipCode' -NotNull
+}
+</code></pre>
+
+<h2>Columns</h2>
+
+<ul>
+<li>Update-Table</li>
+<li>Remove-Column</li>
+</ul>
+
+<h2>Code Objects</h2>
+
+<p>The following functions will remove objects of the specified type.  Use the 
+<code>IfExists</code> flag to only delete the object if it exists.</p>
+
+<ul>
+<li>Remove-StoredProcedure </li>
+<li>Remove-UserDefinedFunction </li>
+<li>Remove-View </li>
+</ul>
+
+<h2>Executing Code Object Scripts</h2>
+
+<p>Stored procedures, user-defined functions, views and other database objects are 
+usually stored in external script files, which are executed against the database 
+to create/update the object.  In some cases, it can take a long time to run all 
+your code object scripts, so it can be useful to included updated/new scripts in a 
+migration.  Rivet assumes scripts for object types are stored under 
+<code>$DBScriptRoot</code> in directories with the following names: </p>
+
+<ul>
+<li>Stored Procedures</li>
+<li>User-Defined Functions</li>
+<li>Views</li>
+</ul>
+
+<p>Under these directories, scripts should be stored per-object in files named after 
+the object.  For example, if you have stored procedure <code>InsertIntoFoo</code>, it should 
+be saved in <code>$DBScriptRoot\Stored Procedures\InsertIntoFoo.sql</code>.  If your script 
+is in a schema other than <code>dbo</code>, the file's name should be prefixed with the 
+schema.  For example, if your stored procedure <code>InsertIntoFoo</code> is in the <code>bar</code> 
+schema, it should be saved in <code>$DBScriptRoot\Stored 
+Procedures\bar.InsertIntoFoo.sql</code>.</p>
+
+<p>Use these functions to run the script for a code object:</p>
+
+<pre><code>Set-StoredProcedure -Name &lt;string&gt; [-Schema &lt;string&gt;]
+
+Set-UserDefinedFunction -Name &lt;string&gt; [-Schema &lt;string&gt;]
+
+Set-View -Name &lt;string&gt; [-Schema &lt;string&gt;]
+</code></pre>
+
+<p>To execute an arbitrary SQL script, use <a href="Invoke-SqlScript.html">Invoke-SqlScript</a>:</p>
+
+<pre><code>Invoke-SqlScript -Path &lt;string&gt;
+</code></pre>
+
+<p>If the <code>Path</code> argument is a relative path, the full path to the SQL script is 
+resolved from the directory of the migration script.  For example, if your 
+database's migrations directory is 
+<code>C:\Projects\Rivet\Databases\RivetTest\Migrations</code>, this path:</p>
+
+<pre><code>Invoke-SqlScript -Path ..\Miscellaneous\CreateDesertedIsland.sql
+</code></pre>
+
+<p>would resolve to 
+<code>C:\Projects\Rivet\Databases\RivetTest\Miscellaneous\CreatedDesertedIsland.sql</code>.</p>
+
+<h2>Raw SQL</h2>
+
+<p>When none of the functions above will do the trick, use the <code>Invoke-Query</code> 
+function to execute raw SQL:</p>
+
+<pre><code>Invoke-Query -Query &lt;string&gt;
+</code></pre>
+
+<p>You can use a PowerShell here string for longer queries and so you don't have to 
+escape quotes:</p>
+
+<pre><code>Invoke-Query -Query @'
+    -- SQL goes here.  You don't have to escape single quotes.
+'@  # '@ must be the first two characters on the line to close the string.
+</code></pre>
+<h2>See Also</h2>
+    <ul>
+        <li><a href="Add-Description.html">Add-Description</a></li>
+<li><a href="Add-Table.html">Add-Table</a></li>
+<li>Invoke-Query</li>
+<li><a href="Invoke-SqlScript.html">Invoke-SqlScript</a></li>
+<li><a href="New-Column.html">New-Column</a></li>
+<li>Remove-Column</li>
+<li><a href="Remove-Description.html">Remove-Description</a></li>
+<li><a href="Remove-StoredProcedure.html">Remove-StoredProcedure</a></li>
+<li><a href="Remove-Table.html">Remove-Table</a></li>
+<li><a href="Remove-UserDefinedFunction.html">Remove-UserDefinedFunction</a></li>
+<li><a href="Remove-View.html">Remove-View</a></li>
+<li>Set-StoredProcedure</li>
+<li>Set-UserDefinedFunction</li>
+<li>Set-View</li>
+<li><a href="Update-Description.html">Update-Description</a></li>
+<li><a href="Update-Table.html">Update-Table</a></li>
+    </ul>
+
+
+
+	<div class="Footer">
+		Copyright 2013 - 2016 <a href="http://pshdo.com">Aaron Jensen</a>.
+	</div>
+
+</body>
+</html>

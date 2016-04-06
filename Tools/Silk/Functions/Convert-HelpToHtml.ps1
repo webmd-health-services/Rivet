@@ -137,9 +137,9 @@ function Convert-HelpToHtml
 
             if( -not $Syntax )
             {
-                $help.Syntax |
-                    Where-Object { [IO.Path]::IsPathRooted($_.syntaxItem.name) } |
-                    ForEach-Object { $_.syntaxItem.Name = Split-Path -Leaf -Path $_.syntaxItem.name }
+                $help.Syntax.syntaxItem |
+                    Where-Object { [IO.Path]::IsPathRooted($_.name) } |
+                    ForEach-Object { $_.Name = Split-Path -Leaf -Path $_.name }
 
                 $Syntax = $help.Syntax | Out-HtmlString | Format-ForHtml | ForEach-Object { $_ -split "`n" }
             }

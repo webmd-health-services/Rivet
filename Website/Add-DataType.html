@@ -1,0 +1,130 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <title>PowerShell - Add-DataType - Rivet</title>
+    <link href="silk.css" type="text/css" rel="stylesheet" />
+	<link href="styles.css" type="text/css" rel="stylesheet" />
+</head>
+<body>
+
+    <ul id="SiteNav">
+		<li><a href="index.html">Get-Rivet</a></li>
+        <!--<li><a href="about_Carbon_Installation.html">-Install</a></li>-->
+		<li><a href="documentation.html">-Documentation</a></li>
+        <!--<li><a href="about_Carbon_Support.html">-Support</a></li>-->
+        <li><a href="releasenotes.html">-ReleaseNotes</a></li>
+		<li><a href="http://pshdo.com">-Blog</a></li>
+    </ul>
+
+    <h1>Add-DataType</h1>
+<div class="Synopsis">
+<p>Creates an alias or user-defined type.</p>
+</div>
+
+<h2>Syntax</h2>
+<pre class="Syntax"><code>Add-DataType [-SchemaName &lt;String&gt;] [-Name] &lt;String&gt; [-From] &lt;String&gt; [&lt;CommonParameters&gt;]</code></pre>
+<pre class="Syntax"><code>Add-DataType [-SchemaName &lt;String&gt;] [-Name] &lt;String&gt; -AssemblyName &lt;String&gt; -ClassName &lt;String&gt; [&lt;CommonParameters&gt;]</code></pre>
+<pre class="Syntax"><code>Add-DataType [-SchemaName &lt;String&gt;] [-Name] &lt;String&gt; -AsTable &lt;ScriptBlock&gt; [-TableConstraint &lt;String[]&gt;] [&lt;CommonParameters&gt;]</code></pre>
+
+<h2>Description</h2>
+<div class="Description">
+<p>There are three different user-defined data types. The first is an alias, from a name you choose to a system datatype.  The second is an assembly type, which uses a type stored in a .NET assembly.  The third is a table data type, which create a type for a table.</p>
+</div>
+
+<h2>Related Commands</h2>
+
+<ul class="RelatedCommands">
+<li><a href="Remove-DataType.html">Remove-DataType</a></li>
+<li><a href="http://technet.microsoft.com/en-us/library/ms175007.aspx">http://technet.microsoft.com/en-us/library/ms175007.aspx</a></li>
+</ul>
+
+<h2> Parameters </h2>
+<table id="Parameters">
+<tr>
+	<th>Name</th>
+    <th>Type</th>
+	<th>Description</th>
+	<th>Required?</th>
+	<th>Pipeline Input</th>
+	<th>Default Value</th>
+</tr>
+<tr valign='top'>
+	<td>SchemaName</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.string.aspx">String</a></td>
+	<td class="ParamDescription"><p>The schema for the type. Default is <code>dbo</code>.</p></td>
+	<td>false</td>
+	<td>false</td>
+    <td>dbo</td>
+</tr>
+<tr valign='top'>
+	<td>Name</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.string.aspx">String</a></td>
+	<td class="ParamDescription"><p>The name of the type.</p></td>
+	<td>true</td>
+	<td>false</td>
+    <td></td>
+</tr>
+<tr valign='top'>
+	<td>From</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.string.aspx">String</a></td>
+	<td class="ParamDescription"><p>The system type to alias.</p></td>
+	<td>true</td>
+	<td>false</td>
+    <td></td>
+</tr>
+<tr valign='top'>
+	<td>AssemblyName</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.string.aspx">String</a></td>
+	<td class="ParamDescription"><p>The name of the assembly for the type's implementation.</p></td>
+	<td>true</td>
+	<td>false</td>
+    <td></td>
+</tr>
+<tr valign='top'>
+	<td>ClassName</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.string.aspx">String</a></td>
+	<td class="ParamDescription"><p>The name of the type's class implementation.</p></td>
+	<td>true</td>
+	<td>false</td>
+    <td></td>
+</tr>
+<tr valign='top'>
+	<td>AsTable</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.management.automation.scriptblock.aspx">ScriptBlock</a></td>
+	<td class="ParamDescription"><p>A <code>ScriptBlock</code> which returns columns for the table.</p></td>
+	<td>true</td>
+	<td>false</td>
+    <td></td>
+</tr>
+<tr valign='top'>
+	<td>TableConstraint</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.string.aspx">String[]</a></td>
+	<td class="ParamDescription"><p>A list of table constraints for a table-based data type.</p></td>
+	<td>false</td>
+	<td>false</td>
+    <td></td>
+</tr>
+
+</table>
+
+<h2>EXAMPLE 1</h2>
+<pre><code>Add-DataType 'GUID' 'uniqueidentifier'</code></pre>
+<p>Demonstrates how to create a new alias data type called <code>GUID</code> which aliases the system <code>uniqueidentifier</code>.</p>
+
+
+<h2>EXAMPLE 2</h2>
+<pre><code>Add-DataType 'Names' -AsTable { varchar 'Name' 50 } -TableConstraint 'primary key'</code></pre>
+<p>Demonstrates how to create a new table-based data type.</p>
+
+
+<h2>EXAMPLE 3</h2>
+<pre><code>Add-DataType 'RivetDateTime' -AssemblyName 'Rivet' -ClassName 'Rivet.RivetDateTime'</code></pre>
+<p>Demonstrates how to create a <code>RivetDateTime</code> type that references the <code>Rivet.RivetDateTime</code> class.  The <code>Rivet</code> assembly must first be registered using <code>create assembly</code>.</p>
+
+
+	<div class="Footer">
+		Copyright 2013 - 2016 <a href="http://pshdo.com">Aaron Jensen</a>.
+	</div>
+
+</body>
+</html>

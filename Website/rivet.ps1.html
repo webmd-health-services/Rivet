@@ -1,0 +1,228 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <title>PowerShell - rivet.ps1 - Rivet</title>
+    <link href="silk.css" type="text/css" rel="stylesheet" />
+	<link href="styles.css" type="text/css" rel="stylesheet" />
+</head>
+<body>
+
+    <ul id="SiteNav">
+		<li><a href="index.html">Get-Rivet</a></li>
+        <!--<li><a href="about_Carbon_Installation.html">-Install</a></li>-->
+		<li><a href="documentation.html">-Documentation</a></li>
+        <!--<li><a href="about_Carbon_Support.html">-Support</a></li>-->
+        <li><a href="releasenotes.html">-ReleaseNotes</a></li>
+		<li><a href="http://pshdo.com">-Blog</a></li>
+    </ul>
+
+    <h1>rivet.ps1</h1>
+<div class="Synopsis">
+<p>A database migration tool for PowerShell.</p>
+</div>
+
+<h2>Syntax</h2>
+<pre class="Syntax"><code>rivet.ps1 [-WhatIf] [-Confirm] [&lt;CommonParameters&gt;]</code></pre>
+<pre class="Syntax"><code>rivet.ps1 -New [-Name] &lt;String[]&gt; [[-Database] &lt;String[]&gt;] [-Environment &lt;String&gt;] [-ConfigFilePath &lt;String&gt;] [-WhatIf] [-Confirm] [&lt;CommonParameters&gt;]</code></pre>
+<pre class="Syntax"><code>rivet.ps1 -Push [[-Name] &lt;String[]&gt;] [-Database &lt;String[]&gt;] [-Environment &lt;String&gt;] [-ConfigFilePath &lt;String&gt;] [-WhatIf] [-Confirm] [&lt;CommonParameters&gt;]</code></pre>
+<pre class="Syntax"><code>rivet.ps1 -Pop -All [-Force] [-Database &lt;String[]&gt;] [-Environment &lt;String&gt;] [-ConfigFilePath &lt;String&gt;] [-WhatIf] [-Confirm] [&lt;CommonParameters&gt;]</code></pre>
+<pre class="Syntax"><code>rivet.ps1 -Pop [-Name] &lt;String[]&gt; [-Force] [-Database &lt;String[]&gt;] [-Environment &lt;String&gt;] [-ConfigFilePath &lt;String&gt;] [-WhatIf] [-Confirm] [&lt;CommonParameters&gt;]</code></pre>
+<pre class="Syntax"><code>rivet.ps1 -Pop [-Count] &lt;UInt32&gt; [-Force] [-Database &lt;String[]&gt;] [-Environment &lt;String&gt;] [-ConfigFilePath &lt;String&gt;] [-WhatIf] [-Confirm] [&lt;CommonParameters&gt;]</code></pre>
+<pre class="Syntax"><code>rivet.ps1 -Pop [-Force] [-Database &lt;String[]&gt;] [-Environment &lt;String&gt;] [-ConfigFilePath &lt;String&gt;] [-WhatIf] [-Confirm] [&lt;CommonParameters&gt;]</code></pre>
+<pre class="Syntax"><code>rivet.ps1 -Redo [-Database &lt;String[]&gt;] [-Environment &lt;String&gt;] [-ConfigFilePath &lt;String&gt;] [-WhatIf] [-Confirm] [&lt;CommonParameters&gt;]</code></pre>
+
+<h2>Description</h2>
+<div class="Description">
+<p>Rivet is a database migration tool for SQL Server.  Finally!</p>
+
+<p>This script is the entry point for Rivet.  It is used to create a new migration, and apply/revert migrations against a database.</p>
+
+<p>Called without any arguments, Rivet will shows this help topic.</p>
+</div>
+
+<h2>Related Commands</h2>
+
+<ul class="RelatedCommands">
+<li><a href="about_Rivet.html">about_Rivet</a></li>
+<li><a href="about_Rivet_Configuration.html">about_Rivet_Configuration</a></li>
+<li><a href="about_Rivet_Migrations.html">about_Rivet_Migrations</a></li>
+</ul>
+
+<h2> Parameters </h2>
+<table id="Parameters">
+<tr>
+	<th>Name</th>
+    <th>Type</th>
+	<th>Description</th>
+	<th>Required?</th>
+	<th>Pipeline Input</th>
+	<th>Default Value</th>
+</tr>
+<tr valign='top'>
+	<td>New</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.management.automation.switchparameter.aspx">SwitchParameter</a></td>
+	<td class="ParamDescription"><p>Creates a new migration.</p></td>
+	<td>true</td>
+	<td>false</td>
+    <td>False</td>
+</tr>
+<tr valign='top'>
+	<td>Push</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.management.automation.switchparameter.aspx">SwitchParameter</a></td>
+	<td class="ParamDescription"><p>Applies migrations.</p></td>
+	<td>true</td>
+	<td>false</td>
+    <td>False</td>
+</tr>
+<tr valign='top'>
+	<td>Pop</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.management.automation.switchparameter.aspx">SwitchParameter</a></td>
+	<td class="ParamDescription"><p>Reverts migrations.</p></td>
+	<td>true</td>
+	<td>false</td>
+    <td>False</td>
+</tr>
+<tr valign='top'>
+	<td>Redo</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.management.automation.switchparameter.aspx">SwitchParameter</a></td>
+	<td class="ParamDescription"><p>Reverts a migration, then re-applies it.</p></td>
+	<td>true</td>
+	<td>false</td>
+    <td>False</td>
+</tr>
+<tr valign='top'>
+	<td>Name</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.string.aspx">String[]</a></td>
+	<td class="ParamDescription"><p>The name of the migrations to create, push, or pop. Matches against the migration's ID, Name, or file name (without extension). Wildcards permitted.</p></td>
+	<td>true</td>
+	<td>false</td>
+    <td></td>
+</tr>
+<tr valign='top'>
+	<td>Count</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.uint32.aspx">UInt32</a></td>
+	<td class="ParamDescription"><p>The number of migrations to pop. Default is 1.</p></td>
+	<td>true</td>
+	<td>false</td>
+    <td>1</td>
+</tr>
+<tr valign='top'>
+	<td>All</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.management.automation.switchparameter.aspx">SwitchParameter</a></td>
+	<td class="ParamDescription"><p>Pop all migrations</p></td>
+	<td>true</td>
+	<td>false</td>
+    <td>False</td>
+</tr>
+<tr valign='top'>
+	<td>Force</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.management.automation.switchparameter.aspx">SwitchParameter</a></td>
+	<td class="ParamDescription"><p>Force popping a migration you didn't apply or that is old.</p></td>
+	<td>false</td>
+	<td>false</td>
+    <td>False</td>
+</tr>
+<tr valign='top'>
+	<td>Database</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.string.aspx">String[]</a></td>
+	<td class="ParamDescription"><p>The database(s) to migrate. Optional.  Will operate on all databases otherwise.</p></td>
+	<td>false</td>
+	<td>false</td>
+    <td></td>
+</tr>
+<tr valign='top'>
+	<td>Environment</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.string.aspx">String</a></td>
+	<td class="ParamDescription"><p>The environment you're working in.  Controls which settings Rivet loads from the <code>rivet.json</code> configuration file.</p></td>
+	<td>false</td>
+	<td>false</td>
+    <td></td>
+</tr>
+<tr valign='top'>
+	<td>ConfigFilePath</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.string.aspx">String</a></td>
+	<td class="ParamDescription"><p>The path to the Rivet configuration file.  Default behavior is to look in the current directory for a <code>rivet.json</code> file.  See <code>about_Rivet_Configuration</code> for more information.</p></td>
+	<td>false</td>
+	<td>false</td>
+    <td></td>
+</tr>
+<tr valign='top'>
+	<td>WhatIf</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.management.automation.switchparameter.aspx">SwitchParameter</a></td>
+	<td class="ParamDescription"></td>
+	<td>false</td>
+	<td>false</td>
+    <td></td>
+</tr>
+<tr valign='top'>
+	<td>Confirm</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.management.automation.switchparameter.aspx">SwitchParameter</a></td>
+	<td class="ParamDescription"></td>
+	<td>false</td>
+	<td>false</td>
+    <td></td>
+</tr>
+<tr valign="top">
+    <td><a href="http://technet.microsoft.com/en-us/library/dd315352.aspx">CommonParameters</a></td>
+    <td></td>
+    <td>This cmdlet supports common parameters.  For more information type <br> <code>Get-Help about_CommonParameters</code>.</td>
+    <td></td>
+    <td></td>
+    <td></td>
+</tr>
+</table>
+
+<h2>EXAMPLE 1</h2>
+<pre><code>rivet.ps1 -New 'CreateTableStarships'</code></pre>
+<p>Creates a new <code>CreateTableStarships</code> migration in all databases.</p>
+
+
+<h2>EXAMPLE 2</h2>
+<pre><code>rivet.ps1 -Push</code></pre>
+<p>Applies all migrations.</p>
+
+
+<h2>EXAMPLE 3</h2>
+<pre><code>rivet.ps1 -Push 'CreateTableStarships'</code></pre>
+<p>Demonstrates how to apply a named migration.  Don't include the timestamp.  Wildcards are permitted.  </p>
+
+<p><em>Be careful with this syntax!</em>  If the named migration(s) depend on other migrations that haven't been run, the migration will fail.</p>
+
+
+<h2>EXAMPLE 4</h2>
+<pre><code>rivet.ps1 -Pop</code></pre>
+<p>Reverts the last migration script.</p>
+
+
+<h2>EXAMPLE 5</h2>
+<pre><code>rivet.ps1 -Pop 5</code></pre>
+<p>Demonstrates how to revert multiple migrations.  The last <code>-Count</code> migrations will be popped.</p>
+
+
+<h2>EXAMPLE 6</h2>
+<pre><code>rivet.ps1 -Pop 'AddTable'</code></pre>
+<p>Demonstrates how to pop a specific migration.  Wildcards supported.  Will match either the migration's name or ID.</p>
+
+
+<h2>EXAMPLE 7</h2>
+<pre><code>rivet.ps1 -Redo</code></pre>
+<p>Reverts the last migration script, then reapplies its.  Equivalent to </p>
+
+<pre><code>rivet.ps1 -Pop
+rivet.ps1 -Push
+</code></pre>
+
+
+<h2>EXAMPLE 8</h2>
+<pre><code>rivet.ps1 -Push -Environment Production</code></pre>
+<p>Demonstrates how to migrate databases in a different environment.  The <code>Production</code> environment should be specified in the <code>rivet.json</code> configuration file.</p>
+
+<p>Requires -Version 3</p>
+
+
+	<div class="Footer">
+		Copyright 2013 - 2016 <a href="http://pshdo.com">Aaron Jensen</a>.
+	</div>
+
+</body>
+</html>

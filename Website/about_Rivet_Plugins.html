@@ -1,0 +1,136 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <title>PowerShell - about_Rivet_Plugins - Rivet</title>
+    <link href="silk.css" type="text/css" rel="stylesheet" />
+	<link href="styles.css" type="text/css" rel="stylesheet" />
+</head>
+<body>
+
+    <ul id="SiteNav">
+		<li><a href="index.html">Get-Rivet</a></li>
+        <!--<li><a href="about_Carbon_Installation.html">-Install</a></li>-->
+		<li><a href="documentation.html">-Documentation</a></li>
+        <!--<li><a href="about_Carbon_Support.html">-Support</a></li>-->
+        <li><a href="releasenotes.html">-ReleaseNotes</a></li>
+		<li><a href="http://pshdo.com">-Blog</a></li>
+    </ul>
+
+        <h1>about_Rivet_Plugins</h1>
+
+    <p>Explains the Rivet plug-in system</p>
+
+    <h2>Description</h2>
+<p>Rivet plug-ins allow users to modify migration operations or perform other work 
+before and after an operation is applied to a database.  Examples include:</p>
+
+<ul>
+<li>Validating that all tables/columns have descriptions.</li>
+<li>Automatically adding created and last updated columns to each new table.</li>
+<li>Validating that any raw SQL doesn't include a <code>USE</code> statement.</li>
+<li>Preventing certain operations from being used, e.g. <a href="Rename-Column.html">Rename-Column</a>.</li>
+<li>Customizing constraint and index names.</li>
+</ul>
+
+<p>There are two plug-in points: before an operation is applied to a database and 
+after an operation is applied to a database.</p>
+
+<p>In order to cancel a migration, a plug-in <em>must throw an exception</em>. For example,</p>
+
+<pre><code>throw ('Operation is invalid: all tables are required to specify a description. Use the -Description parameter to document this table''s purpose.')
+</code></pre>
+
+<p>To enable plug-ins, you need to configure Rivet so it knows where to look for 
+them. Set the <code>plug-insRoot</code> option to the directory path where you want to put 
+your plug-ins. For example,</p>
+
+<pre><code>{
+    "SqlServerName":  "example.com\Rivet",
+    "DatabasesRoot":  "Databases",
+    "PluginsRoot":  "Tools\\Rivet\\Plugins"
+}
+</code></pre>
+
+<p>Paths in rivet.json files are relative to the rivet.json file. See 
+<a href="about_Rivet_Configuration.html">about_Rivet_Configuration</a> for more information.</p>
+
+<p>Once you've defined your plug-ins directory, you create the plug-in scripts. To 
+run code <em>before</em> an operation is applied to database, create a 
+<code>Start-MigrationOperation.ps1</code> script in your plug-ins directory. It should look 
+like this:</p>
+
+<pre><code>function Start-MigrationOperation
+{
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory=$true)]
+        [Rivet.Migration]
+        # The migration the operation is part of.
+        $Migration,
+
+        [Parameter(Mandatory=$true)]
+        [Rivet.Operation]
+        # The operation which is about to be applied.
+        $Operation
+    )
+
+    Set-StrictMode -Version 'Latest'
+
+    # Your plug-in logic goes here.
+}
+</code></pre>
+
+<p>To run code <em>after</em> an operation is applied to a database, create a 
+<code>Complete-MigrationOperation.ps1</code> script in your plug-ins directory. It should 
+look like this:</p>
+
+<pre><code>function Complete-MigrationOperation
+{
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory=$true)]
+        [Rivet.Migration]
+        # The migration the operation is part of.
+        $Migration,
+
+        [Parameter(Mandatory=$true)]
+        [Rivet.Operation]
+        # The operation which was just applied.
+        $Operation
+    )
+
+    Set-StrictMode -Version 'Latest'
+
+    # Your plug-in logic goes here.
+}
+</code></pre>
+
+<p>Rivet ships with some sample plug-ins. Look in the <code>Extras</code> directory.</p>
+
+<p>Each plug-in should have two parameters: the first is a <code>Rivet.Migration</code> 
+object representing the migration getting run. The second is a 
+<code>Rivet.Operation</code> object representing the specific operation getting run. Each 
+plug-in will get called for each operation in a migration. You'll get the same 
+migration object for each operation in that migration.</p>
+
+<p>Each operation in Rivet is represented by a unique C# object that you 
+can modify. You can't remove operations from being run. Instead, throw an 
+exception to reject the operation. You are allowed to run additional operations 
+and/or return additional C# operation objects. See the sample plug-ins in the 
+Extras directory that ships with Rivet.</p>
+<h2>See Also</h2>
+    <ul>
+        <li>about_Rivet  </li>
+<li>about_Rivet_Configuration  </li>
+<li>about_Rivet_Intellisense  </li>
+<li><a href="about_Rivet_Migrations.html">about_Rivet_Migrations</a></li>
+    </ul>
+
+
+
+	<div class="Footer">
+		Copyright 2013 - 2016 <a href="http://pshdo.com">Aaron Jensen</a>.
+	</div>
+
+</body>
+</html>

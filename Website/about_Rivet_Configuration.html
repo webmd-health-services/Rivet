@@ -1,0 +1,220 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <title>PowerShell - about_Rivet_Configuration - Rivet</title>
+    <link href="silk.css" type="text/css" rel="stylesheet" />
+	<link href="styles.css" type="text/css" rel="stylesheet" />
+</head>
+<body>
+
+    <ul id="SiteNav">
+		<li><a href="index.html">Get-Rivet</a></li>
+        <!--<li><a href="about_Carbon_Installation.html">-Install</a></li>-->
+		<li><a href="documentation.html">-Documentation</a></li>
+        <!--<li><a href="about_Carbon_Support.html">-Support</a></li>-->
+        <li><a href="releasenotes.html">-ReleaseNotes</a></li>
+		<li><a href="http://pshdo.com">-Blog</a></li>
+    </ul>
+
+        <h1>about_Rivet_Configuration</h1>
+
+    <p>Explains the Rivet configuration file.</p>
+
+    <h2>Description</h2>
+<h2>Overview</h2>
+
+<p>Rivet pulls the many settings it needs from a JSON configuration file called 
+<code>rivet.json</code>.  By default, Rivet will look in the current directory for the 
+<code>rivet.json</code> file.  The <code>rivet.ps1</code> script allows you to pass in the path to your 
+own configuration file.</p>
+
+<p>The <code>rivet.json</code> file is written in JSON, because I don't like XML.  Make sure all 
+<code>\</code> (i.e. backspace) characters get escaped (e.g. <code>\\</code>).  Comments are not allowed.</p>
+
+<p>All non-absolute paths in the <code>rivet.json</code> file are resolved as relative to the 
+file itself.  For example, if a setting's path is <code>Databases</code>, and the 
+<code>rivet.json</code> file is in the <code>C:\Projects\Rivet\Test</code> directory, the setting's 
+value will be resolved to <code>C:\Projects\Rivet\Test\Databases</code>.</p>
+
+<h2>Environments</h2>
+
+<p>You will most likely have many environments where Rivet will run.  At a minimum, 
+each environment will have a different SQL Server instance.  To support multiple 
+environments, the <code>rivet.json</code> file uses a special <code>Environments</code> setting, which 
+is a hash of environments, where the key is the environment's name and the value 
+is another hash of settings for that environment. These environment settings 
+override the base/default settings.  If an environment doesn't specify a setting, 
+the base/default setting is used.</p>
+
+<pre><code>{
+    SqlServerName: '.\Rivet',
+    DatabasesRoot: 'Databases',
+    Environments: 
+    {
+        Production:
+        {
+            SqlServerName: 'proddb\Rivet',
+        }
+    }
+}
+</code></pre>
+
+<p>In this example, we've defined a <code>Production</code> environment which overrides the 
+<code>SqlServerName</code> setting.</p>
+
+<h2>Settings</h2>
+
+<h3>CommandTimeout</h3>
+
+<p>The amount of time, in seconds, to wait for a command to complete.  The default is 
+30 seconds.</p>
+
+<h3>ConnectionTimeout</h3>
+
+<p>The amount of time, in seconds, to wait for a database connection to open.  The 
+default is 15 seconds.</p>
+
+<h3>DatabasesRoot</h3>
+
+<p>Rivet assumes a database's migration scripts are stored together.  in 
+<code>$DatabasesRoot\$DatabaseName\Migrations</code>.  So, <code>$DatabasesRoot</code> should point to 
+the directory which contains the directories for each database.  For example, 
+given this directory structure:</p>
+
+<pre><code>* rivet.json
++ Databases
+  + Rivet
+    + Migrations
+  + RivetTest
+    + Migrations
+</code></pre>
+
+<p>You can see directories for the <a href="Invoke-Rivet.html">Rivet</a> and <code>RivetTest</code> databases under the 
+<code>Databases</code> directory.  So, you'll set the <code>DatabasesRoot</code> setting to <code>Databases</code>.</p>
+
+<p>Rivet assumes there is a one-to-one mapping between the directories under 
+<code>DatabasesRoot</code> and a database on the SQL Server.  If this is not the case, and 
+you'd like to exclude/ignore a directory under <code>DatabasesRoot</code>, use the 
+<code>IgnoreDatabases</code> setting.</p>
+
+<h3>Environments</h3>
+
+<p>A hash of environments, where they key is the environment's name, and the value is 
+another hash of settings for that environment. These environment settings override 
+the base/default settings.  If an environment doesn't specify a setting, the 
+base/default setting is used.</p>
+
+<h3>IgnoreDatabases</h3>
+
+<p>A list of database names to ignore/exclude from the Rivet.  This is useful if you 
+have a directory  under <code>DatabasesRoot</code> that doesn't contain a database's 
+scripts.  Wildcards are allowed, e.g. <code>Shared*</code> would exclude all directories 
+under <code>DatabasesRoot</code> that begin with the word <code>Shared</code>.</p>
+
+<h3>PluginsRoot</h3>
+
+<p>This should point to the directory which contains the directory for which plugins 
+should be stored.  For example, given this directory structure:</p>
+
+<pre><code>* rivet.json
++Databases
++Plugins
+</code></pre>
+
+<p>PluginsRoot should point to the "Plugins" directory</p>
+
+<h3>SqlServerName</h3>
+
+<p>The name of the SQL Server to connect to.</p>
+
+<h3>TargetDatabases</h3>
+
+<p>This setting maps database names to lists of target databases. Use this setting if 
+you need to deploy the same migrations to multiple databases, but don't want to 
+duplicate the migration. Should be a hashtable whose key is the name of the 
+database's scripts directory on the file system, and whose value is an array of 
+target database names those scripts should be applied to, e.g.</p>
+
+<pre><code>{
+    "TargetDatabases": {
+                            "Database1": [ "Database1", "DAtabase2" ]
+                       }
+}
+</code></pre>
+
+<p>In the above example, scripts in the <code>Database1</code> directory will be applied to the 
+<code>Database1</code> <em>and</em> <code>Database2</code> databases.</p>
+
+<h2>Examples</h2>
+
+<h3>Example 1</h3>
+
+<pre><code>{
+    SqlServerName: '.\\Rivet',
+    DatabasesRoot: 'Databases'
+}
+</code></pre>
+
+<p>This example demonstrates the simplest configuration file. This configuration file 
+will cause Rivet to connect to the <code>.\Rivet</code> SQL Server, and load database scripts 
+from the <code>Databases</code> directory where the <code>rivet.json</code> file is located.</p>
+
+<h3>Example 2</h3>
+
+<pre><code>{
+    SqlServerName: '.\Rivet',
+    DatabasesRoot: 'Databases',
+    ConnectionTimeout: 5,
+    CommandTimeout: 300,
+    IgnoreDatabases: [ 'Shared' ]
+}
+</code></pre>
+
+<p>This example demonstrates how to use all the configuration options.  This 
+configuration file will:</p>
+
+<ul>
+<li>connect to the local <code>.\Rivet</code> SQL Server instance</li>
+<li>load database scripts from the <code>Databases</code> directory (which would be in the 
+same directory as the <code>rivet.json</code> file)</li>
+<li>shorten the connection timeout to 5 seconds</li>
+<li>increase the command timeout to 5 minutes</li>
+<li>not add the <code>Shared</code> database to the list of databases to manage (i.e. it will 
+ignore the <code>$Databases\Shared</code> directory)</li>
+</ul>
+
+<h3>Example 3</h3>
+
+<pre><code>{
+    SqlServerName: '.\Rivet',
+    DatabasesRoot: 'Databases',
+    Environments: 
+    {
+        UAT:
+        {
+            SqlServerName: 'uatdb\Rivet',
+            IgnoreDatabases: [ 'Preview' ],
+            CommandTimeout: 300
+        },
+        Production:
+        {
+            SqlServerName: 'proddb\Rivet',
+            IgnoreDatabases: [ 'Preview' ],
+            CommandTimeout: 600
+        }
+    }
+}
+</code></pre>
+
+<p>This example demonstrates how to create and use environment-specific settings.</p>
+<h2># See Also</h2>
+<p>rivet.ps1</p>
+
+
+
+	<div class="Footer">
+		Copyright 2013 - 2016 <a href="http://pshdo.com">Aaron Jensen</a>.
+	</div>
+
+</body>
+</html>

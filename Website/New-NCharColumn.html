@@ -1,0 +1,133 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <title>PowerShell - New-NCharColumn - Rivet</title>
+    <link href="silk.css" type="text/css" rel="stylesheet" />
+	<link href="styles.css" type="text/css" rel="stylesheet" />
+</head>
+<body>
+
+    <ul id="SiteNav">
+		<li><a href="index.html">Get-Rivet</a></li>
+        <!--<li><a href="about_Carbon_Installation.html">-Install</a></li>-->
+		<li><a href="documentation.html">-Documentation</a></li>
+        <!--<li><a href="about_Carbon_Support.html">-Support</a></li>-->
+        <li><a href="releasenotes.html">-ReleaseNotes</a></li>
+		<li><a href="http://pshdo.com">-Blog</a></li>
+    </ul>
+
+    <h1>New-NCharColumn</h1>
+<div class="Synopsis">
+<p>Creates a column object representing an NChar datatype.</p>
+</div>
+
+<h2>Syntax</h2>
+<pre class="Syntax"><code>New-NCharColumn [-Name] &lt;String&gt; [-Size] &lt;Int32&gt; [-Collation &lt;String&gt;] [-Sparse] [-Default &lt;String&gt;] [-Description &lt;String&gt;] [&lt;CommonParameters&gt;]</code></pre>
+<pre class="Syntax"><code>New-NCharColumn [-Name] &lt;String&gt; [-Size] &lt;Int32&gt; [-Collation &lt;String&gt;] -NotNull [-Default &lt;String&gt;] [-Description &lt;String&gt;] [&lt;CommonParameters&gt;]</code></pre>
+
+<h2>Description</h2>
+<div class="Description">
+<p>Use this function in the <code>Column</code> script block for <code>Add-Table</code>:</p>
+
+<pre><code>Add-Table -State 'Addresses' -Column {
+    NChar 'State' 2
+}
+</code></pre>
+
+<h2>ALIASES</h2>
+
+<ul>
+<li>NChar</li>
+</ul>
+</div>
+
+<h2> Parameters </h2>
+<table id="Parameters">
+<tr>
+	<th>Name</th>
+    <th>Type</th>
+	<th>Description</th>
+	<th>Required?</th>
+	<th>Pipeline Input</th>
+	<th>Default Value</th>
+</tr>
+<tr valign='top'>
+	<td>Name</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.string.aspx">String</a></td>
+	<td class="ParamDescription"><p>The column's name.</p></td>
+	<td>true</td>
+	<td>false</td>
+    <td></td>
+</tr>
+<tr valign='top'>
+	<td>Size</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.int32.aspx">Int32</a></td>
+	<td class="ParamDescription"><p>Defines the string Size of the fixed-Size string data.  Default is 30</p></td>
+	<td>true</td>
+	<td>false</td>
+    <td>0</td>
+</tr>
+<tr valign='top'>
+	<td>Collation</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.string.aspx">String</a></td>
+	<td class="ParamDescription"><p>Controls the code page that is used to store the data</p></td>
+	<td>false</td>
+	<td>false</td>
+    <td></td>
+</tr>
+<tr valign='top'>
+	<td>NotNull</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.management.automation.switchparameter.aspx">SwitchParameter</a></td>
+	<td class="ParamDescription"><p>Don't allow <code>NULL</code> values in this column.</p></td>
+	<td>true</td>
+	<td>false</td>
+    <td>False</td>
+</tr>
+<tr valign='top'>
+	<td>Sparse</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.management.automation.switchparameter.aspx">SwitchParameter</a></td>
+	<td class="ParamDescription"><p>Store nulls as Sparse.</p></td>
+	<td>false</td>
+	<td>false</td>
+    <td>False</td>
+</tr>
+<tr valign='top'>
+	<td>Default</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.string.aspx">String</a></td>
+	<td class="ParamDescription"><p>A SQL Server expression for the column's default value</p></td>
+	<td>false</td>
+	<td>false</td>
+    <td></td>
+</tr>
+<tr valign='top'>
+	<td>Description</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.string.aspx">String</a></td>
+	<td class="ParamDescription"><p>A description of the column.</p></td>
+	<td>false</td>
+	<td>false</td>
+    <td></td>
+</tr>
+
+</table>
+
+<h2>EXAMPLE 1</h2>
+<pre><code>Add-Table 'Addresses' { NChar 'State' 2 }</code></pre>
+<p>Demonstrates how to create an optional <code>nchar</code> column with a length of 2 bytes.</p>
+
+
+<h2>EXAMPLE 2</h2>
+<pre><code>Add-Table 'Addresses' { NChar 'State' 2 -NotNull }</code></pre>
+<p>Demonstrates how to create a required <code>nchar</code> column with length of 2 bytes.</p>
+
+
+<h2>EXAMPLE 3</h2>
+<pre><code>Add-Table 'Addresses' { NChar 'State' 2 -Collation 'Latin1_General_BIN' }</code></pre>
+<p>Demonstrates now to create an optional <code>nchar</code> column with a custom <code>Latin1_General_BIN</code> collation.</p>
+
+
+	<div class="Footer">
+		Copyright 2013 - 2016 <a href="http://pshdo.com">Aaron Jensen</a>.
+	</div>
+
+</body>
+</html>

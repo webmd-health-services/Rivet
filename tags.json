@@ -1,0 +1,227 @@
+[
+    {
+        "Name":  "Add-CheckConstraint",
+        "Tags":  [ "Constraints" ]
+    },
+    {
+        "Name":  "Add-DataType",
+        "Tags":  [ "Data Types", "User-Defined Data Types", "Programmability" ]
+    },
+    {
+        "Name":  "Add-DefaultConstraint",
+        "Tags":  [ "Constraints" ]
+    },
+    {
+        "Name":  "Add-Description",
+        "Tags":  [ "MS_Description", "Extended Properties" ]
+    },
+    {
+        "Name":  "Add-ExtendedProperty",
+        "Tags":  [ "Extended Properties" ]
+    },
+    {
+        "Name":  "Add-ForeignKey",
+        "Tags":  [ "Foreign Keys", "Constraints" ]
+    },
+    {
+        "Name":  "Add-Index",
+        "Tags":  [ "Indexes" ]
+    },
+    {
+        "Name":  "Add-PrimaryKey",
+        "Tags":  [ "Primary Keys", "Constraints" ]
+    },
+    {
+        "Name":  "Add-Row",
+        "Tags":  [ "Data" ]
+    },
+    {
+        "Name":  "Add-Schema",
+        "Tags":  [ "Schemas", "Security" ]
+    },
+    {
+        "Name":  "Add-StoredProcedure",
+        "Tags":  [ "Programmability", "Code Objects", "Stored Procedures", "Procedures" ]
+    },
+    {
+        "Name":  "Add-Synonym",
+        "Tags":  [ "Synonyms" ]
+    },
+    {
+        "Name":  "Add-Table",
+        "Tags":  [ "Tables" ]
+    },
+    {
+        "Name":  "Add-Trigger",
+        "Tags":  [ "Tables", "Triggers", "Code Objects" ]
+    },
+    {
+        "Name":  "Add-UniqueKey",
+        "Tags":  [ "Constraints" ]
+    },
+    {
+        "Name":  "Add-UserDefinedFunction",
+        "Tags":  [ "Programmability", "Code Objects", "Functions", "User-Defined Functions" ]
+    },
+    {
+        "Name":  "Add-View",
+        "Tags":  [ "Code Objects", "Views" ]
+    },
+    {
+        "Name":  "Disable-CheckConstraint",
+        "Tags":  [ "Constraints" ]
+    },
+    {
+        "Name":  "Disable-ForeignKey",
+        "Tags":  [ "Foreign Keys", "Constraints" ]
+    },
+    {
+        "Name":  "Enable-CheckConstraint",
+        "Tags":  [ "Constraints" ]
+    },
+    {
+        "Name":  "Enable-ForeignKey",
+        "Tags":  [ "Foreign Keys", "Constraints" ]
+    },
+    {
+        "Name":  "Get-Migration",
+        "Tags":  [ "Rivet", "Migrations" ]
+    },
+    {
+        "Name":  "Get-RivetConfig",
+        "Tags":  [ "Rivet" ]
+    },
+    {
+        "Name":  "Invoke-Ddl",
+        "Tags":  [ "SQL", "DDL", "Query" ]
+    },
+    {
+        "Name":  "Invoke-Rivet",
+        "Tags":  [ "Rivet" ]
+    },
+    {
+        "Name":  "Invoke-SqlScript",
+        "Tags":  [ "SQL", "DDL", "Query" ]
+    },
+
+    {
+        "Name":  "Remove-CheckConstraint",
+        "Tags":  [ "Constraints" ]
+    },
+    {
+        "Name":  "Remove-DataType",
+        "Tags":  [ "Data Types", "User-Defined Data Types", "Programmability" ]
+    },
+    {
+        "Name":  "Remove-DefaultConstraint",
+        "Tags":  [ "Constraints" ]
+    },
+    {
+        "Name":  "Remove-Description",
+        "Tags":  [ "MS_Description", "Extended Properties" ]
+    },
+    {
+        "Name":  "Remove-ExtendedProperty",
+        "Tags":  [ "Extended Properties" ]
+    },
+    {
+        "Name":  "Remove-ForeignKey",
+        "Tags":  [ "Foreign Keys", "Constraints" ]
+    },
+    {
+        "Name":  "Remove-Index",
+        "Tags":  [ "Indexes" ]
+    },
+    {
+        "Name":  "Remove-PrimaryKey",
+        "Tags":  [ "Primary Keys", "Constraints" ]
+    },
+    {
+        "Name":  "Remove-Row",
+        "Tags":  [ "Data" ]
+    },
+    {
+        "Name":  "Remove-Schema",
+        "Tags":  [ "Schemas", "Security" ]
+    },
+    {
+        "Name":  "Remove-StoredProcedure",
+        "Tags":  [ "Programmability", "Code Objects", "Stored Procedures", "Procedures" ]
+    },
+    {
+        "Name":  "Remove-Synonym",
+        "Tags":  [ "Synonyms" ]
+    },
+    {
+        "Name":  "Remove-Table",
+        "Tags":  [ "Tables" ]
+    },
+    {
+        "Name":  "Remove-Trigger",
+        "Tags":  [ "Tables", "Triggers", "Code Objects" ]
+    },
+    {
+        "Name":  "Remove-UniqueKey",
+        "Tags":  [ "Constraints" ]
+    },
+    {
+        "Name":  "Remove-UserDefinedFunction",
+        "Tags":  [ "Programmability", "Functions", "User-Defined Functions" ]
+    },
+    {
+        "Name":  "Remove-View",
+        "Tags":  [ "Views" ]
+    },
+    {
+        "Name":  "Rename-Column",
+        "Tags":  [ "Columns" ]
+    },
+    {
+        "Name":  "Rename-DataType",
+        "Tags":  [ "Data Types", "User-Defined Data Types", "Programmability" ]
+    },
+    {
+        "Name":  "Rename-Index",
+        "Tags":  [ "Indexes" ]
+    },
+    {
+        "Name":  "Rename-Object",
+        "Tags":  [ "Miscellaneous" ]
+    },
+    {
+        "Name":  "Update-CodeObjectMetadata",
+        "Tags":  [ "Code Objects", "Programmability" ]
+    },
+    {
+        "Name":  "Update-Description",
+        "Tags":  [ "MS_Description", "Extended Properties" ]
+    },
+    {
+        "Name":  "Update-ExtendedProperty",
+        "Tags":  [ "Extended Properties" ]
+    },
+    {
+        "Name":  "Update-Row",
+        "Tags":  [ "Data" ]
+    },
+    {
+        "Name":  "Update-StoredProcedure",
+        "Tags":  [ "Programmability", "Stored Procedures", "Procedures" ]
+    },
+    {
+        "Name":  "Update-Table",
+        "Tags":  [ "Tables" ]
+    },
+    {
+        "Name":  "Update-Trigger",
+        "Tags":  [ "Tables", "Triggers", "Code Objects" ]
+    },
+    {
+        "Name":  "Update-UserDefinedFunction",
+        "Tags":  [ "Programmability", "Code Objects", "User-Defined Functions", "Functions" ]
+    },
+    {
+        "Name":  "Update-View",
+        "Tags":  [ "Views" ]
+    }
+]

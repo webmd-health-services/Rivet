@@ -1,0 +1,181 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <title>PowerShell - Invoke-Rivet - Rivet</title>
+    <link href="silk.css" type="text/css" rel="stylesheet" />
+	<link href="styles.css" type="text/css" rel="stylesheet" />
+</head>
+<body>
+
+    <ul id="SiteNav">
+		<li><a href="index.html">Get-Rivet</a></li>
+        <!--<li><a href="about_Carbon_Installation.html">-Install</a></li>-->
+		<li><a href="documentation.html">-Documentation</a></li>
+        <!--<li><a href="about_Carbon_Support.html">-Support</a></li>-->
+        <li><a href="releasenotes.html">-ReleaseNotes</a></li>
+		<li><a href="http://pshdo.com">-Blog</a></li>
+    </ul>
+
+    <h1>Invoke-Rivet</h1>
+<div class="Synopsis">
+<p>Invoke-Rivet [-Name] <string[]> [[-Database] <string[]>] -New [-Environment <string>] [-ConfigFilePath <string>] [-WhatIf] [-Confirm] [<CommonParameters>]</p>
+
+<p>Invoke-Rivet [[-Name] <string[]>] -Push [-Database <string[]>] [-Environment <string>] [-ConfigFilePath <string>] [-WhatIf] [-Confirm] [<CommonParameters>]</p>
+
+<p>Invoke-Rivet -Pop -All [-Force] [-Database <string[]>] [-Environment <string>] [-ConfigFilePath <string>] [-WhatIf] [-Confirm] [<CommonParameters>]</p>
+
+<p>Invoke-Rivet [-Name] <string[]> -Pop [-Force] [-Database <string[]>] [-Environment <string>] [-ConfigFilePath <string>] [-WhatIf] [-Confirm] [<CommonParameters>]</p>
+
+<p>Invoke-Rivet [-Count] <uint32> -Pop [-Force] [-Database <string[]>] [-Environment <string>] [-ConfigFilePath <string>] [-WhatIf] [-Confirm] [<CommonParameters>]</p>
+
+<p>Invoke-Rivet -Pop [-Force] [-Database <string[]>] [-Environment <string>] [-ConfigFilePath <string>] [-WhatIf] [-Confirm] [<CommonParameters>]</p>
+
+<p>Invoke-Rivet -Redo [-Database <string[]>] [-Environment <string>] [-ConfigFilePath <string>] [-WhatIf] [-Confirm] [<CommonParameters>]</p>
+</div>
+
+<h2>Syntax</h2>
+<pre class="Syntax"><code>syntaxItem                                                                                                                                                                                                                                                                                                                                                                                                                         </code></pre>
+<pre class="Syntax"><code>----------                                                                                                                                                                                                                                                                                                                                                                                                                         </code></pre>
+<pre class="Syntax"><code>{@{name=Invoke-Rivet; CommonParameters=True; WorkflowCommonParameters=False; parameter=System.Object[]}, @{name=Invoke-Rivet; CommonParameters=True; WorkflowCommonParameters=False; parameter=System.Object[]}, @{name=Invoke-Rivet; CommonParameters=True; WorkflowCommonParameters=False; parameter=System.Object[]}, @{name=Invoke-Rivet; CommonParameters=True; WorkflowCommonParameters=False; parameter=System.Object[]}...}</code></pre>
+
+<h2> Parameters </h2>
+<table id="Parameters">
+<tr>
+	<th>Name</th>
+    <th>Type</th>
+	<th>Description</th>
+	<th>Required?</th>
+	<th>Pipeline Input</th>
+	<th>Default Value</th>
+</tr>
+<tr valign='top'>
+	<td>All</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.diagnostics.switch.aspx">switch</a></td>
+	<td class="ParamDescription"></td>
+	<td>true</td>
+	<td>false</td>
+    <td>&nbsp;</td>
+</tr>
+<tr valign='top'>
+	<td>ConfigFilePath</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.string.aspx">string</a></td>
+	<td class="ParamDescription"></td>
+	<td>false</td>
+	<td>false</td>
+    <td>&nbsp;</td>
+</tr>
+<tr valign='top'>
+	<td>Confirm</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.diagnostics.switch.aspx">switch</a></td>
+	<td class="ParamDescription"></td>
+	<td>false</td>
+	<td>false</td>
+    <td>&nbsp;</td>
+</tr>
+<tr valign='top'>
+	<td>Count</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.uint32.aspx">uint32</a></td>
+	<td class="ParamDescription"></td>
+	<td>true</td>
+	<td>false</td>
+    <td>&nbsp;</td>
+</tr>
+<tr valign='top'>
+	<td>Database</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.string.aspx">string[]</a></td>
+	<td class="ParamDescription"></td>
+	<td>false</td>
+	<td>false</td>
+    <td>&nbsp;</td>
+</tr>
+<tr valign='top'>
+	<td>Environment</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.string.aspx">string</a></td>
+	<td class="ParamDescription"></td>
+	<td>false</td>
+	<td>false</td>
+    <td>&nbsp;</td>
+</tr>
+<tr valign='top'>
+	<td>Force</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.diagnostics.switch.aspx">switch</a></td>
+	<td class="ParamDescription"></td>
+	<td>false</td>
+	<td>false</td>
+    <td>&nbsp;</td>
+</tr>
+<tr valign='top'>
+	<td>Name</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.string.aspx">string[]</a></td>
+	<td class="ParamDescription"></td>
+	<td>true</td>
+	<td>false</td>
+    <td>&nbsp;</td>
+</tr>
+<tr valign='top'>
+	<td>New</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.diagnostics.switch.aspx">switch</a></td>
+	<td class="ParamDescription"></td>
+	<td>true</td>
+	<td>false</td>
+    <td>&nbsp;</td>
+</tr>
+<tr valign='top'>
+	<td>Pop</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.diagnostics.switch.aspx">switch</a></td>
+	<td class="ParamDescription"></td>
+	<td>true</td>
+	<td>false</td>
+    <td>&nbsp;</td>
+</tr>
+<tr valign='top'>
+	<td>Push</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.diagnostics.switch.aspx">switch</a></td>
+	<td class="ParamDescription"></td>
+	<td>true</td>
+	<td>false</td>
+    <td>&nbsp;</td>
+</tr>
+<tr valign='top'>
+	<td>Redo</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.diagnostics.switch.aspx">switch</a></td>
+	<td class="ParamDescription"></td>
+	<td>true</td>
+	<td>false</td>
+    <td>&nbsp;</td>
+</tr>
+<tr valign='top'>
+	<td>WhatIf</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.diagnostics.switch.aspx">switch</a></td>
+	<td class="ParamDescription"></td>
+	<td>false</td>
+	<td>false</td>
+    <td>&nbsp;</td>
+</tr>
+<tr valign="top">
+    <td><a href="http://technet.microsoft.com/en-us/library/dd315352.aspx">CommonParameters</a></td>
+    <td></td>
+    <td>This cmdlet supports common parameters.  For more information type <br> <code>Get-Help about_CommonParameters</code>.</td>
+    <td></td>
+    <td></td>
+    <td></td>
+</tr>
+</table>
+
+<h2>Input Types</h2>
+<div class="InputTypes">
+<p>None. </p>
+</div>
+
+<h2>Return Values</h2>
+<div class="ReturnValues">
+<p><a href="http://msdn.microsoft.com/en-us/library/system.object.aspx">System.Object</a>. </p>
+</div>
+
+
+	<div class="Footer">
+		Copyright 2013 - 2016 <a href="http://pshdo.com">Aaron Jensen</a>.
+	</div>
+
+</body>
+</html>

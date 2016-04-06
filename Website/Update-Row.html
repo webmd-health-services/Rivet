@@ -1,0 +1,116 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <title>PowerShell - Update-Row - Rivet</title>
+    <link href="silk.css" type="text/css" rel="stylesheet" />
+	<link href="styles.css" type="text/css" rel="stylesheet" />
+</head>
+<body>
+
+    <ul id="SiteNav">
+		<li><a href="index.html">Get-Rivet</a></li>
+        <!--<li><a href="about_Carbon_Installation.html">-Install</a></li>-->
+		<li><a href="documentation.html">-Documentation</a></li>
+        <!--<li><a href="about_Carbon_Support.html">-Support</a></li>-->
+        <li><a href="releasenotes.html">-ReleaseNotes</a></li>
+		<li><a href="http://pshdo.com">-Blog</a></li>
+    </ul>
+
+    <h1>Update-Row</h1>
+<div class="Synopsis">
+<p>Updates a row of data in a table.</p>
+</div>
+
+<h2>Syntax</h2>
+<pre class="Syntax"><code>Update-Row [-TableName] &lt;String&gt; [-SchemaName &lt;String&gt;] [-Column] &lt;Hashtable&gt; [-RawColumnValue] [-Where] &lt;String&gt; [&lt;CommonParameters&gt;]</code></pre>
+<pre class="Syntax"><code>Update-Row [-TableName] &lt;String&gt; [-SchemaName &lt;String&gt;] [-Column] &lt;Hashtable&gt; [-RawColumnValue] -All [&lt;CommonParameters&gt;]</code></pre>
+
+<h2>Description</h2>
+<div class="Description">
+<p>To specify which columns in a row to update, pass a hashtable as a value to the <code>Column</code> parameter.  This hashtable should have keys that map to column names, and the value of each key will be used to update row(s) in the table.</p>
+
+<p>You are required to use a <code>Where</code> clause so that you don't inadvertently/accidentally update a column in every row in a table to the same value.  If you <em>do</em> want to update the value in every row of the database, omit the <code>Where</code> parameter and add the <code>Force</code> switch.</p>
+</div>
+
+<h2> Parameters </h2>
+<table id="Parameters">
+<tr>
+	<th>Name</th>
+    <th>Type</th>
+	<th>Description</th>
+	<th>Required?</th>
+	<th>Pipeline Input</th>
+	<th>Default Value</th>
+</tr>
+<tr valign='top'>
+	<td>TableName</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.string.aspx">String</a></td>
+	<td class="ParamDescription"><p>The name of the table.</p></td>
+	<td>true</td>
+	<td>false</td>
+    <td></td>
+</tr>
+<tr valign='top'>
+	<td>SchemaName</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.string.aspx">String</a></td>
+	<td class="ParamDescription"><p>The schema name of the table.  Default is <code>dbo</code>.</p></td>
+	<td>false</td>
+	<td>false</td>
+    <td>dbo</td>
+</tr>
+<tr valign='top'>
+	<td>Column</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.collections.hashtable.aspx">Hashtable</a></td>
+	<td class="ParamDescription"><p>A hashtable of name/value pairs that map to column names/values that will be updated.</p></td>
+	<td>true</td>
+	<td>false</td>
+    <td></td>
+</tr>
+<tr valign='top'>
+	<td>RawColumnValue</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.management.automation.switchparameter.aspx">SwitchParameter</a></td>
+	<td class="ParamDescription"><p>Don't escape/quote the column value(s).</p></td>
+	<td>false</td>
+	<td>false</td>
+    <td>False</td>
+</tr>
+<tr valign='top'>
+	<td>Where</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.string.aspx">String</a></td>
+	<td class="ParamDescription"><p>A condition to use so that only certain rows are updated.  Without a value, you will need to use the <code>Force</code> parameter so you don't accidentally update the contents of an entire table.</p></td>
+	<td>true</td>
+	<td>false</td>
+    <td></td>
+</tr>
+<tr valign='top'>
+	<td>All</td>
+	<td><a href="http://msdn.microsoft.com/en-us/library/system.management.automation.switchparameter.aspx">SwitchParameter</a></td>
+	<td class="ParamDescription"><p>Updates all the rows in the table.</p></td>
+	<td>true</td>
+	<td>false</td>
+    <td>False</td>
+</tr>
+
+</table>
+
+<h2>EXAMPLE 1</h2>
+<pre><code>Update-Row -SchemaName 'rivet' 'Migrations' @{ LastUpdated = (Get-Date -Utc) } -Where 'MigrationID=20130913131104'</code></pre>
+<p>Demonstrates how to update the <code>LastUpdated</code> date in the <code>rivet.Migrations</code> table for the migration with ID <code>20130913131104</code>.  Don't do this in real life.</p>
+
+
+<h2>EXAMPLE 2</h2>
+<pre><code>Update-Row -SchemaName 'rivet' 'Migrations' @{ LastUpdated = (Get-Date -Utc) } -Force</code></pre>
+<p>Demonstrates how to update the <code>LastUpdated</code> date <em>for all rows</em> in the <code>rivet.Migrations</code> table.  You <em>really, really</em> don't want to do this in real life.</p>
+
+
+<h2>EXAMPLE 3</h2>
+<pre><code>Update-Row 'Migrations' @{ MigrationID = 'MigrationID + 1' } -Raw -Where 'MigrationID=20130101010101'</code></pre>
+<p>Demonstrates how to pass a SQL expression as the value for the column to update: use the <code>-RawColumnValue</code> switch.</p>
+
+
+	<div class="Footer">
+		Copyright 2013 - 2016 <a href="http://pshdo.com">Aaron Jensen</a>.
+	</div>
+
+</body>
+</html>

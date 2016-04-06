@@ -27,19 +27,19 @@ $noticeFileName = 'NOTICE.txt'
 $releaseNotesFileName = 'RELEASE_NOTES.txt'
 $releaseNotesPath = Join-Path -Path $PSScriptRoot -ChildPath $releaseNotesFileName -Resolve
 
-$manifestPath = Join-Path -Path $PSScriptRoot -ChildPath 'Carbon\Carbon.psd1'
+$manifestPath = Join-Path -Path $PSScriptRoot -ChildPath 'Rivet\Rivet.psd1'
 $manifest = Test-ModuleManifest -Path $manifestPath
 if( -not $manifest )
 {
     return
 }
 
-$additionalAssemblyPath = Join-Path -Path $PSScriptRoot -ChildPath 'Carbon\bin\Carbon.*.dll'
-$nuspecPath = Join-Path -Path $PSScriptRoot -ChildPath 'Carbon.nuspec'
+$additionalAssemblyPath = Join-Path -Path $PSScriptRoot -ChildPath 'Rivet\bin\Rivet.dll'
+$nuspecPath = Join-Path -Path $PSScriptRoot -ChildPath 'Rivet.nuspec'
 $valid = Assert-ModuleVersion -ManifestPath $manifestPath -AssemblyPath $additionalAssemblyPath -ReleaseNotesPath $releaseNotesPath -NuspecPath $nuspecPath
 if( -not $valid )
 {
-    Write-Error -Message ('Carbon isn''t at the right version. Please rebuild with build.ps1.')
+    Write-Error -Message ('Rivet isn''t at the right version. Please rebuild with build.ps1.')
     return
 }
 

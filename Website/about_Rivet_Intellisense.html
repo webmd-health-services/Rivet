@@ -1,0 +1,50 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <title>PowerShell - about_Rivet_Intellisense - Rivet</title>
+    <link href="silk.css" type="text/css" rel="stylesheet" />
+	<link href="styles.css" type="text/css" rel="stylesheet" />
+</head>
+<body>
+
+    <ul id="SiteNav">
+		<li><a href="index.html">Get-Rivet</a></li>
+        <!--<li><a href="about_Carbon_Installation.html">-Install</a></li>-->
+		<li><a href="documentation.html">-Documentation</a></li>
+        <!--<li><a href="about_Carbon_Support.html">-Support</a></li>-->
+        <li><a href="releasenotes.html">-ReleaseNotes</a></li>
+		<li><a href="http://pshdo.com">-Blog</a></li>
+    </ul>
+
+        <h1>about_Rivet_Intellisense</h1>
+
+    <p>Explains how to get Intellisense when writing Rivet migrations.</p>
+
+    <h2>Description</h2>
+<p>In order to get Intellisense when writing migrations, you'll need to have PowerShell 
+<strong><em>3</em></strong> installed, and use the PowerShell Integrated Scripting Environment (i.e. 
+ISE).  You should be able to open a migration in the ISE by right-clicking it and 
+choosing "Edit".  </p>
+
+<p>Once you've got a migration open in the ISE, you'll want to import the Rivet module.<br />
+Use the <code>Import-Rivet.ps1</code> script:</p>
+
+<pre><code>PS&gt; Import-Rivet.ps1
+</code></pre>
+
+<p>Make sure you use the path to Rivet in your environment.</p>
+
+<p>Once you've imported Rivet, you can get a list of available migrations by running 
+this command:</p>
+
+<pre><code>PS&gt; Get-Command -Module Rivet -CommandType Function
+</code></pre>
+
+
+
+	<div class="Footer">
+		Copyright 2013 - 2016 <a href="http://pshdo.com">Aaron Jensen</a>.
+	</div>
+
+</body>
+</html>
