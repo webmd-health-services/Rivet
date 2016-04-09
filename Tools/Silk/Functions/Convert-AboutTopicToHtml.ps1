@@ -118,6 +118,7 @@ function Convert-AboutTopicToHtml
                 $SeeAlsoHeading
                 {
                     $lines = $Body -split ([Environment]::NewLine) | 
+                                ForEach-Object { $_.Trim() } |
                                 Convert-RelatedLinkToHtml -ModuleName $ModuleName -Script $Script | 
                                 ForEach-Object { '<li>{0}</li>' -f $_ }
                     $Body = @'
