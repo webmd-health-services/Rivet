@@ -1,0 +1,6 @@
+Test/Server.txt
+**/obj/**
+*.pdb
+Source/Test/bin
+*.user
+*.suo
