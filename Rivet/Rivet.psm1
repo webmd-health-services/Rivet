@@ -41,104 +41,30 @@ if( -not (Test-TypeDataMember -TypeName 'Rivet.OperationResult' -MemberName 'Mig
 }
 
 $functionRoot = Join-Path -Path $PSScriptRoot -ChildPath 'Functions' -Resolve
+$operationsRoot = Join-Path -Path $functionRoot -ChildPath 'Operations' -Resolve
 @(
     $functionRoot,
-    (Join-Path -Path $functionRoot -ChildPath 'Operations' -Resolve),
+    $operationsRoot,
     (Join-Path -Path $functionRoot -ChildPath 'Columns' -Resolve)
 ) | 
     Get-ChildItem -Filter '*-*.ps1' |
     Where-Object { $_.BaseName -ne 'Export-Row' } |
     ForEach-Object { . $_.FullName }
 
-$publicFunctions = @(
-                        'Add-CheckConstraint',
-                        'Add-DataType',
-                        'Add-DefaultConstraint',
-                        'Add-Description',
-                        'Add-ExtendedProperty',
-                        'Add-ForeignKey',
-                        'Add-Index',
-                        'Add-PrimaryKey',
-                        'Add-Row',
-                        'Add-Schema',
-                        'Add-StoredProcedure',
-                        'Add-Synonym',
-                        'Add-Table',
-                        'Add-Trigger',
-                        'Add-UniqueKey',
-                        'Add-UserDefinedFunction',
-                        'Add-View',
-                        'Get-Migration',
-                        'Get-RivetConfig',
-                        'Invoke-Ddl',
-                        'Invoke-Rivet',
-                        'Invoke-SqlScript',
-                        'New-BigIntColumn',
-                        'New-BinaryColumn',
-                        'New-BitColumn',
-                        'New-CharColumn',
-                        'New-Column',
-                        'New-DateColumn',
-                        'New-DateTimeColumn',
-                        'New-DateTime2Column',
-                        'New-DateTimeOffsetColumn',
-                        'New-DecimalColumn',
-                        'New-FloatColumn',
-                        'New-HierarchyIDColumn',
-                        'New-IntColumn',
-                        'New-MoneyColumn',
-                        'New-NCharColumn',
-                        'New-NumericColumn',
-                        'New-NVarCharColumn',
-                        'New-RealColumn',
-                        'New-RowVersionColumn',
-                        'New-SmallDateTimeColumn',
-                        'New-SmallIntColumn',
-                        'New-SmallMoneyColumn',
-                        'New-SqlVariantColumn',
-                        'New-StoredProcedure',
-                        'New-TimeColumn',
-                        'New-TinyIntColumn',
-                        'New-UniqueIdentifierColumn',
-                        'New-UserDefinedFunction',
-                        'New-VarBinaryColumn',
-                        'New-VarCharColumn',
-                        'New-View',
-                        'New-XmlColumn',
-                        'Remove-CheckConstraint',
-                        'Remove-DataType',
-                        'Remove-DefaultConstraint',
-                        'Remove-Description',
-                        'Remove-ExtendedProperty',
-                        'Remove-ForeignKey',
-                        'Remove-Index',
-                        'Remove-PrimaryKey',
-                        'Remove-Row',
-                        'Remove-Schema',
-                        'Remove-StoredProcedure',
-                        'Remove-Synonym',
-                        'Remove-Table',
-                        'Remove-UniqueKey',
-                        'Remove-UserDefinedFunction',
-                        'Remove-Trigger',
-                        'Remove-View',
-                        'Rename-Column',
-                        'Rename-Constraint',
-                        'Rename-DataType',
-                        'Rename-Index',
-                        'Rename-Object',
-                        'Set-StoredProcedure',
-                        'Set-UserDefinedFunction',
-                        'Set-View',
-                        'Update-CodeObjectMetadata',
-                        'Update-Description',
-                        'Update-ExtendedProperty',
-                        'Update-Row',
-                        'Update-StoredProcedure',
-                        'Update-Table',
-                        'Update-Trigger',
-                        'Update-UserDefinedFunction',
-                        'Update-View'
-                      )
+$privateFunctions = @{
+                        'Enable-ForeignKey' = $true;
+                        'Disable-ForeignKey' = $true;
+                     }
+$publicFunctions = Invoke-Command -ScriptBlock {
+                                                     @(
+                                                            'Get-Migration',
+                                                            'Get-RivetConfig',
+                                                            'Invoke-Rivet'
+                                                     )
+
+                                                     Get-ChildItem -Path $operationsRoot -Filter '*.ps1' |
+                                                        Select-Object -ExpandProperty 'BaseName'
+                                               } |
+                        Where-Object { -not $privateFunctions.ContainsKey( $_ ) }
 
 Export-ModuleMember -Function $publicFunctions -Alias *

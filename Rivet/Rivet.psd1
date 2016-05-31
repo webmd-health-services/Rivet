@@ -157,7 +157,8 @@ Rivet is a database migration/change management/versioning tool inspired by Ruby
                             'Update-Table',
                             'Update-Trigger',
                             'Update-UserDefinedFunction',
-                            'Update-View'
+                            'Update-View',
+                            '*' # For plug-ins.
                          )
 
     # Cmdlets to export from this module
