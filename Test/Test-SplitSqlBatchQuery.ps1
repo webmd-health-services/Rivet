@@ -1,7 +1,7 @@
 
 function Start-Test
 {
-    . (Join-Path -Path $PSScriptRoot -ChildPath '..\Rivet\Split-SqlBatchQuery.ps1' -Resolve)
+    . (Join-Path -Path $PSScriptRoot -ChildPath '..\Rivet\Functions\Split-SqlBatchQuery.ps1' -Resolve)
 }
 
 function Stop-Test
