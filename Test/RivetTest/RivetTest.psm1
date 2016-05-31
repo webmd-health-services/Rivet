@@ -24,10 +24,18 @@ $RTRivetSchemaName = 'rivet'
 $RTDatabaseName = 'RivetTest'
 $RTDatabase2Name = 'RivetTest2'
 
-$serverFilePath = [IO.Path]::GetFullPath((Join-Path -Path $PSScriptRoot -ChildPath '..\Server.txt'))
-if( -not (Test-Path -Path $serverFilePath -PathType Leaf) )
+$serverFileDirs = @( 
+                        (Join-Path -Path $PSScriptRoot -ChildPath '..' -Resolve),
+                        (Join-Path -Path $env:APPDATA -ChildPath 'Rivet'),
+                        (Join-Path -Path $env:ProgramData -ChildPath 'Rivet')
+                  )
+$serverFilePath = $serverFileDirs |
+                      ForEach-Object { Join-Path -Path $_ -ChildPath 'Server.txt' } |
+                      Where-Object { Test-Path -Path $_ -PathType Leaf } |
+                      Select-Object -First 1
+if( -not $serverFilePath )
 {
-    Write-Error ('File ''{0}'' not found. Please create this file. It should contain the name of the SQL Server instance tests should use.' -f $serverFilePath)
+    throw ('File ''Server.txt'' not found. Please create this file. It should contain the name of the SQL Server instance tests should use. It should be in one of these directories:{0} * {1}' -f [Environment]::NewLine,($serverFileDirs -join ('{0} * ' -f[Environment]::NewLine)))
 }
 else
 {
@@ -35,7 +43,7 @@ else
     $RTServer = Get-Content $serverFilePath -TotalCount 1
     if( -not $RTServer )
     {
-        Write-Error ('Database server not found. Please update ''{0}'' with the name of the SQL Server instance tests should use.' -f $serverFilePath)
+        throw ('Database server not found. Please update ''{0}'' with the name of the SQL Server instance tests should use.' -f $serverFilePath)
     }
 }
 
