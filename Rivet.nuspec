@@ -15,7 +15,7 @@
 <package>
   <metadata>
     <id>Rivet</id>
-    <version>0.6.1</version>
+    <version>0.7.0</version>
     <authors>Aaron Jensen</authors>
     <owners>Aaron Jensen</owners>
     <licenseUrl>http://www.apache.org/licenses/LICENSE-2.0</licenseUrl>
@@ -25,7 +25,7 @@
     <description>Rivet is a database migration/change management/versioning tool inspired by Ruby on Rails' Migrations. It creates and applies migration scripts for SQL Server databases. Migration scripts describe changes to make to your database, e.g. add a table, add a column, remove an index, etc. Migrations scripts should get added to your version control system so they can be packaged and deployed with your application's code.</description>
     <language>en-us</language>
     <releaseNotes>
- </releaseNotes>
+    </releaseNotes>
     <copyright>Copyright 2013 - 2016 Aaron Jensen.</copyright>
     <tags>sql-server evolutionary-database database migrations</tags>
   </metadata>

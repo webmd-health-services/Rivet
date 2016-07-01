@@ -1,3 +1,11 @@
+# 0.7.0
+
+## Enhancements
+
+ * Fixed: `Add-Index` operation times out when creating new indexes on large table. Added a `Timeout` parameter to control how long to wait for an operation to finish.
+ * `Add-Index` re-implemented as a C# cmdlet.
+
+
 # 0.6.1
 
 ## Bug Fixes
