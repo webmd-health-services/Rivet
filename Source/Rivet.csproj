@@ -33,12 +33,21 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Management.Automation, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>C:\Program Files\Reference Assemblies\Microsoft\WindowsPowerShell\v1.0\System.Management.Automation.dll</HintPath>
+    </Reference>
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Commands\AddIndexObjectCommand.cs" />
+    <Compile Include="Commands\Cmdlet.cs" />
+    <Compile Include="Commands\DatabaseObjectCommand.cs" />
+    <Compile Include="Commands\SchemaObjectCommand.cs" />
+    <Compile Include="Commands\TableObjectCommand.cs" />
     <Compile Include="Configuration\Configuration.cs" />
     <Compile Include="Configuration\Database.cs" />
     <Compile Include="ConstraintType.cs" />

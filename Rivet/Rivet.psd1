@@ -69,7 +69,7 @@ Rivet is a database migration/change management/versioning tool inspired by Ruby
                         )
 
     # Modules to import as nested modules of the module specified in ModuleToProcess
-    NestedModules = @()
+    NestedModules = @( 'bin\Rivet.dll' )
 
     # Functions to export from this module
     FunctionsToExport = @(
@@ -79,7 +79,6 @@ Rivet is a database migration/change management/versioning tool inspired by Ruby
                             'Add-Description',
                             'Add-ExtendedProperty',
                             'Add-ForeignKey',
-                            'Add-Index',
                             'Add-PrimaryKey',
                             'Add-Row',
                             'Add-RowGuidCol',

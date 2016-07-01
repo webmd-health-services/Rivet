@@ -67,4 +67,4 @@ $publicFunctions = Invoke-Command -ScriptBlock {
                                                } |
                         Where-Object { -not $privateFunctions.ContainsKey( $_ ) }
 
-Export-ModuleMember -Function $publicFunctions -Alias *
+Export-ModuleMember -Function $publicFunctions -Alias '*' -Cmdlet '*'

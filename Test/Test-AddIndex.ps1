@@ -4,6 +4,7 @@
 function Start-Test
 {
     Start-RivetTest
+    & (Join-Path -Path $PSScriptRoot -ChildPath '..\Rivet\Import-Rivet.ps1' -Resolve)
 }
 
 function Stop-Test
@@ -404,4 +405,16 @@ function Pop-Migration()
     Invoke-RTRivet -Push 'AddIndex'
 
     Assert-Index -TableName 'AddIndex' -ColumnName 'Index Me' -Include "Include Me","Include Me 2"
+}
+
+function Test-ShouldSetTimeout
+{
+    $op = Add-Index -TableName 'fubar' -SchemaName 'snafu' -ColumnName 'fubar','snafu' -Timeout 400
+    Assert-Equal 400 $op.CommandTimeout
+}
+
+function Test-ShouldSetTimeoutToZero
+{
+    $op = Add-Index -TableName 'fubar' -ColumnName 'snafu' -Timeout 0
+    Assert-Equal 0 $op.CommandTimeout
 }
