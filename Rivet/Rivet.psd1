@@ -97,6 +97,7 @@ Rivet is a database migration/change management/versioning tool inspired by Ruby
                             'Invoke-Ddl',
                             'Invoke-Rivet',
                             'Invoke-SqlScript',
+                            'Merge-Migration',
                             'New-BigIntColumn',
                             'New-BinaryColumn',
                             'New-BitColumn',

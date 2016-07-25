@@ -41,11 +41,12 @@ if( -not (Test-TypeDataMember -TypeName 'Rivet.OperationResult' -MemberName 'Mig
 }
 
 $functionRoot = Join-Path -Path $PSScriptRoot -ChildPath 'Functions' -Resolve
+$columnRoot = Join-Path -Path $functionRoot -ChildPath 'Columns' -Resolve
 $operationsRoot = Join-Path -Path $functionRoot -ChildPath 'Operations' -Resolve
 @(
     $functionRoot,
     $operationsRoot,
-    (Join-Path -Path $functionRoot -ChildPath 'Columns' -Resolve)
+    $columnRoot
 ) | 
     Get-ChildItem -Filter '*-*.ps1' |
     Where-Object { $_.BaseName -ne 'Export-Row' } |
@@ -62,8 +63,9 @@ $publicFunctions = Invoke-Command -ScriptBlock {
                                                             'Invoke-Rivet'
                                                      )
 
-                                                     Get-ChildItem -Path $operationsRoot -Filter '*.ps1' |
+                                                     Get-ChildItem -Path $operationsRoot,$functionRoot,$columnRoot -Filter '*.ps1' |
                                                         Select-Object -ExpandProperty 'BaseName'
+
                                                } |
                         Where-Object { -not $privateFunctions.ContainsKey( $_ ) }
 

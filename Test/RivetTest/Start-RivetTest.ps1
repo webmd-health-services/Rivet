@@ -12,8 +12,15 @@ function Start-RivetTest
     )
     
     Set-StrictMode -Version Latest
-    
-    $tempDir = New-TempDir -Prefix 'RivetTest'
+
+    if( (Test-Path -Path 'TestDrive:') )
+    {
+        $tempDir = (Get-Item -Path 'TestDrive:').FullName
+    }
+    else
+    {
+        $tempDir = New-TempDir -Prefix 'RivetTest'
+    }
 
     $script:RTDatabasesRoot = Join-Path -Path $tempDir -ChildPath 'Databases'
     $script:RTDatabaseRoot = Join-Path $RTDatabasesRoot $RTDatabaseName
