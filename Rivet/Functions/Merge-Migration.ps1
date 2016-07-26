@@ -8,13 +8,15 @@ function Merge-Migration
     .DESCRIPTION
     The `Merge-Migration` functions creates a cumulative set of migrations from migration scripts. If there are multiple operations across one or more migration scripts that touch the same database object, those changes are combined into one operation. For example, if you create a table in one migration, add a column in another migrations, then remove a column in a third migration, this function will output an operation that represents the final state for the object: a create table operation that includes the added column and doesn't include the removed column. In environments where tables are replicated, it is more efficient to modify objects once and have that change replicated once, than to have the same object modified multiple times and replicated multiple times.
 
+    This function returns `Rivet.Migration` objects. Each object will have zero or more operations in its `PushOperations` property. If there are zero operations, it means the original operation was consolidated into another migration. Each operation has `Source` member on it, which is a list of all the migrations that contributed to that operation. 
+
     .OUTPUTS
     Rivet.Migration
 
     .EXAMPLE
-    Merge-Migration 
+    Get-Migration | Merge-Migration 
 
-    Demonstrates how to run `Convert-Migration.ps1`.
+    Demonstrates how to run `Merge-Migration`. It is always used in conjunction with `Get-Migration`.
     #>
     [CmdletBinding()]
     [OutputType([Rivet.Migration])]
@@ -119,32 +121,69 @@ function Merge-Migration
 
         $migrations = New-Object 'Collections.Generic.List[Rivet.Migration]'
         $newTables = New-Object 'Collections.Generic.HashSet[string]'
+        # list of every single operation we encounter across migrations
         $operations = New-Object 'Collections.ArrayList'
-        $migrationOperationMap = New-Object 'Collections.ArrayList'
-        $migrationOperationIdx = New-Object 'Collections.ArrayList'
+        # The migration each operation came from. 
+        $operationToMigrationMap = New-Object 'Collections.ArrayList'
+        # The index of the operation in its migration's PushOperations list.
+        $migrationPushOperationIdx = New-Object 'Collections.ArrayList'
         $opIdx = @{ }
     }
 
     process
     {
+
+        #$DebugPreference = 'Continue'
+
         foreach( $currentMigration in $Migration )
         {
+            function Register-Source
+            {
+                [CmdletBinding()]
+                param(
+                    [Rivet.Operation]
+                    $Operation
+                )
+                    
+                Set-StrictMode -Version 'Latest'
+
+                Write-Debug -Message     ('Current Migration Name: <{0}>' -f $migrationName)
+                Write-Debug -Message     ('Operation Type:         <{0}>' -f $Operation.GetType().FullName)
+                Write-Debug -Message     ('Start Source Count:     <{0}>' -f $Operation.Source.Count)
+                foreach( $source in $Operation.Source )
+                {
+                    Write-Debug -Message ('Source Migration Name:  <{0}>' -f $source.FullName)
+                    if( $source.FullName -eq $migrationName )
+                    {
+                        return
+                    }
+                }
+
+                $Operation.Source.Add( $currentMigration )
+                Write-Debug -Message     ('End Source Count:       <{0}>' -f $Operation.Source.Count)
+            }
+
             $migrationName = '{0}_{1}' -f $currentMigration.ID,$currentMigration.Name
             Write-Debug -Message ('{0}' -f $migrationName)
 
             $migrations.Add( $currentMigration )
 
+            $pushOpIdx = 0
             for( $pushOpIdx = 0; $pushOpIdx -lt $currentMigration.PushOperations.Count; ++$pushOpIdx )
             {
                 function Remove-CurrentOperation
                 {
-                    $currentMigration.PushOperations.RemoveAt( $pushOpIdx-- )
+                    $currentMigration.PushOperations.RemoveAt( $pushOpIdx )
+                    Set-Variable -Name 'pushOpIdx' -Scope 1 -Value ($pushOpIdx - 1)
                 }
 
                 $op = $currentMigration.PushOperations[$pushOpIdx]
                 [void]$operations.Add( $op )
-                [void]$migrationOperationMap.Add($currentMigration)
-                [void]$migrationOperationIdx.Add($pushOpIdx)
+                [void]$operationToMigrationMap.Add($currentMigration)
+                [void]$migrationPushOperationIdx.Add($pushOpIdx)
+                $source = New-Object -TypeName 'Collections.Generic.List[Rivet.Migration]'
+                $op | Add-Member -Name 'Source' -MemberType NoteProperty -Value $source
+                Register-Source $op
 
                 if( ($op | Get-Member -Name 'ObjectName') -and -not $opIdx.ContainsKey($op.ObjectName)  )
                 {
@@ -169,6 +208,7 @@ function Merge-Migration
                             if( $originalColumn )
                             {
                                 $originalColumn.Name = $op.NewName
+                                Register-Source $tableOp
                                 Remove-CurrentOperation
                                 continue
                             }
@@ -185,6 +225,7 @@ function Merge-Migration
                         if( $existingOp -is [Rivet.Operations.AddTableOperation] )
                         {
                             $existingOp.Name = $op.NewName
+                            Register-Source $existingOp
                             Remove-CurrentOperation
                             continue
                         }
@@ -205,12 +246,15 @@ function Merge-Migration
                         continue
                     }
 
+                    Register-Source $existingOp
+
                     $opTypeName = $op.GetType().Name
                     if( $opTypeName -like 'Remove*' )
                     {
                         $operations[$idx] = $null
-                        $originalMigration = $migrationOperationMap[$idx]
-                        $originalMigration.PushOperations.RemoveAt( $migrationOperationIdx[$idx] )
+                        $opIdx.Remove($op.ObjectName)
+                        $originalMigration = $operationToMigrationMap[$idx]
+                        $originalMigration.PushOperations.RemoveAt( $migrationPushOperationIdx[$idx] )
                         if( $originalMigration -eq $currentMigration )
                         {
                             $pushOpIdx--
@@ -263,9 +307,9 @@ function Merge-Migration
                             for( $colIdx = 0; $colIdx -lt $op.UpdateColumns.Count; ++$colIdx )
                             {
                                 $column = $op.UpdateColumns[$colIdx]
-                                $movedToAdd = Add-Column -Column $column -List $existingOp.AddColumns -ReplaceOnly
-                                $movedToUpdates = Add-Column -Column $column -List $existingOp.UpdateColumns
-                                if( $movedToAdd -or $movedToUpdates )
+                                $moved = Add-Column -Column $column -List $existingOp.AddColumns -ReplaceOnly
+                                $moved = $moved -or (Add-Column -Column $column -List $existingOp.UpdateColumns)
+                                if( $moved )
                                 {
                                     $op.UpdateColumns.RemoveAt( $colIdx-- )
                                 }
@@ -275,18 +319,25 @@ function Merge-Migration
                             for( $colIdx = 0; $colIdx -lt $op.RemoveColumns.Count; ++$colIdx )
                             {
                                 $columnName = $op.RemoveColumns[$colIdx]
-                                $removedAnAdd = Remove-Column -List $existingOp.AddColumns -Name $columnName
-                                $removedAnUpdate = Remove-Column -List $existingOp.UpdateColumns -Name $columnName
-                                if( $removedAnAdd -or $removedAnUpdate )
+                                # Remove a column we previously added
+                                $removedFromAddedColumns = Remove-Column -List $existingOp.AddColumns -Name $columnName
+                                $removedFromUpdatedColumns = Remove-Column -List $existingOp.UpdateColumns -Name $columnName
+
+                                $op.RemoveColumns.RemoveAt( $colIdx-- )
+                                if( -not ($removedFromAddedColumns -or $removedFromUpdatedColumns) )
                                 {
                                     [void] $existingOp.RemoveColumns.Add( $columnName )
-                                     $op.RemoveColumns.RemoveAt( $colIdx-- )
                                 }
                             }
 
                             if( -not $op.ToQuery() )
                             {
                                 Remove-CurrentOperation
+                            }
+
+                            if( -not $existingOp.ToQuery() )
+                            {
+                                $existingOp.Source[0].PushOperations.RemoveAt( $migrationPushOperationIdx[$idx] )
                             }
                         }
                         else
