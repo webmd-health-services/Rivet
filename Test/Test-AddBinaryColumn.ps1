@@ -26,7 +26,7 @@ function Pop-Migration
     Remove-Table 'Foobar'
 }
 
-'@ | New-Migration -Name 'CreateBinaryColumn'
+'@ | New-TestMigration -Name 'CreateBinaryColumn'
 
     Invoke-RTRivet -Push 'CreateBinaryColumn'
     
@@ -49,7 +49,7 @@ function Pop-Migration
     Remove-Table 'Foobar'
 }
 
-'@ | New-Migration -Name 'CreateBinaryColumnWithSparse'
+'@ | New-TestMigration -Name 'CreateBinaryColumnWithSparse'
 
     Invoke-RTRivet -Push 'CreateBinaryColumnWithSparse'
     
@@ -72,7 +72,7 @@ function Pop-Migration
     Remove-Table 'Foobar'
 }
 
-'@ | New-Migration -Name 'CreateBinaryColumnWithNotNull'
+'@ | New-TestMigration -Name 'CreateBinaryColumnWithNotNull'
 
     Invoke-RTRivet -Push 'CreateBinaryColumnWithNotNull'
     
@@ -95,7 +95,7 @@ function Pop-Migration
     Remove-Table 'Foobar'
 }
 
-'@ | New-Migration -Name 'ShouldCreateBinaryColumnWithCustomSizeCollation'
+'@ | New-TestMigration -Name 'ShouldCreateBinaryColumnWithCustomSizeCollation'
 
     Invoke-RTRivet -Push 'ShouldCreateBinaryColumnWithCustomSizeCollation'
     

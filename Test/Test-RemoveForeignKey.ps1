@@ -34,7 +34,7 @@ function Pop-Migration()
     Remove-Table 'Reference'
     Remove-Table 'Source'
 }
-"@ | New-Migration -Name 'RemoveForeignKey'
+"@ | New-TestMigration -Name 'RemoveForeignKey'
     Invoke-RTRivet -Push "RemoveForeignKey"
     Assert-False (Test-ForeignKey -TableName 'Source' -References 'Reference')
 }
@@ -62,7 +62,7 @@ function Pop-Migration()
     Remove-Table 'Reference'
     Remove-Table 'Remove-ForeignKey'
 }
-"@ | New-Migration -Name 'RemoveForeignKey'
+"@ | New-TestMigration -Name 'RemoveForeignKey'
     Invoke-RTRivet -Push "RemoveForeignKey"
     Assert-False (Test-ForeignKey -TableName 'Remove-ForeignKey' -References 'Reference')
 }
@@ -90,7 +90,7 @@ function Pop-Migration()
     Remove-Table 'Reference'
     Remove-Table 'Source'
 }
-"@ | New-Migration -Name 'RemoveForeignKey'
+"@ | New-TestMigration -Name 'RemoveForeignKey'
     Invoke-RTRivet -Push "RemoveForeignKey"
     Assert-False (Test-ForeignKey -TableName 'Source' -References 'Reference')
 }

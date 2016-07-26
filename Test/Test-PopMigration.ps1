@@ -19,7 +19,7 @@ function Pop-Migration
 {
     Remove-Table 'Migration1'
 }
-'@ | New-Migration -Name 'Migration1'
+'@ | New-TestMigration -Name 'Migration1'
 
     $migration2 = @'
 function Push-Migration
@@ -30,7 +30,7 @@ function Pop-Migration
 {
     Remove-Table 'Migration2'
 }
-'@ | New-Migration -Name 'Migration2'
+'@ | New-TestMigration -Name 'Migration2'
 
     $migration3 = @'
 function Push-Migration
@@ -41,7 +41,7 @@ function Pop-Migration
 {
     Remove-Table 'Migration3'
 }
-'@ | New-Migration -Name 'Migration3'
+'@ | New-TestMigration -Name 'Migration3'
 
     $migration4 = @'
 function Push-Migration
@@ -52,7 +52,7 @@ function Pop-Migration
 {
     Remove-Table 'Migration4'
 }
-'@ | New-Migration -Name 'Migration4'
+'@ | New-TestMigration -Name 'Migration4'
 
     Invoke-RTRivet -Push
     
@@ -166,7 +166,7 @@ function Pop-Migration
 {
     Remove-Table 'Migration38'
 }
-'@ | New-Migration -Name 'PopFails'
+'@ | New-TestMigration -Name 'PopFails'
     
     try
     {

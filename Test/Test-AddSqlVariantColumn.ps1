@@ -26,7 +26,7 @@ function Pop-Migration
     Remove-Table 'Foobar'
 }
 
-'@ | New-Migration -Name 'CreateSqlVariantColumn'
+'@ | New-TestMigration -Name 'CreateSqlVariantColumn'
 
     Invoke-RTRivet -Push 'CreateSqlVariantColumn'
     
@@ -49,7 +49,7 @@ function Pop-Migration
     Remove-Table 'Foobar'
 }
 
-'@ | New-Migration -Name 'CreateSqlVariantColumnWithSparse'
+'@ | New-TestMigration -Name 'CreateSqlVariantColumnWithSparse'
 
     Invoke-RTRivet -Push 'CreateSqlVariantColumnWithSparse'
     
@@ -72,7 +72,7 @@ function Pop-Migration
     Remove-Table 'Foobar'
 }
 
-'@ | New-Migration -Name 'CreateSqlVariantColumnWithNotNull'
+'@ | New-TestMigration -Name 'CreateSqlVariantColumnWithNotNull'
 
     Invoke-RTRivet -Push 'CreateSqlVariantColumnWithNotNull'
     

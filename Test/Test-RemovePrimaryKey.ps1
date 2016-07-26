@@ -16,7 +16,7 @@ function Pop-Migration()
 {
     Remove-Table -Name 'PrimaryKey'
 }
-'@ | New-Migration -Name 'CreateTable'
+'@ | New-TestMigration -Name 'CreateTable'
 }
 
 function Stop-Test
@@ -36,7 +36,7 @@ function Pop-Migration()
 {
     Remove-PrimaryKey -TableName 'PrimaryKey' -Name '$(New-ConstraintName -PrimaryKey 'PrimaryKey')'
 }
-"@ | New-Migration -Name 'SetandRemovePrimaryKey'
+"@ | New-TestMigration -Name 'SetandRemovePrimaryKey'
     Invoke-RTRivet -Push
     Assert-True (Test-Table 'PrimaryKey')
     Assert-PrimaryKey -TableName 'PrimaryKey' -ColumnName 'id'
@@ -57,7 +57,7 @@ function Pop-Migration()
 {
     Remove-PrimaryKey -TableName 'PrimaryKey' -Name 'Primary Key'
 }
-"@ | New-Migration -Name 'SetandRemovePrimaryKey'
+"@ | New-TestMigration -Name 'SetandRemovePrimaryKey'
     Invoke-RTRivet -Push
     Invoke-RTRivet -Pop
     Assert-False (Test-PrimaryKey -TableName 'Remove-PrimaryKey')
@@ -75,7 +75,7 @@ function Pop-Migration()
 {
     Remove-PrimaryKey -TableName 'PrimaryKey'
 }
-"@ | New-Migration -Name 'SetandRemovePrimaryKey'
+"@ | New-TestMigration -Name 'SetandRemovePrimaryKey'
     Invoke-RTRivet -Push
     Assert-True (Test-Table 'PrimaryKey')
     Assert-PrimaryKey -TableName 'PrimaryKey' -ColumnName 'id'

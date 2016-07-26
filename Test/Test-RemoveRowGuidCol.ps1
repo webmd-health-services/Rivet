@@ -28,7 +28,7 @@ function Pop-Migration
 {
     Remove-Table 'Row Guid Col'
 }
-'@ | New-Migration -Name 'RemoveRowGuidCol'
+'@ | New-TestMigration -Name 'RemoveRowGuidCol'
 
     Invoke-RTRivet -Push
 
@@ -55,7 +55,7 @@ function Pop-Migration
     Remove-Table -SchemaName 'custom schema' 'Row Guid Col'
     Remove-Schema 'custom schema'
 }
-'@ | New-Migration -Name 'RemoveRowGuidCol'
+'@ | New-TestMigration -Name 'RemoveRowGuidCol'
 
     Invoke-RTRivet -Push
 
@@ -82,7 +82,7 @@ function Pop-Migration
 {
     Remove-Table 'Row Guid Col'
 }
-'@ | New-Migration -Name 'RemoveRowGuidCol'
+'@ | New-TestMigration -Name 'RemoveRowGuidCol'
 
     Invoke-RTRivet -Push
 

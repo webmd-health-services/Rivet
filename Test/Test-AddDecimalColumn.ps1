@@ -26,7 +26,7 @@ function Pop-Migration
     Remove-Table 'Foobar'
 }
 
-'@ | New-Migration -Name 'CreateDecimalWithNullable'
+'@ | New-TestMigration -Name 'CreateDecimalWithNullable'
 
     Invoke-RTRivet -Push 'CreateDecimalWithNullable'
 
@@ -49,7 +49,7 @@ function Pop-Migration
     Remove-Table 'Foobar'
 }
 
-'@ | New-Migration -Name 'CreateDecimalWithNullable'
+'@ | New-TestMigration -Name 'CreateDecimalWithNullable'
 
     Invoke-RTRivet -Push 'CreateDecimalWithNullable'
 
@@ -72,7 +72,7 @@ function Pop-Migration
     Remove-Table 'Foobar'
 }
 
-'@ | New-Migration -Name 'CreateDecimalWithNotNull'
+'@ | New-TestMigration -Name 'CreateDecimalWithNotNull'
 
     Invoke-RTRivet -Push 'CreateDecimalWithNotNull'
 
@@ -95,7 +95,7 @@ function Pop-Migration
     Remove-Table 'Foobar'
 }
 
-'@ | New-Migration -Name 'CreateDecimalWithSparse'
+'@ | New-TestMigration -Name 'CreateDecimalWithSparse'
 
     Invoke-RTRivet -Push 'CreateDecimalWithSparse'
 
@@ -118,7 +118,7 @@ function Pop-Migration
     Remove-Table 'Foobar'
 }
 
-'@ | New-Migration -Name 'CreateDecimalWithIdentity'
+'@ | New-TestMigration -Name 'CreateDecimalWithIdentity'
 
     Invoke-RTRivet -Push 'CreateDecimalWithIdentity'
 
@@ -141,7 +141,7 @@ function Pop-Migration
     Remove-Table 'Foobar'
 }
 
-'@ | New-Migration -Name 'CreateDecimalWithIdentityNotForReplication'
+'@ | New-TestMigration -Name 'CreateDecimalWithIdentityNotForReplication'
 
     Invoke-RTRivet -Push 'CreateDecimalWithIdentityNotForReplication'
 
@@ -164,7 +164,7 @@ function Pop-Migration
     Remove-Table 'Foobar'
 }
 
-'@ | New-Migration -Name 'CreateDecimalWithIdentityCustomSeedCustomIncrement'
+'@ | New-TestMigration -Name 'CreateDecimalWithIdentityCustomSeedCustomIncrement'
 
     Invoke-RTRivet -Push 'CreateDecimalWithIdentityCustomSeedCustomIncrement'
 
@@ -187,7 +187,7 @@ function Pop-Migration
     Remove-Table 'Foobar'
 }
 
-'@ | New-Migration -Name 'CreateDecimalWithCustomValueCustomDescription'
+'@ | New-TestMigration -Name 'CreateDecimalWithCustomValueCustomDescription'
 
     Invoke-RTRivet -Push 'CreateDecimalWithCustomValueCustomDescription'
 

@@ -26,7 +26,7 @@ function Pop-Migration
     Remove-Table 'Foobar'
 }
 
-'@ | New-Migration -Name 'CreateTimeColumn'
+'@ | New-TestMigration -Name 'CreateTimeColumn'
 
     Invoke-RTRivet -Push 'CreateTimeColumn'
     
@@ -49,7 +49,7 @@ function Pop-Migration
     Remove-Table 'Foobar'
 }
 
-'@ | New-Migration -Name 'CreateTimeColumnWithSparse'
+'@ | New-TestMigration -Name 'CreateTimeColumnWithSparse'
 
     Invoke-RTRivet -Push 'CreateTimeColumnWithSparse'
     
@@ -72,7 +72,7 @@ function Pop-Migration
     Remove-Table 'Foobar'
 }
 
-'@ | New-Migration -Name 'CreateTimeColumnWithNotNull'
+'@ | New-TestMigration -Name 'CreateTimeColumnWithNotNull'
 
     Invoke-RTRivet -Push 'CreateTimeColumnWithNotNull'
     

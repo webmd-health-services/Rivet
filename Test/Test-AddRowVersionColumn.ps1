@@ -26,7 +26,7 @@ function Pop-Migration
     Remove-Table 'Foobar'
 }
 
-'@ | New-Migration -Name 'CreateRowVersionColumn'
+'@ | New-TestMigration -Name 'CreateRowVersionColumn'
 
     Invoke-RTRivet -Push 'CreateRowVersionColumn'
     
@@ -50,7 +50,7 @@ function Pop-Migration
     Remove-Table 'Foobar'
 }
 
-'@ | New-Migration -Name 'CreateRowVersionColumnWithNotNull'
+'@ | New-TestMigration -Name 'CreateRowVersionColumnWithNotNull'
 
     Invoke-RTRivet -Push 'CreateRowVersionColumnWithNotNull'
     

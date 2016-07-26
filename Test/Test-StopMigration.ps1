@@ -23,7 +23,7 @@ function Pop-Migration
 {
     Stop-Migration -Message 'This migration can''t be reversed. Sorry!'
 }
-'@ | New-Migration -Name 'AddRowGuidCol'
+'@ | New-TestMigration -Name 'AddRowGuidCol'
 
     Invoke-RTRivet -Push
 

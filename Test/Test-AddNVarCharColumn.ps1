@@ -26,7 +26,7 @@ function Pop-Migration
     Remove-Table 'Foobar'
 }
 
-'@ | New-Migration -Name 'CreateNVarCharColumn'
+'@ | New-TestMigration -Name 'CreateNVarCharColumn'
 
     Invoke-RTRivet -Push 'CreateNVarCharColumn'
     
@@ -49,7 +49,7 @@ function Pop-Migration
     Remove-Table 'Foobar'
 }
 
-'@ | New-Migration -Name 'CreateNVarCharColumnWithSparse'
+'@ | New-TestMigration -Name 'CreateNVarCharColumnWithSparse'
 
     Invoke-RTRivet -Push 'CreateNVarCharColumnWithSparse'
     
@@ -72,7 +72,7 @@ function Pop-Migration
     Remove-Table 'Foobar'
 }
 
-'@ | New-Migration -Name 'CreateNVarCharColumnWithNotNull'
+'@ | New-TestMigration -Name 'CreateNVarCharColumnWithNotNull'
 
     Invoke-RTRivet -Push 'CreateNVarCharColumnWithNotNull'
     
@@ -95,7 +95,7 @@ function Pop-Migration
     Remove-Table 'Foobar'
 }
 
-'@ | New-Migration -Name 'ShouldCreateNVarCharColumnWithSizeCollation'
+'@ | New-TestMigration -Name 'ShouldCreateNVarCharColumnWithSizeCollation'
 
     Invoke-RTRivet -Push 'ShouldCreateNVarCharColumnWithSizeCollation'
     

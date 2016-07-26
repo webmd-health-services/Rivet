@@ -23,7 +23,7 @@ function Pop-Migration
 {
     Remove-Synonym -Name 'Buzz'
 }
-'@ | New-Migration -Name 'RemoveSynonym'
+'@ | New-TestMigration -Name 'RemoveSynonym'
 
     Invoke-RTRivet -Push 'RemoveSynonym'
     Assert-Synonym -Name 'Buzz' -TargetObjectName '[dbo].[Fizz]'

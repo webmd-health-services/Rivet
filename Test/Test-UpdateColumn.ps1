@@ -30,7 +30,7 @@ function Pop-Migration
     Remove-Table 'Foobar'
 }
 
-'@ | New-Migration -Name 'UpdateDateColumnWithDescription'
+'@ | New-TestMigration -Name 'UpdateDateColumnWithDescription'
 
     Invoke-RTRivet -Push 'UpdateDateColumnWithDescription'
     
@@ -57,7 +57,7 @@ function Pop-Migration
     Remove-Table 'Foobar'
 }
 
-'@ | New-Migration -Name 'ShouldUpdateColumnFromBinarytoVarBinary'
+'@ | New-TestMigration -Name 'ShouldUpdateColumnFromBinarytoVarBinary'
 
     Invoke-RTRivet -Push 'ShouldUpdateColumnFromBinarytoVarBinary'
     
@@ -84,7 +84,7 @@ function Pop-Migration
     Remove-Table 'Foobar'
 }
 
-'@ | New-Migration -Name 'ShouldUpdateColumnFromNChartoNVarChar'
+'@ | New-TestMigration -Name 'ShouldUpdateColumnFromNChartoNVarChar'
 
     Invoke-RTRivet -Push 'ShouldUpdateColumnFromNChartoNVarChar'
     
@@ -128,7 +128,7 @@ function Pop-Migration
     Remove-Table 'WithXmlContent'
     Invoke-Ddl 'drop xml schema collection EmptyXsd'
 }
-"@ | New-Migration -Name 'ShouldUpdateColumnFromNVarChartoXml'
+"@ | New-TestMigration -Name 'ShouldUpdateColumnFromNVarChartoXml'
 
     Invoke-RTRivet -Push 'ShouldUpdateColumnFromNVarChartoXml'
     
@@ -165,7 +165,7 @@ function Pop-Migration
     Remove-Table 'Foobar'
 }
 
-'@ | New-Migration -Name 'UpdateDateColumnWithDescription'
+'@ | New-TestMigration -Name 'UpdateDateColumnWithDescription'
 
     Invoke-RTRivet -Push 'UpdateDateColumnWithDescription'
     

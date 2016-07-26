@@ -32,7 +32,7 @@ function Pop-Migration()
 {
     Remove-Table 'Add Index'
 }
-'@ | New-Migration -Name 'AddIndex'
+'@ | New-TestMigration -Name 'AddIndex'
 
     Invoke-RTRivet -Push 'AddIndex'
 
@@ -64,7 +64,7 @@ function Pop-Migration()
 {
     Remove-Table 'AddIndex'
 }
-'@ | New-Migration -Name 'AddIndexMultipleColumns'
+'@ | New-TestMigration -Name 'AddIndexMultipleColumns'
 
     Invoke-RTRivet -Push 'AddIndexMultipleColumns'
 
@@ -95,7 +95,7 @@ function Pop-Migration()
 {
     Remove-Table 'AddIndex'
 }
-'@ | New-Migration -Name 'AddClusteredIndex'
+'@ | New-TestMigration -Name 'AddClusteredIndex'
 
     Invoke-RTRivet -Push 'AddClusteredIndex'
 
@@ -124,7 +124,7 @@ function Pop-Migration()
 {
     Remove-Table 'AddIndex'
 }
-'@ | New-Migration -Name 'CreateUniqueIndex'
+'@ | New-TestMigration -Name 'CreateUniqueIndex'
 
     Invoke-RTRivet -Push 'CreateUniqueIndex'
 
@@ -156,7 +156,7 @@ function Pop-Migration()
 {
     Remove-Table 'AddIndex'
 }
-'@ | New-Migration -Name 'CreateIndexWithOptions'
+'@ | New-TestMigration -Name 'CreateIndexWithOptions'
 
     Invoke-RTRivet -Push 'CreateIndexWithOptions'
 
@@ -189,7 +189,7 @@ function Pop-Migration()
 {
     Remove-Table 'AddIndex'
 }
-'@ | New-Migration -Name 'CreateIndexWithFilterPredicate'
+'@ | New-TestMigration -Name 'CreateIndexWithFilterPredicate'
 
     Invoke-RTRivet -Push 'CreateIndexWithFilterPredicate'
 
@@ -222,7 +222,7 @@ function Pop-Migration()
 {
     Remove-Table 'AddIndex'
 }
-'@ | New-Migration -Name 'CreateIndexOnCustomFileGroup'
+'@ | New-TestMigration -Name 'CreateIndexOnCustomFileGroup'
 
     Invoke-RTRivet -Push 'CreateIndexOnCustomFileGroup' -ErrorAction SilentlyContinue
     Assert-Error 1 'Invalid filegroup'
@@ -249,7 +249,7 @@ function Pop-Migration()
 {
     Remove-Table 'AddIndex'
 }
-'@ | New-Migration -Name 'CreateIndexOnCustomFileStream'
+'@ | New-TestMigration -Name 'CreateIndexOnCustomFileStream'
 
     Invoke-RTRivet -Push 'CreateIndexOnCustomFileStream' -ErrorAction SilentlyContinue
     Assert-Error 1 'FILESTREAM_ON cannot be specified'
@@ -276,7 +276,7 @@ function Pop-Migration()
 }
 
 
-'@ | New-Migration -Name 'CreateIndexWithDescending'
+'@ | New-TestMigration -Name 'CreateIndexWithDescending'
 
     Invoke-RTRivet -Push 'CreateIndexWithDescending'
 
@@ -303,7 +303,7 @@ function Pop-Migration()
 {
     Remove-Table 'AddIndex'
 }
-'@ | New-Migration -Name 'CreateIndexWithMultipleDescending'
+'@ | New-TestMigration -Name 'CreateIndexWithMultipleDescending'
 
     Invoke-RTRivet -Push 'CreateIndexWithMultipleDescending'
 
@@ -327,7 +327,7 @@ function Pop-Migration()
 {
     Remove-Table 'Add-Index'
 }
-'@ | New-Migration -Name 'AddIndex'
+'@ | New-TestMigration -Name 'AddIndex'
 
     Invoke-RTRivet -Push 'AddIndex'
 
@@ -350,7 +350,7 @@ function Pop-Migration()
 {
     Remove-Table 'Add-Index'
 }
-'@ | New-Migration -Name 'AddIndexWithOptionalName'
+'@ | New-TestMigration -Name 'AddIndexWithOptionalName'
 
     Invoke-RTRivet -Push 'AddIndexWithOptionalName'
     Assert-Index -Name 'Example' -ColumnName 'IndexMe'
@@ -374,7 +374,7 @@ function Pop-Migration()
 {
     Remove-Table 'AddIndex'
 }
-'@ | New-Migration -Name 'AddIndex'
+'@ | New-TestMigration -Name 'AddIndex'
 
     Invoke-RTRivet -Push 'AddIndex'
 
@@ -400,7 +400,7 @@ function Pop-Migration()
 {
     Remove-Table 'AddIndex'
 }
-'@ | New-Migration -Name 'AddIndex'
+'@ | New-TestMigration -Name 'AddIndex'
 
     Invoke-RTRivet -Push 'AddIndex'
 

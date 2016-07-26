@@ -27,7 +27,7 @@ function Pop-Migration()
 {
     Remove-Table 'Migrations'
 }
-'@ | New-Migration -Name 'AddCheckConstraint'
+'@ | New-TestMigration -Name 'AddCheckConstraint'
 
     Invoke-RTRivet -Push 'AddCheckConstraint'
     Assert-CheckConstraint 'CK_Migrations_Example' -Definition '([Example]>(0))'
@@ -49,7 +49,7 @@ function Pop-Migration()
 {
     Remove-Table 'Migrations'
 }
-'@ | New-Migration -Name 'AddCheckConstraint'
+'@ | New-TestMigration -Name 'AddCheckConstraint'
 
     Invoke-RTRivet -Push 'AddCheckConstraint'
     Assert-CheckConstraint 'CK_Migrations_Example' -NotForReplication -Definition '([Example]>(0))'
@@ -74,7 +74,7 @@ function Pop-Migration()
 {
     Remove-Table 'Migrations'
 }
-'@ | New-Migration -Name 'AddCheckConstraint'
+'@ | New-TestMigration -Name 'AddCheckConstraint'
 
     Invoke-RTRivet -Push 'AddCheckConstraint'
 

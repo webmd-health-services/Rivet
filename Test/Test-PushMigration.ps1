@@ -19,7 +19,7 @@ function Pop-Migration()
 {
     Remove-Table 'InvokeQuery'
 }
-'@ | New-Migration -Name 'InvokeQuery'
+'@ | New-TestMigration -Name 'InvokeQuery'
 
     @'
 function Push-Migration()
@@ -33,7 +33,7 @@ function Pop-Migration()
 {
     Remove-Table 'secondTable'
 }
-'@ | New-Migration -Name 'SecondTable'
+'@ | New-TestMigration -Name 'SecondTable'
 
     @'
 function Push-Migration()
@@ -49,7 +49,7 @@ function Pop-Migration()
     Remove-UserDefinedFunction -Name RivetTestFunction
     Remove-StoredProcedure -Name RivetTestSproc
 }
-'@ | New-Migration -Name 'CreateObjectsFromFiles'
+'@ | New-TestMigration -Name 'CreateObjectsFromFiles'
 
     @'
 
@@ -65,7 +65,7 @@ function Pop-Migration()
     Remove-UserDefinedFunction -Name MiscellaneousObject
     Remove-UserDefinedFunction -Name ObjectMadeWithRelativePath
 }
-'@ | New-Migration -Name 'CreateObjectInCustomDirectory'
+'@ | New-TestMigration -Name 'CreateObjectInCustomDirectory'
 
     $miscellaneousObjectPath = Join-Path -Path $RTDatabaseMigrationRoot -ChildPath '..\MiscellaneousObject.sql'
     @'
@@ -212,8 +212,8 @@ function Pop-Migration
     Remove-Table 'Table1'
 }
 '@
-    $migration | New-Migration -Name 'ShouldPushMigrationsForMultipleDBs' | Format-Table | Out-String | Write-Verbose
-    $migration | New-Migration -Name 'ShouldPushMigrationsForMultipleDBs' -DatabaseName $RTDatabase2Name | Format-Table | Out-String | Write-Verbose
+    $migration | New-TestMigration -Name 'ShouldPushMigrationsForMultipleDBs' | Format-Table | Out-String | Write-Verbose
+    $migration | New-TestMigration -Name 'ShouldPushMigrationsForMultipleDBs' -DatabaseName $RTDatabase2Name | Format-Table | Out-String | Write-Verbose
 
     Invoke-RTRivet -Push -Database $RTDatabaseName,$RTDatabase2Name -ConfigFilePath $RTConfigFilePath  | Format-Table | Out-String | Write-Verbose
         
@@ -286,7 +286,7 @@ function Pop-Migration()
 {
     Remove-Table 'TableWithoutColumns'
 }
-'@ | New-Migration -Name 'AddTableWithNOColumns'
+'@ | New-TestMigration -Name 'AddTableWithNOColumns'
 
     Invoke-RTRivet -Push -ErrorAction SilentlyContinue -ErrorVariable rivetError
     Assert-True ($rivetError.Count -gt 0)

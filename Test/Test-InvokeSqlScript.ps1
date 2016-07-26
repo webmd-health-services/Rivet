@@ -24,7 +24,7 @@ function Pop-Migration
     Remove-Schema 'invokesqlscript'
 }
 
-'@ | New-Migration -Name 'InvokeSqlScript'
+'@ | New-TestMigration -Name 'InvokeSqlScript'
 
     $scriptPath = Split-Path -Parent -Path $m
     $scriptPath = Join-Path -Path $scriptPath -ChildPath 'AddSchema.sql'
@@ -53,7 +53,7 @@ function Pop-Migration
     Remove-Schema 'invokesqlscript'
 }
 
-'@ | New-Migration -Name 'InvokeSqlScript'
+'@ | New-TestMigration -Name 'InvokeSqlScript'
 
     try
     {
@@ -92,7 +92,7 @@ function Pop-Migration
     Remove-Schema 'invokesqlscript2'
 }
 
-'@ | New-Migration -Name 'InvokeSqlScript'
+'@ | New-TestMigration -Name 'InvokeSqlScript'
 
     $scriptPath = Split-Path -Parent -Path $m
     $scriptPath = Join-Path -Path $scriptPath -ChildPath 'AddSchema.sql'
@@ -128,7 +128,7 @@ function Pop-Migration
     Remove-Schema 'invokesqlscript'
 }
 
-'@ | New-Migration -Name 'InvokeSqlScript'
+'@ | New-TestMigration -Name 'InvokeSqlScript'
 
     $scriptPath = Split-Path -Parent -Path $m
     $scriptPath = Join-Path -Path $scriptPath -ChildPath 'AddSchema.sql'
@@ -156,7 +156,7 @@ function Pop-Migration
     Remove-Schema 'invokesqlscript'
 }
 
-'@ | New-Migration -Name 'InvokeSqlScript'
+'@ | New-TestMigration -Name 'InvokeSqlScript'
 
     $scriptPath = Split-Path -Parent -Path $m
     $scriptPath = Join-Path -Path $scriptPath -ChildPath 'AddSchema.sql'

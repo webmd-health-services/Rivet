@@ -37,7 +37,7 @@ function Pop-Migration
     Remove-Schema 'Invoke-Ddl'
 }
 
-"@ | New-Migration -Name 'CreateInvokeDdlFunction'
+"@ | New-TestMigration -Name 'CreateInvokeDdlFunction'
 
     Invoke-RTRivet -Push 'CreateInvokeDdlFunction'
 
@@ -72,7 +72,7 @@ function Pop-Migration
     Remove-Schema 'Invoke-Ddl'
 }
 
-"@ | New-Migration -Name 'CreateInvokeDdlFunction'
+"@ | New-TestMigration -Name 'CreateInvokeDdlFunction'
 
     Invoke-RTRivet -Push 'CreateInvokeDdlFunction' -ErrorAction SilentlyContinue
     Assert-Error
@@ -122,7 +122,7 @@ function Pop-Migration
     Remove-StoredProcedure 'RivetTestSproc'
 }
 
-"@ | New-Migration -Name 'CreateInvokeDdlFunction'
+"@ | New-TestMigration -Name 'CreateInvokeDdlFunction'
 
     Invoke-RTRivet -Push 'CreateInvokeDdlFunction' #-ErrorAction SilentlyContinue
 

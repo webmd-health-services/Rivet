@@ -30,7 +30,7 @@ function Pop-Migration
     Remove-Table 'Person'
 }
 
-'@ | New-Migration -Name 'UpdateTrigger'
+'@ | New-TestMigration -Name 'UpdateTrigger'
 
     Invoke-RTRivet -Push 'UpdateTrigger'
 
@@ -58,7 +58,7 @@ function Pop-Migration
     Remove-Schema 'fizz'
 }
 
-'@ | New-Migration -Name 'UpdateTriggerinCustomSchema'
+'@ | New-TestMigration -Name 'UpdateTriggerinCustomSchema'
 
     Invoke-RTRivet -Push 'UpdateTriggerinCustomSchema'
 

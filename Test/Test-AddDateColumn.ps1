@@ -26,7 +26,7 @@ function Pop-Migration
     Remove-Table 'Foobar'
 }
 
-'@ | New-Migration -Name 'CreateDateColumn'
+'@ | New-TestMigration -Name 'CreateDateColumn'
 
     Invoke-RTRivet -Push 'CreateDateColumn'
     
@@ -49,7 +49,7 @@ function Pop-Migration
     Remove-Table 'Foobar'
 }
 
-'@ | New-Migration -Name 'CreateDateColumnWithSparse'
+'@ | New-TestMigration -Name 'CreateDateColumnWithSparse'
 
     Invoke-RTRivet -Push 'CreateDateColumnWithSparse'
     
@@ -72,7 +72,7 @@ function Pop-Migration
     Remove-Table 'Foobar'
 }
 
-'@ | New-Migration -Name 'CreateDateColumnWithNotNull'
+'@ | New-TestMigration -Name 'CreateDateColumnWithNotNull'
 
     Invoke-RTRivet -Push 'CreateDateColumnWithNotNull'
     

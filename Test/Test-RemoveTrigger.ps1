@@ -30,7 +30,7 @@ function Pop-Migration
     Remove-Table 'Person'
 }
 
-'@ | New-Migration -Name 'RemoveTrigger'
+'@ | New-TestMigration -Name 'RemoveTrigger'
 
     Invoke-RTRivet -Push 'RemoveTrigger'
 

@@ -26,7 +26,7 @@ function Pop-Migration
     Remove-Table 'Foobar'
 }
 
-'@ | New-Migration -Name 'CreateDateTimeOffsetColumn'
+'@ | New-TestMigration -Name 'CreateDateTimeOffsetColumn'
 
     Invoke-RTRivet -Push 'CreateDateTimeOffsetColumn'
     
@@ -49,7 +49,7 @@ function Pop-Migration
     Remove-Table 'Foobar'
 }
 
-'@ | New-Migration -Name 'CreateDateTimeOffsetColumnWithSparse'
+'@ | New-TestMigration -Name 'CreateDateTimeOffsetColumnWithSparse'
 
     Invoke-RTRivet -Push 'CreateDateTimeOffsetColumnWithSparse'
     
@@ -72,7 +72,7 @@ function Pop-Migration
     Remove-Table 'Foobar'
 }
 
-'@ | New-Migration -Name 'CreateDateTimeOffsetColumnWithNotNull'
+'@ | New-TestMigration -Name 'CreateDateTimeOffsetColumnWithNotNull'
 
     Invoke-RTRivet -Push 'CreateDateTimeOffsetColumnWithNotNull'
     
@@ -95,7 +95,7 @@ function Pop-Migration
     Remove-Table 'Foobar'
 }
 
-'@ | New-Migration -Name 'ShouldCreateDateTimeOffsetColumnWithNoPrecision'
+'@ | New-TestMigration -Name 'ShouldCreateDateTimeOffsetColumnWithNoPrecision'
 
     Invoke-RTRivet -Push 'ShouldCreateDateTimeOffsetColumnWithNoPrecision'
     

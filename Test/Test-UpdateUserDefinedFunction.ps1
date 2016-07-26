@@ -25,7 +25,7 @@ function Pop-Migration
     Remove-UserDefinedFunction -Name 'squarefunction'
 }
 
-'@ | New-Migration -Name 'UpdateUserDefinedFunction'
+'@ | New-TestMigration -Name 'UpdateUserDefinedFunction'
 
     Invoke-RTRivet -Push 'UpdateUserDefinedFunction'
     

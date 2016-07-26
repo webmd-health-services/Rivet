@@ -24,7 +24,7 @@ function Test-FunctionsExported
                             'Invoke-Query' = $true;
                             'Initialize-Database' = $true;
                             'Invoke-MigrationOperation' = $true;
-                            'New-Migration' = $true;
+                            'New-TestMigration' = $true;
                             'New-MigrationObject' = $true;
                             'Split-SqlBatchQuery' = $true;
                             'Test-Migration' = $true;

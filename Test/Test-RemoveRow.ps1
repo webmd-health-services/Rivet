@@ -45,7 +45,7 @@ function Pop-Migration
     Remove-Table 'Cities'
 }
 
-'@ | New-Migration -Name 'RemoveSpecificRows'
+'@ | New-TestMigration -Name 'RemoveSpecificRows'
 
     Invoke-RTRivet -Push 'RemoveSpecificRows'
 
@@ -99,7 +99,7 @@ function Pop-Migration
     Remove-Table 'Cities'
 }
 
-'@ | New-Migration -Name 'RemoveAllRows'
+'@ | New-TestMigration -Name 'RemoveAllRows'
 
     Invoke-RTRivet -Push 'RemoveAllRows'
 
@@ -147,7 +147,7 @@ function Pop-Migration
     Remove-Table 'Cities'
 }
 
-'@ | New-Migration -Name 'RemoveAllRowsWithTruncate'
+'@ | New-TestMigration -Name 'RemoveAllRowsWithTruncate'
 
     Invoke-RTRivet -Push 'RemoveAllRowsWithTruncate'
 

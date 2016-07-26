@@ -26,7 +26,7 @@ function Pop-Migration
     Remove-Table 'Foobar'
 }
 
-'@ | New-Migration -Name 'CreateBitColumn'
+'@ | New-TestMigration -Name 'CreateBitColumn'
 
     Invoke-RTRivet -Push 'CreateBitColumn'
     
@@ -49,7 +49,7 @@ function Pop-Migration
     Remove-Table 'Foobar'
 }
 
-'@ | New-Migration -Name 'CreateBitColumnWithSparse'
+'@ | New-TestMigration -Name 'CreateBitColumnWithSparse'
 
     Invoke-RTRivet -Push 'CreateBitColumnWithSparse'
     
@@ -72,7 +72,7 @@ function Pop-Migration
     Remove-Table 'Foobar'
 }
 
-'@ | New-Migration -Name 'CreateBitColumnWithNotNull'
+'@ | New-TestMigration -Name 'CreateBitColumnWithNotNull'
 
     Invoke-RTRivet -Push 'CreateBitColumnWithNotNull'
     

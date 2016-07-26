@@ -32,7 +32,7 @@ function Pop-Migration
     Remove-Schema 'fiz'
 }
 
-'@ | New-Migration -Name 'AddSynonym'
+'@ | New-TestMigration -Name 'AddSynonym'
 
     Invoke-RTRivet -Push 'AddSynonym'
     Assert-Synonym -Name 'Buzz' -TargetObjectName '[dbo].[Fizz]'

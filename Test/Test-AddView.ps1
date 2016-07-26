@@ -29,7 +29,7 @@ function Pop-Migration()
     Remove-View 'customView'
     Remove-Table 'Person'
 }
-'@ | New-Migration -Name 'AddNewView'
+'@ | New-TestMigration -Name 'AddNewView'
     Invoke-RTRivet -Push 'AddNewView'
     
     Assert-View -Name "customView" -Schema "dbo" -Definition "as select FirstName from Person"

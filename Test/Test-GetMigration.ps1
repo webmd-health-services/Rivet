@@ -40,7 +40,7 @@ function Test-ShouldGetMigrationsUsingCurrentRivetJsonFile
     {
         Remove-Schema 'ShouldGetMigrationsUsingCurrentRivetJsonFile'
     }
-'@ | New-Migration -Name 'ShouldGetMigrationsUsingCurrentRivetJsonFile' -ConfigFilePath $rivetJsonPath | Format-Table | Out-String | Write-Verbose
+'@ | New-TestMigration -Name 'ShouldGetMigrationsUsingCurrentRivetJsonFile' -ConfigFilePath $rivetJsonPath | Format-Table | Out-String | Write-Verbose
 
         Push-Location -Path $tempDir -StackName $PSCommandPath
         try
@@ -75,7 +75,7 @@ function Pop-Migration
 {
     Invoke-Ddl 'select 1'
 }
-'@ | New-Migration -Name 'ShouldProtectAgainstItemsReturnedFromPipeline'
+'@ | New-TestMigration -Name 'ShouldProtectAgainstItemsReturnedFromPipeline'
 
     $m = Get-Migration -ConfigFilePath $RTConfigFilePath
     Assert-NoError
@@ -94,7 +94,7 @@ function Pop-Migration
 {
     Invoke-Ddl 'select 1'
 }
-'@ | New-Migration -Name 'EmptyPush'
+'@ | New-TestMigration -Name 'EmptyPush'
 
     try
     {
@@ -120,7 +120,7 @@ function Pop-Migration
 {
     # I'm empty. That is bad!
 }
-'@ | New-Migration -Name 'EmptyPop'
+'@ | New-TestMigration -Name 'EmptyPop'
 
     try
     {
@@ -141,7 +141,7 @@ function Pop-Migration
 {
     Invoke-Ddl 'select 1'
 }
-'@ | New-Migration -Name 'MissingPush'
+'@ | New-TestMigration -Name 'MissingPush'
 
     try
     {
@@ -162,7 +162,7 @@ function Push-Migration
 {
     Invoke-Ddl 'select 1'
 }
-'@ | New-Migration -Name 'MissingPop'
+'@ | New-TestMigration -Name 'MissingPop'
 
     try
     {
@@ -202,7 +202,7 @@ function Pop-Migration
 {
     Invoke-Ddl 'select 1'
 }
-'@ | New-Migration -Name 'ShouldIncludeMigrationByNameOrID'
+'@ | New-TestMigration -Name 'ShouldIncludeMigrationByNameOrID'
 
     $id = ($m.BaseName -split '_')[0]
 
@@ -231,7 +231,7 @@ function Pop-Migration
 {
     Invoke-Ddl 'select 1'
 }
-'@ | New-Migration -Name 'ShouldIncludeMigrationWildcardID'
+'@ | New-TestMigration -Name 'ShouldIncludeMigrationWildcardID'
 
     $id = ($m.BaseName -split '_')[0]
 
@@ -254,7 +254,7 @@ function Pop-Migration
 {
     Invoke-Ddl 'select 1'
 }
-'@ | New-Migration -Name 'ShouldGetAMigrationByBaseName'
+'@ | New-TestMigration -Name 'ShouldGetAMigrationByBaseName'
 
     $id = ($m.BaseName -split '_')[0]
 
@@ -277,7 +277,7 @@ function Pop-Migration
 {
     Invoke-Ddl 'select 1'
 }
-'@ | New-Migration -Name 'ShouldGetAMigrationByBaseNameWithWildcard'
+'@ | New-TestMigration -Name 'ShouldGetAMigrationByBaseNameWithWildcard'
 
     $id = ($m.BaseName -split '_')[0]
 
@@ -300,7 +300,7 @@ function Pop-Migration
 {
     Invoke-Ddl 'select 1'
 }
-'@ | New-Migration -Name 'ShouldExcludeMigrationByNameOrID'
+'@ | New-TestMigration -Name 'ShouldExcludeMigrationByNameOrID'
 
 
     $result = Get-Migration -ConfigFilePath $RTConfigFilePath -Exclude 'ShouldExcludeMigrationByNameOrID'
@@ -325,7 +325,7 @@ function Pop-Migration
 {
     Invoke-Ddl 'select 1'
 }
-'@ | New-Migration -Name 'ShouldExcludeMigrationWildcardID'
+'@ | New-TestMigration -Name 'ShouldExcludeMigrationWildcardID'
 
     $id = ($m.BaseName -split '_')[0]
 
@@ -346,7 +346,7 @@ function Pop-Migration
 {
     Invoke-Ddl 'select 1'
 }
-'@ | New-Migration -Name 'ShouldExcludeAMigrationByBaseName'
+'@ | New-TestMigration -Name 'ShouldExcludeAMigrationByBaseName'
 
     $id = ($m.BaseName -split '_')[0]
 
@@ -367,7 +367,7 @@ function Pop-Migration
 {
     Invoke-Ddl 'select 1'
 }
-'@ | New-Migration -Name 'ShouldExcludeAMigrationByBaseNameWithWildcard'
+'@ | New-TestMigration -Name 'ShouldExcludeAMigrationByBaseNameWithWildcard'
 
     $id = ($m.BaseName -split '_')[0]
 

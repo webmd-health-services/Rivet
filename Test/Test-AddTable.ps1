@@ -29,7 +29,7 @@ function Pop-Migration()
 {
     Remove-Table 'AddTable'
 }
-'@ | New-Migration -Name 'CreateTable'
+'@ | New-TestMigration -Name 'CreateTable'
     Invoke-RTRivet -Push 'CreateTable'
 
     Assert-Table 'AddTable' -Description 'Testing Add-Table migration'
@@ -60,7 +60,7 @@ function Pop-Migration()
     Remove-Table 'AddTableInRivetTest' -SchemaName 'rivettest'
     Remove-Schema 'rivettest'
 }
-'@ | New-Migration -Name 'CreateTableInCustomSchema'
+'@ | New-TestMigration -Name 'CreateTableInCustomSchema'
 
     Invoke-RTRivet -Push 'CreateTableInCustomSchema'
 
@@ -82,7 +82,7 @@ function Pop-Migration()
 {
     Remove-Table 'CustomFileGroup'
 }
-'@ | New-Migration -Name 'CreateTableWithCustomFileGroup'
+'@ | New-TestMigration -Name 'CreateTableWithCustomFileGroup'
 
     Invoke-RTRivet -Push 'CreateTableWithCustomFileGroup' -ErrorAction SilentlyContinue
     Assert-Error 1 'Invalid filegroup'
@@ -103,7 +103,7 @@ function Pop-Migration()
 {
     Remove-Table 'CustomTextImageFileGroup'
 }
-'@ | New-Migration -Name 'CreateTableWithCustomTextImageFileGroup'
+'@ | New-TestMigration -Name 'CreateTableWithCustomTextImageFileGroup'
 
     Invoke-RTRivet -Push 'CreateTableWithCustomTextImageFileGroup' -ErrorAction SilentlyContinue
     Assert-Error 1 'Cannot use TEXTIMAGE_ON'
@@ -124,7 +124,7 @@ function Pop-Migration()
 {
     Remove-Table 'CustomTextImageFileGroup'
 }
-'@ | New-Migration -Name 'CreateTableWithCustomFileStreamFileGroup'
+'@ | New-TestMigration -Name 'CreateTableWithCustomFileStreamFileGroup'
     Invoke-RTRivet -Push 'CreateTableWithCustomFileStreamFileGroup' -ErrorAction SilentlyContinue
     Assert-Error 1 'FILESTREAM_ON cannot be specified'
     Assert-False (Test-Table -Name 'CustomFileStreamFileGroup')
@@ -145,7 +145,7 @@ function Pop-Migration()
 {
     Remove-Table 'AddTableWithOption'
 }
-'@ | New-Migration -Name 'CreateTableWithOption'
+'@ | New-TestMigration -Name 'CreateTableWithOption'
 
     Invoke-RTRivet -Push 'CreateTableWithOption' -ErrorAction SilentlyContinue
     
@@ -177,7 +177,7 @@ function Pop-Migration
     Remove-Schema 'Add-Table'
 }
 
-'@ | New-Migration -Name 'AddTrigger'
+'@ | New-TestMigration -Name 'AddTrigger'
 
     Invoke-RTRivet -Push 'AddTrigger'
 

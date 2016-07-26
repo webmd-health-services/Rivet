@@ -31,7 +31,7 @@ function Pop-Migration
     Remove-Table 'Person'
 }
 
-'@ | New-Migration -Name 'UpdateView'
+'@ | New-TestMigration -Name 'UpdateView'
 
     Invoke-RTRivet -Push 'UpdateView'
     

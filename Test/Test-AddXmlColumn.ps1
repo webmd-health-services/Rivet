@@ -43,7 +43,7 @@ function Pop-Migration
     Remove-Table 'WithXmlContent'
     Invoke-Ddl 'drop xml schema collection EmptyXsd'
 }
-"@ | New-Migration -Name 'CreateXmlColumn'
+"@ | New-TestMigration -Name 'CreateXmlColumn'
 
     Invoke-RTRivet -Push 'CreateXmlColumn'
     
@@ -84,7 +84,7 @@ function Pop-Migration
     Remove-Table 'WithXmlDocument'
     Invoke-Ddl 'drop xml schema collection EmptyXsd'
 }
-"@ | New-Migration -Name 'CreateXmlColumn'
+"@ | New-TestMigration -Name 'CreateXmlColumn'
 
     Invoke-RTRivet -Push 'CreateXmlColumn'
     

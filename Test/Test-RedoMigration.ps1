@@ -25,7 +25,7 @@ function Pop-Migration()
 {
     Remove-Table 'RedoMigration'
 }
-'@ | New-Migration -Name 'CreateTable'
+'@ | New-TestMigration -Name 'CreateTable'
 
     @'
 function Push-Migration()
@@ -45,7 +45,7 @@ function Pop-Migration()
 
     Update-Table 'RedoMigration' -Remove 'description'
 }
-'@ | New-Migration -Name 'AddColumn'
+'@ | New-TestMigration -Name 'AddColumn'
 
     Invoke-RTRivet -Push
 

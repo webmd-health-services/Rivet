@@ -32,7 +32,7 @@ function Pop-Migration
     Remove-Table 'Person'
 }
 
-'@ | New-Migration -Name 'UpdateExistingStoredProcedure'
+'@ | New-TestMigration -Name 'UpdateExistingStoredProcedure'
 
     Invoke-RTRivet -Push 'UpdateExistingStoredProcedure'
 

@@ -15,7 +15,7 @@ function Pop-Migration
 {
     Remove-Schema 'initialize'
 }
-'@ | New-Migration -Name 'First'
+'@ | New-TestMigration -Name 'First'
 }
 
 function Stop-Test

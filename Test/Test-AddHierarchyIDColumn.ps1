@@ -26,7 +26,7 @@ function Pop-Migration
     Remove-Table 'Foobar'
 }
 
-'@ | New-Migration -Name 'CreateHierarchyIDColumn'
+'@ | New-TestMigration -Name 'CreateHierarchyIDColumn'
 
     Invoke-RTRivet -Push 'CreateHierarchyIDColumn'
     
@@ -49,7 +49,7 @@ function Pop-Migration
     Remove-Table 'Foobar'
 }
 
-'@ | New-Migration -Name 'CreateHierarchyIDColumnWithSparse'
+'@ | New-TestMigration -Name 'CreateHierarchyIDColumnWithSparse'
 
     Invoke-RTRivet -Push 'CreateHierarchyIDColumnWithSparse'
     
@@ -72,7 +72,7 @@ function Pop-Migration
     Remove-Table 'Foobar'
 }
 
-'@ | New-Migration -Name 'CreateHierarchyIDColumnWithNotNull'
+'@ | New-TestMigration -Name 'CreateHierarchyIDColumnWithNotNull'
 
     Invoke-RTRivet -Push 'CreateHierarchyIDColumnWithNotNull'
     

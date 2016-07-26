@@ -30,7 +30,7 @@ function Pop-Migration
 {
     Remove-Schema 'fubar'
 }
-'@ | New-Migration -Name 'CreateDatabase'
+'@ | New-TestMigration -Name 'CreateDatabase'
 
     $result = Invoke-RTRivet -Push
     Assert-NoError
@@ -55,7 +55,7 @@ function Pop-Migration
 {
     Remove-Schema 'TargetDatabases'
 }
-'@ | New-Migration -Name 'TargetDatabases' -Database $RTDatabaseName
+'@ | New-TestMigration -Name 'TargetDatabases' -Database $RTDatabaseName
 
     $result = Invoke-RTRivet -Push -Database $RTDatabaseName
     Assert-NoError
@@ -109,7 +109,7 @@ function Pop-Migration
 {
     Remove-Schema 'fubar'
 }
-'@ | New-Migration -Name 'HasReservedID' -Database $RTDatabaseName    
+'@ | New-TestMigration -Name 'HasReservedID' -Database $RTDatabaseName    
 
     Assert-NotNull $file
     $file = Rename-Item -Path $file -NewName ('00999999999999_HasReservedID.ps1') -PassThru
@@ -168,7 +168,7 @@ function Test-ShouldPushMultipleMigrations
                                 @'
 function Push-Migration { Invoke-Ddl 'select 1' }
 function Pop-Migration { Invoke-Ddl 'select 1' }
-'@ | New-Migration -Name $_
+'@ | New-TestMigration -Name $_
             }
     [Rivet.OperationResult[]]$result = Invoke-Rivet -Push -Name 'One','Three' -ConfigFilePath $RTConfigFilePath
     Assert-OperationsReturned $result
@@ -183,7 +183,7 @@ function Test-ShouldPopMultipleMigrations
                                 @'
 function Push-Migration { Invoke-Ddl 'select 1' }
 function Pop-Migration { Invoke-Ddl 'select 1' }
-'@ | New-Migration -Name $_
+'@ | New-TestMigration -Name $_
             }
     Invoke-Rivet -Push -Name 'One','Three' -ConfigFilePath $RTConfigFilePath
     [Rivet.OperationResult[]]$result = Invoke-Rivet -Pop -Name 'One','Three' -ConfigFilePath $RTConfigFilePath

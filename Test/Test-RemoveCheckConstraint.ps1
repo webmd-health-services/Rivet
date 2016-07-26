@@ -28,7 +28,7 @@ function Pop-Migration()
 {
     Remove-Table 'Migrations'
 }
-'@ | New-Migration -Name 'RemoveCheckConstraint'
+'@ | New-TestMigration -Name 'RemoveCheckConstraint'
 
     Invoke-RTRivet -Push 'RemoveCheckConstraint'
     $CheckConstraints = Invoke-RivetTestQuery -Query 'select * from sys.check_constraints'

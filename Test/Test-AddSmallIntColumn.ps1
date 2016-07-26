@@ -26,7 +26,7 @@ function Pop-Migration
     Remove-Table 'Foobar'
 }
 
-'@ | New-Migration -Name 'CreateSmallIntWithNullable'
+'@ | New-TestMigration -Name 'CreateSmallIntWithNullable'
 
     Invoke-RTRivet -Push 'CreateSmallIntWithNullable'
 
@@ -49,7 +49,7 @@ function Pop-Migration
     Remove-Table 'Foobar'
 }
 
-'@ | New-Migration -Name 'CreateSmallIntWithNotNull'
+'@ | New-TestMigration -Name 'CreateSmallIntWithNotNull'
 
     Invoke-RTRivet -Push 'CreateSmallIntWithNotNull'
 
@@ -72,7 +72,7 @@ function Pop-Migration
     Remove-Table 'Foobar'
 }
 
-'@ | New-Migration -Name 'CreateSmallIntWithSparse'
+'@ | New-TestMigration -Name 'CreateSmallIntWithSparse'
 
     Invoke-RTRivet -Push 'CreateSmallIntWithSparse'
 
@@ -95,7 +95,7 @@ function Pop-Migration
     Remove-Table 'Foobar'
 }
 
-'@ | New-Migration -Name 'CreateSmallIntWithIdentity'
+'@ | New-TestMigration -Name 'CreateSmallIntWithIdentity'
 
     Invoke-RTRivet -Push 'CreateSmallIntWithIdentity'
 
@@ -118,7 +118,7 @@ function Pop-Migration
     Remove-Table 'Foobar'
 }
 
-'@ | New-Migration -Name 'CreateSmallIntWithIdentityNotForReplication'
+'@ | New-TestMigration -Name 'CreateSmallIntWithIdentityNotForReplication'
 
     Invoke-RTRivet -Push 'CreateSmallIntWithIdentityNotForReplication'
 
@@ -141,7 +141,7 @@ function Pop-Migration
     Remove-Table 'Foobar'
 }
 
-'@ | New-Migration -Name 'CreateSmallIntWithIdentityCustom'
+'@ | New-TestMigration -Name 'CreateSmallIntWithIdentityCustom'
 
     Invoke-RTRivet -Push 'CreateSmallIntWithIdentityCustom'
 
@@ -164,7 +164,7 @@ function Pop-Migration
     Remove-Table 'Foobar'
 }
 
-'@ | New-Migration -Name 'CreateSmallIntWithCustomValueCustomDescription'
+'@ | New-TestMigration -Name 'CreateSmallIntWithCustomValueCustomDescription'
 
     Invoke-RTRivet -Push 'CreateSmallIntWithCustomValueCustomDescription'
 

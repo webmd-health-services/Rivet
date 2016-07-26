@@ -27,7 +27,7 @@ function Pop-Migration
     Remove-Table 'Foobar'
 }
 
-'@ | New-Migration -Name 'VerboseSwitch'
+'@ | New-TestMigration -Name 'VerboseSwitch'
 
     Invoke-RTRivet -Push 'VerboseSwitch' -Verbose
 }

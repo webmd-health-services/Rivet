@@ -26,7 +26,7 @@ function Pop-Migration
     Remove-Table 'Foobar'
 }
 
-'@ | New-Migration -Name 'CreateUniqueIdentifierColumn'
+'@ | New-TestMigration -Name 'CreateUniqueIdentifierColumn'
 
     Invoke-RTRivet -Push 'CreateUniqueIdentifierColumn'
     
@@ -49,7 +49,7 @@ function Pop-Migration
     Remove-Table 'Foobar'
 }
 
-'@ | New-Migration -Name 'CreateUniqueIdentifierColumnWithSparse'
+'@ | New-TestMigration -Name 'CreateUniqueIdentifierColumnWithSparse'
 
     Invoke-RTRivet -Push 'CreateUniqueIdentifierColumnWithSparse'
     
@@ -72,7 +72,7 @@ function Pop-Migration
     Remove-Table 'Foobar'
 }
 
-'@ | New-Migration -Name 'CreateUniqueIdentifierColumnWithNotNull'
+'@ | New-TestMigration -Name 'CreateUniqueIdentifierColumnWithNotNull'
 
     Invoke-RTRivet -Push 'CreateUniqueIdentifierColumnWithNotNull'
     
@@ -95,7 +95,7 @@ function Pop-Migration
     Remove-Table 'Foobar'
 }
 
-'@ | New-Migration -Name 'CreateUniqueIdentifierRowGuidCol'
+'@ | New-TestMigration -Name 'CreateUniqueIdentifierRowGuidCol'
 
     Invoke-RTRivet -Push 'CreateUniqueIdentifierRowGuidCol'
     

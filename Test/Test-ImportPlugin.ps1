@@ -42,7 +42,7 @@ function Pop-Migration
 {
     Remove-MyTable
 }
-'@ | New-Migration -Name 'AddMyTable'
+'@ | New-TestMigration -Name 'AddMyTable'
 
     Invoke-RTRivet -Push
 
@@ -70,7 +70,7 @@ function Pop-Migration
 {
     Remove-Table 'MyTable'
 }
-'@ | New-Migration -Name 'AddMyTable'
+'@ | New-TestMigration -Name 'AddMyTable'
 
     try
     {

@@ -29,7 +29,7 @@ function Pop-Migration
     Remove-StoredProcedure 'TestStoredProcedure'
     Remove-Table 'Person'
 }
-'@ | New-Migration -Name 'CreateNewStoredProcedure'
+'@ | New-TestMigration -Name 'CreateNewStoredProcedure'
 
     Invoke-RTRivet -Push 'CreateNewStoredProcedure'
 

@@ -35,7 +35,7 @@ function Pop-Migration
     Remove-Schema 'fubar'
 }
 
-'@ | New-Migration -Name 'CompleteAdminPlugin'
+'@ | New-TestMigration -Name 'CompleteAdminPlugin'
 
     Invoke-RTRivet -Push 'CompleteAdminPlugin'
 
@@ -61,7 +61,7 @@ function Pop-Migration
 {
     Remove-Table Foobar
 }
-'@ | New-Migration -Name 'SkipRowGuid'
+'@ | New-TestMigration -Name 'SkipRowGuid'
 
     Invoke-RTRivet -Push 'SkipRowGuid'
 
@@ -92,7 +92,7 @@ function Pop-Migration
 {
     Remove-Table 'Foobar'
 }
-'@ | New-Migration -Name 'ValidateMigrations'
+'@ | New-TestMigration -Name 'ValidateMigrations'
 
     try
     {
@@ -120,7 +120,7 @@ function Pop-Migration
 {
     Remove-Table 'Foobar'
 }
-'@ | New-Migration -Name 'ValidateMigrations'
+'@ | New-TestMigration -Name 'ValidateMigrations'
 
     try
     {
@@ -147,7 +147,7 @@ function Pop-Migration
 {
     Remove-Table 'Foobar'
 }
-'@ | New-Migration -Name 'ValidateMigrations'
+'@ | New-TestMigration -Name 'ValidateMigrations'
 
     try
     {
@@ -174,7 +174,7 @@ function Pop-Migration
 {
     Remove-Table 'Foobar'
 }
-'@ | New-Migration -Name 'ValidateMigrations'
+'@ | New-TestMigration -Name 'ValidateMigrations'
 
     try
     {
@@ -201,7 +201,7 @@ function Pop-Migration
 {
     Remove-Table 'Foobar'
 }
-'@ | New-Migration -Name 'ValidateMigrations'
+'@ | New-TestMigration -Name 'ValidateMigrations'
 
     Invoke-RTRivet -Push 'ValidateMigrations'
 
@@ -234,7 +234,7 @@ function Pop-Migration
     Remove-Table 'Bar'
     Remove-Table 'Foo'
 }
-"@ | New-Migration -Name 'ValidateMigrations'
+"@ | New-TestMigration -Name 'ValidateMigrations'
 
     Invoke-RTRivet -Push 'ValidateMigrations'
 
@@ -259,7 +259,7 @@ function Pop-Migration
 {
     Remove-Table 'Foo'
 }
-'@ | New-Migration -Name 'ValidateMigrations'
+'@ | New-TestMigration -Name 'ValidateMigrations'
 
     Invoke-RTRivet -Push 'ValidateMigrations'
 
@@ -281,7 +281,7 @@ function Pop-Migration
 {
     Remove-Table 'Foo'
 }
-'@ | New-Migration -Name 'ValidateMigrations'
+'@ | New-TestMigration -Name 'ValidateMigrations'
 
     try
     {
@@ -311,7 +311,7 @@ function Pop-Migration
 {
     Remove-Table 'Foo'
 }
-'@ | New-Migration -Name 'ValidateMigrations'
+'@ | New-TestMigration -Name 'ValidateMigrations'
 
     try
     {
@@ -345,7 +345,7 @@ function Pop-Migration
 {
     Remove-Table 'Foo'
 }
-'@ | New-Migration -Name 'ValidateMigrations'
+'@ | New-TestMigration -Name 'ValidateMigrations'
 
     try
     {

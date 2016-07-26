@@ -37,7 +37,7 @@ function Pop-Migration
     Remove-DataType -SchemaName 'refresh' 'mytype'
     Remove-Schema 'refresh'
 }
-'@ | New-Migration -Name 'CreateToUpper'
+'@ | New-TestMigration -Name 'CreateToUpper'
 
     Invoke-RTRivet -Push
 
@@ -65,7 +65,7 @@ function Pop-Migration
 
     Remove-DataType -SchemaName 'refresh' -Name 'mytype_REMOVE'
 }
-'@ | New-Migration -Name 'IncreaseToUpperLength'
+'@ | New-TestMigration -Name 'IncreaseToUpperLength'
 
     Invoke-RTRivet -Push
 

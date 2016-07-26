@@ -76,7 +76,7 @@ function Pop-Migration
     Remove-Table 'AddColumnNoDefaultsAllNull'
     Invoke-Ddl 'drop xml schema collection EmptyXsd'
 }
-"@ | New-Migration -Name 'AddColumnNoDefaultsAllNull'
+"@ | New-TestMigration -Name 'AddColumnNoDefaultsAllNull'
 
     Invoke-RTRivet -Push 'AddColumnNoDefaultsAllNull'
 
@@ -181,7 +181,7 @@ function Pop-Migration()
     Remove-Table 'AddColumnDefaultsNotNull'
     Invoke-Ddl 'drop xml schema collection EmptyXsd'
 }
-"@ | New-Migration -Name 'AddColumnDefaultsNotNull'
+"@ | New-TestMigration -Name 'AddColumnDefaultsNotNull'
 
     Invoke-RTRivet -Push 'AddColumnDefaultsNotNull'
 
@@ -261,7 +261,7 @@ function Pop-Migration()
     Remove-Table 'TinyIntIdentity'
     Remove-Table 'DecimalIdentity'
 }
-'@ | New-Migration -Name 'AddColumnIdentityTables'
+'@ | New-TestMigration -Name 'AddColumnIdentityTables'
 
     Invoke-RTRivet -Push 'AddColumnIdentityTables'
 
@@ -297,7 +297,7 @@ function Pop-Migration()
 {
     Remove-Table 'WithRowGuidCol'
 }
-'@ | New-Migration -Name 'AddColumnRowGuidCol'
+'@ | New-TestMigration -Name 'AddColumnRowGuidCol'
 
     Invoke-RTRivet -Push 'AddColumnRowGuidCol'
 
@@ -337,7 +337,7 @@ function Pop-Migration()
     Remove-Table 'WithXmlDocument'
     Invoke-Ddl 'drop xml schema collection EmptyXsd'
 }
-"@ | New-Migration -Name 'AddColumnXmlDocument'
+"@ | New-TestMigration -Name 'AddColumnXmlDocument'
 
     Invoke-RTRivet -Push 'AddColumnXmlDocument'
 
@@ -366,7 +366,7 @@ function Pop-Migration()
 {
     Remove-Table 'WithVarBinaryFileStream'
 }
-"@ | New-Migration -Name 'AddColumnVarBinaryFileStream'
+"@ | New-TestMigration -Name 'AddColumnVarBinaryFileStream'
     Invoke-RTRivet -Push 'AddColumnVarBinaryFileStream'
 
     Assert-Table 'WithVarBinaryFileStream'
@@ -396,7 +396,7 @@ function Pop-Migration()
 {
     Remove-Table 'WithCustomCollation'
 }
-"@ | New-Migration -Name 'AddColumnCollation'
+"@ | New-TestMigration -Name 'AddColumnCollation'
 
     Invoke-RTRivet -Push 'AddColumnCollation'
 
@@ -474,7 +474,7 @@ function Pop-Migration()
     Invoke-Ddl 'drop xml schema collection EmptyXsd'
 }
 
-"@ | New-Migration -Name 'AddColumnSparse'
+"@ | New-TestMigration -Name 'AddColumnSparse'
 
     Invoke-RTRivet -Push 'AddColumnSparse'
 
@@ -554,7 +554,7 @@ function Pop-Migration()
     Remove-Table 'TinyIntIdentity'
     Remove-Table 'DecimalIdentity'
 }
-"@ | New-Migration -Name 'AddColumnNotForReplication'
+"@ | New-TestMigration -Name 'AddColumnNotForReplication'
 
     Invoke-RTRivet -Push 'AddColumnNotForReplication'
 

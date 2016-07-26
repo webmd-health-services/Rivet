@@ -33,7 +33,7 @@ function Pop-Migration()
     Remove-Table -SchemaName 'My-Schema' 'AddColumnNoDefaultsAllNull'
     Remove-Schema 'My-Schema'
 }
-'@ | New-Migration -Name 'AddColumnNoDefaultsAllNull'
+'@ | New-TestMigration -Name 'AddColumnNoDefaultsAllNull'
 
     Invoke-RTRivet -Push 'AddColumnNoDefaultsAllNull'
     

@@ -26,7 +26,7 @@ function Pop-Migration
     Remove-Table 'Foobar'
 }
 
-'@ | New-Migration -Name 'BogusMigration'
+'@ | New-TestMigration -Name 'BogusMigration'
 
     try
     {

@@ -28,7 +28,7 @@ function Pop-Migration()
 {
     Remove-Table 'MS_Description'
 }
-'@ | New-Migration -Name 'AddDescription'
+'@ | New-TestMigration -Name 'AddDescription'
     Invoke-RTRivet -Push 'AddDescription'
 
     Assert-Table -Name 'MS_Description' -Description 'new description' 

@@ -1,5 +1,5 @@
 
-function New-Migration
+function New-TestMigration
 {
     [CmdletBinding()]
     param(

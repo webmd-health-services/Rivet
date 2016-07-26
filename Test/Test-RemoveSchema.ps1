@@ -25,7 +25,7 @@ function Pop-Migration()
 {
     Remove-Schema -Name 'rivetaddremoveschema'
 }
-'@ | New-Migration -Name 'AddSchema'
+'@ | New-TestMigration -Name 'AddSchema'
 
     Assert-False (Test-Schema 'rivetaddremoveschema')
 

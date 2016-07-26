@@ -25,7 +25,7 @@ function Pop-Migration
     Remove-Schema 'fizz'
 }
 
-'@ | New-Migration -Name 'AddExtendedPropertyToSchema'
+'@ | New-TestMigration -Name 'AddExtendedPropertyToSchema'
 
     Invoke-RTRivet -Push 'AddExtendedPropertyToSchema'
 
@@ -54,7 +54,7 @@ function Pop-Migration
     Remove-Table 'Foobar'
 }
 
-'@ | New-Migration -Name 'AddExtendedPropertyToTable'
+'@ | New-TestMigration -Name 'AddExtendedPropertyToTable'
 
     Invoke-RTRivet -Push 'AddExtendedPropertyToTable'
 
@@ -81,7 +81,7 @@ function Pop-Migration
     Remove-View 'Foobar'
 }
 
-'@ | New-Migration -Name 'AddExtendedPropertyToView'
+'@ | New-TestMigration -Name 'AddExtendedPropertyToView'
 
     Invoke-RTRivet -Push 'AddExtendedPropertyToView'
 
@@ -111,7 +111,7 @@ function Pop-Migration
     Remove-Schema 'metric'
 }
 
-'@ | New-Migration -Name 'AddExtendedPropertyToView'
+'@ | New-TestMigration -Name 'AddExtendedPropertyToView'
 
     Invoke-RTRivet -Push 'AddExtendedPropertyToView'
 
@@ -140,7 +140,7 @@ function Pop-Migration
     Remove-Table 'Foobar'
 }
 
-'@ | New-Migration -Name 'AddExtendedPropertyToTableColumn'
+'@ | New-TestMigration -Name 'AddExtendedPropertyToTableColumn'
 
     Invoke-RTRivet -Push 'AddExtendedPropertyToTableColumn'
 
@@ -172,7 +172,7 @@ function Pop-Migration
     Remove-Table 'Table'
 }
 
-'@ | New-Migration -Name 'AddExtendedPropertyToViewColumn'
+'@ | New-TestMigration -Name 'AddExtendedPropertyToViewColumn'
 
     Invoke-RTRivet -Push 'AddExtendedPropertyToViewColumn'
 
@@ -201,7 +201,7 @@ function Pop-Migration
     Remove-Table 'Foobar'
 }
 
-'@ | New-Migration -Name 'AllowNullPropertyValue'
+'@ | New-TestMigration -Name 'AllowNullPropertyValue'
 
     Invoke-RTRivet -Push 'AllowNullPropertyValue'
 
@@ -228,7 +228,7 @@ function Pop-Migration
     Remove-Table 'Foobar'
 }
 
-'@ | New-Migration -Name 'AddExtendedPropertyToColumn'
+'@ | New-TestMigration -Name 'AddExtendedPropertyToColumn'
 
     Invoke-RTRivet -Push 'AddExtendedPropertyToColumn'
 

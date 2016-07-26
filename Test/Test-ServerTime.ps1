@@ -28,7 +28,7 @@ function Pop-Migration
     Remove-Table 'Foobar'
 }
 
-'@ | New-Migration -Name 'CreateDateTime2Column'
+'@ | New-TestMigration -Name 'CreateDateTime2Column'
 
     Invoke-RTRivet -Push 'CreateDateTime2Column'
 

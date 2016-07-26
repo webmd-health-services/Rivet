@@ -1,4 +1,4 @@
-﻿
+
 & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
 
 function Start-Test
@@ -29,7 +29,7 @@ function Pop-Migration()
 {
     Remove-Table 'Migrations'
 }
-'@ | New-Migration -Name 'EnabledCheckConstraint'
+'@ | New-TestMigration -Name 'EnabledCheckConstraint'
 
     Invoke-RTRivet -Push 'EnabledCheckConstraint'
     Assert-CheckConstraint 'CK_Migrations_Example' -Definition '([Example]>(0))'

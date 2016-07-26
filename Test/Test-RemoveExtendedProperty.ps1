@@ -26,7 +26,7 @@ function Pop-Migration
     Remove-Schema 'fizz'
 }
 
-'@ | New-Migration -Name 'RemoveExtendedPropertyToSchema'
+'@ | New-TestMigration -Name 'RemoveExtendedPropertyToSchema'
 
     Invoke-RTRivet -Push 'RemoveExtendedPropertyToSchema'
 
@@ -54,7 +54,7 @@ function Pop-Migration
     Remove-Table 'Foobar'
 }
 
-'@ | New-Migration -Name 'RemoveExtendedPropertyToTable'
+'@ | New-TestMigration -Name 'RemoveExtendedPropertyToTable'
 
     Invoke-RTRivet -Push 'RemoveExtendedPropertyToTable'
 
@@ -79,7 +79,7 @@ function Pop-Migration
     Remove-View 'Foobar'
 }
 
-'@ | New-Migration -Name 'RemoveExtendedPropertyToView'
+'@ | New-TestMigration -Name 'RemoveExtendedPropertyToView'
 
     Invoke-RTRivet -Push 'RemoveExtendedPropertyToView'
 
@@ -106,7 +106,7 @@ function Pop-Migration
     Remove-Schema 'metric'
 }
 
-'@ | New-Migration -Name 'RemoveExtendedPropertyToView'
+'@ | New-TestMigration -Name 'RemoveExtendedPropertyToView'
 
     Invoke-RTRivet -Push 'RemoveExtendedPropertyToView'
 
@@ -134,7 +134,7 @@ function Pop-Migration
     Remove-Table 'Foobar'
 }
 
-'@ | New-Migration -Name 'RemoveExtendedPropertyToTableColumn'
+'@ | New-TestMigration -Name 'RemoveExtendedPropertyToTableColumn'
 
     Invoke-RTRivet -Push 'RemoveExtendedPropertyToTableColumn'
 
@@ -163,7 +163,7 @@ function Pop-Migration
     Remove-Table 'Foobar2'
 }
 
-'@ | New-Migration -Name 'RemoveExtendedPropertyToViewColumn'
+'@ | New-TestMigration -Name 'RemoveExtendedPropertyToViewColumn'
 
     Invoke-RTRivet -Push 'RemoveExtendedPropertyToViewColumn'
 

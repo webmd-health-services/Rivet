@@ -1,5 +1,6 @@
 
 & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
+& (Join-Path -Path $PSScriptRoot -ChildPath '..\Rivet\Import-Rivet.ps1' -Resolve)
 $rivetPath = Join-Path -Path $PSScriptRoot -ChildPath '..\Rivet\rivet.ps1' -Resolve
 $convertRivetMigration = Join-Path -Path $PSScriptRoot -ChildPath '..\Rivet\Extras\Convert-Migration.ps1' -Resolve
 $outputDir = $null
@@ -18,6 +19,8 @@ function Start-Test
     ++$testsRun
 
     Invoke-RTRivet -Push
+
+    & (Join-Path -Path $PSScriptRoot -ChildPath '..\Rivet\Import-Rivet.ps1' -Resolve)
 }
 
 function Stop-Test
@@ -228,7 +231,7 @@ function Pop-Migration
 
     Remove-Schema 'idempotent'
 }
-'@ | New-Migration -Name 'ShouldCreateIdempotentQueryForAddOperations'
+'@ | New-TestMigration -Name 'ShouldCreateIdempotentQueryForAddOperations'
 
     $scriptPath = Split-Path -Parent -Path $m
     $scriptPath = Join-Path -Path $scriptPath -ChildPath 'query.sql'
@@ -343,7 +346,7 @@ function Pop-Migration
     Remove-Schema 'empty'
     Remove-Schema `$idempotent.SchemaName
 }
-"@ | New-Migration -Name 'ShouldCreateIdempotentQueriesForRemoveOperations'
+"@ | New-TestMigration -Name 'ShouldCreateIdempotentQueriesForRemoveOperations'
 
     Invoke-RTRivet -Push 'ShouldCreateIdempotentQueriesForRemoveOperations'
 
@@ -412,7 +415,7 @@ function Pop-Migration
 
     Add-Schema 'empty'
 }
-"@ | New-Migration -Name 'RemoveOperations'
+"@ | New-TestMigration -Name 'RemoveOperations'
 
     Assert-ConvertMigration -Schemas -Schema -CodeObject -Data -DependentObject -ExtendedProperty -Trigger -Constraint -ForeignKey -Type
 
@@ -484,7 +487,7 @@ function Pop-Migration
     Remove-Table @idempotent `$farmers.TableName
     Remove-Schema `$idempotent.SchemaName
 }
-"@ | New-Migration -Name 'ShouldCreateIdempotentQueriesForDisableOperations'
+"@ | New-TestMigration -Name 'ShouldCreateIdempotentQueriesForDisableOperations'
 
     Invoke-RTRivet -Push 'ShouldCreateIdempotentQueriesForDisableOperations'
 
@@ -510,7 +513,7 @@ function Pop-Migration
     Enable-Constraint @schema @crops -Name 'CK_Crops_AllowedCrops'
     Enable-Constraint @schema @crops -Name '$(New-ForeignKeyConstraintName -SourceSchema 'idempotent' 'Crops' -TargetSchema 'idempotent' 'Farmers')'
 }
-"@ | New-Migration -Name 'DisableOperations'
+"@ | New-TestMigration -Name 'DisableOperations'
 
     Assert-ConvertMigration -Constraint 
 
@@ -565,7 +568,7 @@ function Pop-Migration
     Remove-Table @idempotent `$farmers.TableName
     Remove-Schema `$idempotent.SchemaName
 }
-"@ | New-Migration -Name 'ShouldCreateIdempotentQueriesForEnableOperations'
+"@ | New-TestMigration -Name 'ShouldCreateIdempotentQueriesForEnableOperations'
 
     Invoke-RTRivet -Push 'ShouldCreateIdempotentQueriesForEnableOperations'
 
@@ -591,7 +594,7 @@ function Pop-Migration
     Disable-Constraint @schema @crops -Name 'CK_Crops_AllowedCrops'
     Disable-Constraint @schema @crops -Name '$(New-ForeignKeyConstraintName -SourceSchema 'idempotent' 'Crops' -TargetSchema 'idempotent' 'Farmers')'
 }
-"@ | New-Migration -Name 'DisableOperations'
+"@ | New-TestMigration -Name 'DisableOperations'
 
     Assert-ConvertMigration -Constraint
 
@@ -626,7 +629,7 @@ function Pop-Migration
     Remove-Table -SchemaName 'idempotent' 'Idempotent'
     Remove-Schema 'idempotent'
 }
-'@ | New-Migration -Name 'DataOperations'
+'@ | New-TestMigration -Name 'DataOperations'
 
     Assert-ConvertMigration -Schemas -Schema -Data
 
@@ -658,7 +661,7 @@ function Pop-Migration
 {
     Remove-Table 'NeedsPluginStuff'
 }
-'@ | New-Migration -Name 'ShouldRunPlugins'
+'@ | New-TestMigration -Name 'ShouldRunPlugins'
 
     Assert-ConvertMigration -Schema -ExtendedProperty -Trigger 
 
@@ -692,7 +695,7 @@ function Pop-Migration
 {
     Remove-Table 'TableOne'
 }
-'@ | New-Migration -Name 'CreateTableOne'
+'@ | New-TestMigration -Name 'CreateTableOne'
 
    $migrationTwo = @'
 function Push-Migration
@@ -706,7 +709,7 @@ function Pop-Migration
 {
     Remove-Table 'TableTwo'
 }
-'@ | New-Migration -Name 'CreateTableTwo'
+'@ | New-TestMigration -Name 'CreateTableTwo'
 
     try
     {
@@ -742,7 +745,7 @@ function Pop-Migration
     Remove-Table -SchemaName 'aggregate' 'Beta'
     Remove-Schema 'aggregate'
 }
-'@ | New-Migration -Name 'AddTables'
+'@ | New-TestMigration -Name 'AddTables'
 
     @"
 function Push-Migration
@@ -769,7 +772,7 @@ function Pop-Migration
 {
     Remove-PrimaryKey -SchemaName 'aggregate' -TableName 'Beta' -Name '$(New-ConstraintName -PrimaryKey -SchemaName 'aggregate' -TableName 'Beta')'
 }
-"@ | New-Migration -Name 'UpdateTables'
+"@ | New-TestMigration -Name 'UpdateTables'
 
     Assert-ConvertMigration -Schemas -Schema
 
@@ -816,7 +819,7 @@ function Pop-Migration
 {
     Remove-Table 'FeedbackLog'
 }
-'@ | New-Migration -Name 'ShouldAggregateMultipleTableUpdates'
+'@ | New-TestMigration -Name 'ShouldAggregateMultipleTableUpdates'
 
     Invoke-RTRivet -Push 'ShouldAggregateMultipleTableUpdates'
 
@@ -846,7 +849,7 @@ function Pop-Migration
     Update-Table -Name 'FeedbackLog' -UpdateColumn { VarChar 'Feedback' 1008 }
     Update-Table -Name 'FeedbackCategories' -RemoveColumn 'ToBeIncreased','ToBERemoved'
 }
-'@ | New-Migration -Name 'RemoveOperations'
+'@ | New-TestMigration -Name 'RemoveOperations'
 
     Assert-ConvertMigration -Schema
 
@@ -875,7 +878,7 @@ function Pop-Migration
 {
     Remove-Table 'T1New'
 }
-'@ | New-Migration -Name 'AddT1'
+'@ | New-TestMigration -Name 'AddT1'
 
     Invoke-RTRivet -Push 'AddT1'
 
@@ -901,7 +904,7 @@ function Pop-Migration
 {
     Remove-Schema 'include'
 }
-'@ | New-Migration -Name 'Include'
+'@ | New-TestMigration -Name 'Include'
 
     @'
 function Push-Migration
@@ -913,7 +916,7 @@ function Pop-Migration
 {
     Remove-Schema 'exclude'
 }
-'@ | New-Migration -Name 'Exclude'
+'@ | New-TestMigration -Name 'Exclude'
 
     Assert-ConvertMigration -Schemas -Exclude '*Exc*'
 
@@ -940,7 +943,7 @@ function Pop-Migration
 {
     Remove-Schema 'include'
 }
-'@ | New-Migration -Name 'Include'
+'@ | New-TestMigration -Name 'Include'
 
     @'
 function Push-Migration
@@ -952,7 +955,7 @@ function Pop-Migration
 {
     Remove-Schema 'exclude'
 }
-'@ | New-Migration -Name 'Exclude'
+'@ | New-TestMigration -Name 'Exclude'
 
     Assert-ConvertMigration -Schemas -Include '*Inc*'
 
@@ -1076,7 +1079,7 @@ function Pop-Migration
     Update-Table -Name EligibilityMaps -AddColumn { Bit 'UsePgpEncryption' -Description 'is the file expected to be encrypted?' }
     Update-Table -Name EligibilityMaps -AddColumn { varchar 'Delimiter' -Size 5 -Description 'what is the delimiter to use when processing the file. valid values are: [,|\t]' }
 }
-'@ | New-Migration -Name 'RemoveThenReAdd'
+'@ | New-TestMigration -Name 'RemoveThenReAdd'
 
     & $convertRivetMigration -ConfigFilePath $RTConfigFilePath -OutputPath $outputDir
     Assert-NoError

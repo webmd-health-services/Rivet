@@ -30,7 +30,7 @@ function Pop-Migration()
 {
     Remove-Table 'AddIndex'
 }
-"@ | New-Migration -Name 'RemoveIndex'
+"@ | New-TestMigration -Name 'RemoveIndex'
 
     Invoke-RTRivet -Push 'RemoveIndex'
     Assert-True (Test-Table 'AddIndex')
@@ -55,7 +55,7 @@ function Pop-Migration()
 {
     Remove-Table 'Remove-Index'
 }
-"@ | New-Migration -Name 'RemoveIndex'
+"@ | New-TestMigration -Name 'RemoveIndex'
 
     Invoke-RTRivet -Push 'RemoveIndex'
     Assert-False (Test-Index -TableName 'Remove-Index' -ColumnName 'IndexMe')
@@ -80,7 +80,7 @@ function Pop-Migration()
 {
     Remove-Table 'AddIndex'
 }
-"@ | New-Migration -Name 'RemoveIndex'
+"@ | New-TestMigration -Name 'RemoveIndex'
 
     Invoke-RTRivet -Push 'RemoveIndex'
     Assert-True (Test-Table 'AddIndex')
@@ -110,7 +110,7 @@ function Pop-Migration()
 {
     Remove-Table 'AddIndex'
 }
-"@ | New-Migration -Name 'RemoveIndex'
+"@ | New-TestMigration -Name 'RemoveIndex'
 
     Invoke-RTRivet -Push 'RemoveIndex'
     Assert-True (Test-Table 'AddIndex')

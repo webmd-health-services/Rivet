@@ -24,7 +24,7 @@ function Pop-Migration
     Remove-StoredProcedure 'ShouldWriteToOutputWithoutError'
 }
 
-'@ | New-Migration -Name 'ShouldWriteToOutputWithoutError'
+'@ | New-TestMigration -Name 'ShouldWriteToOutputWithoutError'
 
     $scriptPath = Split-Path -Parent -Path $m
     $scriptPath = Join-Path -Path $scriptPath -ChildPath 'ShouldWriteToOutputWithoutError.sql'

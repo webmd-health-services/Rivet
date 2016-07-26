@@ -26,7 +26,7 @@ function Pop-Migration
     Remove-Table Foobar
 }
 
-'@ | New-Migration -Name 'CreateBigIntWithNullable'
+'@ | New-TestMigration -Name 'CreateBigIntWithNullable'
 
     Invoke-RTRivet -Push 'CreateBigIntWithNullable'
 
@@ -49,7 +49,7 @@ function Pop-Migration
     Remove-Table Foobar
 }
 
-'@ | New-Migration -Name 'CreateBigIntWithNotNull'
+'@ | New-TestMigration -Name 'CreateBigIntWithNotNull'
 
     Invoke-RTRivet -Push 'CreateBigIntWithNotNull'
 
@@ -72,7 +72,7 @@ function Pop-Migration
     Remove-Table Foobar
 }
 
-'@ | New-Migration -Name 'CreateBigIntWithSparse'
+'@ | New-TestMigration -Name 'CreateBigIntWithSparse'
 
     Invoke-RTRivet -Push 'CreateBigIntWithSparse'
 
@@ -95,7 +95,7 @@ function Pop-Migration
     Remove-Table Foobar    
 }
 
-'@ | New-Migration -Name 'CreateBigIntWithIdentity'
+'@ | New-TestMigration -Name 'CreateBigIntWithIdentity'
 
     Invoke-RTRivet -Push 'CreateBigIntWithIdentity'
 
@@ -118,7 +118,7 @@ function Pop-Migration
     Remove-Table Foobar    
 }
 
-'@ | New-Migration -Name 'CreateBigIntWithIdentityNotForReplication'
+'@ | New-TestMigration -Name 'CreateBigIntWithIdentityNotForReplication'
 
     Invoke-RTRivet -Push 'CreateBigIntWithIdentityNotForReplication'
 
@@ -141,7 +141,7 @@ function Pop-Migration
     Remove-Table Foobar    
 }
 
-'@ | New-Migration -Name 'CreateBigIntWithIdentityCustomSeedCustomIncrement'
+'@ | New-TestMigration -Name 'CreateBigIntWithIdentityCustomSeedCustomIncrement'
 
     Invoke-RTRivet -Push 'CreateBigIntWithIdentityCustomSeedCustomIncrement'
 
@@ -164,7 +164,7 @@ function Pop-Migration
     Remove-Table Foobar    
 }
 
-'@ | New-Migration -Name 'CreateBigIntWithCustomValueCustomDescription'
+'@ | New-TestMigration -Name 'CreateBigIntWithCustomValueCustomDescription'
 
     Invoke-RTRivet -Push 'CreateBigIntWithCustomValueCustomDescription'
 
@@ -189,7 +189,7 @@ function Pop-Migration
     Remove-Schema 'New-BigInt'
 }
 
-'@ | New-Migration -Name 'ShouldEscapeNames'
+'@ | New-TestMigration -Name 'ShouldEscapeNames'
 
     Invoke-RTRivet -Push 'ShouldEscapeNames'
 

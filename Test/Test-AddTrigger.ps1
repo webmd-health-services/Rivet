@@ -28,7 +28,7 @@ function Pop-Migration
     Remove-Table 'Person'
 }
 
-'@ | New-Migration -Name 'AddTrigger'
+'@ | New-TestMigration -Name 'AddTrigger'
 
     Invoke-RTRivet -Push 'AddTrigger'
 
@@ -55,7 +55,7 @@ function Pop-Migration
     Remove-Schema 'Test-AddTrigger'
 }
 
-'@ | New-Migration -Name 'AddTrigger'
+'@ | New-TestMigration -Name 'AddTrigger'
 
     Invoke-RTRivet -Push 'AddTrigger'
 
@@ -82,7 +82,7 @@ function Pop-Migration
     Remove-Schema 'Add-Trigger'
 }
 
-'@ | New-Migration -Name 'AddTrigger'
+'@ | New-TestMigration -Name 'AddTrigger'
 
     Invoke-RTRivet -Push 'AddTrigger'
 

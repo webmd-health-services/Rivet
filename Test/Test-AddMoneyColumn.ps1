@@ -26,7 +26,7 @@ function Pop-Migration
     Remove-Table 'Foobar'
 }
 
-'@ | New-Migration -Name 'CreateMoneyColumn'
+'@ | New-TestMigration -Name 'CreateMoneyColumn'
 
     Invoke-RTRivet -Push 'CreateMoneyColumn'
     
@@ -49,7 +49,7 @@ function Pop-Migration
     Remove-Table 'Foobar'
 }
 
-'@ | New-Migration -Name 'CreateMoneyColumnWithSparse'
+'@ | New-TestMigration -Name 'CreateMoneyColumnWithSparse'
 
     Invoke-RTRivet -Push 'CreateMoneyColumnWithSparse'
     
@@ -72,7 +72,7 @@ function Pop-Migration
     Remove-Table 'Foobar'
 }
 
-'@ | New-Migration -Name 'CreateMoneyColumnWithNotNull'
+'@ | New-TestMigration -Name 'CreateMoneyColumnWithNotNull'
 
     Invoke-RTRivet -Push 'CreateMoneyColumnWithNotNull'
     

@@ -27,7 +27,7 @@ function Pop-Migration()
 {
     Remove-Schema -Name 'rivetaddremoveschema'
 }
-'@ | New-Migration -Name 'addschema'
+'@ | New-TestMigration -Name 'addschema'
 
     Assert-False (Test-Schema 'rivetaddremoveschema')
 
@@ -48,7 +48,7 @@ function Pop-Migration()
 {
     Remove-Schema -Name 'alter'
 }
-'@ | New-Migration -Name 'AddSchemaWithReservedName'
+'@ | New-TestMigration -Name 'AddSchemaWithReservedName'
 
     Assert-False (Test-Schema 'alter')
 
@@ -72,7 +72,7 @@ function Pop-Migration
     Remove-Schema -Name 'schemawithowner'
     Invoke-Ddl 'drop user addremoteschema'
 }
-'@ | New-Migration -Name 'AddSchemaWithOwner'
+'@ | New-TestMigration -Name 'AddSchemaWithOwner'
 
     Assert-False (Test-Schema 'schemawithowner')
     Invoke-RTRivet -Push 'AddSchemaWithOwner'

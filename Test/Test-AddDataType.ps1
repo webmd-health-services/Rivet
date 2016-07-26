@@ -30,7 +30,7 @@ function Pop-Migration
     Remove-DataType 'G U I D'
 }
 
-'@ | New-Migration -Name 'ByAlias'
+'@ | New-TestMigration -Name 'ByAlias'
 
     Invoke-RTRivet -Push 'ByAlias'
 
@@ -61,7 +61,7 @@ function Pop-Migration
     Invoke-Ddl 'drop assembly rivettest'
 }
 
-"@ | New-Migration -Name 'ByAssembly'
+"@ | New-TestMigration -Name 'ByAssembly'
 
     Invoke-RTRivet -Push 'ByAssembly'
     
@@ -87,7 +87,7 @@ function Pop-Migration
     Remove-DataType 'U s e r s'
 }
 
-'@ | New-Migration -Name 'ByTable'
+'@ | New-TestMigration -Name 'ByTable'
 
     Invoke-RTRivet -Push 'ByTable'
 

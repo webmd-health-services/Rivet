@@ -48,7 +48,7 @@ function Pop-Migration
     Remove-Table 'City List'
 }
 
-'@ | New-Migration -Name 'UpdateSpecificRows'
+'@ | New-TestMigration -Name 'UpdateSpecificRows'
 
     Invoke-RTRivet -Push 'UpdateSpecificRows'
 
@@ -99,7 +99,7 @@ function Pop-Migration
     Remove-Table 'Cities'
 }
 
-'@ | New-Migration -Name 'UpdateAllRows'
+'@ | New-TestMigration -Name 'UpdateAllRows'
 
     Invoke-RTRivet -Push 'UpdateAllRows'
 
@@ -155,7 +155,7 @@ function Pop-Migration
 {
     Remove-Table 'Members'
 }
-'@ | New-Migration -Name 'AddSingleRow'
+'@ | New-TestMigration -Name 'AddSingleRow'
 
     Invoke-RTRivet -Push 'AddSingleRow'
 
@@ -197,7 +197,7 @@ function Pop-Migration
 {
     Remove-Table 'Members'
 }
-'@ | New-Migration -Name 'AddSingleRow'
+'@ | New-TestMigration -Name 'AddSingleRow'
 
     Invoke-RTRivet -Push 'AddSingleRow'
 

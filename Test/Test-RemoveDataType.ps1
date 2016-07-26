@@ -25,7 +25,7 @@ function Pop-Migration
     Remove-DataType 'Users DT'    
 }
 
-'@ | New-Migration -Name 'ByTable'
+'@ | New-TestMigration -Name 'ByTable'
 
     Invoke-RTRivet -Push 'ByTable'
 

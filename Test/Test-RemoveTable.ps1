@@ -26,7 +26,7 @@ function Pop-Migration()
 {
     Remove-Table -Name 'Ducati'
 }
-'@ | New-Migration -Name 'AddTable'
+'@ | New-TestMigration -Name 'AddTable'
     Invoke-RTRivet -Push 'AddTable'
     Assert-True (Test-Table 'Ducati')
 
@@ -58,7 +58,7 @@ function Pop-Migration()
     Remove-Table 'Ducati'
     Remove-Schema 'notDbo'
 }
-'@ | New-Migration -Name 'AddTablesInDifferentSchemas'    
+'@ | New-TestMigration -Name 'AddTablesInDifferentSchemas'    
 
     Invoke-RTRivet -Push 'AddTablesInDifferentSchemas'
 

@@ -36,7 +36,7 @@ function Pop-Migration
     Remove-Table 'Foobar'
 }
 
-'@ | New-Migration -Name $name
+'@ | New-TestMigration -Name $name
 
     Invoke-RTRivet -Push
     Assert-NoError
@@ -57,7 +57,7 @@ function Pop-Migration
 {
     Remove-Table 'ShouldNotValidateAlreadyAppliedMigrations'
 }
-'@ | New-Migration -Name 'Original'
+'@ | New-TestMigration -Name 'Original'
 
     Invoke-RTRivet -Push
 
@@ -94,7 +94,7 @@ function Pop-Migration
 {
     Remove-Schema 'ShouldNotValidateAlreadyAppliedMigrations'
 }
-'@ | New-Migration -Name 'Second'
+'@ | New-TestMigration -Name 'Second'
 
         Invoke-RTRivet -Push
         Assert-NoError

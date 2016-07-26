@@ -32,7 +32,7 @@ function Pop-Migration
     Remove-Schema 'do.i.get.escaped'
 }
 
-'@ | New-Migration -Name 'RenameTable'
+'@ | New-TestMigration -Name 'RenameTable'
 
     Invoke-RTRivet -Push 'RenameTable'
 
@@ -61,7 +61,7 @@ function Pop-Migration
     Remove-Table 'Table.Name'
 }
 
-'@ | New-Migration -Name 'RenameColumn'
+'@ | New-TestMigration -Name 'RenameColumn'
 
     Invoke-RTRivet -Push 'RenameColumn'
 
@@ -93,7 +93,7 @@ function Pop-Migration
     Remove-SChema 'the.schema'
 }
 
-'@ | New-Migration -Name 'RenameIndex'
+'@ | New-TestMigration -Name 'RenameIndex'
 
     Invoke-RTRivet -Push 'RenameIndex'
 
@@ -135,7 +135,7 @@ function Pop-Migration
     Remove-Schema 'the.schema'
 }
 
-'@ | New-Migration -Name 'RenameConstraint'
+'@ | New-TestMigration -Name 'RenameConstraint'
 
     Invoke-RTRivet -Push 'RenameConstraint'
 

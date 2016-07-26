@@ -1,4 +1,4 @@
-﻿& (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
+& (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
 
 function Start-Test
 {
@@ -35,7 +35,7 @@ function Pop-Migration()
     Remove-Table 'SourceTable'
     Remove-Table 'ReferenceTable'
 }
-'@ | New-Migration -Name 'EnabledForeignKey'
+'@ | New-TestMigration -Name 'EnabledForeignKey'
 
     Invoke-RTRivet -Push 'EnabledForeignKey'
     Assert-ForeignKey -TableName 'SourceTable' -References 'ReferenceTable'
@@ -68,7 +68,7 @@ function Pop-Migration()
     Remove-Table 'SourceTable'
     Remove-Table 'ReferenceTable'
 }
-'@ | New-Migration -Name 'EnabledForeignKey'
+'@ | New-TestMigration -Name 'EnabledForeignKey'
 
     Invoke-RTRivet -Push 'EnabledForeignKey'
     Assert-ForeignKey -TableName 'SourceTable' -References 'ReferenceTable'
@@ -100,7 +100,7 @@ function Pop-Migration()
     Remove-Table 'SourceTable'
     Remove-Table 'ReferenceTable'
 }
-'@ | New-Migration -Name 'DisabledForeignKeyWithName'
+'@ | New-TestMigration -Name 'DisabledForeignKeyWithName'
 
     Invoke-RTRivet -Push 'DisabledForeignKeyWithName'
 

@@ -26,7 +26,7 @@ function Pop-Migration
     Remove-Table 'Foobar'
 }
 
-'@ | New-Migration -Name 'CreateRealColumn'
+'@ | New-TestMigration -Name 'CreateRealColumn'
 
     Invoke-RTRivet -Push 'CreateRealColumn'
     
@@ -49,7 +49,7 @@ function Pop-Migration
     Remove-Table 'Foobar'
 }
 
-'@ | New-Migration -Name 'CreateRealColumnWithSparse'
+'@ | New-TestMigration -Name 'CreateRealColumnWithSparse'
 
     Invoke-RTRivet -Push 'CreateRealColumnWithSparse'
     
@@ -72,7 +72,7 @@ function Pop-Migration
     Remove-Table 'Foobar'
 }
 
-'@ | New-Migration -Name 'CreateRealColumnWithNotNull'
+'@ | New-TestMigration -Name 'CreateRealColumnWithNotNull'
 
     Invoke-RTRivet -Push 'CreateRealColumnWithNotNull'
     

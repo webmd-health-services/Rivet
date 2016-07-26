@@ -26,7 +26,7 @@ function Pop-Migration
     Remove-DataType -SchemaName 'refresh.part2' -Name 'my.type'
     Remove-Schema 'refresh.part2'
 }
-'@ | New-Migration -Name 'CreateMyType'
+'@ | New-TestMigration -Name 'CreateMyType'
 
     Invoke-RTRivet -Push
 
@@ -42,7 +42,7 @@ function Pop-Migration
 {
     Rename-DataType -SchemaName 'refresh.part2' -Name 'myoldtype' -NewName 'my.type'
 }
-'@ | New-Migration -Name 'IncreaseToUpperLength'
+'@ | New-TestMigration -Name 'IncreaseToUpperLength'
 
     Invoke-RTRivet -Push
 
