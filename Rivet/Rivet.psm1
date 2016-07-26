@@ -6,7 +6,6 @@ $RivetMigrationsTableName = 'Migrations'
 $RivetMigrationsTableFullName = '{0}.{1}' -f $RivetSchemaName,$RivetMigrationsTableName
 $RivetActivityTableName = 'Activity'
 
-
 function Test-TypeDataMember
 {
     [CmdletBinding()]
@@ -53,8 +52,21 @@ $operationsRoot = Join-Path -Path $functionRoot -ChildPath 'Operations' -Resolve
     ForEach-Object { . $_.FullName }
 
 $privateFunctions = @{
-                        'Enable-ForeignKey' = $true;
+                        'Connect-Database' = $true;
+                        'Convert-FileInfoToMigration' = $true;
                         'Disable-ForeignKey' = $true;
+                        'Disconnect-Database' = $true;
+                        'Enable-ForeignKey' = $true;
+                        'Get-MigrationFile' = $true;
+                        'Import-Plugin' = $true;
+                        'Initialize-Database' = $true;
+                        'Invoke-MigrationOperation' = $true;
+                        'Invoke-Query' = $true;
+                        'New-MigrationObject' = $true;
+                        'Split-SqlBatchQuery' = $true;
+                        'Test-Migration' = $true;
+                        'Update-Database' = $true;
+                        'Write-RivetError' = $true;
                      }
 $publicFunctions = Invoke-Command -ScriptBlock {
                                                      @(
