@@ -125,8 +125,6 @@ function Merge-Migration
         $operations = New-Object 'Collections.ArrayList'
         # The migration each operation came from. 
         $operationToMigrationMap = New-Object 'Collections.ArrayList'
-        # The index of the operation in its migration's PushOperations list.
-        $migrationPushOperationIdx = New-Object 'Collections.ArrayList'
         $opIdx = @{ }
     }
 
@@ -147,6 +145,7 @@ function Merge-Migration
                     
                 Set-StrictMode -Version 'Latest'
 
+                #$DebugPreference = 'SilentlyContinue'
                 Write-Debug -Message     ('Current Migration Name: <{0}>' -f $migrationName)
                 Write-Debug -Message     ('Operation Type:         <{0}>' -f $Operation.GetType().FullName)
                 Write-Debug -Message     ('Start Source Count:     <{0}>' -f $Operation.Source.Count)
@@ -164,7 +163,7 @@ function Merge-Migration
             }
 
             $migrationName = '{0}_{1}' -f $currentMigration.ID,$currentMigration.Name
-            Write-Debug -Message ('{0}' -f $migrationName)
+            Write-Debug -Message ('{0}' -f $currentMigration.Path)
 
             $migrations.Add( $currentMigration )
 
@@ -177,10 +176,29 @@ function Merge-Migration
                     Set-Variable -Name 'pushOpIdx' -Scope 1 -Value ($pushOpIdx - 1)
                 }
 
+                function Remove-OperationFromMigration
+                {
+                    param(
+                        [Rivet.Operation]
+                        $Operation
+                    )
+
+                    $opIdx = -1
+                    $originalMigration = $Operation.Source[0]
+                    $ops = $originalMigration.PushOperations
+                    for( $idx = 0; $idx -lt $ops.Count; ++$idx )
+                    {
+                        if( $ops[$idx] -eq $Operation )
+                        {
+                            $opIdx = $idx
+                        }
+                    }
+                    $ops.RemoveAt( $opIdx )
+                }
+
                 $op = $currentMigration.PushOperations[$pushOpIdx]
                 [void]$operations.Add( $op )
                 [void]$operationToMigrationMap.Add($currentMigration)
-                [void]$migrationPushOperationIdx.Add($pushOpIdx)
                 $source = New-Object -TypeName 'Collections.Generic.List[Rivet.Migration]'
                 $op | Add-Member -Name 'Source' -MemberType NoteProperty -Value $source
                 Register-Source $op
@@ -254,7 +272,9 @@ function Merge-Migration
                         $operations[$idx] = $null
                         $opIdx.Remove($op.ObjectName)
                         $originalMigration = $operationToMigrationMap[$idx]
-                        $originalMigration.PushOperations.RemoveAt( $migrationPushOperationIdx[$idx] )
+                        # Remove the original add operation from its migration
+                        Remove-OperationFromMigration -Operation $existingOp
+                        # Remove the current remove operation from the current migration.
                         if( $originalMigration -eq $currentMigration )
                         {
                             $pushOpIdx--
@@ -337,7 +357,7 @@ function Merge-Migration
 
                             if( -not $existingOp.ToQuery() )
                             {
-                                $existingOp.Source[0].PushOperations.RemoveAt( $migrationPushOperationIdx[$idx] )
+                                Remove-OperationFromMigration -Operation $existingOp
                             }
                         }
                         else

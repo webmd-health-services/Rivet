@@ -562,3 +562,49 @@ Describe 'Merge-Migration when adding a removed column' {
         $ops[2] | Should BeOfType ([Rivet.Operations.AddExtendedPropertyOperation])
     }
 }
+
+Describe 'Merge-Migration when adding/removing different objects multiple times' {
+    $result = Invoke-MergeMigration {
+        New-MigrationObject 'AddPrimaryKeyAndSynonym' {
+            Add-PrimaryKey -TableName 'CoachMessagingPractice_RefOnly' -ColumnName AgentId,PracticeId
+            Add-Synonym -Name 'CoachMessagingPractice' -TargetDatabaseName 'hcUser' -TargetObjectName 'CoachMessagingPractice_RefOnly'
+        }
+
+        New-MigrationObject 'RemoveAndAddPrimaryKey' {
+            Remove-PrimaryKey -TableName 'CoachMessagingPractice_RefOnly' -Name 'PK_CoachMessagingPractice_RefOnly'
+            Add-PrimaryKey -TableName 'CoachMessagingPractice_RefOnly' -ColumnName Id
+        }
+
+        New-MigrationObject 'RemoveAndAddSynonym' {
+            Remove-Synonym 'CoachMessagingPractice'
+            Add-Synonym -Name 'CoachMessagingPractice' -TargetDatabaseName 'hcUser' -TargetObjectName 'CoachMessagingPractice_RefOnly'
+        }
+    }
+
+    Assert-AllMigrationsReturned -MergedMigration $result -ExpectedCount 3
+
+    It 'should merge operations correctly' {
+        $result[0].PushOperations.Count | Should Be 0
+        $result[1].PushOperations.Count | Should Be 1
+        $result[2].PushOperations.Count | Should Be 1
+    }
+}
+
+Describe 'Merge-Migration when add and removal are in the same migration and there are operations after the removal' {
+    $result = Invoke-MergeMigration {
+        New-MigrationObject 'fubar' {
+            # AccountIdentityStatusHistory_RefOnly_V2
+            Add-Trigger -Name 'trAccountIdentityStatusHistory_RefOnly_V2_Activity' -Definition 'fubar'
+            Remove-Trigger -Name trAccountIdentityStatusHistory_RefOnly_V2_Activity
+            Remove-DefaultConstraint -TableName AccountIdentityStatusHistory_RefOnly_V2 -Name DF_AccountIdentityStatusHistory_RefOnly_V2_CreateDate
+        }
+    }
+
+    Assert-AllMigrationsReturned -MergedMigration $result -ExpectedCount 1
+
+    It 'should remove the add and removal' {
+        $ops = $result[0].PushOperations
+        $ops.Count | Should Be 1
+        $ops[0] | Should BeOfType ([Rivet.Operations.RemoveDefaultConstraintOperation])
+    }
+}
