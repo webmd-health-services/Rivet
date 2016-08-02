@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Rivet.Operations
 {
@@ -45,8 +46,16 @@ namespace Rivet.Operations
 		{
 			return
 				String.Format(
-					"if not exists (select * from sys.indexes where name = '{0}' and object_id = object_id('{1}.{2}', 'U')){3}\t{4}",
-					Name, SchemaName, TableName, Environment.NewLine, ToQuery());
+					"if not exists (select * from sys.indexes where name = '{0}' and object_id = object_id('{1}.{2}', 'U')) or{3}" +
+					"   {4} != (select count(*) from sys.indexes i join sys.index_columns ic on i.object_id = ic.object_id join sys.columns c on i.object_id=c.object_id and ic.column_id = c.column_id where i.name = '{0}' and i.object_id =  object_id('{1}.{2}','U')) or{3}" +
+					"   {4} != (select count(*) from sys.indexes i join sys.index_columns ic on i.object_id = ic.object_id join sys.columns c on i.object_id=c.object_id and ic.column_id = c.column_id where i.name = '{0}' and i.object_id =  object_id('{1}.{2}','U') and c.name in ('{5}')){3}" +
+					"begin{3}" +
+					"\tif exists(select * from sys.indexes where name = '{0}' and object_id = object_id('{1}.{2}', 'U')){3}" +
+					"\t\talter table [{1}].[{2}] drop constraint [{0}]{3}" +
+					"{3}" +
+					"\t{6}{3}" +
+					"end{3}",
+					Name, SchemaName, TableName, Environment.NewLine, ColumnName.Count, string.Join("','", ColumnName.ToArray()), ToQuery());
 		}
 
 		public override string ToQuery()

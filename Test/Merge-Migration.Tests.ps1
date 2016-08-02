@@ -608,3 +608,28 @@ Describe 'Merge-Migration when add and removal are in the same migration and the
         $ops[0] | Should BeOfType ([Rivet.Operations.RemoveDefaultConstraintOperation])
     }
 }
+
+Describe 'Merge-Migation when removing, adding, removing, then adding a primary key' {
+    $result = Invoke-MergeMigration {
+        New-MigrationObject 'removeaddone' {
+	        Remove-PrimaryKey MailingTemplate -Name 'PK_MailingTemplate'
+	        Add-PrimaryKey MailingTemplate -ColumnName 'MailingTemplateID','SponsorID'
+        }
+        New-MigrationObject 'removeaddtwo' {
+	        Remove-PrimaryKey -TableName MailingTemplate -Name 'PK_MailingTemplate'
+	        Add-PrimaryKey MailingTemplate -ColumnName 'MailingTemplateID'
+        }
+    }
+
+    Assert-AllMigrationsReturned -MergedMigration $result -ExpectedCount 2
+
+    Assert-MigrationHasNoOperations $result[0]
+
+    It 'should leave just the final add' {
+        $ops = $result[1].PushOperations
+        $ops.Count | Should Be 1
+        $ops[0] | Should BeOfType ([Rivet.Operations.AddPrimaryKeyOperation])
+        $ops[0].ColumnName.Count | Should Be 1
+        $ops[0].ColumnName[0] | Should Be 'MailingTemplateID'
+    }
+}

@@ -196,6 +196,15 @@ function Merge-Migration
                     $ops.RemoveAt( $opIdx )
                 }
 
+                function Save-OperationIndex
+                {
+                    param(
+                        $Index
+                    )
+
+                    $opIdx[$op.ObjectName] = $operations.Count - 1
+                }
+
                 $op = $currentMigration.PushOperations[$pushOpIdx]
                 [void]$operations.Add( $op )
                 [void]$operationToMigrationMap.Add($currentMigration)
@@ -205,7 +214,7 @@ function Merge-Migration
 
                 if( ($op | Get-Member -Name 'ObjectName') -and -not $opIdx.ContainsKey($op.ObjectName)  )
                 {
-                    $opIdx[$op.ObjectName] = $operations.Count - 1
+                    Save-OperationIndex
                 }
 
                 if( $op -is [Rivet.Operations.AddTableOperation] )
@@ -267,7 +276,9 @@ function Merge-Migration
                     Register-Source $existingOp
 
                     $opTypeName = $op.GetType().Name
-                    if( $opTypeName -like 'Remove*' )
+                    $isRemoveOperation = $opTypeName -like 'Remove*' 
+                    $isAddOperation = $opTypeName -like 'Add*' 
+                    if( $isRemoveOperation -or $isAddOperation )
                     {
                         $operations[$idx] = $null
                         $opIdx.Remove($op.ObjectName)
@@ -279,7 +290,14 @@ function Merge-Migration
                         {
                             $pushOpIdx--
                         }
-                        Remove-CurrentOperation
+                        if( $isRemoveOperation )
+                        {
+                            Remove-CurrentOperation
+                        }
+                        else
+                        {
+                            Save-OperationIndex
+                        }
                         continue
                     }
                     elseif( $opTypeName -eq 'UpdateTableOperation' )
