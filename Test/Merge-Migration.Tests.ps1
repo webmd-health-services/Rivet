@@ -663,3 +663,48 @@ Describe 'Merge-Migration when objects across databases have the same name' {
         $ops.Count | Should Be 2
     }
 }
+
+Describe 'Merge-Migration when removing a table with foreign keys' {
+    $result = Invoke-MergeMigration {
+        New-MigrationObject 'addremovetable' {
+            Add-Table 'table' {
+                int 'ID' -NotNull
+            }
+
+            Add-PrimaryKey 'table' 'ID'
+            Add-Index 'table' -ColumnName 'ID'
+            Add-RowGuidCol 'table' 'ID'
+            Disable-Constraint 'table' 'disabled_constraint'
+            Enable-Constraint 'table' 'enabled_constraint'
+            Add-CheckConstraint 'table' 'ID' 'expression'
+            Add-DefaultConstraint 'table' 'ID' 'expression'
+            Add-ForeignKey 'table' 'ID' 'other_table' 'other_column'
+            Add-UniqueKey 'table' 'ID'
+
+            Remove-Table 'table'
+
+            Add-Table 'table' {
+                int 'ID2' -NotNull
+            }
+
+            Add-PrimaryKey 'table' 'ID2'
+        }
+    }
+
+    Assert-AllMigrationsReturned -MergedMigration $result -ExpectedCount 1
+
+    $ops = $result[0].PushOperations
+
+    It 'should remove adds before removal' {
+        $ops.Count | Should Be 2
+    }
+
+    It 'should keep adds after removal' {
+        $ops[0] | Should BeOfType ([Rivet.Operations.AddTableOperation])
+        $ops[0].Columns.Count | Should Be 1
+        $ops[0].Columns[0].Name | Should Be 'ID2'
+        $ops[1] | Should BeOfType ([Rivet.Operations.AddPrimaryKeyOperation])
+        $ops[1].ColumnName.Count | Should Be 1
+        $ops[1].ColumnName[0] | Should Be 'ID2'
+    }
+}

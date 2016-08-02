@@ -309,6 +309,24 @@ function Merge-Migration
                         {
                             Save-OperationIndex
                         }
+
+                        if( $op -is [Rivet.Operations.RemoveTableOperation] )
+                        {
+                            foreach( $tableOp in $operations )
+                            {
+                                if( $tableOp -isnot [Rivet.Operations.TableObjectOperation] )
+                                {
+                                    continue
+                                }
+
+                                $opTableName = '{0}.{1}' -f $op.SchemaName,$op.Name
+                                $tableOpTableName = '{0}.{1}' -f $tableOp.SchemaName,$tableOp.TableName
+                                if( $opTableName -eq $tableOpTableName )
+                                {
+                                    Remove-OperationFromMigration -Operation $tableOp
+                                }
+                            }
+                        }
                         continue
                     }
                     elseif( $opTypeName -eq 'UpdateTableOperation' )
