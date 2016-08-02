@@ -119,13 +119,18 @@ function Merge-Migration
             return $false
         }
 
+        $databaseName = $null
         $migrations = New-Object 'Collections.Generic.List[Rivet.Migration]'
-        $newTables = New-Object 'Collections.Generic.HashSet[string]'
-        # list of every single operation we encounter across migrations
-        $operations = New-Object 'Collections.ArrayList'
-        # The migration each operation came from. 
-        $operationToMigrationMap = New-Object 'Collections.ArrayList'
-        $opIdx = @{ }
+
+        function Reset-OperationState
+        {
+            $script:newTables = New-Object 'Collections.Generic.HashSet[string]'
+            # list of every single operation we encounter across migrations
+            $script:operations = New-Object 'Collections.ArrayList'
+            # The migration each operation came from. 
+            $script:operationToMigrationMap = New-Object 'Collections.ArrayList'
+            $script:opIdx = @{ }
+        }
     }
 
     process
@@ -135,6 +140,12 @@ function Merge-Migration
 
         foreach( $currentMigration in $Migration )
         {
+            if( $databaseName -ne $Migration.Database )
+            {
+                Reset-OperationState
+                $databaseName = $Migration.Database
+            }
+
             function Register-Source
             {
                 [CmdletBinding()]

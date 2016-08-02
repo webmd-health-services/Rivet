@@ -75,12 +75,15 @@ function New-MigrationObject
 
         [Parameter(Mandatory=$true,Position=1)]
         [scriptblock]
-        $ScriptBlock
+        $ScriptBlock,
+
+        [string]
+        $DatabaseName = 'dbname'
     )
 
     $id = Get-Date -UFormat '%Y%m%d%H%M%S'
     $path = '{0}_{1}' -f $id,$Name
-    $migration = New-Object 'Rivet.Migration' $id,$Name,$path,'Verification'
+    $migration = New-Object 'Rivet.Migration' $id,$Name,$path,$DatabaseName
     Invoke-Command -ScriptBlock $ScriptBlock | ForEach-Object { $migration.PushOperations.Add( $_ ) } | Out-Null
     return $migration
 }
@@ -631,5 +634,32 @@ Describe 'Merge-Migation when removing, adding, removing, then adding a primary 
         $ops[0] | Should BeOfType ([Rivet.Operations.AddPrimaryKeyOperation])
         $ops[0].ColumnName.Count | Should Be 1
         $ops[0].ColumnName[0] | Should Be 'MailingTemplateID'
+    }
+}
+
+Describe 'Merge-Migration when objects across databases have the same name' {
+    $result = Invoke-MergeMigration {
+
+        New-MigrationObject 'synonyms' -DatabaseName 'Messaging' {
+	        Add-Synonym -Name Task -SchemaName 'dshbrd' -TargetDatabaseName PlatformLogging -TargetSchemaName 'dshbrd' -TargetObjectName Task
+	        Add-Synonym -Name TaskDetail -SchemaName 'dshbrd' -TargetDatabaseName PlatformLogging -TargetSchemaName 'dshbrd' -TargetObjectName TaskDetail
+	        Add-Synonym -Name ExclusiveProcess -SchemaName 'dshbrd' -TargetDatabaseName Admin -TargetSchemaName 'dshbrd' -TargetObjectName ExclusiveProcess
+	        Add-Synonym -Name ExclusiveProcessType -SchemaName 'dshbrd' -TargetDatabaseName Admin -TargetSchemaName 'dshbrd' -TargetObjectName ExclusiveProcessType
+        }
+
+        New-MigrationObject 'synonyms' -DatabaseName 'PlatformLogging' {
+	        Add-View -Name Task -SchemaName dshbrd -Definition ' AS SELECT * FROM dbo.Task'
+	        Add-View -Name TaskDetail -SchemaName dshbrd -Definition ' AS SELECT * FROM dbo.TaskDetail'
+        }
+    }
+
+    Assert-AllMigrationsReturned -MergedMigration $result -ExpectedCount 2
+
+    It 'should leave all the adds' {
+        $ops = $result[0].PushOperations
+        $ops.Count | Should Be 4
+
+        $ops = $result[1].PushOperations
+        $ops.Count | Should Be 2
     }
 }
