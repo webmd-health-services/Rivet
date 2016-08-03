@@ -121,15 +121,16 @@ function Merge-Migration
 
         $databaseName = $null
         $migrations = New-Object 'Collections.Generic.List[Rivet.Migration]'
+        [Collections.Generic.Hashset[string]]$preExistingObjects = $null
+        [Collections.Generic.HashSet[string]]$newTables = $null
+        [Collections.ArrayList]$operations = $null
 
         function Reset-OperationState
         {
-            $script:newTables = New-Object 'Collections.Generic.HashSet[string]'
+            Set-Variable -Name 'newTables' -Scope 1 -Value (New-Object 'Collections.Generic.HashSet[string]')
             # list of every single operation we encounter across migrations
-            $script:operations = New-Object 'Collections.ArrayList'
-            # The migration each operation came from. 
-            $script:operationToMigrationMap = New-Object 'Collections.ArrayList'
-            $script:opIdx = @{ }
+            Set-Variable -Name 'operations' -Scope 1 -Value (New-Object 'Collections.ArrayList')
+            Set-Variable -Name 'preExistingObjects' -Scope 1 -Value (New-Object 'Collections.Generic.Hashset[string]')
         }
     }
 
@@ -183,8 +184,30 @@ function Merge-Migration
             {
                 function Remove-CurrentOperation
                 {
+                    if( $pushOpIdx -ge $currentMigration.PushOperations.Count )
+                    {
+                        Write-Debug 'WTF?!'
+                    }
+                    $operation = $currentMigration.PushOperations[$pushOpIdx]
                     $currentMigration.PushOperations.RemoveAt( $pushOpIdx )
                     Set-Variable -Name 'pushOpIdx' -Scope 1 -Value ($pushOpIdx - 1)
+                    Remove-Operation $operation
+                }
+
+                function Remove-Operation
+                {
+                    param(
+                        $Operation
+                    )
+
+                    for( $idx = $operations.Count - 1; $idx -ge 0; --$idx )
+                    {
+                        if( $operations[$idx] -eq $Operation )
+                        {
+                            $operations.RemoveAt( $idx )
+                            return
+                        }
+                    }
                 }
 
                 function Remove-OperationFromMigration
@@ -207,52 +230,55 @@ function Merge-Migration
                     if( $opIdx -gt -1 )
                     {
                         $ops.RemoveAt( $opIdx )
+                        if( $originalMigration -eq $currentMigration )
+                        {
+                            Set-Variable -Name 'pushOpIdx' -Scope 1 -Value ($pushOpIdx - 1)
+                        }
+                        Remove-Operation $Operation
                     }
                 }
 
-                function Save-OperationIndex
-                {
-                    param(
-                        $Index
-                    )
-
-                    $opIdx[$op.ObjectName] = $operations.Count - 1
-                }
-
                 $op = $currentMigration.PushOperations[$pushOpIdx]
+                $previousObjectOps = $operations | 
+                                        Where-Object { $_ } |
+                                        Where-Object { Get-Member -InputObject $_ -Name 'ObjectName' } |
+                                        Where-Object { Get-Member -InputObject $op -Name 'ObjectName' } |
+                                        Where-Object { $_.ObjectName -eq $op.ObjectName }
+                
                 [void]$operations.Add( $op )
-                [void]$operationToMigrationMap.Add($currentMigration)
                 $source = New-Object -TypeName 'Collections.Generic.List[Rivet.Migration]'
                 $op | Add-Member -Name 'Source' -MemberType NoteProperty -Value $source
                 Register-Source $op
 
-                if( ($op | Get-Member -Name 'ObjectName') -and -not $opIdx.ContainsKey($op.ObjectName)  )
-                {
-                    Save-OperationIndex
-                }
-
                 if( $op -is [Rivet.Operations.AddTableOperation] )
                 {
-                    [void] $newTables.Add( $op.ObjectName )
+                    [void]$newTables.Add( $op.ObjectName )
                     continue
                 }
 
                 if( $op -is [Rivet.Operations.RenameColumnOperation] )
                 {
                     $tableName = '{0}.{1}' -f $op.SchemaName,$op.TableName
-                    if( $opIdx.ContainsKey( $tableName ) )
+                    for( $idx = 0 ; $idx -lt $operations.Count; ++$idx )
                     {
-                        $tableOp = $operations[$opIdx[$tableName]]
-                        if( $tableOp -is [Rivet.Operations.AddTableOperation] )
+                        $tableOp = $operations[$idx]
+                        if( $tableOp -isnot [Rivet.Operations.AddTableOperation] )
                         {
-                            $originalColumn = $tableOp.Columns | Where-Object { $_.Name -eq $op.Name }
-                            if( $originalColumn )
-                            {
-                                $originalColumn.Name = $op.NewName
-                                Register-Source $tableOp
-                                Remove-CurrentOperation
-                                continue
-                            }
+                            continue
+                        }
+
+                        if( $tableOp.ObjectName -ne $tableName )
+                        {
+                            continue
+                        }
+
+                        $originalColumn = $tableOp.Columns | Where-Object { $_.Name -eq $op.Name }
+                        if( $originalColumn )
+                        {
+                            $originalColumn.Name = $op.NewName
+                            Register-Source $tableOp
+                            Remove-CurrentOperation
+                            continue
                         }
                     }
                 }
@@ -260,16 +286,23 @@ function Merge-Migration
                 if( $op -is [Rivet.Operations.RenameOperation] )
                 {
                     $objectName = '{0}.{1}' -f $op.SchemaName,$op.Name
-                    if( $opIdx.ContainsKey( $objectName ) )
+                    for( $idx = 0 ; $idx -lt $operations.Count; ++$idx )
                     {
-                        $existingOp = $operations[$opIdx[$objectName]]
-                        if( $existingOp -is [Rivet.Operations.AddTableOperation] )
+                        $existingOp = $operations[$idx]
+                        if( $existingOp -isnot [Rivet.Operations.AddTableOperation] )
                         {
-                            $existingOp.Name = $op.NewName
-                            Register-Source $existingOp
-                            Remove-CurrentOperation
                             continue
                         }
+
+                        if( $existingOp.ObjectName -ne $objectName )
+                        {
+                            continue
+                        }
+
+                        $existingOp.Name = $op.NewName
+                        Register-Source $existingOp
+                        Remove-CurrentOperation
+                        continue
                     }
                 }
 
@@ -278,10 +311,17 @@ function Merge-Migration
                     continue
                 }
 
-                if( $opIdx.ContainsKey( $op.ObjectName ) )
+                $opTypeName = $op.GetType().Name
+                $isRemoveOperation = $opTypeName -like 'Remove*' 
+
+                # If the first action against this object is a removal
+                if( $isRemoveOperation -and -not $previousObjectOps -and $op -is [Rivet.Operations.ObjectOperation] )
                 {
-                    $idx = $opIdx[$op.ObjectName]
-                    $existingOp = $operations[$idx]
+                    [void]$preexistingObjects.Add( $op.ObjectName )
+                }
+
+                foreach( $existingOp in $previousObjectOps )
+                {
                     if( $existingOp -eq $op )
                     {
                         continue
@@ -289,47 +329,48 @@ function Merge-Migration
 
                     Register-Source $existingOp
 
-                    $opTypeName = $op.GetType().Name
-                    $isRemoveOperation = $opTypeName -like 'Remove*' 
-                    $isAddOperation = $opTypeName -like 'Add*' 
-                    if( $isRemoveOperation -or $isAddOperation )
+                    if( $isRemoveOperation )
                     {
-                        $operations[$idx] = $null
-                        $opIdx.Remove($op.ObjectName)
-                        $originalMigration = $operationToMigrationMap[$idx]
+                        for( $idx = 0; $idx -lt $operations.Count; ++$idx )
+                        {
+                            if( $operations[$idx] -eq $existingOp )
+                            {
+                                $operations[$idx] = $null
+                            }
+                        }
+
+                        $originalMigration = $existingOp.Source[0]
                         # Remove the original add operation from its migration
                         Remove-OperationFromMigration -Operation $existingOp
-                        # Remove the current remove operation from the current migration.
-                        if( $originalMigration -eq $currentMigration )
-                        {
-                            $pushOpIdx--
-                        }
-                        if( $isRemoveOperation )
-                        {
-                            Remove-CurrentOperation
-                        }
-                        else
-                        {
-                            Save-OperationIndex
-                        }
 
                         if( $op -is [Rivet.Operations.RemoveTableOperation] )
                         {
-                            foreach( $tableOp in $operations )
+                            for( $idx = $operations.Count - 1; $idx -ge 0 ; --$idx )
                             {
+                                $tableOp = $operations[$idx]
+                                if( $tableOp -and ($tableOp | Get-Member 'ObjectName') )
+                                {
+                                    Write-Debug $tableOp.ObjectName
+                                }
                                 if( $tableOp -isnot [Rivet.Operations.TableObjectOperation] )
                                 {
                                     continue
                                 }
 
-                                $opTableName = '{0}.{1}' -f $op.SchemaName,$op.Name
+                                Write-Debug '    is a table object operation'
                                 $tableOpTableName = '{0}.{1}' -f $tableOp.SchemaName,$tableOp.TableName
-                                if( $opTableName -eq $tableOpTableName )
+                                if( $op.ObjectName -eq $tableOpTableName )
                                 {
                                     Remove-OperationFromMigration -Operation $tableOp
                                 }
                             }
                         }
+
+                        if( $existingOp -and -not $preexistingObjects.Contains($existingOp.ObjectName) )
+                        {
+                            Remove-CurrentOperation
+                        }
+
                         continue
                     }
                     elseif( $opTypeName -eq 'UpdateTableOperation' )

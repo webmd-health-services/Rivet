@@ -444,13 +444,14 @@ Describe 'Merge-Migration when merging multiple update table operations' {
 
     Assert-AllMigrationsReturned -MergedMigration $result -ExpectedCount 1
     
-    $op = $result[0].PushOperations[0]
+    $ops = $result[0].PushOperations
+    It 'should consolidate into one operation' {
+        $ops.Count | Should Be 1
+    }
+
+    $op = $ops[0]
 
     Assert-OperationIsSourcedFrom $op 'AddAndUpdateTable'
-
-    It 'should consolidate into one operation' {
-        $result[0].PushOperations.Count | Should Be 1
-    }
 
     It 'should move all updates to add table operation' {
         $op | Should BeOfType ([Rivet.Operations.AddTableOperation])
@@ -630,10 +631,11 @@ Describe 'Merge-Migation when removing, adding, removing, then adding a primary 
 
     It 'should leave just the final add' {
         $ops = $result[1].PushOperations
-        $ops.Count | Should Be 1
-        $ops[0] | Should BeOfType ([Rivet.Operations.AddPrimaryKeyOperation])
-        $ops[0].ColumnName.Count | Should Be 1
-        $ops[0].ColumnName[0] | Should Be 'MailingTemplateID'
+        $ops.Count | Should Be 2
+        $ops[0] | Should BeOfType ([Rivet.Operations.RemovePrimaryKeyOperation])
+        $ops[1] | Should BeOfType ([Rivet.Operations.AddPrimaryKeyOperation])
+        $ops[1].ColumnName.Count | Should Be 1
+        $ops[1].ColumnName[0] | Should Be 'MailingTemplateID'
     }
 }
 
@@ -664,7 +666,7 @@ Describe 'Merge-Migration when objects across databases have the same name' {
     }
 }
 
-Describe 'Merge-Migration when removing a table with foreign keys' {
+Describe 'Merge-Migration when removing a table with keys, indexes, and constraints' {
     $result = Invoke-MergeMigration {
         New-MigrationObject 'addremovetable' {
             Add-Table 'table' {
@@ -676,7 +678,7 @@ Describe 'Merge-Migration when removing a table with foreign keys' {
             Add-RowGuidCol 'table' 'ID'
             Disable-Constraint 'table' 'disabled_constraint'
             Enable-Constraint 'table' 'enabled_constraint'
-            Add-CheckConstraint 'table' 'ID' 'expression'
+            Add-CheckConstraint 'table' 'check_constraint' 'expression'
             Add-DefaultConstraint 'table' 'ID' 'expression'
             Add-ForeignKey 'table' 'ID' 'other_table' 'other_column'
             Add-UniqueKey 'table' 'ID'
@@ -695,7 +697,7 @@ Describe 'Merge-Migration when removing a table with foreign keys' {
 
     $ops = $result[0].PushOperations
 
-    It 'should remove adds before removal' {
+    It 'should remove all objects added to the table' {
         $ops.Count | Should Be 2
     }
 
