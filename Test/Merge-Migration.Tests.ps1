@@ -708,3 +708,39 @@ Describe 'Merge-Migration when removing a table with foreign keys' {
         $ops[1].ColumnName[0] | Should Be 'ID2'
     }
 }
+
+Describe 'Merge-Migration when removing and re-adding the same table across migrations' {
+    $result = Invoke-MergeMigration {
+        New-MigrationObject 'blah1' {
+	        Add-Table -Name 'admTestUser' {
+		        Bit 'Active' -NotNull -Default '1'
+	        }
+	
+	        Add-PrimaryKey -TableName 'admTestUser' -ColumnName 'TestUserID'
+        }
+
+        New-MigrationObject 'blah' {
+	        Remove-Table -Name 'admTestUser'
+	
+	        Add-Table -Name 'admTestUser' {
+		        Bit 'Active2' -NotNull -Default '1'
+	        }
+	
+	        Add-PrimaryKey -TableName 'admTestUser' -ColumnName 'TestUserID2'
+        }
+    }
+
+    Assert-AllMigrationsReturned -MergedMigration $result -ExpectedCount 2
+
+    Assert-MigrationHasNoOperations $result[0]
+
+    $ops = $result[1].PushOperations
+
+    It 'should keep secondd adds' {
+        $ops.Count | Should Be 2
+        $ops[0].Columns.Count | Should Be 1
+        $ops[0].Columns[0].Name | Should Be 'Active2'
+        $ops[1].ColumnName.Count | Should Be 1
+        $ops[1].ColumnName[0] | Should Be 'TestUserID2'
+    }
+}

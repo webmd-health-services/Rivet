@@ -204,7 +204,10 @@ function Merge-Migration
                             $opIdx = $idx
                         }
                     }
-                    $ops.RemoveAt( $opIdx )
+                    if( $opIdx -gt -1 )
+                    {
+                        $ops.RemoveAt( $opIdx )
+                    }
                 }
 
                 function Save-OperationIndex
