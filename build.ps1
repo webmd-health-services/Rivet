@@ -46,8 +46,7 @@ Set-ModuleVersion -ManifestPath (Join-Path -Path $PSScriptRoot -ChildPath 'Rivet
                   -AssemblyInfoPath (Join-Path -Path $PSScriptRoot -ChildPath 'Source\Properties\AssemblyVersion.cs') `
                   -Version $Version `
                   -ReleaseNotesPath (Join-Path -Path $PSScriptRoot -ChildPath 'RELEASE_NOTES.txt' -Resolve) `
-                  -NuspecPath (Join-Path -Path $PSScriptRoot -ChildPath 'Rivet.nuspec' -Resolve) `
-                  -Configuration 'Release'
+                  -NuspecPath (Join-Path -Path $PSScriptRoot -ChildPath 'Rivet.nuspec' -Resolve) 
 
 $failed = $false
 
