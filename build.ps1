@@ -41,6 +41,8 @@ if( $Clean )
     Get-ChildItem -Path $outputRoot | Remove-Item -Recurse -WhatIf
 }
 
+
+
 Set-ModuleVersion -ManifestPath (Join-Path -Path $PSScriptRoot -ChildPath 'Rivet\Rivet.psd1') `
                   -SolutionPath (Join-Path -Path $PSScriptRoot -ChildPath 'Source\Rivet.sln') `
                   -AssemblyInfoPath (Join-Path -Path $PSScriptRoot -ChildPath 'Source\Properties\AssemblyVersion.cs') `
@@ -60,7 +62,7 @@ if( $LASTEXITCODE -ne 0 )
     Write-Error -Message ('{0} NUnit tests failed. Check the build reports for more details.' -f $LASTEXITCODE)
 }
 
-robocopy /MIR (Join-Path -Path $PSScriptRoot -ChildPath 'Source\bin\Release') (Join-Path -Path $PSScriptRoot -ChildPath 'Rivet\bin') /NJH /NJS /NP /NDL
+robocopy /MIR (Join-Path -Path $PSScriptRoot -ChildPath 'Source\bin\Debug') (Join-Path -Path $PSScriptRoot -ChildPath 'Rivet\bin') /NJH /NJS /NP /NDL
 
 $testRoot = Join-Path -Path $PSScriptRoot -ChildPath 'Test'
 
