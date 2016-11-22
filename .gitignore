@@ -1,8 +1,11 @@
 Test/Server.txt
 **/obj/**
+**/bin/**
 *.pdb
 Source/Test/bin
 *.user
 *.suo
 Pester/**/*
 Silk/**/*
+Source/packages/**/*
+packages/**/*
