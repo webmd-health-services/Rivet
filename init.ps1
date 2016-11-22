@@ -49,3 +49,7 @@ $targetPath = Get-ChildItem -Path $packagesRoot -Filter 'NUnit.ConsoleRunner.*.*
                 Where-Object { $_.IsJunction -eq $false } |
                 Select-Object -ExpandProperty 'FullName'
 Install-Junction -Link $linkPath -Target $targetPath
+
+$sourceRoot = Join-Path -Path $PSScriptRoot -ChildPath 'Source'
+Get-ChildItem -Path $sourceRoot -Filter 'packages.config' -Recurse |
+    ForEach-Object { & $nugetPath restore $_.FullName -SolutionDirectory $sourceRoot }
