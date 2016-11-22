@@ -4,12 +4,15 @@ Initializes your Rivet working directory for development.
 #>
 [CmdletBinding()]
 param(
+    [Switch]
+    # Removes any previously downloaded packages and re-downloads them.
+    $Clean
 )
 
 #Requires -Version 4
 Set-StrictMode -Version 'Latest'
 
-$moduleNames = @( 'Pester', 'Silk' )
+$moduleNames = @( 'Pester', 'Silk', 'Carbon' )
 foreach( $moduleName in $moduleNames )
 {
     $modulePath = Join-Path -Path $PSScriptRoot -ChildPath $moduleName
@@ -33,3 +36,16 @@ foreach( $moduleName in $moduleNames )
         Remove-Item -Path $versionDir
     }
 }
+
+& (Join-Path -Path $PSScriptRoot -ChildPath 'Carbon\Import-Carbon.ps1' -Resolve)
+
+$packagesRoot = Join-Path -Path $PSScriptRoot -ChildPath 'packages'
+
+$nugetPath = Join-Path -Path $PSScriptRoot -ChildPath '.\Silk\bin\NuGet.exe' -Resolve
+& $nugetPath install 'NUnit.Console' -OutputDirectory $packagesRoot
+
+$linkPath = Join-Path -Path $packagesRoot -ChildPath 'NUnit.ConsoleRunner'
+$targetPath = Get-ChildItem -Path $packagesRoot -Filter 'NUnit.ConsoleRunner.*.*.*' -Directory | 
+                Where-Object { $_.IsJunction -eq $false } |
+                Select-Object -ExpandProperty 'FullName'
+Install-Junction -Link $linkPath -Target $targetPath

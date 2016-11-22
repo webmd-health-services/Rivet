@@ -7,5 +7,7 @@ Source/Test/bin
 *.suo
 Pester/**/*
 Silk/**/*
+Carbon/**/*
 Source/packages/**/*
 packages/**/*
+Output/**/*
