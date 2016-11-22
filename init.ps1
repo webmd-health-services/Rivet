@@ -26,7 +26,7 @@ foreach( $moduleName in $moduleNames )
         continue
     }
 
-    Save-Module -Name $moduleName -Path $PSScriptRoot
+    Save-Module -Name $moduleName -Path $PSScriptRoot -Force
 
     $versionDir = Join-Path -Path $modulePath -ChildPath '*.*.*'
     if( (Test-Path -Path $versionDir -PathType Container) )
