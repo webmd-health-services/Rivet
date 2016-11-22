@@ -4,3 +4,5 @@ Test/Server.txt
 Source/Test/bin
 *.user
 *.suo
+Pester/**/*
+Silk/**/*

@@ -33,7 +33,7 @@ param(
 #Requires -Version 4
 Set-StrictMode -Version Latest
 
-& (Join-Path -Path $PSScriptRoot -ChildPath 'Tools\Silk\Import-Silk.ps1' -Resolve)
+& (Join-Path -Path $PSScriptRoot -ChildPath 'Silk\Import-Silk.ps1' -Resolve)
 
 Set-ModuleVersion -ManifestPath (Join-Path -Path $PSScriptRoot -ChildPath 'Rivet\Rivet.psd1') `
                   -SolutionPath (Join-Path -Path $PSScriptRoot -ChildPath 'Source\Rivet.sln') `

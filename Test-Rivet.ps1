@@ -26,6 +26,8 @@ param(
 #Requires -Version 4
 Set-StrictMode -Version 'Latest'
 
+.\init.ps1
+
 # Let's get full stack traces in our errors.
 $xmlLogPath = Split-Path -Qualifier -Path $PSScriptRoot
 $xmlLogPath = Join-Path -Path $xmlLogPath -ChildPath 'BuildOutput\Rivet\CodeQuality\Rivet.blade.xml'
@@ -36,7 +38,7 @@ if( (Get-Module -Name 'Pester') )
 {
     Remove-Module -Name 'Pester'
 }
-Import-Module (Join-Path -Path $PSScriptRoot -ChildPath 'Tools\Pester' -Resolve)
+Import-Module (Join-Path -Path $PSScriptRoot -ChildPath 'Pester' -Resolve)
 $result = Invoke-Pester -Script $Path -OutputFile $xmlLogPath -OutputFormat LegacyNUnitXml -PassThru |
                 Select-Object -Last 1
 $result

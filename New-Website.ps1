@@ -96,7 +96,7 @@ function Out-HtmlPage
 }
 
 
-& (Join-Path -Path $PSScriptRoot -ChildPath '.\Tools\Silk\Import-Silk.ps1' -Resolve)
+& (Join-Path -Path $PSScriptRoot -ChildPath 'Silk\Import-Silk.ps1' -Resolve)
 
 if( (Get-Module -Name 'Blade') )
 {
@@ -129,5 +129,5 @@ Get-Content -Path (Join-Path -Path $PSScriptRoot -ChildPath 'RELEASE_NOTES.txt')
     Convert-MarkdownToHtml | 
     Out-HtmlPage -Title ('Release Notes - {0}' -f $rivetTitle) -VirtualPath '/releasenotes.html'
 
-Copy-Item -Path (Join-Path -Path $PSScriptRoot -ChildPath 'Tools\Silk\Resources\silk.css' -Resolve) `
+Copy-Item -Path (Join-Path -Path $PSScriptRoot -ChildPath 'Silk\Resources\silk.css' -Resolve) `
           -Destination (Join-Path -Path $PSScriptRoot -ChildPath 'Website') -Verbose

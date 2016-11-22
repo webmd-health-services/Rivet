@@ -20,7 +20,7 @@ param(
 #Requires -Version 4
 Set-StrictMode -Version Latest
 
-& (Join-Path -Path $PSScriptRoot -ChildPath 'Tools\Silk\Import-Silk.ps1' -Resolve)
+& (Join-Path -Path $PSScriptRoot -ChildPath 'Silk\Import-Silk.ps1' -Resolve)
 
 $licenseFileName = 'LICENSE.txt'
 $noticeFileName = 'NOTICE.txt'
