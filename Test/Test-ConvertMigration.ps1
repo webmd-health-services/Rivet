@@ -13,8 +13,6 @@ function Start-Test
     $pluginsPath = New-TempDir -Prefix $PSCommandPath
     Start-RivetTest -PluginPath $pluginsPath
 
-    & (Join-Path -Path $PSScriptRoot -ChildPath '..\Tools\SqlPS\Import-SqlPS.ps1' -Resolve)
-
     $outputDir = New-TempDir -Prefix 'Test-ConvertMigration'
     ++$testsRun
 
@@ -1227,10 +1225,10 @@ function Invoke-ConvertedScripts
             {
                 # Run 'em twice.  Make sure they really *are* idempotent.
                 Write-Verbose (Get-Content -Raw -Path $_.FullName)
-                $result = Invoke-Sqlcmd -ServerInstance $RTServer -Database $RTDatabaseName -InputFile $_.FullName
+                $result = sqlcmd.exe -S $RTServer -d $RTDatabaseName -E -i $_.FullName
                 $result | Format-Table -AutoSize
 
-                $result = Invoke-Sqlcmd -ServerInstance $RTServer -Database $RTDatabaseName -InputFile $_.FullName
+                $result = sqlcmd.exe -S $RTServer -d $RTDatabaseName -E -i $_.FullName
                 $result | Format-Table -AutoSize
 
                 Assert-LastProcessSucceeded
