@@ -12,6 +12,10 @@ param(
 #Requires -Version 4
 Set-StrictMode -Version 'Latest'
 
+Get-ChildItem -Path 'env:' | Format-List | Out-String | Write-Verbose
+
+Install-PackageProvider -Name NuGet -Force
+
 $moduleNames = @( 'Pester', 'Silk', 'Carbon' )
 foreach( $moduleName in $moduleNames )
 {
