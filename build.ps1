@@ -69,7 +69,7 @@ $nunitPath = Join-Path -Path $PSScriptRoot -ChildPath 'packages\NUnit.ConsoleRun
 $failedTests = $LASTEXITCODE
 if( $uploadTestResults )
 {
-    $uploadUri = '{0}nunit3/{0}' -f $baseUploadUri,$env:APPVEYOR_JOB_ID 
+    $uploadUri = '{0}nunit3/{1}' -f $baseUploadUri,$env:APPVEYOR_JOB_ID 
     Write-Verbose -Message $uploadUri
     Write-Verbose -Message $nunitLogPath
     $webClient.UploadFile($uploadUri, $nunitLogPath)
@@ -90,7 +90,7 @@ $bladeLogPath = Join-Path -Path $xmlLogPath -ChildPath 'blade.xml'
 
 if( $uploadTestResults )
 {
-    $uploadUri = '{0}nunit/{0}' -f $baseUploadUri,$env:APPVEYOR_JOB_ID 
+    $uploadUri = '{0}nunit/{1}' -f $baseUploadUri,$env:APPVEYOR_JOB_ID 
     $webClient.UploadFile($uploadUri, $bladeLogPath)
 }
 
@@ -112,7 +112,7 @@ $result
 
 if( $uploadTestResults )
 {
-    $uploadUri = '{0}nunit3/{0}' -f $baseUploadUri,$env:APPVEYOR_JOB_ID 
+    $uploadUri = '{0}nunit3/{1}' -f $baseUploadUri,$env:APPVEYOR_JOB_ID 
     $webClient.UploadFile($uploadUri, $pesterLogPath)
 }
 
