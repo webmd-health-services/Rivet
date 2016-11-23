@@ -41,8 +41,6 @@ if( $Clean )
     Get-ChildItem -Path $outputRoot | Remove-Item -Recurse -WhatIf
 }
 
-
-
 Set-ModuleVersion -ManifestPath (Join-Path -Path $PSScriptRoot -ChildPath 'Rivet\Rivet.psd1') `
                   -SolutionPath (Join-Path -Path $PSScriptRoot -ChildPath 'Source\Rivet.sln') `
                   -AssemblyInfoPath (Join-Path -Path $PSScriptRoot -ChildPath 'Source\Properties\AssemblyVersion.cs') `
@@ -50,13 +48,31 @@ Set-ModuleVersion -ManifestPath (Join-Path -Path $PSScriptRoot -ChildPath 'Rivet
                   -ReleaseNotesPath (Join-Path -Path $PSScriptRoot -ChildPath 'RELEASE_NOTES.txt' -Resolve) `
                   -NuspecPath (Join-Path -Path $PSScriptRoot -ChildPath 'Rivet.nuspec' -Resolve) 
 
+
+$uploadTestResults = $false 
+$uploadUri = ''
+$baseUploadUri = 'https://ci.appveyor.com/api/testresults/'
+$webClient = New-Object 'Net.WebClient'
+
+if( Test-Path -Path 'env:APPVEYOR' )
+{
+    $uploadTestResults = $true
+}
+
 $failed = $false
 
 $xmlLogPath = $outputRoot
 $nunitLogPath = Join-Path -Path $xmlLogPath -ChildPath 'nunit.xml'
 
 $nunitPath = Join-Path -Path $PSScriptRoot -ChildPath 'packages\NUnit.ConsoleRunner\tools\nunit3-console.exe' -Resolve
-& $nunitPath (Join-Path -Path $PSScriptRoot -ChildPath 'Source\Test\bin\*\Rivet.Test.dll' -Resolve) "--result=$nunitLogPath;format=nunit2"
+& $nunitPath (Join-Path -Path $PSScriptRoot -ChildPath 'Source\Test\bin\*\Rivet.Test.dll' -Resolve) "--result=$nunitLogPath;format=nunit3"
+$failedTests = $LASTEXITCODE
+if( $uploadTestResults )
+{
+    $uploadUri = '{0}nunit3/{0}' -f $baseUploadUri,$env:APPVEYOR_JOB_ID 
+    $webClient.UploadFile($uploadUri, $nunitLogPath)
+}
+
 if( $LASTEXITCODE -ne 0 )
 {
     Write-Error -Message ('{0} NUnit tests failed. Check the build reports for more details.' -f $LASTEXITCODE)
@@ -69,6 +85,13 @@ $testRoot = Join-Path -Path $PSScriptRoot -ChildPath 'Test'
 # Let's get full stack traces in our errors.
 $bladeLogPath = Join-Path -Path $xmlLogPath -ChildPath 'blade.xml'
 & (Join-Path -Path $PSScriptRoot -ChildPath '.\Tools\Blade\blade.ps1' -Resolve) -Path $testRoot -XmlLogPath $bladeLogPath
+
+if( $uploadTestResults )
+{
+    $uploadUri = '{0}nunit/{0}' -f $baseUploadUri,$env:APPVEYOR_JOB_ID 
+    $webClient.UploadFile($uploadUri, $bladeLogPath)
+}
+
 if( $LastBladeResult.Failures -or $LastBladeResult.Errors )
 {
     Write-Error -Message ('{0} Blade tests failed, and {1} tests had errors. Check the build reports for more details.' -f $LastBladeResult.Failures,$LastBladeResult.Errors)
@@ -81,9 +104,16 @@ if( (Get-Module -Name 'Pester') )
     Remove-Module -Name 'Pester'
 }
 Import-Module (Join-Path -Path $PSScriptRoot -ChildPath 'Pester' -Resolve)
-$result = Invoke-Pester -Script $testRoot -OutputFile $pesterLogPath -OutputFormat LegacyNUnitXml -PassThru |
+$result = Invoke-Pester -Script $testRoot -OutputFile $pesterLogPath -OutputFormat NUnitXml -PassThru |
                 Select-Object -Last 1
 $result
+
+if( $uploadTestResults )
+{
+    $uploadUri = '{0}nunit3/{0}' -f $baseUploadUri,$env:APPVEYOR_JOB_ID 
+    $webClient.UploadFile($uploadUri, $pesterLogPath)
+}
+
 if( $result.FailedCount )
 {
     Write-Error -Message ('{0} Pester tests failed. Check the NUnit reports for more details.' -f $result.FailedCount)
