@@ -53,7 +53,7 @@ function Out-HtmlPage
     process
     {
 
-        $webRoot = Join-Path -Path $PSScriptRoot -ChildPath 'Website'
+        $webRoot = Join-Path -Path $PSScriptRoot -ChildPath 'get-rivet.org'
         $path = Join-Path -Path $webRoot -ChildPath $VirtualPath
         $templateArgs = @(
                             $Title,
@@ -105,6 +105,9 @@ if( (Get-Module -Name 'Blade') )
 
 & (Join-Path -Path $PSScriptRoot -ChildPath '.\Rivet\Import-Rivet.ps1' -Resolve)
 
+$webRoot = Join-Path -Path $PSScriptRoot -ChildPath 'get-rivet.org'
+Get-ChildItem -Path $webRoot -Exclude '*.md' | Remove-Item -Recurse
+
 $headingMap = @{
                }
 
@@ -130,4 +133,4 @@ Get-Content -Path (Join-Path -Path $PSScriptRoot -ChildPath 'RELEASE_NOTES.txt')
     Out-HtmlPage -Title ('Release Notes - {0}' -f $rivetTitle) -VirtualPath '/releasenotes.html'
 
 Copy-Item -Path (Join-Path -Path $PSScriptRoot -ChildPath 'Silk\Resources\silk.css' -Resolve) `
-          -Destination (Join-Path -Path $PSScriptRoot -ChildPath 'Website') -Verbose
+          -Destination (Join-Path -Path $PSScriptRoot -ChildPath 'get-rivet.org') -Verbose
