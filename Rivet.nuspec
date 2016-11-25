@@ -15,6 +15,7 @@
 <package>
   <metadata>
     <id>Rivet</id>
+    <title>Rivet</title>
     <version>0.8.0</version>
     <authors>Aaron Jensen</authors>
     <owners>Aaron Jensen</owners>
@@ -25,19 +26,23 @@
     <description>Rivet is a database migration/change management/versioning tool inspired by Ruby on Rails' Migrations. It creates and applies migration scripts for SQL Server databases. Migration scripts describe changes to make to your database, e.g. add a table, add a column, remove an index, etc. Migrations scripts should get added to your version control system so they can be packaged and deployed with your application's code.</description>
     <language>en-us</language>
     <releaseNotes>
-    </releaseNotes>
+## Enhancements
+
+ * Created `Merge-Migration` function for creating cumulative, roll up migrations.
+ 
+</releaseNotes>
     <copyright>Copyright 2013 - 2016 Aaron Jensen.</copyright>
     <tags>sql-server evolutionary-database database migrations</tags>
   </metadata>
   <files>
     <file src=".\Rivet\**\*" target="Rivet" exclude="**\*.pdb" />
-    <file src=".\Website\**\*" target="Website" />
     <file src=".\Tools\chocolateyInstall.ps1" target="Tools" />
     <file src=".\Tools\chocolateyUninstall.ps1" target="Tools" />
-    <file src=".\LICENSE.txt" target="" />
-    <file src=".\NOTICE.txt" target="" />
-    <file src=".\LICENSE.txt" target="Carbon" />
-    <file src=".\NOTICE.txt" target="Carbon" />
+    <file src=".\LICENSE*" target="" />
+    <file src=".\NOTICE*" target="" />
     <file src=".\RELEASE_NOTES.txt" target="" />
+    <file src=".\LICENSE*" target="Rivet" />
+    <file src=".\NOTICE*" target="Rivet" />
+    <file src=".\RELEASE_NOTES.txt" target="Rivet" />
   </files>
 </package>

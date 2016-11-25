@@ -177,5 +177,29 @@ Rivet is a database migration/change management/versioning tool inspired by Ruby
     FileList = @()
 
     # Private data to pass to the module specified in ModuleToProcess
-    PrivateData = ''
+    PrivateData = @{
+
+        PSData = @{
+
+            # Tags applied to this module. These help with module discovery in online galleries.
+            Tags = @('sql-server','evolutionary-database','database','migrations')
+
+            # A URL to the license for this module.
+            LicenseUri = 'http://www.apache.org/licenses/LICENSE-2.0'
+
+            # A URL to the main website for this project.
+            ProjectUri = 'http://get-silk.org'
+
+            # A URL to an icon representing this module.
+            # IconUri = ''
+
+            # ReleaseNotes of this module
+            ReleaseNotes = @'
+## Enhancements
+
+ * Created `Merge-Migration` function for creating cumulative, roll up migrations.
+'@
+        } # End of PSData hashtable
+
+    } # End of PrivateData hashtable
 }
