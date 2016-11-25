@@ -12,9 +12,17 @@ Yup. That's it.
 #>
 [CmdletBinding()]
 param(
-    [Switch]
-    # Skip generating the website.
-    $SkipWebsite
+    [Parameter(Mandatory=$true)]
+    [string]
+    $AppveyorApiToken,
+
+    [Parameter(Mandatory=$true)]
+    [string]
+    $Version,
+
+    [string]
+    # The name of the artifact to get. Default is 'PowerShell'
+    $ArtifactName = 'PowerShell'
 )
 
 #Requires -Version 4
@@ -22,159 +30,67 @@ Set-StrictMode -Version Latest
 
 & (Join-Path -Path $PSScriptRoot -ChildPath 'Silk\Import-Silk.ps1' -Resolve)
 
-$licenseFileName = 'LICENSE.txt'
-$noticeFileName = 'NOTICE.txt'
-$releaseNotesFileName = 'RELEASE_NOTES.txt'
-$releaseNotesPath = Join-Path -Path $PSScriptRoot -ChildPath $releaseNotesFileName -Resolve
+$moduleName = 'Rivet'
+$licenseUri = 'http://www.apache.org/licenses/LICENSE-2.0'
+$tags = @( 'sql-server','evolutionary-database','database','migrations' )
+$projectUri = 'http://get-rivet.org'
 
-$manifestPath = Join-Path -Path $PSScriptRoot -ChildPath 'Rivet\Rivet.psd1'
-$manifest = Test-ModuleManifest -Path $manifestPath
-if( -not $manifest )
+$baseApiUri = 'https://ci.appveyor.com/api'
+$headers = @{
+              "Authorization" = ("Bearer {0}" -f $AppveyorApiToken)
+              "Content-type" = "application/json"
+            }
+$accountName = 'splatteredbits'
+$projectSlug = $moduleName.ToLowerInvariant()
+
+$downloadLocation = Join-Path -Path $env:TEMP -ChildPath ([IO.Path]::GetRandomFileName())
+New-Item -Path $downloadLocation -ItemType 'Directory' | Out-String | Write-Verbose
+
+# get project with last build details
+$project = Invoke-RestMethod -Method Get -Uri ("{0}/projects/{1}/{2}/build/{3}" -f $baseApiUri,$accountName,$projectSlug,$Version) -Headers $headers
+if( $project.build.status -ne 'success' )
 {
+    Write-Error -Message ('Build {0} didn''t succeed. Its status is ''{1}''.' -f $Version,$project.build.status)
     return
 }
 
-$additionalAssemblyPath = Join-Path -Path $PSScriptRoot -ChildPath 'Rivet\bin\Rivet.dll'
-$nuspecPath = Join-Path -Path $PSScriptRoot -ChildPath 'Rivet.nuspec'
-$valid = Assert-ModuleVersion -ManifestPath $manifestPath -AssemblyPath $additionalAssemblyPath -ReleaseNotesPath $releaseNotesPath -NuspecPath $nuspecPath
-if( -not $valid )
+$jobId = $project.build.jobs[0].jobId
+
+# get job artifacts (just to see what we've got)
+$artifacts = Invoke-RestMethod -Method Get -Uri ("{0}/buildjobs/{1}/artifacts" -f $baseApiUri,$jobId) -Headers $headers
+
+$artifact = $artifacts | Where-Object { $_.name -eq $ArtifactName }
+if( -not $artifact )
 {
-    Write-Error -Message ('Rivet isn''t at the right version. Please rebuild with build.ps1.')
+    Write-Error -Message ('Artifact ''{0}'' does not exist. We did find these named artifacts: {1}' -f $ArtifactName,($artifacts | ConvertTo-Json))
     return
 }
 
-Set-ReleaseNotesReleaseDate -ManifestPath $manifestPath -ReleaseNotesPath $releaseNotesPath
-if( hg status $releaseNotesPath )
+$artifactFileName = $artifact.fileName
+
+# artifact will be downloaded as
+$localArtifactPath = Join-Path -Path $downloadLocation -ChildPath $artifactFileName
+$localArtifactRoot = Split-Path -Path $localArtifactPath -Parent
+if( -not (Test-Path -Path $localArtifactRoot -PathType Container) )
 {
-    hg commit -m ('[{0}] Updating release date in release notes.' -f $manifest.Version) $releaseNotesPath
-    hg log -rtip
+    New-item -Path $localArtifactRoot -ItemType 'Directory' | Out-String | Write-Verbose
 }
 
+Invoke-RestMethod -Method Get `
+                  -Uri ("{0}/buildjobs/{1}/artifacts/{2}" -f $baseApiUri,$jobId,$artifactFileName) `
+                  -OutFile $localArtifactPath `
+                  -Headers @{ "Authorization" = ("Bearer {0}" -f $AppveyorApiToken) }
 
-if( -not $SkipWebsite )
-{
-    Write-Verbose -Message ('Generating website.')
-    & (Join-Path -Path $PSScriptRoot -ChildPath 'New-Website.ps1' -Resolve)
-    hg addremove 'Website'
-    if( (hg status 'Website') )
-    {
-        hg commit -m ('[{0}] Updating website.' -f $manifest.Version) 'Website'
-        hg log -rtip
-    }
-}
+Add-Type -AssemblyName 'System.IO.Compression.FileSystem'
 
-$tags = Get-Content -Raw -Path (Join-Path -Path $PSScriptRoot -ChildPath 'tags.json') |
-            ConvertFrom-Json |
-            ForEach-Object { $_ } |
-            Select-Object -ExpandProperty 'Tags' |
-            Select-Object -Unique |
-            Sort-Object |
-            ForEach-Object { $_.ToLower() -replace ' ','-' }
-$tags += @( 'PSModule', 'DscResources', 'setup', 'automation', 'admin' )
+$extractPath = Join-Path -Path $downloadLocation -ChildPath $moduleName
+New-Item -Path $extractPath -ItemType 'Directory' | Out-String | Write-Verbose
 
-Set-ModuleManifestMetadata -ManifestPath $manifestPath -Tag $tags -ReleaseNotesPath $releaseNotesPath
-if( hg status $manifestPath )
-{
-    hg commit -m ('[{0}] Updating module manifest.' -f $manifest.Version) $manifestPath
-    hg log -r tip
-}
+[IO.Compression.ZipFile]::ExtractToDirectory( $localArtifactPath, $extractPath )
 
-$nuspecPath = Join-Path -Path $PSScriptRoot -ChildPath 'Carbon.nuspec' -Resolve
-if( -not $nuspecPath )
-{
-    return
-}
-
-Set-ModuleNuspec -ManifestPath $manifestPath -NuspecPath $nuspecPath -ReleaseNotesPath $releaseNotesPath -Tags $tags
-
-if( (hg status $nuspecPath) )
-{
-    hg commit -m ('[{0}] Updating Nuspec settings.' -f $manifest.Version) $nuspecPath
-    hg log -rtip
-}
-
-if( -not (hg tags | Where-Object { $_ -match ('^{0}\b' -f [regex]::Escape($manifest.Version.ToString())) }) )
-{
-    hg tag $manifest.Version.ToString()
-    hg log -rtip
-}
-
-# Create a clean clone so that our packages don't pick up any cruft.
-$cloneDir = 'Carbon+{0}' -f [IO.Path]::GetRandomFileName()
-$cloneDir = Join-Path -Path $env:TEMP -ChildPath $cloneDir
-hg clone . $cloneDir
-hg update -r ('tag({0})' -f $manifest.Version) -R $cloneDir
-
-$zipRoot = 'Carbon+{0}' -f [IO.Path]::GetRandomFileName()
-$zipRoot = Join-Path -Path $env:TEMP -ChildPath $zipRoot
-
-$zipContents = @(
-                    'Carbon',
-                    'examples',
-                    'Website', 
-                    $licenseFileName, 
-                    $releaseNotesFileName, 
-                    $noticeFileName
-                ) 
-
-foreach( $item in $zipContents )
-{
-    $sourcePath = Join-Path -Path $cloneDir -ChildPath $item
-
-    if( (Test-Path -Path $sourcePath -PathType Container) )
-    {
-        robocopy $sourcePath (Join-Path -Path $zipRoot -ChildPath $item) /MIR /XF *.orig /XF *.pdb | Write-Debug
-    }
-    else
-    {
-        Copy-Item -Path $sourcePath -Destination $zipRoot
-    }
-}
-
-# Put another copy of the license and notice files with the module.
-Copy-Item -Path (Join-Path -Path $PSScriptRoot -ChildPath $noticeFileName) `
-            -Destination (Join-Path -Path $zipRoot -ChildPath 'Carbon')
-Copy-Item -Path (Join-Path -Path $PSScriptRoot -ChildPath $licenseFileName) `
-            -Destination (Join-Path -Path $zipRoot -ChildPath 'Carbon')
-
-Publish-BitbucketDownload -Username 'splatteredbits' `
-                          -ProjectName 'carbon' `
-                          -Path (Get-ChildItem -Path $zipRoot) `
-                          -ManifestPath $manifestPath
-
-Publish-NuGetPackage -ManifestPath $manifestPath `
-                     -NuspecPath (Join-Path -Path $cloneDir -ChildPath 'Carbon.nuspec') `
-                     -NuspecBasePath $cloneDir `
-                     -Repository @( 'nuget.org', 'chocolatey.org' )
-
-Publish-PowerShellGalleryModule -ManifestPath $manifestPath `
-                                -ModulePath (Join-Path -Path $cloneDir -ChildPath 'Carbon') `
-                                -ReleaseNotesPath $releaseNotesPath `
-                                -LicenseUri 'http://www.apache.org/licenses/LICENSE-2.0' `
-                                -ProjectUri 'http://get-carbon.org/' `
-                                -Tags $tags
-
-$pshdoRoot = Join-Path -Path $PSScriptRoot -ChildPath 'pshdo.com'
-if( -not (Test-Path -Path $pshdoRoot -PathType Container) )
-{
-    hg clone https://bitbucket.org/splatteredbits/pshdo.com $pshdoRoot
-}
-
-hg pull -R $pshdoRoot
-hg update -C -R $pshdoRoot
-
-$newModuleReleasedAnnouncement = Join-Path -Path $pshdoRoot -ChildPath 'New-ModuleReleasedAnnouncement.ps1' -Resolve
-if( -not $newModuleReleasedAnnouncement )
-{
-    return
-}
-
-$releaseNotes = Get-ModuleReleaseNotes -ManifestPath $manifestPath -ReleaseNotesPath $releaseNotesPath
-$announcement = @'
-[Carbon](http://get-carbon.org) {0} is out. You can [download Carbon as a .ZIP archive, NuGet package, Chocolatey package, or from the PowerShell Gallery](http://get-carbon.org/about_Carbon_Installation.html). It may take a week or two for the package to show up at chocolatey.org.
-
-{1}
-'@ -f $manifest.Version,$releaseNotes
-
-& $newModuleReleasedAnnouncement -ModuleName 'Carbon' -Version $manifest.Version -Content $announcement
-
+Publish-PowerShellGalleryModule -ManifestPath (Join-Path -Path $extractPath -ChildPath ('{0}.psd1' -f $moduleName)) `
+                                -ModulePath $extractPath `
+                                -ReleaseNotesPath (Join-Path -Path $extractPath -ChildPath 'RELEASE_NOTES.txt') `
+                                -LicenseUri $licenseUri `
+                                -Tags $tags `
+                                -ProjectUri $projectUri
