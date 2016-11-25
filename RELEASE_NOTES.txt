@@ -1,3 +1,8 @@
+# 0.8.1
+
+ * Removing a custom operation that isn't part of core Rivet.
+
+
 # 0.8.0
 
 ## Enhancements
