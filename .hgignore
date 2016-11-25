@@ -1,7 +1,0 @@
-relre:.*\.orig
-glob:Test\Server.txt
-relre:.*\obj\.*
-relre:.*\.pdb
-relre:.*\.user
-relre:.*\.suo
-glob:Test\bin
