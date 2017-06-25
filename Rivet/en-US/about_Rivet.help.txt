@@ -2,35 +2,132 @@ TOPIC
     about_Rivet
 
 SHORT DESCRIPTION
-    Rivet is a database migration/change management/versioning tool inspired by 
-    Ruby on Rails' Migrations. It creates and applies migration scripts for SQL 
-    Server databases. Migration scripts describe changes to make to your 
-    database, e.g. add a table, add a column, remove an index, etc. Migrations 
-    scripts should get added to your version control system so they can be 
-    packaged and deployed with your application's code.    
-    
-    Every Rivet migration is really a PowerShell script with a special name and  
-    that contains two migration functions.  The migration filename should have 
-    the format `<timestamp>_<description>.ps1`.  Timestamp is a unique number 
-    which increases every time a new migration is created.  By default, Rivet 
-    uses a timestamp with second precision.  `Description` is a short description 
-    of what the migration is doing.     
+    Rivet is a database migration/change management/versioning tool inspired by Ruby
+    on Rails' Migrations. You write PowerShell migration scripts that describe the 
+    changes you want to make to a SQL Server database, e.g. add a table, add a 
+    column, drop an index, etc. Rivet applies those scripts to a database, bringing 
+    its schema up-to-date.  
 
-    There should be two functions inside a migration, `Push-Migration` and 
-    `Pop-Migration`.  The `Push-Migration` function should make changes to the 
-    database.  The `Pop-Migration` function should reverse those changes, so you 
-    can put the database back in the state it was in before it was migrated. 
-        
-    Once released, migrations are immutable and should not be changed.  Rivet 
-    keeps track of which migrations have been applied against a database.  If you 
-    change a migration once it has been applied to a database, it won't get 
-    re-applied because Rivet has already recorded that it was applied.  Create a 
-    new migration to make the new change.
-         
-    All changes made in either `Push-Migration` or `Pop-Migration` are wrapped in 
-    a transaction.  If any change fails to get made/applied, all changes are 
-    rolled back.
-        
+    To get started, download Rivet from the PowerShell gallery:
+
+        > Save-Module -Name 'Rivet' -Path '.'
+
+    This will save Rivet into a `Rivet` directory in your current directory. (If 
+    you're running PowerShell 4, you'll need to download and install [PowerShell
+    Package Management Modules Preview](https://www.microsoft.com/en-us/download/details.aspx?id=51451).)
+
+    You can also [download a ZIP file from the Rivet project's GitHub page](https://github.com/webmd-health-services/Rivet/releases). Unzip the file, and
+    drag the `Rivet` directory where you'd like it.
+
+    Next, you'll need to create a `rivet.json` file that contains a connection
+    string to your database and the path where you want to keep your migration 
+    scripts. The simplest configuration file looks like this:
+
+        {
+            SqlServerName: '.\Rivet',
+            DatabasesRoot: 'Databases'
+        }
+
+    With this configuration file, Rivet will connect to the SQL Server at `.\Rivet`
+    and will look for migration scripts in `Databases\DATABASE_NAME\Migrations`.
+
+    Now you can create your first migration. Run:
+
+        > .\Rivet\rivet.ps1 -New -Database DATABASE_NAME -Name 'MyFirstMigration'
+
+    Rivet will create a migration at 
+    `Databases\DATABASE_NAME\Migrations\20170625132040_MyFirstMigration.ps1`. The 
+    migration's filename has two parts: an ID (e.g. `20170625132040` followed by the
+    migration's name. Rivet uses the ID to track what migrations have been applied
+    to a database. 
+
+    Open the migration in your favorite PowerShell text editor. We recommend the
+    PowerShell ISE, because of its intellisense and debugging capabilities. (To get
+    Intellisense as you type, import Rivet first: `Import-Module '.\Rivet'`.)
+
+    You'll see two functions: `Push-Migration` and `Pop-Migration`. In the 
+    `Push-Migration` function, you'll add Rivet operations that modify your 
+    database. In the `Pop-Migration` function, you'll add operations that 
+    reverse/rollback the changes made in `Push-Migration`. 
+
+    Let's create a table:
+
+        function Push-Migration
+        {
+            Add-Table -Name 'MyFirstTable' -Column {
+                int 'id' -Identity
+            }
+        }
+
+        function Pop-Migration
+        {
+            Remove-Table -Name 'MyFirstTable'
+        }
+
+    To apply your migration to your database, run `rivet.ps1` with its `-Push` 
+    switch:
+
+        > .\Rivet\rivet.ps1 -Push
+
+    Look in your database and it will contain the `MyFirstTable` table. By default, 
+    pushing migrations pushes them to *all* your databases. If you only want to push
+    to a single or specific databases, use Rivet's `Database` parameter:
+
+        > .\Rivet\rivet.ps1 -Push -Database 'DATABASE_NAME'
+
+    To reverse/rolllback your migration run `rivet.ps1` with the `Pop` switch:
+
+        > .\Rivet\rivet.ps1 -Pop
+
+    This will pop the newest migration in each database's `Migrations` directory. 
+    (Use the `Database` parameter to pop the newest migration from specific 
+    databases.) Look in your database, and the `MyFirstTable` database is gone.
+
+    Next, let's add another column to our table:
+
+        function Push-Migration
+        {
+            Add-Table -Name 'MyFirstTable' -Column {
+                int 'id' -Identity
+                nvarchar 'name' 50 -NotNull 
+            }        
+        }
+
+    You didn't have to modify the `Pop-Migration` function because it removes the 
+    table, so you don't need to remove each column. As you work on your migration, 
+    you'll be changing your `Push-Migration` function to get it just right. You'll
+    have to do a lot of pushing and popping. Rivet has a special `Redo` switch that
+    does a pop followed by a push:
+
+        > .\Rivet\rivet.ps1 -Redo
+
+    After you run this command, look in your database and you'll see that the 
+    `MyFirstTable` table now has a `name` column.
+
+    Once your migration is done, commit it to your source control repository. Once
+    you make your migration available to others, ***it is immutable and should never
+    be changed***. Rivet applies migration scripts as an entire unit. It uses each
+    migration's ID to determine if that migration has been applied to a database. If
+    it has been applied, Rivet skips it and moves on to the next migration. So, if 
+    you modify a migration after it's public, that change will never get applied
+    anywhere. If you need to change a public migration, create a new migration that
+    makes the changes you need.
+
+    Rivet wraps all pushes and pops in a transaction. If any part of a migration 
+    fails, the entire transaction is rolled back. Your database will never be left
+    in a state where part of a migration is applied.
+
+    To see a full list of operations, run this command:
+
+        > Get-Command -Module 'Rivet'
+
+    Or, [visit the Documentation page at the https://get-rivet.org website](http://get-rivet.org/documentation.html).
+
+    See the `about_Rivet_Configuration` topic for details on configuring Rivet in 
+    the `rivet.json` file.
+
+    The `about_Rivet_Plugins` topic explains how to write your own Rivet operations.
+
 SEE ALSO
     about_Rivet_Configuration  
     about_Rivet_Intellisense  
