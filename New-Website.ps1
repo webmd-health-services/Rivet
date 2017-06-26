@@ -76,13 +76,14 @@ function Out-HtmlPage
 		<li><a href="documentation.html">-Documentation</a></li>
         <!--<li><a href="about_Carbon_Support.html">-Support</a></li>-->
         <li><a href="releasenotes.html">-ReleaseNotes</a></li>
+        <li><a href="https://github.com/webmd-health-services/Rivet">-Project</a></li>
 		<li><a href="http://pshdo.com">-Blog</a></li>
     </ul>
 
     {1}
 
 	<div class="Footer">
-		Copyright 2013 - {2} <a href="http://pshdo.com">Aaron Jensen</a>.
+		Copyright 2013 - {2} <a href="http://github.com/webmd-health-services/">WebMD Health Services</a>.
 	</div>
 
 </body>

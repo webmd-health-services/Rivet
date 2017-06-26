@@ -1,4 +1,4 @@
-# 0.8.1
+# 0.8.1 (25 November 2016)
 
  * Removing a custom operation that isn't part of core Rivet.
 

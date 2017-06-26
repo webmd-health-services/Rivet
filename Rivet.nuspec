@@ -26,10 +26,8 @@
     <description>Rivet is a database migration/change management/versioning tool inspired by Ruby on Rails' Migrations. It creates and applies migration scripts for SQL Server databases. Migration scripts describe changes to make to your database, e.g. add a table, add a column, remove an index, etc. Migrations scripts should get added to your version control system so they can be packaged and deployed with your application's code.</description>
     <language>en-us</language>
     <releaseNotes>
-## Enhancements
+ * Removing a custom operation that isn't part of core Rivet.
 
- * Created `Merge-Migration` function for creating cumulative, roll up migrations.
- 
 </releaseNotes>
     <copyright>Copyright 2013 - 2016 Aaron Jensen.</copyright>
     <tags>sql-server evolutionary-database database migrations</tags>

@@ -17,13 +17,13 @@
     GUID = '8af34b47-259b-4630-a945-75d38c33b94d'
 
     # Author of this module
-    Author = 'Aaron Jensen'
+    Author = 'WebMD Health Services'
 
     # Company or vendor of this module
-    CompanyName = ''
+    CompanyName = 'WebMD Health Services'
 
     # Copyright statement for this module
-    Copyright = 'Copyright 2013 - 2016 Aaron Jensen.'
+    Copyright = 'Copyright 2013 - 2016 WebMD Health Services.'
 
     # Description of the functionality provided by this module
     Description = @'
@@ -195,9 +195,7 @@ Rivet is a database migration/change management/versioning tool inspired by Ruby
 
             # ReleaseNotes of this module
             ReleaseNotes = @'
-## Enhancements
-
- * Created `Merge-Migration` function for creating cumulative, roll up migrations.
+* Removing a custom operation that isn't part of core Rivet.
 '@
         } # End of PSData hashtable
 
