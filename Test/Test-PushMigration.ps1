@@ -197,7 +197,7 @@ function Test-ShouldPushMigrationsForMultipleDBs
         $rivetJson | Add-Member -MemberType NoteProperty -Name 'Databases' -Value @()
     }
     $rivetJson.Databases = @( $RTDatabaseName, $RTDatabase2Name )
-    $rivetJson | ConvertTo-Json -Depth 500 | Set-Content -Path $RTConfigFilePath
+    $rivetJson | ConvertTo-Json -Depth 100 | Set-Content -Path $RTConfigFilePath
 
     $migration = @'
 function Push-Migration 

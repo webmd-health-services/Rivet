@@ -1,130 +1,39 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{E987DC29-C1B0-4C9A-B8A3-46823E636087}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Rivet</RootNamespace>
-    <AssemblyName>Rivet</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile />
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <Authors>WebMD Health Services</Authors>
+    <Description>Rivet, a SQL Server database migration tool.</Description>
+    <Version>0.8.1</Version>
+    <Copyright>Copyright 2013 - 2016 WebMD Health Services.</Copyright>
+    <PackageLicenseUrl>http://www.apache.org/licenses/LICENSE-2.0</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/webmd-health-services/Rivet</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/webmd-health-services/Rivet</RepositoryUrl>
+    <RepositoryType>Git</RepositoryType>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
+
   <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Management.Automation, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>C:\Program Files\Reference Assemblies\Microsoft\WindowsPowerShell\v1.0\System.Management.Automation.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
+    <Compile Remove="Rivet.Test.Fake\**" />
+    <Compile Remove="Test\**" />
+    <EmbeddedResource Remove="Rivet.Test.Fake\**" />
+    <EmbeddedResource Remove="Test\**" />
+    <None Remove="Rivet.Test.Fake\**" />
+    <None Remove="Test\**" />
   </ItemGroup>
+
   <ItemGroup>
-    <Compile Include="Commands\AddIndexObjectCommand.cs" />
-    <Compile Include="Commands\Cmdlet.cs" />
-    <Compile Include="Commands\DatabaseObjectCommand.cs" />
-    <Compile Include="Commands\SchemaObjectCommand.cs" />
-    <Compile Include="Commands\TableObjectCommand.cs" />
-    <Compile Include="Configuration\Configuration.cs" />
-    <Compile Include="Configuration\Database.cs" />
-    <Compile Include="ConstraintType.cs" />
-    <Compile Include="ForeignKeyConstraintName.cs" />
-    <Compile Include="Column.cs" />
-    <Compile Include="DataType.cs" />
-    <Compile Include="Identity.cs" />
-    <Compile Include="IndexName.cs" />
-    <Compile Include="Migration.cs" />
-    <Compile Include="Operation.cs" />
-    <Compile Include="OperationQueryType.cs" />
-    <Compile Include="OperationResult.cs" />
-    <Compile Include="Operations\AddDefaultConstraintOperation.cs" />
-    <Compile Include="Operations\AddExtendedPropertyOperation.cs" />
-    <Compile Include="Operations\AddForeignKeyOperation.cs" />
-    <Compile Include="Operations\AddIndexOperation.cs" />
-    <Compile Include="Operations\AddPrimaryKeyOperation.cs" />
-    <Compile Include="Operations\ConstraintOperation.cs" />
-    <Compile Include="Operations\DisableConstraintOperation.cs" />
-    <Compile Include="Operations\EnableConstraintOperation.cs" />
-    <Compile Include="Operations\IrreversibleOperation.cs" />
-    <Compile Include="Operations\RemoveRowGuidColOperation.cs" />
-    <Compile Include="Operations\AddRowGuidColOperation.cs" />
-    <Compile Include="Operations\AddSchemaOperation.cs" />
-    <Compile Include="Operations\AddTableOperation.cs" />
-    <Compile Include="Operations\AddUniqueKeyOperation.cs" />
-    <Compile Include="ConstraintName.cs" />
-    <Compile Include="Operations\AddTriggerOperation.cs" />
-    <Compile Include="Operations\AddRowOperation.cs" />
-    <Compile Include="Operations\AddSynonymOperation.cs" />
-    <Compile Include="Operations\AddDataTypeOperation.cs" />
-    <Compile Include="Operations\AddCheckConstraintOperation.cs" />
-    <Compile Include="Operations\ExtendedPropertyOperation.cs" />
-    <Compile Include="Operations\ObjectOperation.cs" />
-    <Compile Include="Operations\RemoveCheckConstraintOperation.cs" />
-    <Compile Include="Operations\RenameColumnOperation.cs" />
-    <Compile Include="Operations\RenameIndexOperation.cs" />
-    <Compile Include="Operations\ScriptFileOperation.cs" />
-    <Compile Include="Operations\TableObjectOperation.cs" />
-    <Compile Include="Operations\UpdateCodeObjectMetadataOperation.cs" />
-    <Compile Include="Operations\UpdateTableOperation.cs" />
-    <Compile Include="Operations\RemoveDataTypeOperation.cs" />
-    <Compile Include="Operations\RemoveSynonymOperation.cs" />
-    <Compile Include="Operations\RenameOperation.cs" />
-    <Compile Include="Operations\UpdateViewOperation.cs" />
-    <Compile Include="Operations\UpdateUserDefinedFunctionOperation.cs" />
-    <Compile Include="Operations\UpdateTriggerOperation.cs" />
-    <Compile Include="Operations\UpdateStoredProcedureOperation.cs" />
-    <Compile Include="Operations\UpdateRowOperation.cs" />
-    <Compile Include="Operations\RemoveRowOperation.cs" />
-    <Compile Include="Operations\RemoveTriggerOperation.cs" />
-    <Compile Include="Operations\AddViewOperation.cs" />
-    <Compile Include="Operations\AddUserDefinedFunctionOperation.cs" />
-    <Compile Include="Operations\AddStoredProcedureOperation.cs" />
-    <Compile Include="Operations\RemoveStoredProcedureOperation.cs" />
-    <Compile Include="Operations\RemoveUserDefinedFunctionOperation.cs" />
-    <Compile Include="Operations\RemoveViewOperation.cs" />
-    <Compile Include="Operations\RemoveExtendedPropertyOperation.cs" />
-    <Compile Include="Operations\RemoveSchemaOperation.cs" />
-    <Compile Include="Operations\RawDdlOperation.cs" />
-    <Compile Include="Operations\RemoveDefaultConstraintOperation.cs" />
-    <Compile Include="Operations\RemoveForeignKeyOperation.cs" />
-    <Compile Include="Operations\RemoveIndexOperation.cs" />
-    <Compile Include="Operations\RemovePrimaryKeyOperation.cs" />
-    <Compile Include="Operations\RemoveTableOperation.cs" />
-    <Compile Include="Operations\RemoveUniqueKeyOperation.cs" />
-    <Compile Include="Operations\UpdateExtendedPropertyOperation.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Precision.cs" />
-    <Compile Include="Properties\AssemblyVersion.cs" />
+    <Compile Remove="Properties\AssemblyInfo.cs" />
+    <Compile Remove="Properties\AssemblyVersion.cs" />
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+
+  <ItemGroup>
+    <PackageReference Include="PowerShellStandard.Library" Version="5.1.0-RC1">
+      <PrivateAssets>All</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
+
 </Project>

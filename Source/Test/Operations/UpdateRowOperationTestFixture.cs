@@ -2,6 +2,7 @@
 using NUnit.Framework;
 using Rivet.Operations;
 using System.Collections;
+using System.Text.RegularExpressions;
 
 namespace Rivet.Test.Operations
 {
@@ -49,21 +50,21 @@ namespace Rivet.Test.Operations
 		public void ShouldWriteQueryForUpdateSpecificRows()
 		{
 			GivenConditionalRowsToUpdate(SanDiego, Where);
-			ThenQueryValuesAndWhereClauseAre("[Population] = 1234567, [State] = 'Oregon'", "[City] = 'San Diego'");
+			ThenQueryValuesAre(new[] { "[State] = 'Oregon'", "[Population] = 1234567", "[City] = 'San Diego'" });
 		}
 
 		[Test]
 		public void ShouldWriteQueryForUpdateAllRows()
 		{
 			GivenRowsToUpdate(SanDiego);
-			ThenQueryValuesAre("[Population] = 1234567, [State] = 'Oregon'");
+			ThenQueryValuesAre(new string[] { "[State] = 'Oregon'", "[Population] = 1234567" });
 		}
 
 		[Test]
 		public void ShouldNotEscapeColumns()
 		{
 			GivenRawRows(SanDiego);
-			ThenQueryValuesAre("[Population] = 1234567, [State] = Oregon");
+			ThenQueryValuesAre(new string[] { "[State] = Oregon", "[Population] = 1234567" });
 		}
 
 		[Test]
@@ -128,15 +129,19 @@ namespace Rivet.Test.Operations
 		}
 
 		private void ThenQueryValuesAre(string setClause)
-		{
-			var expectedQuery = string.Format("update [schemaName].[tableName] set {0}", setClause);
-			Assert.AreEqual(expectedQuery, op.ToQuery());
-		}
+        {
+            ThenQueryValuesAre(new[] { setClause });
+        }
 
-		private void ThenQueryValuesAndWhereClauseAre(string setClause, string whereClause)
+        private void ThenQueryValuesAre(string[] setClause)
 		{
-			ThenQueryValuesAre(setClause + " where " + whereClause);
-		}
+            var query = op.ToQuery();
+            Assert.That(query, Does.StartWith("update [schemaName].[tableName] set "));
 
+            foreach( var clause in setClause )
+            {
+                Assert.That(query, Does.Match(string.Format(@"\b{0}\b|$", Regex.Escape(clause))));
+            }
+		}
 	}
 }

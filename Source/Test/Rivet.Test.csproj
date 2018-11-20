@@ -1,135 +1,22 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{7BF888CB-5E1D-42A2-B277-6E18E06F6AC8}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Rivet.Test</RootNamespace>
-    <AssemblyName>Rivet.Test</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile />
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <IsTestProject>true</IsTestProject>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
+
   <ItemGroup>
-    <Reference Include="nunit.core, Version=2.6.2.12296, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
-      <HintPath>..\packages\NUnitTestAdapter.0.96.0\lib\nunit.core.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="nunit.core.interfaces, Version=2.6.2.12296, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
-      <HintPath>..\packages\NUnitTestAdapter.0.96.0\lib\nunit.core.interfaces.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="nunit.framework, Version=3.5.0.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
-      <HintPath>..\packages\NUnit.3.5.0\lib\net45\nunit.framework.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="nunit.util, Version=2.6.2.12296, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
-      <HintPath>..\packages\NUnitTestAdapter.0.96.0\lib\nunit.util.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="NUnit.VisualStudio.TestAdapter, Version=0.96.0.4, Culture=neutral, PublicKeyToken=4cb40d35494691ac, processorArchitecture=MSIL">
-      <HintPath>..\packages\NUnitTestAdapter.0.96.0\lib\NUnit.VisualStudio.TestAdapter.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
+    <PackageReference Include="NUnit" Version="3.11.0" />
+    <PackageReference Include="NUnit3TestAdapter" Version="3.11.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.9.0" />
   </ItemGroup>
+
   <ItemGroup>
-    <Compile Include="..\Properties\AssemblyVersion.cs">
-      <Link>AssemblyVersion.cs</Link>
-    </Compile>
-    <Compile Include="ColumnTestFixture.cs" />
-    <Compile Include="IndexNameTestFixture.cs" />
-    <Compile Include="Operations\AddCheckConstraintOperationTestFixture.cs" />
-    <Compile Include="Operations\AddDataTypeOperationTestFixture.cs" />
-    <Compile Include="Operations\AddDefaultConstraintOperationTestFixture.cs" />
-    <Compile Include="Operations\AddExtendedPropertyOperationTestFixture.cs" />
-    <Compile Include="Operations\AddForeignKeyOperationTestFixture.cs" />
-    <Compile Include="Operations\AddIndexOperationTestFixture.cs" />
-    <Compile Include="Operations\AddPrimaryKeyOperationTestFixture.cs" />
-    <Compile Include="ConstraintNameTestFixture.cs" />
-    <Compile Include="Operations\AddSchemaOperationTestFixture.cs" />
-    <Compile Include="Operations\AddSynonymOperationTestFixture.cs" />
-    <Compile Include="Operations\AddTableOperationTestFixture.cs" />
-    <Compile Include="Operations\AddTriggerOperationTestFixture.cs" />
-    <Compile Include="Operations\AddRowOperationTestFixture.cs" />
-    <Compile Include="Operations\AddUniqueKeyOperationTestFixture.cs" />
-    <Compile Include="Operations\DisableConstraintOperationTestFixture.cs" />
-    <Compile Include="Operations\EnableConstraintOperationTestFixture.cs" />
-    <Compile Include="Operations\RemoveCheckConstraintOperationTestFixture.cs" />
-    <Compile Include="Operations\RemoveDataTypeOperationTestFixture.cs" />
-    <Compile Include="Operations\RemoveDefaultConstraintOperationTestFixture.cs" />
-    <Compile Include="Operations\RemoveForeignKeyOperationTestFixture.cs" />
-    <Compile Include="Operations\RemoveIndexOperationTestFixture.cs" />
-    <Compile Include="Operations\RemovePrimaryKeyOperationTestFixture.cs" />
-    <Compile Include="Operations\RemoveSchemaOperationTestFixture.cs" />
-    <Compile Include="Operations\RemoveSynonymOperationTestFixture.cs" />
-    <Compile Include="Operations\RemoveTableOperationTestFixture.cs" />
-    <Compile Include="Operations\RemoveUniqueKeyOperationTestFixture.cs" />
-    <Compile Include="Operations\RenameColumnOperationTestFixture.cs" />
-    <Compile Include="Operations\RenameIndexOperationTestFixture.cs" />
-    <Compile Include="Operations\ScriptFileOperationTestFixture.cs" />
-    <Compile Include="Operations\UpdateTableOperationTestFixture.cs" />
-    <Compile Include="Operations\RemoveExtendedPropertyOperationTestFixture.cs" />
-    <Compile Include="Operations\UpdateExtendedPropertyOperationTestFixture.cs" />
-    <Compile Include="Operations\RenameOperationTestFixture.cs" />
-    <Compile Include="Operations\UpdateViewOperationTestFixture.cs" />
-    <Compile Include="Operations\UpdateUserDefinedFunctionOperationTestFixture.cs" />
-    <Compile Include="Operations\UpdateTriggerOperationTestFixture.cs" />
-    <Compile Include="Operations\UpdateStoredProcedureOperationTestFixture.cs" />
-    <Compile Include="Operations\UpdateRowOperationTestFixture.cs" />
-    <Compile Include="Operations\RemoveRowOperationTestFixture.cs" />
-    <Compile Include="Operations\RemoveTriggerOperationTestFixture.cs" />
-    <Compile Include="Operations\AddViewOperationTestFixture.cs" />
-    <Compile Include="Operations\AddUserDefinedFunctionOperationTestFixture.cs" />
-    <Compile Include="Operations\AddStoredProcedureOperationTestFixture.cs" />
-    <Compile Include="Operations\RemoveViewOperationTestFixture.cs" />
-    <Compile Include="Operations\RemoveUserDefinedFunctionOperationTestFixture.cs" />
-    <Compile Include="Operations\RemoveStoredProcedureOperationTestFixture.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
+    <ProjectReference Include="..\Rivet.csproj" />
   </ItemGroup>
+
   <ItemGroup>
-    <ProjectReference Include="..\Rivet.csproj">
-      <Project>{e987dc29-c1b0-4c9a-b8a3-46823e636087}</Project>
-      <Name>Rivet</Name>
-    </ProjectReference>
+    <Folder Include="Properties\" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+
 </Project>
