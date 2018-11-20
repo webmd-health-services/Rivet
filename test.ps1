@@ -20,7 +20,7 @@ $testRoot = Join-Path -Path $PSScriptRoot -ChildPath 'Test'
 # Let's get full stack traces in our errors.
 $bladeLogPath = Join-Path -Path $PSScriptRoot -ChildPath '.output\blade.xml'
 & {
-    $VerbosePreference = 'SilentlyContinue'
+    $Global:VerbosePreference = 'SilentlyContinue'
     & (Join-Path -Path $PSScriptRoot -ChildPath '.\Tools\Blade\blade.ps1' -Resolve) -Path $testRoot -XmlLogPath $bladeLogPath
 }
 
