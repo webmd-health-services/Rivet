@@ -44,7 +44,11 @@ function Export-RunResultXml
         $cwd = (Get-Location).Path
         $osVersion = [Environment]::OSVersion.VersionString
         $platform = [Environment]::OSVersion.Platform
-        $clrVersion = $PSVersionTable.CLRVersion
+        $clrVersion = ''
+        if( $PSVersionTable.ContainsKey('CLRVersion') )
+        {
+            $clrVersion = $PSVersionTable.CLRVersion
+        }
         $psVersion = $PSVersionTable.PSVersion
         $resultXml = [xml](@'
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
