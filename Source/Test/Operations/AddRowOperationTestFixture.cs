@@ -4,6 +4,7 @@ using System.Text;
 using NUnit.Framework;
 using Rivet.Operations;
 using System.Collections;
+using System.Text.RegularExpressions;
 
 namespace Rivet.Test.Operations
 {
@@ -50,14 +51,14 @@ namespace Rivet.Test.Operations
 		public void ShouldWriteQueryForAddRow()
 		{
 			GivenRows(ArrayofHashtables);
-			ThenQueryValuesAre("City], [State], [Population", new []{"'New York', 'New York', 8336697", "'Los Angeles', 'California', 3857799"});
+			ThenQueryValuesAre(new[] { "State", "City", "Population" }, new []{ "'New York', 'New York', 8336697", "'California', 'Los Angeles', 3857799" });
 		}
 
 		[Test]
 		public void ShouldTurnOnIdentityInsert()
 		{
 			GivenIdentityRows(ArrayofHashtables);
-			ThenQueryValuesAre("City], [State], [Population", new []{"'New York', 'New York', 8336697", "'Los Angeles', 'California', 3857799"});
+			ThenQueryValuesAre(new[] { "State", "City", "Population" }, new []{ "'New York', 'New York', 8336697", "'California', 'Los Angeles', 3857799" });
 		}
 
 		[Test]
@@ -68,7 +69,7 @@ namespace Rivet.Test.Operations
 				{"Boolean", true},
 			};
 			GivenRows(new [] { cols } );
-			ThenQueryValuesAre("Boolean", new [] { "1" });
+			ThenQueryValuesAre(new[] { "Boolean" }, new [] { "1" });
 		}
 
 		[Test]
@@ -79,7 +80,7 @@ namespace Rivet.Test.Operations
 				{"int", 1},
 			};
 			GivenRows(new [] { cols } );
-			ThenQueryValuesAre("int", new[] { "1" });
+			ThenQueryValuesAre(new[] { "int" }, new[] { "1" });
 		}
 
 		[Test]
@@ -91,7 +92,7 @@ namespace Rivet.Test.Operations
 				{"datetime", datetime},
 			};
 			GivenRows(new [] { cols } );
-			ThenQueryValuesAre("datetime", new[] { string.Format("'{0}'", datetime) });
+			ThenQueryValuesAre(new[] { "datetime" }, new[] { string.Format("'{0}'", datetime) });
 		}
 
 		[Test]
@@ -102,7 +103,7 @@ namespace Rivet.Test.Operations
 				{"name", "McDonald's"},
 			};
 			GivenRows(new [] { cols } );
-			ThenQueryValuesAre("name", new[] { "'McDonald''s'"});
+			ThenQueryValuesAre(new[] { "name" }, new[] { "'McDonald''s'"});
 		}
 
 		[Test]
@@ -113,7 +114,7 @@ namespace Rivet.Test.Operations
 				{"name", ""},
 			};
 			GivenRows(new [] { cols } );
-			ThenQueryValuesAre("name", new[] { "''"});
+			ThenQueryValuesAre(new[] { "name" }, new[] { "''"});
 		}
 
 		[Test]
@@ -125,7 +126,7 @@ namespace Rivet.Test.Operations
 				{"name", value},
 			};
 			GivenRows(new [] { cols } );
-			ThenQueryValuesAre("name", new[] { string.Format("'{0}'", value) });
+			ThenQueryValuesAre(new[] { "name" }, new[] { string.Format("'{0}'", value) });
 		}
 
 		[Test]
@@ -136,30 +137,35 @@ namespace Rivet.Test.Operations
 				{"name", null }
 			};
 			GivenRows(new [] { cols } );
-			ThenQueryValuesAre("name", new[] { "null" });
+			ThenQueryValuesAre(new[] { "name" }, new[] { "null" });
 		}
 
-		private void ThenQueryValuesAre(string columns, IEnumerable<string> rows)
+		private void ThenQueryValuesAre(IEnumerable<string> columns, IEnumerable<string> rows)
 		{
+            var query = _op.ToQuery();
 			var queryBuilder = new StringBuilder();
 			if (_op.IdentityInsert)
 			{
-				queryBuilder.AppendFormat("set IDENTITY_INSERT [{0}].[{1}] on{2}", SchemaName, TableName, Environment.NewLine);
-				
+                Assert.That(query, Does.Contain(string.Format("set IDENTITY_INSERT [{0}].[{1}] on{2}", SchemaName, TableName, Environment.NewLine)));
 			}
-			foreach (var row in rows)
-			{
-				queryBuilder.AppendFormat("insert into [schemaName].[tableName] ([{0}]) values ({1}){2}", columns, row, Environment.NewLine);
+
+            foreach (var column in columns)
+            {
+                Assert.That(query, Does.Contain(string.Format("[{0}]", column)));
+            }
+
+            foreach (var row in rows)
+            {
+                Assert.That(query, Does.Match(string.Format(@"\(|\b{0}\b|\)", Regex.Escape(row))));
 			}
+
 			if (_op.IdentityInsert)
 			{
-				queryBuilder.AppendFormat("set IDENTITY_INSERT [{0}].[{1}] off{2}", SchemaName, TableName, Environment.NewLine);
-
+                Assert.That(query, Does.Contain(string.Format("set IDENTITY_INSERT [{0}].[{1}] off", SchemaName, TableName)));
 			}
-			Assert.That(_op.ToQuery(), Is.EqualTo(queryBuilder.ToString().Trim()));
-		}
+        }
 
-		private void GivenRows(Hashtable[] rows)
+        private void GivenRows(Hashtable[] rows)
 		{
 			_op = new AddRowOperation(SchemaName, TableName, rows);
 		}
