@@ -251,6 +251,8 @@ function Get-RivetConfig
         $targetDatabases = @{ }
     }
 
+    $order = Get-ConfigProperty -Name 'DatabaseOrder' -AsList
+
     [Rivet.Configuration.Configuration]$configuration = New-Object 'Rivet.Configuration.Configuration' $Path,$Environment,$sqlServerName,$dbsRoot,$connectionTimeout,$commandTimeout,$pluginsRoot
 
     if( $Global:Error.Count -ne $errorCount )
@@ -268,9 +270,16 @@ function Get-RivetConfig
             }
             else
             {                                    
-                # Then get all of them
-                Get-ChildItem -Path $configuration.DatabasesRoot |
-                    Where-Object { $_.PsIsContainer }
+                # Then get all of them in the order requested
+                if( $order )
+                {
+                    foreach( $dbName in $order )
+                    {
+                        Get-ChildItem -Path $configuration.DatabasesRoot -Filter $dbName -Directory
+                    }
+                }
+
+                Get-ChildItem -Path $configuration.DatabasesRoot -Exclude $order -Directory
             }
         } |
         Select-Object -Property Name,FullName -Unique |
