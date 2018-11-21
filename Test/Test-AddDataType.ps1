@@ -39,9 +39,11 @@ function Pop-Migration
     Assert-Column 'ident' -DataType 'G U I D' -TableName 'important'
 }
 
-function Ignore-ShouldAddDataTypeByAssembly
+function Test-ShouldAddDataTypeByAssembly
 {
-    $assemblyPath = Join-Path -Path $PSScriptRoot -ChildPath '..\Source\Rivet.Test.Fake\bin\Debug\Rivet.Test.Fake.dll' -Resolve
+    $assemblyPath = Join-Path -Path $PSScriptRoot -ChildPath '..\Source\Rivet.Test.Fake\bin\*\Rivet.Test.Fake.dll' -Resolve -ErrorAction Ignore |
+                        Select-Object -First 1
+    Assert-NotNull $assemblyPath   
     # Yes.  Spaces in the name so we check the name gets quoted.
     @"
 function Push-Migration

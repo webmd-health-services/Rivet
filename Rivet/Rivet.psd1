@@ -11,7 +11,7 @@
     RootModule = 'Rivet.psm1'
 
     # Version number of this module.
-    ModuleVersion = '0.8.1'
+    ModuleVersion = '0.9.0'
 
     # ID used to uniquely identify this module
     GUID = '8af34b47-259b-4630-a945-75d38c33b94d'
@@ -22,8 +22,10 @@
     # Company or vendor of this module
     CompanyName = 'WebMD Health Services'
 
+    CompatiblePSEditions = @( 'Desktop', 'Core' )
+
     # Copyright statement for this module
-    Copyright = 'Copyright 2013 - 2016 WebMD Health Services.'
+    Copyright = 'Copyright 2013 - 2018 WebMD Health Services.'
 
     # Description of the functionality provided by this module
     Description = @'
@@ -188,14 +190,14 @@ Rivet is a database migration/change management/versioning tool inspired by Ruby
             LicenseUri = 'http://www.apache.org/licenses/LICENSE-2.0'
 
             # A URL to the main website for this project.
-            ProjectUri = 'http://get-silk.org'
+            ProjectUri = 'http://get-rivet.org'
 
             # A URL to an icon representing this module.
             # IconUri = ''
 
             # ReleaseNotes of this module
             ReleaseNotes = @'
-* Removing a custom operation that isn't part of core Rivet.
+* Adding support for running Rivet under Windows PowerShell 5.1 and PowerShell Core.
 '@
         } # End of PSData hashtable
 

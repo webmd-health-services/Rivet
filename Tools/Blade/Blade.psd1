@@ -17,10 +17,10 @@
 @{
 
     # Script module or binary module file associated with this manifest
-    ModuleToProcess = 'Blade.psm1'
+    RootModule = 'Blade.psm1'
 
     # Version number of this module.
-    ModuleVersion = '0.12.0'
+    ModuleVersion = '0.13.0'
 
     # ID used to uniquely identify this module
     GUID = '075d9444-c01b-48c3-889a-0b3490716fa2'
@@ -31,14 +31,16 @@
     # Company or vendor of this module
     CompanyName = ''
 
+    CompatiblePSEditions = @( 'Desktop', 'Core' )
+
     # Copyright statement for this module
-    Copyright = '(c) 2011 - 2013 Aaron Jensen. All rights reserved.'
+    Copyright = '(c) 2011 - 2018 Aaron Jensen. All rights reserved.'
 
     # Description of the functionality provided by this module
-    Description = 'PowerShell Testing Module'
+    Description = 'PowerShell Testing Module. This module is OBSOLETE. Use Pester instead.'
 
     # Minimum version of the Windows PowerShell engine required by this module
-    PowerShellVersion = ''
+    PowerShellVersion = '5.1'
 
     # Name of the Windows PowerShell host required by this module
     PowerShellHostName = ''
@@ -92,7 +94,24 @@
     FileList = @()
 
     # Private data to pass to the module specified in ModuleToProcess
-    PrivateData = ''
+    PrivateData = @{
 
+        PSData = @{
+
+            # Tags applied to this module. These help with module discovery in online galleries.
+            Tags = @()
+
+            # A URL to the license for this module.
+            LicenseUri = 'http://www.apache.org/licenses/LICENSE-2.0'
+
+            # A URL to the main website for this project.
+            ProjectUri = 'http://get-blade.org/'
+
+            # ReleaseNotes of this module
+            ReleaseNotes = @'
+* Updating to run under PowerShell Core.
+'@
+        }
+    }
 }
 

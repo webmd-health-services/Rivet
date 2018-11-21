@@ -18,7 +18,10 @@ $rivetRoot = @( '..\..\Rivet', '..\..' ) |
                 Where-Object { (Test-Path -Path (Join-Path -Path $_ -ChildPath 'Import-Rivet.ps1') ) } |
                 Select-Object -First 1
 
-& (Join-Path -Path $rivetRoot -ChildPath 'Import-Rivet.ps1' -Resolve)
+& {
+    $VerbosePreference = 'SilentlyContinue'
+    & (Join-Path -Path $rivetRoot -ChildPath 'Import-Rivet.ps1' -Resolve)
+}
 
 $rivetTestPsd1Path = Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest.psd1' -Resolve
 
@@ -68,12 +71,19 @@ $importModuleParams = @{ }
 
 if( $Force -and $loadedModule )
 {
-    # Remove so we don't get errors about conflicting type data.
-    Remove-Module -Name 'RivetTest' -Verbose:$false -WhatIf:$false
+    & {
+        $VerbosePreference = 'SilentlyContinue'
+        $WhatIfPreference = $false
+        # Remove so we don't get errors about conflicting type data.
+        Remove-Module -Name 'RivetTest'
+    }
 }
 
-Write-Verbose ('Importing RivetTest ({0}).' -f $rivetTestPsd1Path)
-Import-Module $rivetTestPsd1Path -ArgumentList $rivetRoot -ErrorAction Stop -Verbose:$false @importModuleParams
+& {
+    Write-Verbose ('Importing RivetTest ({0}).' -f $rivetTestPsd1Path)
+    $VerbosePreference = 'SilentlyContinue'
+    Import-Module $rivetTestPsd1Path -ArgumentList $rivetRoot -ErrorAction Stop -Verbose:$false @importModuleParams
+}
 
 if( -not (Get-Module -Name 'RivetTest' | Get-Member -Name 'ImportedAt') )
 {
