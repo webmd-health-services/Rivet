@@ -129,7 +129,7 @@ function Get-RivetConfig
             {
                 if( -not ($value -is [int] -or $value -is [int64]) )
                 {
-                    Write-ValidationError -Message ('Setting "{0}" is invalid. It should be a positive integer but we found a "{1}".' -f $Name,$value.GetType().FullName)
+                    Write-ValidationError -Message ('Setting "{0}" is invalid. It should be an integer but we found a "{1}".' -f $Name,$value.GetType().FullName)
                     return
                 }
                 return $value
