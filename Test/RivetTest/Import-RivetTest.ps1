@@ -75,7 +75,7 @@ if( $Force -and $loadedModule )
         $VerbosePreference = 'SilentlyContinue'
         $WhatIfPreference = $false
         # Remove so we don't get errors about conflicting type data.
-        Remove-Module -Name 'RivetTest' -Verbose:$false -WhatIf:$false
+        Remove-Module -Name 'RivetTest'
     }
 }
 
