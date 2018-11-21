@@ -1,11 +1,11 @@
 [CmdletBinding(DefaultParameterSetName='Build')]
 param(
-    [Parameter(Mandatory=$true,ParameterSetName='Clean')]
+    [Parameter(Mandatory,ParameterSetName='Clean')]
     [Switch]
     # Runs the build in clean mode, which removes any files, tools, packages created by previous builds.
     $Clean,
 
-    [Parameter(Mandatory=$true,ParameterSetName='Initialize')]
+    [Parameter(Mandatory,ParameterSetName='Initialize')]
     [Switch]
     # Initializes the repository.
     $Initialize
