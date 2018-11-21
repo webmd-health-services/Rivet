@@ -5,7 +5,7 @@
     <Authors>WebMD Health Services</Authors>
     <Description>Rivet, a SQL Server database migration tool.</Description>
     <Version>0.0.0</Version>
-    <Copyright>Copyright 2013 - 2016 WebMD Health Services.</Copyright>
+    <Copyright>Copyright 2013 - 2018 WebMD Health Services.</Copyright>
     <PackageLicenseUrl>http://www.apache.org/licenses/LICENSE-2.0</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/webmd-health-services/Rivet</PackageProjectUrl>
     <RepositoryUrl>https://github.com/webmd-health-services/Rivet</RepositoryUrl>
