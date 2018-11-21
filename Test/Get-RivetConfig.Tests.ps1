@@ -105,7 +105,7 @@ Describe 'Get-RivetConfig' {
     
     It 'should handle relative path' {
         $tempDirName = Split-Path -Leaf -Path $tempDir
-        $tempDir2 = New-TempDir -Prefix 'Rivet-Test-GetRivetConfig'
+        $tempDir2 = New-Item -Path (Join-Path -Path $env:Temp -ChildPath ('Rivet-Test-GetRivetConfig+{0}' -f [IO.Path]::GetRandomFileName())) -ItemType 'Directory'
         $tempDir2Name = Split-Path -Leaf -Path $tempDir2
         $configContents = @"
 {
