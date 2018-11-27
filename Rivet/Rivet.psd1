@@ -33,7 +33,7 @@ Rivet is a database migration/change management/versioning tool inspired by Ruby
 '@
 
     # Minimum version of the Windows PowerShell engine required by this module
-    PowerShellVersion = ''
+    PowerShellVersion = '5.1'
 
     # Name of the Windows PowerShell host required by this module
     PowerShellHostName = ''
@@ -198,6 +198,7 @@ Rivet is a database migration/change management/versioning tool inspired by Ruby
             # ReleaseNotes of this module
             ReleaseNotes = @'
 * Adding support for running Rivet under Windows PowerShell 5.1 and PowerShell Core.
+* You can now specify the order Rivet should apply migrations to multiple databases with the "DatabaseOrder" setting in your rivet.json file. It should be set to a list of databases and Rivet will apply migrations to databases in that order. See `help about_Rivet_Configuration` for more information.
 '@
         } # End of PSData hashtable
 

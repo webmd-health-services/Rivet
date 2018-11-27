@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-$doNotImport = @{ 'Import-Blade' = $true }
+$doNotImport = @{ 'Import-Blade' = $true ; 'Convert-BladeFixtureToPester' = $true ; }
 
 Get-Item -Path (Join-Path $PSScriptRoot '*-*.ps1') | 
     Where-Object { -not $doNotImport.ContainsKey( $_.BaseName ) } |
