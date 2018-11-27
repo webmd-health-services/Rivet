@@ -56,6 +56,16 @@ LONG DESCRIPTION
     
     The amount of time, in seconds, to wait for a database connection to open.  The 
     default is 15 seconds.
+
+    ### DatabaseOrder
+
+    A list of database names in the order in which Rivet should apply migrations. The 
+    default is alphabetical order. If a database is listed here but doesn't exist on the
+    file system, it is ignored.
+    
+    This list doesn't have to list all your databases. Just the ones where order 
+    matters. Databases not listed here will continue to have their migrations applied in
+    alphabetical order.
         
     ### DatabasesRoot
     
@@ -118,7 +128,7 @@ LONG DESCRIPTION
     
         {
             "TargetDatabases": {
-                                    "Database1": [ "Database1", "DAtabase2" ]
+                                    "Database1": [ "Database1", "Database2" ]
                                }
         }
     
@@ -142,11 +152,12 @@ LONG DESCRIPTION
     ### Example 2
     
         {
-            SqlServerName: '.\Rivet',
-            DatabasesRoot: 'Databases',
-            ConnectionTimeout: 5,
-            CommandTimeout: 300,
-            IgnoreDatabases: [ 'Shared' ]
+            "SqlServerName": ".\Rivet",
+            "DatabasesRoot": "Databases",
+            "ConnectionTimeout": 5,
+            "CommandTimeout": 300,
+            "IgnoreDatabases": [ "Shared" ],
+            "DatabaseOrder": [ "Xanadu", "Q" ]
         }
     
     This example demonstrates how to use all the configuration options.  This 
@@ -159,6 +170,8 @@ LONG DESCRIPTION
      * increase the command timeout to 5 minutes
      * not add the `Shared` database to the list of databases to manage (i.e. it will 
        ignore the `$Databases\Shared` directory)
+     * apply migrations to the "Xanadu" and "Q" databases before any others on the file
+       file system.
      
     ### Example 3
     
