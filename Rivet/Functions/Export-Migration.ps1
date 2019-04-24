@@ -20,10 +20,11 @@ function Export-Migration
         # The database to connect to.
         $Database,
 
-        [Parameter(Mandatory)]
         [string[]]
-        # The names of the objects to export.
-        $Name
+        # The names of the objects to export. Must include the schema if exporting a specific object. Wildcards supported.
+        #
+        # The default behavior is to export all non-system objects.
+        $Include
     )
 
     Set-StrictMode -Version 'Latest'
@@ -351,9 +352,14 @@ where
                     continue
                 }
 
-                if( -not ($Name | Where-Object { $object.full_name -like $_ }) )
+                if( $Include -and -not ($Include | Where-Object { $object.full_name -like $_ }) )
                 {
                     Write-Debug ('Skipping   NOT SELECTED      {0}' -f $object.full_name)
+                    continue
+                }
+
+                if( $object.schema_name -eq 'rivet' )
+                {
                     continue
                 }
 

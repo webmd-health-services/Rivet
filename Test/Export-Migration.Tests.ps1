@@ -33,6 +33,13 @@ function GivenMigration
     $script:migration = $Content
 }
 
+function ThenNoErrors
+{
+    It ('should not write any errors') {
+        $Global:Error | Should -BeNullOrEmpty
+    }
+}
+
 function ThenMigration
 {
     param(
@@ -60,17 +67,27 @@ function WhenExporting
 {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory)]
         [string[]]
-        $Name
+        $Include
     )
 
     Start-RivetTest
-    $migration | New-TestMigration -Name 'ExportMigration'
     try
     {
+        if( $migration )
+        {
+            $migration | New-TestMigration -Name 'ExportMigration'
+        }
         Invoke-RTRivet -Push
-        $script:migration = Export-Migration -SqlServerName $RTServer -DAtabase $RTDatabaseName -Name $Name
+        $optionalParams = @{}
+        if( $PSBoundParameters.ContainsKey('Name') )
+        {
+            $optionalParams['Include'] = $Name
+        }
+
+        $Global:Error.Clear()
+
+        $script:migration = Export-Migration -SqlServerName $RTServer -Database $RTDatabaseName @optionalParams
         Write-Debug -Message ($migration -join [Environment]::NewLine)
     }
     finally
@@ -246,5 +263,11 @@ function Pop-Migration
     Invoke-Ddl -Query @'CREATE procedure [dbo].[DoSomething] as select 1
 "@
     ThenMigration -HasContent 'Remove-StoredProcedure -Name ''DoSomething'''
+}
 
+Describe 'Export-Migration.when exporting entire database' {
+    Init
+    WhenExporting
+    ThenMigration -Not -HasContent 'rivet'
+    ThenNoErrors
 }
