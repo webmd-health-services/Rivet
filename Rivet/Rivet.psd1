@@ -11,7 +11,7 @@
     RootModule = 'Rivet.psm1'
 
     # Version number of this module.
-    ModuleVersion = '0.9.0'
+    ModuleVersion = '0.10.0'
 
     # ID used to uniquely identify this module
     GUID = '8af34b47-259b-4630-a945-75d38c33b94d'
@@ -94,6 +94,7 @@ Rivet is a database migration/change management/versioning tool inspired by Ruby
                             'Add-View',
                             'Disable-Constraint',
                             'Enable-Constraint',
+                            'Export-Migration',
                             'Get-Migration',
                             'Get-RivetConfig',
                             'Invoke-Ddl',
@@ -197,8 +198,7 @@ Rivet is a database migration/change management/versioning tool inspired by Ruby
 
             # ReleaseNotes of this module
             ReleaseNotes = @'
-* Adding support for running Rivet under Windows PowerShell 5.1 and PowerShell Core.
-* You can now specify the order Rivet should apply migrations to multiple databases with the "DatabaseOrder" setting in your rivet.json file. It should be set to a list of databases and Rivet will apply migrations to databases in that order. See `help about_Rivet_Configuration` for more information.
+Created `Export-Migration` function for exporting database objects as Rivet migrations.
 '@
         } # End of PSData hashtable
 

@@ -66,6 +66,7 @@ $privateFunctions = @{
                         'Split-SqlBatchQuery' = $true;
                         'Test-Migration' = $true;
                         'Update-Database' = $true;
+                        'Use-CallerPreference' = $true;
                         'Write-RivetError' = $true;
                      }
 $publicFunctions = Invoke-Command -ScriptBlock {
