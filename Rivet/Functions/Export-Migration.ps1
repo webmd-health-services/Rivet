@@ -279,7 +279,16 @@ where
         $definition = Invoke-Query -Query $query -Parameter @{ '@object_id' = $Object.object_id } -AsScalar
 
         $schema = ConvertTo-SchemaParameter -SchemaName $Object.schema_name
-        '    Invoke-Ddl -Query @''{0}{1}''@' -f $definition,[Environment]::NewLine
+        $createPreambleRegex = '^CREATE\s+procedure\s+\[{0}\]\.\[{1}\]\s+' -f [regex]::Escape($Object.schema_name),[regex]::Escape($Object.object_name)
+        if( $definition -match $createPreambleRegex )
+        {
+            $definition = $definition -replace $createPreambleRegex,''
+            '    Add-StoredProcedure{0} -Name ''{1}'' -Definition @''{2}{3}{2}''@' -f $schema,$Object.object_name,[Environment]::NewLine,$definition
+        }
+        else
+        {
+            '    Invoke-Ddl -Query @''{0}{1}{0}''@' -f [Environment]::NewLine,$definition
+        }
         Push-PopOperation ('Remove-StoredProcedure{0} -Name ''{1}''' -f $schema,$Object.object_name)
     }
 

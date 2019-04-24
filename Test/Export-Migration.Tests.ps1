@@ -260,7 +260,31 @@ function Pop-Migration
 '@
     WhenExporting 'dbo.DoSomething'
     ThenMigration -HasContent @"
-    Invoke-Ddl -Query @'CREATE procedure [dbo].[DoSomething] as select 1
+    Add-StoredProcedure -Name 'DoSomething' -Definition @'
+as select 1
+'@
+"@
+    ThenMigration -HasContent 'Remove-StoredProcedure -Name ''DoSomething'''
+}
+
+Describe 'Export-Migration.when exporting a stored procedure not added with Rivet' {
+    Init
+    GivenMigration @'
+function Push-Migration
+{
+    Invoke-Ddl 'create procedure DoSomething as select 1'
+}
+
+function Pop-Migration
+{
+    Remove-StoredProcedure -Name 'DoSomething'
+}
+'@
+    WhenExporting 'dbo.DoSomething'
+    ThenMigration -HasContent @"
+    Invoke-Ddl -Query @'
+create procedure DoSomething as select 1
+'@
 "@
     ThenMigration -HasContent 'Remove-StoredProcedure -Name ''DoSomething'''
 }
