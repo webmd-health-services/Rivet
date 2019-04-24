@@ -31,6 +31,12 @@ function Export-Migration
     
     $pops = New-Object 'Collections.Generic.Stack[string]'
     $exportedObjects = @{ }
+    $exportedSchemas = @{ 
+                            'dbo' = $true;
+                            'guest' = $true;
+                            'sys' = $true;
+                            'INFORMATION_SCHEMA' = $true;
+                        }
 
     function ConvertTo-SchemaParameter
     {
@@ -137,18 +143,25 @@ where
                 continue
             }
 
-            $query = 'select 
-    schema_name(sys.tables.schema_id) as schema_name, sys.tables.name as table_name, sys.default_constraints.name as name, definition 
+            $query = '
+select 
+    schema_name(sys.tables.schema_id) as schema_name, sys.tables.name as table_name, sys.default_constraints.name as name, sys.columns.name as column_name, definition 
 from 
-    sys.default_constraints 
-    join 
-    sys.tables 
-        on sys.default_constraints.parent_object_id = sys.tables.object_id
+    sys.objects 
+    join sys.tables 
+        on sys.objects.parent_object_id = sys.tables.object_id
+    join sys.schemas
+        on sys.schemas.schema_id = sys.tables.schema_id
+    join sys.default_constraints
+        on sys.default_constraints.object_id = sys.objects.object_id
+	join sys.columns 
+		on sys.columns.object_id = sys.default_constraints.parent_object_id
+		and sys.columns.column_id = sys.default_constraints.parent_column_id
 where
     sys.default_constraints.object_id = @object_id'
             $constraint = Invoke-Query -Query $query -Parameter @{ '@object_id' = $constraintObject.object_id }
             $schema = ConvertTo-SchemaParameter -SchemaName $constraint.schema_name
-            '    Add-DefaultConstraint{0} -TableName ''{1}'' -Name ''{2}'' -Expression ''{3}''' -f $schema,$constraint.table_name,$constraint.name,$constraint.definition
+            '    Add-DefaultConstraint{0} -TableName ''{1}'' -ColumnName ''{2}'' -Name ''{3}'' -Expression ''{4}''' -f $schema,$constraint.table_name,$constraint.column_name,$constraint.name,$constraint.definition
             if( -not $SkipPop )
             {
                 Push-PopOperation ('    Remove-DefaultConstraint{0} -TableName ''{1}'' -Name ''{2}''' -f $schema,$constraint.table_name,$constraint.name)
@@ -182,7 +195,6 @@ where
             return
         }
 
-
         $query = 'select 
 	sys.schemas.name as schema_name, sys.tables.name as table_name, sys.columns.name as column_name
 from 
@@ -215,6 +227,30 @@ where
                 Push-PopOperation ('Remove-PrimaryKey{0} -TableName ''{1}'' -Name ''{2}''' -f $schema,$primaryKey.table_name,$object.object_name)
             }
             $exportedObjects[$Object.object_id] = $true
+        }
+    }
+
+    function Export-Schema
+    {
+        param(
+            [Parameter(Mandatory)]
+            [string]
+            $Name
+        )
+
+        if( $exportedSchemas.ContainsKey($Name) )
+        {
+            return
+        }
+
+        $query = 'select sys.schemas.name as name, sys.sysusers.name as owner from sys.schemas join sys.sysusers on sys.schemas.principal_id = sys.sysusers.uid where sys.schemas.name = @schema_name'
+        $schema = Invoke-Query -Query $query -Parameter @{ '@schema_name' = $Name }
+        if( $schema )
+        {
+            '    Add-Schema -Name ''{0}'' -Owner ''{1}''' -f $schema.name,$schema.owner
+            ''
+            $exportedSchemas[$schema.name] = $true
+            Push-PopOperation ('Remove-Schema -Name ''{0}''' -f $schema.name)
         }
     }
 
@@ -292,9 +328,9 @@ where
     Connect-Database -SqlServerName $SqlServerName -Database $Database -ErrorAction Stop | Out-Null
     try
     {
-        $query = 'select sys.schemas.name as schema_name, sys.objects.name as object_name, sys.schemas.name + ''.'' + sys.objects.name as full_name, * from sys.objects join sys.schemas on sys.objects.schema_id = sys.schemas.schema_id where is_ms_shipped = 0'
         'function Push-Migration'
         '{'
+            $query = 'select sys.schemas.name as schema_name, sys.objects.name as object_name, sys.schemas.name + ''.'' + sys.objects.name as full_name, * from sys.objects join sys.schemas on sys.objects.schema_id = sys.schemas.schema_id where is_ms_shipped = 0'
             foreach( $object in (Invoke-Query -Query $query) )
             {
                 if( $exportedObjects.ContainsKey($object.object_id) )
@@ -308,6 +344,8 @@ where
                     Write-Debug ('Skipping   NOT SELECTED      {0}' -f $object.full_name)
                     continue
                 }
+
+                Export-Schema -Name $object.schema_name
 
                 Write-Verbose ('Exporting  {0}' -f $object.full_name)
                 switch ($object.type_desc)
@@ -338,9 +376,10 @@ where
                     }
                 }
                 $exportedObjects[$object.object_id] = $true
+                ''
             }
         '}'
-        [Environment]::NewLine
+        ''
         'function Pop-Migration'
         '{'
             $pops | ForEach-Object { '    {0}' -f $_ }

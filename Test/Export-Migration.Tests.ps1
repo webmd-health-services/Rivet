@@ -22,6 +22,17 @@ function GivenDatabase
     $script:databases += $Name
 }
 
+function GivenMigration
+{
+    param(
+        [Parameter(Mandatory)]
+        [string]
+        $Content
+    )
+
+    $script:migration = $Content
+}
+
 function ThenMigration
 {
     param(
@@ -55,6 +66,7 @@ function WhenExporting
     )
 
     Start-RivetTest
+    $migration | New-TestMigration -Name 'ExportMigration'
     try
     {
         Invoke-RTRivet -Push
@@ -67,23 +79,52 @@ function WhenExporting
     }
 }
 
-Describe 'Export-Migration.when exporting Rivet''s Migrations table' {
+Describe 'Export-Migration.when exporting a table with a custom schema' {
     Init
-    WhenExporting 'rivet.Migrations'
-    ThenMigration -HasContent @'
-    Add-Table -SchemaName 'rivet' -Name 'Migrations' -Column {
+    GivenMigration @'
+function Push-Migration
+{
+    Add-Schema 'export'
+
+    Add-Table -SchemaName 'export' -Name 'Migrations' -Column {
         bigint 'ID' -NotNull
         nvarchar 'Name' -Size 241 -NotNull
-        nvarchar 'Who' -Size 50 -NotNull
-        nvarchar 'ComputerName' -Size 50 -NotNull
         datetime2 'AtUtc' -NotNull
     }
-    Add-PrimaryKey -SchemaName 'rivet' -TableName 'Migrations' -ColumnName 'ID' -Name 'PK_rivet_Migrations'
-    Add-DefaultConstraint -SchemaName 'rivet' -TableName 'Migrations' -Name 'DF_rivet_Migrations_AtUtc' -Expression '(getutcdate())'
+    Add-PrimaryKey -SchemaName 'export' -TableName 'Migrations' -ColumnName 'ID'
+    Add-DefaultConstraint -SchemaName 'export' -TableName 'Migrations' -ColumnName 'AtUtc' -Expression '(getutcdate())'
+    Add-CheckConstraint -SchemaName 'export' -TableName 'Migrations' -Name 'CK_export_Migrations_Name' -Expression '([Name] = ''Fubar'')'
+}
+
+function Pop-Migration
+{
+    Remove-Table -SchemaName 'export' 'Migrations'
+    Remove-Schema 'export'
+}
 '@
-    ThenMigration -HasContent 'Remove-Table -SchemaName ''rivet'' -Name ''Migrations'''
+    WhenExporting 'export.Migrations'
+    ThenMigration -HasContent 'Add-Schema -Name ''export'' -Owner ''dbo'''
+    ThenMigration -HasContent @'
+    Add-Table -SchemaName 'export' -Name 'Migrations' -Column {
+        bigint 'ID' -NotNull
+        nvarchar 'Name' -Size 241 -NotNull
+        datetime2 'AtUtc' -NotNull
+    }
+'@
+    ThenMigration -HasContent @'
+    Add-PrimaryKey -SchemaName 'export' -TableName 'Migrations' -ColumnName 'ID' -Name 'PK_export_Migrations'
+'@
+    ThenMigration -HasContent @'
+    Add-DefaultConstraint -SchemaName 'export' -TableName 'Migrations' -ColumnName 'AtUtc' -Name 'DF_export_Migrations_AtUtc' -Expression '(getutcdate())'
+'@
+    ThenMigration -HasContent @'
+    Add-CheckConstraint -SchemaName 'export' -TableName 'Migrations' -Name 'CK_export_Migrations_Name' -Expression '([Name]='Fubar')'
+'@
+    ThenMigration -HasContent 'Remove-Table -SchemaName ''export'' -Name ''Migrations'''
+    ThenMigration -HasContent 'Remove-Schema -Name ''export'''
     ThenMigration -Not -HasContent 'Remove-PrimaryKey'
     ThenMigration -Not -HasContent 'Remove-DefaultConstraint'
+    ThenMigration -Not -HasContent 'Remove-CheckConstraint'
 }
 
 Describe 'Export-Migration.when exporting Rivet''s Activity table' {
