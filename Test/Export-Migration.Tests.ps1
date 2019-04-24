@@ -101,8 +101,8 @@ Describe 'Export-Migration.when exporting a table' {
     GivenMigration @'
 function Push-Migration
 {
-    Add-Table -Name 'Migrations' -Column {
-        bigint 'ID' -NotNull
+    Add-Table -Name 'Migrations' -Description 'some table' -Column {
+        bigint 'ID' -NotNull -Description 'some bigint column'
         nvarchar 'Name' -Size 241 -NotNull
         datetime2 'AtUtc' -NotNull
     }
@@ -119,8 +119,8 @@ function Pop-Migration
     WhenExporting 'dbo.Migrations'
     ThenMigration -Not -HasContent 'Add-Schema -Name ''dbo'''
     ThenMigration -HasContent @'
-    Add-Table -Name 'Migrations' -Column {
-        bigint 'ID' -NotNull
+    Add-Table -Name 'Migrations' -Description 'some table' -Column {
+        bigint 'ID' -NotNull -Description 'some bigint column'
         nvarchar 'Name' -Size 241 -NotNull
         datetime2 'AtUtc' -NotNull
     }

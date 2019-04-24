@@ -328,9 +328,32 @@ where
 
         Push-PopOperation ('Remove-Table{0} -Name ''{1}''' -f $schema,$object.object_name)
 
-        '    Add-Table{0} -Name ''{1}'' -Column {{' -f $schema,$object.object_name
+        $description = $Object.description
+        if( $description )
+        {
+            $description = ' -Description ''{0}''' -f $description
+        }
 
-        $query = 'select sys.types.name as type_name, sys.columns.name as column_name, sys.types.collation_name as type_collation_name, sys.columns.max_length as column_max_length, * from sys.columns inner join sys.types on columns.user_type_id = sys.types.user_type_id  where object_id = @object_id'
+        '    Add-Table{0} -Name ''{1}''{2} -Column {{' -f $schema,$object.object_name,$description
+
+        $query = '
+select 
+	sys.types.name as type_name, 
+	sys.columns.name as column_name, 
+	sys.types.collation_name as type_collation_name, 
+	sys.columns.max_length as column_max_length, 
+	sys.extended_properties.value as description, * 
+from 
+	sys.columns 
+		inner join 
+	sys.types 
+			on columns.user_type_id = sys.types.user_type_id  
+		left join
+	sys.extended_properties
+			on sys.columns.object_id = sys.extended_properties.major_id
+			and sys.columns.column_id = sys.extended_properties.minor_id
+			and sys.extended_properties.name = ''MS_Description''
+where object_id = @object_id'
         foreach( $column in (Invoke-Query -Query $query -Parameter @{ '@object_id' = $object.object_id }) )
         {
             $notNull = ''
@@ -348,7 +371,12 @@ where
                 }
                 $size = ' -Size {0}' -f $maxLength
             }
-            '        {0} ''{1}''{2}{3}' -f $column.type_name,$column.column_name,$size,$notNull
+            $description = ''
+            if( $column.description )
+            {
+                $description = ' -Description ''{0}''' -f $column.description
+            }
+            '        {0} ''{1}''{2}{3}{4}' -f $column.type_name,$column.column_name,$size,$notNull,$description
         }
 
         '    }'
@@ -376,13 +404,31 @@ where
     {
         'function Push-Migration'
         '{'
-            $query = 'select sys.types.name as type_name, systype.name as from_type_name, schema_name(sys.types.schema_id) as schema_name, * from sys.types join sys.types systype on sys.types.system_type_id = systype.system_type_id and sys.types.system_type_id = systype.user_type_id where sys.types.is_user_defined = 1'
+            $query = 'select sys.types.name as type_name, systype.name as from_type_name, schema_name(sys.types.schema_id) as schema_name, * from sys.types join sys.types systype on sys.types.system_type_id = systype.system_type_id and sys.types.system_type_id = systype.user_type_id where sys.types.is_user_defined = 1 and sys.types.is_table_type = 0'
             foreach( $object in (Invoke-Query -Query $query) )
             {
                 Export-DataType -Object $object
             }
 
-            $query = 'select sys.schemas.name as schema_name, sys.objects.name as object_name, sys.schemas.name + ''.'' + sys.objects.name as full_name, * from sys.objects join sys.schemas on sys.objects.schema_id = sys.schemas.schema_id where is_ms_shipped = 0'
+            $query = '
+            select 
+                sys.schemas.name as schema_name, 
+                sys.objects.name as object_name, 
+                sys.schemas.name + ''.'' + sys.objects.name as full_name, 
+                sys.extended_properties.value as description,
+                * 
+            from 
+                sys.objects 
+                    join 
+                sys.schemas 
+                        on sys.objects.schema_id = sys.schemas.schema_id 
+                    left join
+                sys.extended_properties
+                        on sys.objects.object_id = sys.extended_properties.major_id 
+                        and sys.extended_properties.minor_id = 0
+                        and sys.extended_properties.name = ''MS_Description''
+            where 
+                is_ms_shipped = 0'
             foreach( $object in (Invoke-Query -Query $query) )
             {
                 if( $exportedObjects.ContainsKey($object.object_id) )
