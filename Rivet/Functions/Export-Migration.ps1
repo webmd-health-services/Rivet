@@ -38,6 +38,7 @@ function Export-Migration
                             'sys' = $true;
                             'INFORMATION_SCHEMA' = $true;
                         }
+    $exportedTypes = @{ }
 
     function ConvertTo-SchemaParameter
     {
@@ -119,6 +120,29 @@ where
             }
             $exportedObjects[$constraintObject.object_id] = $true
         }
+    }
+
+    function Export-DataType
+    {
+        [CmdletBinding()]
+        param(
+            [Parameter(Mandatory)]
+            [object]
+            $Object
+        )
+
+        if( $exportedTypes.ContainsKey($Object.type_name) )
+        {
+            Write-Debug ('Skipping   ALREADY EXPORTED  {0}' -f $Object.type_name)
+            continue
+        }
+        
+        Export-Schema -Name $Object.schema_name
+
+        $schema = ConvertTo-SchemaParameter -SchemaName $Object.schema_name
+        '    Add-DataType{0} -Name ''{1}'' -From ''{2}''' -F $schema,$Object.type_name,$Object.from_type_name
+        $pops.Push(('Remove-DataType{0} -Name ''{1}''' -f $schema,$Object.type_name))
+        $exportedtypes[$object.type_name] = $true
     }
 
     function Export-DefaultConstraint
@@ -352,6 +376,12 @@ where
     {
         'function Push-Migration'
         '{'
+            $query = 'select sys.types.name as type_name, systype.name as from_type_name, schema_name(sys.types.schema_id) as schema_name, * from sys.types join sys.types systype on sys.types.system_type_id = systype.system_type_id and sys.types.system_type_id = systype.user_type_id where sys.types.is_user_defined = 1'
+            foreach( $object in (Invoke-Query -Query $query) )
+            {
+                Export-DataType -Object $object
+            }
+
             $query = 'select sys.schemas.name as schema_name, sys.objects.name as object_name, sys.schemas.name + ''.'' + sys.objects.name as full_name, * from sys.objects join sys.schemas on sys.objects.schema_id = sys.schemas.schema_id where is_ms_shipped = 0'
             foreach( $object in (Invoke-Query -Query $query) )
             {

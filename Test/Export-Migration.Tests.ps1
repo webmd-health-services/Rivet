@@ -295,3 +295,28 @@ Describe 'Export-Migration.when exporting entire database' {
     ThenMigration -Not -HasContent 'rivet'
     ThenNoErrors
 }
+
+Describe 'Export-Migration.when exporting data type' {
+    Init
+    GivenMigration @'
+function Push-Migration
+{
+    Add-Schema 'export'
+    Add-DataType 'GUID' 'uniqueidentifier'
+    Add-DataType -SchemaName 'export' 'GUID2' 'uniqueidentifier'
+}
+function Pop-Migration
+{
+    Remove-Datatype 'GUID'
+    Remove-DataType -SchemaName 'export' 'GUID2'
+    Remove-Schema 'export'
+}
+'@
+    WhenExporting
+    ThenMigration -HasContent 'Add-DataType -Name ''GUID'' -From ''uniqueidentifier'''
+    ThenMigration -HasContent 'Add-DataType -SchemaName ''export'' -Name ''GUID2'' -From ''uniqueidentifier'''
+    ThenMigration -HasContent 'Add-Schema -Name ''export'
+    ThenMigration -HasContent 'Remove-DataType -Name ''GUID'''
+    ThenMigration -HasContent 'Remove-DataType -SchemaName ''export'' -Name ''GUID2'''
+    ThenMigration -HasContent 'Remove-Schema -Name ''export'''
+}
