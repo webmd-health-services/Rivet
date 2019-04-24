@@ -102,9 +102,15 @@ Describe 'Export-Migration.when exporting a table' {
 function Push-Migration
 {
     Add-Table -Name 'Migrations' -Description 'some table' -Column {
-        bigint 'ID' -NotNull -Description 'some bigint column'
+        int 'ID' -Identity
+        bigint 'BigID' -NotNull -Description 'some bigint column'
         nvarchar 'Name' -Size 241 -NotNull
         datetime2 'AtUtc' -NotNull
+        decimal 'Dec' -Precision 4 -Scale 2
+        float 'Fl' -Precision 5
+        float 'bigger' -Precision 50
+        smallint 'sparsesmallint' -Sparse
+        nvarchar 'Korean' -Size 47 -Collation 'Korean_100_CS_AS_KS_WS_SC'
     }
     Add-PrimaryKey -TableName 'Migrations' -ColumnName 'ID'
     Add-DefaultConstraint -TableName 'Migrations' -ColumnName 'AtUtc' -Expression '(getutcdate())'
@@ -120,9 +126,15 @@ function Pop-Migration
     ThenMigration -Not -HasContent 'Add-Schema -Name ''dbo'''
     ThenMigration -HasContent @'
     Add-Table -Name 'Migrations' -Description 'some table' -Column {
-        bigint 'ID' -NotNull -Description 'some bigint column'
+        int 'ID' -Identity
+        bigint 'BigID' -NotNull -Description 'some bigint column'
         nvarchar 'Name' -Size 241 -NotNull
         datetime2 'AtUtc' -NotNull
+        decimal 'Dec' -Precision 4 -Scale 2
+        real 'Fl'
+        float 'bigger'
+        smallint 'sparsesmallint' -Sparse
+        nvarchar 'Korean' -Size 47 -Collation 'Korean_100_CS_AS_KS_WS_SC'
     }
 '@
     ThenMigration -HasContent @'
@@ -319,4 +331,25 @@ function Pop-Migration
     ThenMigration -HasContent 'Remove-DataType -Name ''GUID'''
     ThenMigration -HasContent 'Remove-DataType -SchemaName ''export'' -Name ''GUID2'''
     ThenMigration -HasContent 'Remove-Schema -Name ''export'''
+}
+
+Describe 'Export-Migration.when identity has custom seed and increment' {
+    Init
+    GivenMigration @'
+function Push-Migration
+{
+    Add-Table -Name 'SeedAndIncrement' -Column {
+        int 'ID' -Identity -Seed 1000 -Increment 7
+        nvarchar 'OtherColumn' -Size 50
+    }
+}
+
+function Pop-Migration
+{
+    Remove-Table 'SeedAndIncrement'
+}
+'@
+    WhenExporting 'dbo.SeedAndIncrement'
+    ThenMigration -HasContent 'int ''ID'' -Identity -Seed 1000 -Increment 7'
+    ThenMigration -HasContent 'nvarchar ''OtherColumn'' -Size 50'
 }

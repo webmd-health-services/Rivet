@@ -338,11 +338,23 @@ where
 
         $query = '
 select 
+    sys.columns.object_id,
+    sys.columns.is_nullable,
 	sys.types.name as type_name, 
 	sys.columns.name as column_name, 
 	sys.types.collation_name as type_collation_name, 
 	sys.columns.max_length as column_max_length, 
-	sys.extended_properties.value as description, * 
+	sys.extended_properties.value as description,
+    sys.columns.is_identity,
+    sys.identity_columns.increment_value,
+    sys.identity_columns.seed_value,
+    sys.columns.precision,
+    sys.columns.scale,
+    sys.types.precision as default_precision,
+    sys.types.scale as default_scale,
+    sys.columns.is_sparse,
+    sys.columns.collation_name,
+    serverproperty(''collation'') as default_collation_name
 from 
 	sys.columns 
 		inner join 
@@ -353,30 +365,76 @@ from
 			on sys.columns.object_id = sys.extended_properties.major_id
 			and sys.columns.column_id = sys.extended_properties.minor_id
 			and sys.extended_properties.name = ''MS_Description''
-where object_id = @object_id'
+        left join
+    sys.identity_columns
+            on sys.columns.object_id = sys.identity_columns.object_id
+            and sys.columns.column_id = sys.identity_columns.column_id
+where 
+    sys.columns.object_id = @object_id'
         foreach( $column in (Invoke-Query -Query $query -Parameter @{ '@object_id' = $object.object_id }) )
         {
             $notNull = ''
-            if( $column.is_nullable )
-            {
-                $notNull = ' -NotNull'
-            }
-            $size = ''
-            if( $column.type_collation_name )
-            {
-                $maxLength = $column.column_max_length
-                if( $column.type_name -like 'n*' )
+            $parameters = & {
+                if( $column.type_collation_name )
                 {
-                    $maxLength = $maxLength / 2
+                    $maxLength = $column.column_max_length
+                    if( $column.type_name -like 'n*' )
+                    {
+                        $maxLength = $maxLength / 2
+                    }
+                    '-Size {0}' -f $maxLength
+                    if( $column.collation_name -ne $column.default_collation_name )
+                    {
+                        '-Collation'
+                        '''{0}''' -f $column.collation_name
+                    }
                 }
-                $size = ' -Size {0}' -f $maxLength
+                if( $column.precision -ne $column.default_precision )
+                {
+                    '-Precision'
+                    $column.precision
+                }
+                if( $column.scale -ne $column.default_scale )
+                {
+                    '-Scale'
+                    $column.scale
+                }
+                if( $column.is_identity )
+                {
+                    '-Identity'
+                    if( $column.seed_value -ne 1 )
+                    {
+                        '-Seed'
+                        $column.seed_value
+                    }
+                    if( $column.increment_value -ne 1 )
+                    {
+                        '-Increment'
+                        $column.increment_value
+                    }
+                }
+                if( -not $column.is_nullable )
+                {
+                    if( -not $column.is_identity )
+                    {
+                        '-NotNull'
+                    }
+                }
+                if( $column.is_sparse )
+                {
+                    '-Sparse'
+                }
+                if( $column.description )
+                {
+                    '-Description ''{0}''' -f $column.description
+                }
             }
-            $description = ''
-            if( $column.description )
+            if( $parameters )
             {
-                $description = ' -Description ''{0}''' -f $column.description
+                $parameters = $parameters -join ' '
+                $parameters = ' {0}' -f $parameters
             }
-            '        {0} ''{1}''{2}{3}{4}' -f $column.type_name,$column.column_name,$size,$notNull,$description
+            '        {0} ''{1}''{2}' -f $column.type_name,$column.column_name,$parameters
         }
 
         '    }'
