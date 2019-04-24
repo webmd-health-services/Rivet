@@ -124,124 +124,127 @@ function Pop-Migration
     ThenMigration -Not -HasContent 'Remove-CheckConstraint'
 }
 
-Describe 'Export-Migration.when exporting Rivet''s Activity table' {
+Describe 'Export-Migration.when exporting with wildcards' {
     Init
-    WhenExporting 'rivet.Activity'
-    ThenMigration -HasContent @'
-    Add-Table -SchemaName 'rivet' -Name 'Activity' -Column {
-        int 'ID' -NotNull
-        nvarchar 'Operation' -Size 4 -NotNull
-        bigint 'MigrationID' -NotNull
-        nvarchar 'Name' -Size 241 -NotNull
-        nvarchar 'Who' -Size 50 -NotNull
-        nvarchar 'ComputerName' -Size 50 -NotNull
-        datetime2 'AtUtc' -NotNull
-    }
-    Add-PrimaryKey -SchemaName 'rivet' -TableName 'Activity' -ColumnName 'ID' -Name 'PK_rivet_Activity'
-    Add-DefaultConstraint -SchemaName 'rivet' -TableName 'Activity' -Name 'DF_rivet_Activity_AtUtc' -Expression '(getutcdate())'
-    Add-CheckConstraint -SchemaName 'rivet' -TableName 'Activity' -Name 'CK_rivet_Activity_Operation' -Expression '([Operation]='Push' OR [Operation]='Pop')'
-'@
-    ThenMigration -HasContent 'Remove-Table -SchemaName ''rivet'' -Name ''Activity'''
-    ThenMigration -Not -HasContent 'Remove-PrimaryKey'
-    ThenMigration -Not -HasContent 'Remove-DefaultConstraint'
-    ThenMigration -Not -HasContent 'Remove-CheckConstraint'
-}
+    GivenMigration @'
+function Push-Migration
+{
+    Add-Schema -Name 'export'
 
-Describe 'Export-Migration.when exporting all Rivet''s objects' {
-    Init
-    WhenExporting 'rivet.*'
-    ThenMigration -HasContent @'
-    Add-Table -SchemaName 'rivet' -Name 'Migrations' -Column {
+    Add-Table -SchemaName 'export' -Name 'Migrations' -Column {
         bigint 'ID' -NotNull
         nvarchar 'Name' -Size 241 -NotNull
-        nvarchar 'Who' -Size 50 -NotNull
-        nvarchar 'ComputerName' -Size 50 -NotNull
         datetime2 'AtUtc' -NotNull
     }
-    Add-PrimaryKey -SchemaName 'rivet' -TableName 'Migrations' -ColumnName 'ID' -Name 'PK_rivet_Migrations'
+    Add-PrimaryKey -SchemaName 'export' -TableName 'Migrations' -ColumnName 'ID'
+
+    Add-StoredProcedure -SchemaName 'export' -Name 'DoSomething' -Definition 'as select 1'
+
+    Add-StoredProcedure -Name 'DoSomethingElse' -Definition 'as select 1'
+}
+
+function Pop-Migration
+{
+    Remove-StoredProcedure -Name 'DoSomethingElse'
+    Remove-StoredProcedure -SchemaName 'export' -Name 'DoSomething'
+    Remove-Table -SchemaName 'export' -Name 'Migrations'
+    Remove-Schema 'export'
+}
 '@
+    WhenExporting 'export.*'
     ThenMigration -HasContent @'
-    Add-Table -SchemaName 'rivet' -Name 'Activity' -Column {
-        int 'ID' -NotNull
-        nvarchar 'Operation' -Size 4 -NotNull
-        bigint 'MigrationID' -NotNull
+    Add-Table -SchemaName 'export' -Name 'Migrations' -Column {
+        bigint 'ID' -NotNull
         nvarchar 'Name' -Size 241 -NotNull
-        nvarchar 'Who' -Size 50 -NotNull
-        nvarchar 'ComputerName' -Size 50 -NotNull
         datetime2 'AtUtc' -NotNull
     }
-    Add-PrimaryKey -SchemaName 'rivet' -TableName 'Activity' -ColumnName 'ID' -Name 'PK_rivet_Activity'
-    Add-DefaultConstraint -SchemaName 'rivet' -TableName 'Activity' -Name 'DF_rivet_Activity_AtUtc' -Expression '(getutcdate())'
-    Add-CheckConstraint -SchemaName 'rivet' -TableName 'Activity' -Name 'CK_rivet_Activity_Operation' -Expression '([Operation]='Push' OR [Operation]='Pop')'
 '@
-    ThenMigration -HasContent @"
-    Invoke-Ddl -Query @'CREATE procedure [rivet].[InsertMigration] 	@ID bigint,
-	@Name nvarchar(241),
-	@Who nvarchar(50),
-	@ComputerName nvarchar(50)
-as
-begin
-	declare @AtUtc datetime2(7)
-	select @AtUtc = getutcdate()
-	insert into [rivet].[Migrations] ([ID],[Name],[Who],[ComputerName],[AtUtc]) values (@ID,@Name,@Who,@ComputerName,@AtUtc)
-	insert into [rivet].[Activity] ([Operation],[MigrationID],[Name],[Who],[ComputerName],[AtUtc]) values ('Push',@ID,@Name,@Who,@ComputerName,@AtUtc)
-end
-'@
-"@
-    ThenMigration -HasContent @"
-    Invoke-Ddl -Query @'CREATE procedure [rivet].[RemoveMigration] 	@ID bigint,
-    @Name nvarchar(241),
-    @Who nvarchar(50),
-    @ComputerName nvarchar(50)
-as
-begin
-	delete from [rivet].[Migrations] where [ID] = @ID
-	insert into [rivet].[Activity] ([Operation],[MigrationID],[Name],[Who],[ComputerName],[AtUtc]) values ('Pop',@ID,@Name,@Who,@ComputerName,getutcdate())
-end
-'@
-"@
-    ThenMigration -HasContent 'Remove-Table -SchemaName ''rivet'' -Name ''Migrations'''
-    ThenMigration -HasContent 'Remove-Table -SchemaName ''rivet'' -Name ''Activity'''
-    ThenMigration -HasContent 'Remove-StoredProcedure -SchemaName ''rivet'' -Name ''InsertMigration'''
-    ThenMigration -HasContent 'Remove-StoredProcedure -SchemaName ''rivet'' -Name ''RemoveMigration'''
+    ThenMigration -HasContent 'Add-PrimaryKey -SchemaName ''export'''
+    ThenMigration -HasContent 'Invoke-Ddl -Query @''create procedure [export].[DoSomething]'
+    ThenMigration -Not -HasContent 'DoSomethingElse'
 }
 
 Describe 'Export-Migration.when exporting a default constraint' {
     Init
-    WhenExporting 'rivet.DF_rivet_Migrations_AtUtc'
-    ThenMigration -HasContent 'Add-DefaultConstraint -SchemaName ''rivet'' -TableName ''Migrations'' -Name ''DF_rivet_Migrations_AtUtc'' -Expression ''(getutcdate())'''
-    ThenMigration -HasContent 'Remove-DefaultConstraint -SchemaName ''rivet'' -TableName ''Migrations'' -Name ''DF_rivet_Migrations_AtUtc'''
+    GivenMigration @'
+function Push-Migration 
+{
+    Add-Table 'Fubar' {
+        int 'ID'
+    }
+    Add-DefaultConstraint -TableName 'Fubar' -ColumnName 'ID' -Expression '1'
+}
+
+function Pop-Migration
+{
+    Remove-Table 'Fubar'
+}
+'@
+    WhenExporting 'dbo.DF_Fubar_ID'
+    ThenMigration -HasContent 'Add-DefaultConstraint -TableName ''Fubar'' -ColumnName ''ID'' -Name ''DF_Fubar_ID'' -Expression ''((1))'''
+    ThenMigration -HasContent 'Remove-DefaultConstraint -TableName ''Fubar'' -Name ''DF_Fubar_ID'''
 }
 
 Describe 'Export-Migration.when exporting a primary key' {
     Init
-    WhenExporting 'rivet.PK_rivet_Migrations'
-    ThenMigration -HasContent 'Add-PrimaryKey -SchemaName ''rivet'' -TableName ''Migrations'' -ColumnName ''ID'' -Name ''PK_rivet_Migrations'''
-    ThenMigration -HasContent 'Remove-PrimaryKey -SchemaName ''rivet'' -TableName ''Migrations'' -Name ''PK_rivet_Migrations'''
+    GivenMigration @'
+function Push-Migration 
+{
+    Add-Table 'Fubar' {
+        int 'ID' -NotNull
+    }
+    Add-PrimaryKey -TableName 'Fubar' -ColumnName 'ID'
+}
+
+function Pop-Migration
+{
+    Remove-Table 'Fubar'
+}
+'@
+    WhenExporting 'dbo.PK_Fubar'
+    ThenMigration -HasContent 'Add-PrimaryKey -TableName ''Fubar'' -ColumnName ''ID'' -Name ''PK_Fubar'''
+    ThenMigration -HasContent 'Remove-PrimaryKey -TableName ''Fubar'' -Name ''PK_Fubar'''
 }
 
 Describe 'Export-Migration.when exporting a check constraint' {
     Init
-    WhenExporting 'rivet.CK_rivet_Activity_Operation'
-    ThenMigration -HasContent 'Add-CheckConstraint -SchemaName ''rivet'' -TableName ''Activity'' -Name ''CK_rivet_Activity_Operation'' -Expression ''([Operation]=''Push'' OR [Operation]=''Pop'')'''
-    ThenMigration -HasContent 'Remove-CheckConstraint -SchemaName ''rivet'' -TableName ''Activity'' -Name ''CK_rivet_Activity_Operation'''
+    GivenMigration @'
+function Push-Migration
+{
+    Add-Table 'CheckConstraint' {
+        int ID
+    }
+    Add-CheckConstraint -TableName 'CheckConstraint' -Name 'CK_CheckConstraint_ID' -Expression '[ID] > 0 and [ID] < 10'
+}
+
+function Pop-Migration
+{
+    Remove-Table 'CheckConstraint'
+}
+'@
+    WhenExporting 'dbo.CK_CheckConstraint_ID'
+    ThenMigration -HasContent 'Add-CheckConstraint -TableName ''CheckConstraint'' -Name ''CK_CheckConstraint_ID'' -Expression ''([ID]>(0) AND [ID]<(10))'''
+    ThenMigration -HasContent 'Remove-CheckConstraint -TableName ''CheckConstraint'' -Name ''CK_CheckConstraint_ID'''
+    ThenMigration -Not -HasContent 'Add-Table'
 }
 
 Describe 'Export-Migration.when exporting a stored procedure' {
     Init
-    WhenExporting 'rivet.RemoveMigration'
-    ThenMigration -HasContent @"
-    Invoke-Ddl -Query @'CREATE procedure [rivet].[RemoveMigration] 	@ID bigint,
-    @Name nvarchar(241),
-    @Who nvarchar(50),
-    @ComputerName nvarchar(50)
-as
-begin
-	delete from [rivet].[Migrations] where [ID] = @ID
-	insert into [rivet].[Activity] ([Operation],[MigrationID],[Name],[Who],[ComputerName],[AtUtc]) values ('Pop',@ID,@Name,@Who,@ComputerName,getutcdate())
-end
+    GivenMigration @'
+function Push-Migration
+{
+    Add-StoredProcedure -Name 'DoSomething' -Definition 'as select 1'
+}
+
+function Pop-Migration
+{
+    Remove-StoredProcedure -Name 'DoSomething'
+}
 '@
+    WhenExporting 'dbo.DoSomething'
+    ThenMigration -HasContent @"
+    Invoke-Ddl -Query @'CREATE procedure [dbo].[DoSomething] as select 1
 "@
-    ThenMigration -HasContent 'Remove-StoredProcedure -SchemaName ''rivet'' -Name ''RemoveMigration'''
+    ThenMigration -HasContent 'Remove-StoredProcedure -Name ''DoSomething'''
 
 }

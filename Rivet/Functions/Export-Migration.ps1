@@ -87,6 +87,10 @@ function Export-Migration
         if( $TableID )
         {
             $Object = Get-ChildObject -TableID $TableID -Type 'C'
+            if( -not $Object )
+            {
+                return
+            }
         }
 
         foreach( $constraintObject in $Object )
@@ -134,6 +138,10 @@ where
         if( $TableID )
         {
             $Object = Get-ChildObject -TableID $TableID -Type 'D'
+            if( -not $Object )
+            {
+                return
+            }
         }
 
         foreach( $constraintObject in $Object )
@@ -188,6 +196,10 @@ where
         if( $TableID )
         {
             $Object = Get-ChildObject -TableID $TableID -Type 'PK'
+            if( -not $Object )
+            {
+                return
+            }
         }
 
         if( $exportedObjects.ContainsKey($Object.object_id) )

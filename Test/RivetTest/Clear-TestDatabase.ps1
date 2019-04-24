@@ -47,7 +47,7 @@ function Clear-TestDatabase
         {
             Remove-RivetTestDatabase -Name $Name
             $schemaList = $schemas| Select-Object | Format-Table -Property 'name' -AutoSize | Out-String
-            Fail ('The following schemas weren''t properly removed from {0}. Please ensure each of your migrations has a `Pop-Migration` function that reverses the operations performed in its `Push-Migration` function.{1}{2}' -f $Name,([Environment]::NewLine),$schemaList)
+            Write-Error ('The following schemas weren''t properly removed from {0}. Please ensure each of your migrations has a `Pop-Migration` function that reverses the operations performed in its `Push-Migration` function.{1}{2}' -f $Name,([Environment]::NewLine),$schemaList) -ErrorAction Stop
         }
     }
 
