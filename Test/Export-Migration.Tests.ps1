@@ -79,49 +79,46 @@ function WhenExporting
     }
 }
 
-Describe 'Export-Migration.when exporting a table with a custom schema' {
+Describe 'Export-Migration.when exporting a table' {
     Init
     GivenMigration @'
 function Push-Migration
 {
-    Add-Schema 'export'
-
-    Add-Table -SchemaName 'export' -Name 'Migrations' -Column {
+    Add-Table -Name 'Migrations' -Column {
         bigint 'ID' -NotNull
         nvarchar 'Name' -Size 241 -NotNull
         datetime2 'AtUtc' -NotNull
     }
-    Add-PrimaryKey -SchemaName 'export' -TableName 'Migrations' -ColumnName 'ID'
-    Add-DefaultConstraint -SchemaName 'export' -TableName 'Migrations' -ColumnName 'AtUtc' -Expression '(getutcdate())'
-    Add-CheckConstraint -SchemaName 'export' -TableName 'Migrations' -Name 'CK_export_Migrations_Name' -Expression '([Name] = ''Fubar'')'
+    Add-PrimaryKey -TableName 'Migrations' -ColumnName 'ID'
+    Add-DefaultConstraint -TableName 'Migrations' -ColumnName 'AtUtc' -Expression '(getutcdate())'
+    Add-CheckConstraint -TableName 'Migrations' -Name 'CK_Migrations_Name' -Expression '([Name] = ''Fubar'')'
 }
 
 function Pop-Migration
 {
-    Remove-Table -SchemaName 'export' 'Migrations'
-    Remove-Schema 'export'
+    Remove-Table 'Migrations'
 }
 '@
-    WhenExporting 'export.Migrations'
-    ThenMigration -HasContent 'Add-Schema -Name ''export'' -Owner ''dbo'''
+    WhenExporting 'dbo.Migrations'
+    ThenMigration -Not -HasContent 'Add-Schema -Name ''dbo'''
     ThenMigration -HasContent @'
-    Add-Table -SchemaName 'export' -Name 'Migrations' -Column {
+    Add-Table -Name 'Migrations' -Column {
         bigint 'ID' -NotNull
         nvarchar 'Name' -Size 241 -NotNull
         datetime2 'AtUtc' -NotNull
     }
 '@
     ThenMigration -HasContent @'
-    Add-PrimaryKey -SchemaName 'export' -TableName 'Migrations' -ColumnName 'ID' -Name 'PK_export_Migrations'
+    Add-PrimaryKey -TableName 'Migrations' -ColumnName 'ID' -Name 'PK_Migrations'
 '@
     ThenMigration -HasContent @'
-    Add-DefaultConstraint -SchemaName 'export' -TableName 'Migrations' -ColumnName 'AtUtc' -Name 'DF_export_Migrations_AtUtc' -Expression '(getutcdate())'
+    Add-DefaultConstraint -TableName 'Migrations' -ColumnName 'AtUtc' -Name 'DF_Migrations_AtUtc' -Expression '(getutcdate())'
 '@
     ThenMigration -HasContent @'
-    Add-CheckConstraint -SchemaName 'export' -TableName 'Migrations' -Name 'CK_export_Migrations_Name' -Expression '([Name]='Fubar')'
+    Add-CheckConstraint -TableName 'Migrations' -Name 'CK_Migrations_Name' -Expression '([Name]='Fubar')'
 '@
-    ThenMigration -HasContent 'Remove-Table -SchemaName ''export'' -Name ''Migrations'''
-    ThenMigration -HasContent 'Remove-Schema -Name ''export'''
+    ThenMigration -HasContent 'Remove-Table -Name ''Migrations'''
+    ThenMigration -Not -HasContent 'Remove-Schema'
     ThenMigration -Not -HasContent 'Remove-PrimaryKey'
     ThenMigration -Not -HasContent 'Remove-DefaultConstraint'
     ThenMigration -Not -HasContent 'Remove-CheckConstraint'
