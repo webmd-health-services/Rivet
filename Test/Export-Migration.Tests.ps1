@@ -308,6 +308,50 @@ create procedure DoSomething as select 1
     ThenMigration -HasContent 'Remove-StoredProcedure -Name ''DoSomething'''
 }
 
+Describe 'Export-Migration.when exporting a view' {
+    Init
+    GivenMigration @'
+function Push-Migration
+{
+    Add-View -Name 'ViewSomething' -Definition 'as select 1 as one'
+}
+
+function Pop-Migration
+{
+    Remove-View -Name 'ViewSomething'
+}
+'@
+    WhenExporting 'dbo.ViewSomething'
+    ThenMigration -HasContent @"
+    Add-View -Name 'ViewSomething' -Definition @'
+as select 1 as one
+'@
+"@
+    ThenMigration -HasContent 'Remove-View -Name ''ViewSomething'''
+}
+
+Describe 'Export-Migration.when exporting a view not added with Rivet' {
+    Init
+    GivenMigration @'
+function Push-Migration
+{
+    Invoke-Ddl 'create view ViewSomething as select 1 as one'
+}
+
+function Pop-Migration
+{
+    Remove-View -Name 'ViewSomething'
+}
+'@
+    WhenExporting 'dbo.ViewSomething'
+    ThenMigration -HasContent @"
+    Invoke-Ddl -Query @'
+create view ViewSomething as select 1 as one
+'@
+"@
+    ThenMigration -HasContent 'Remove-View -Name ''ViewSomething'''
+}
+
 Describe 'Export-Migration.when exporting entire database' {
     Init
     WhenExporting

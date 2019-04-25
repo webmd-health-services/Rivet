@@ -656,6 +656,30 @@ where
         $exportedObjects[$Object.object_id] = $true
     }
 
+    function Export-View
+    {
+        param(
+            [Parameter(Mandatory)]
+            [object]
+            $Object
+        )
+
+        $schema = ConvertTo-SchemaParameter -SchemaName $object.schema_name
+        $query = 'select definition from sys.sql_modules where object_id = @view_id'
+        $view = Invoke-Query -Query $query -Parameter @{ '@view_id' = $Object.object_id } -AsScalar
+        $createPreambleRegex = '^CREATE\s+view\s+\[{0}\]\.\[{1}\]\s+' -f [regex]::Escape($Object.schema_name),[regex]::Escape($Object.name)
+        if( $view -match $createPreambleRegex )
+        {
+            $view = $view -replace $createPreambleRegex,''
+            '    Add-View{0} -Name ''{1}'' -Definition @''{2}{3}{2}''@' -f $schema,$Object.name,[Environment]::NewLine,$view
+        }
+        else
+        {
+            '    Invoke-Ddl -Query @''{0}{1}{0}''@' -f [Environment]::NewLine,$view
+        }
+        Push-PopOperation ('Remove-View{0} -Name ''{1}''' -f $schema,$Object.name)
+    }
+
     function Push-PopOperation
     {
         param(
@@ -780,6 +804,10 @@ where
                     'USER_TABLE'
                     {
                         Export-Table -Object $object
+                    }
+                    'VIEW'
+                    {
+                        Export-View -Object $object
                     }
                     default
                     {
