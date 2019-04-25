@@ -8,8 +8,6 @@ function Export-Migration
     .DESCRIPTION
     The `Export-Migration` function exports database objects, schemas, and data types as a Rivet migration. By default, it exports *all* non-system, non-Rivet objects, data types, and schemas. You can filter specific objects by passing their full name to the `Include` parameter. Wildcards are supported. Objects are matched on their schema *and* name.
 
-    Non-table, user data types are *always* exported.
-
     Extended properties are *not* exported, except table and column descriptions.
 
     .EXAMPLE
@@ -134,12 +132,26 @@ where
 
     function Export-DataType
     {
-        [CmdletBinding()]
+        [CmdletBinding(DefaultParameterSetName='All')]
         param(
-            [Parameter(Mandatory)]
+            [Parameter(Mandatory,ParameterSetName='ByDataType')]
             [object]
             $Object
         )
+
+        if( $PSCmdlet.ParameterSetName -eq 'All' )
+        {
+            $query = 'select sys.types.name as type_name, systype.name as from_type_name, schema_name(sys.types.schema_id) as schema_name, * from sys.types join sys.types systype on sys.types.system_type_id = systype.system_type_id and sys.types.system_type_id = systype.user_type_id where sys.types.is_user_defined = 1 and sys.types.is_table_type = 0'
+            foreach( $object in (Invoke-Query -Query $query) )
+            {
+                if( (Test-SkipObject -SchemaName $object.schema_name -Name $object.type_name) )
+                {
+                    continue
+                }
+                Export-DataType -Object $object
+            }
+            return
+        }
 
         if( $exportedTypes.ContainsKey($Object.type_name) )
         {
@@ -613,11 +625,8 @@ where
     {
         'function Push-Migration'
         '{'
-            $query = 'select sys.types.name as type_name, systype.name as from_type_name, schema_name(sys.types.schema_id) as schema_name, * from sys.types join sys.types systype on sys.types.system_type_id = systype.system_type_id and sys.types.system_type_id = systype.user_type_id where sys.types.is_user_defined = 1 and sys.types.is_table_type = 0'
-            foreach( $object in (Invoke-Query -Query $query) )
-            {
-                Export-DataType -Object $object
-            }
+
+            Export-DataType
 
             $query = '
             select 

@@ -338,6 +338,30 @@ function Pop-Migration
     ThenMigration -HasContent 'Remove-Schema -Name ''export'''
 }
 
+Describe 'Export-Migration.when exporting filtered data type' {
+    Init
+    GivenMigration @'
+function Push-Migration
+{
+    Add-Schema 'export'
+    Add-DataType 'GUID' 'uniqueidentifier'
+    Add-DataType -SchemaName 'export' 'GUID2' 'uniqueidentifier'
+}
+function Pop-Migration
+{
+    Remove-Datatype 'GUID'
+    Remove-DataType -SchemaName 'export' 'GUID2'
+    Remove-Schema 'export'
+}
+'@
+    WhenExporting 'dbo.*'
+    ThenMigration -HasContent 'Add-DataType -Name ''GUID'' -From ''uniqueidentifier'''
+    ThenMigration -Not -HasContent 'Add-DataType -SchemaName ''export'' -Name ''GUID2'' -From ''uniqueidentifier'''
+    ThenMigration -Not -HasContent 'Add-Schema -Name ''export'
+    ThenMigration -HasContent 'Remove-DataType -Name ''GUID'''
+    ThenMigration -Not -HasContent 'Remove-DataType -SchemaName ''export'' -Name ''GUID2'''
+    ThenMigration -Not -HasContent 'Remove-Schema -Name ''export'''}
+
 Describe 'Export-Migration.when identity has custom seed and increment' {
     Init
     GivenMigration @'
