@@ -80,9 +80,9 @@ function WhenExporting
         }
         Invoke-RTRivet -Push
         $optionalParams = @{}
-        if( $PSBoundParameters.ContainsKey('Name') )
+        if( $PSBoundParameters.ContainsKey('Include') )
         {
-            $optionalParams['Include'] = $Name
+            $optionalParams['Include'] = $Include
         }
 
         $Global:Error.Clear()
@@ -111,10 +111,12 @@ function Push-Migration
         float 'bigger' -Precision 50
         smallint 'sparsesmallint' -Sparse
         nvarchar 'Korean' -Size 47 -Collation 'Korean_100_CS_AS_KS_WS_SC'
+        uniqueidentifier 'GUID' -RowGuidCol
     }
     Add-PrimaryKey -TableName 'Migrations' -ColumnName 'ID'
     Add-DefaultConstraint -TableName 'Migrations' -ColumnName 'AtUtc' -Expression '(getutcdate())'
     Add-CheckConstraint -TableName 'Migrations' -Name 'CK_Migrations_Name' -Expression '([Name] = ''Fubar'')'
+    Add-Index -TableName 'Migrations' -ColumnName 'BigID'
 }
 
 function Pop-Migration
@@ -135,6 +137,7 @@ function Pop-Migration
         float 'bigger'
         smallint 'sparsesmallint' -Sparse
         nvarchar 'Korean' -Size 47 -Collation 'Korean_100_CS_AS_KS_WS_SC'
+        uniqueidentifier 'GUID' -RowGuidCol
     }
 '@
     ThenMigration -HasContent @'
@@ -146,11 +149,13 @@ function Pop-Migration
     ThenMigration -HasContent @'
     Add-CheckConstraint -TableName 'Migrations' -Name 'CK_Migrations_Name' -Expression '([Name]='Fubar')'
 '@
+    ThenMigration -Hascontent 'Add-Index -TableName ''Migrations'' -ColumnName ''BigID'' -Name ''IX_Migrations_BigID'''
     ThenMigration -HasContent 'Remove-Table -Name ''Migrations'''
     ThenMigration -Not -HasContent 'Remove-Schema'
     ThenMigration -Not -HasContent 'Remove-PrimaryKey'
     ThenMigration -Not -HasContent 'Remove-DefaultConstraint'
     ThenMigration -Not -HasContent 'Remove-CheckConstraint'
+    ThenMigration -Not -HasContent 'Remove-Index'
 }
 
 Describe 'Export-Migration.when exporting with wildcards' {
@@ -352,4 +357,53 @@ function Pop-Migration
     WhenExporting 'dbo.SeedAndIncrement'
     ThenMigration -HasContent 'int ''ID'' -Identity -Seed 1000 -Increment 7'
     ThenMigration -HasContent 'nvarchar ''OtherColumn'' -Size 50'
+}
+
+Describe 'Export-Migration.when exporting an index' {
+    Init
+    GivenMigration @'
+function Push-Migration
+{
+    Add-Table -Name 'Indexes' -Column {
+        int ID -NotNull
+        int ID2 -NotNull
+        int ID3 -NotNull
+        int ID4 -NotNull
+        int ID5 -NotNull
+        int ID6 -NotNull
+    }
+    Add-Index -TableName 'Indexes' -ColumnName 'ID'
+    Add-Index -TableName 'Indexes' -Columnname 'ID2','ID3'
+    Add-Index -TableName 'Indexes' -ColumnName 'ID4' -Unique
+    Add-Index -TableName 'Indexes' -ColumnName 'ID5' -Clustered
+    Add-Index -TableName 'Indexes' -ColumnName 'ID6' -Where 'ID6<=100'
+
+    Add-Schema -Name 'export'
+    Add-Table -SchemaName 'export' -Name 'Indexes2' -Column {
+        int ID
+    }
+    Add-Index -SchemaName 'export' -TableName 'Indexes2' -ColumnName 'ID'
+}
+function Pop-Migration
+{
+    Remove-Table 'Indexes'
+    Remove-Table -SchemaName 'export' -Name 'Indexes2'
+    Remove-Schema 'export'
+}
+'@
+    WhenExporting '*.*X_Indexes*'
+    ThenMigration -HasContent 'Add-Index -TableName ''Indexes'' -ColumnName ''ID'' -Name ''IX_Indexes_ID'''
+    ThenMigration -HasContent 'Add-Index -TableName ''Indexes'' -Columnname ''ID2'',''ID3'' -Name ''IX_Indexes_ID2_ID3'''
+    ThenMigration -HasContent 'Add-Index -TableName ''Indexes'' -ColumnName ''ID4'' -Name ''UIX_Indexes_ID4'' -Unique'
+    ThenMigration -HasContent 'Add-Index -TableName ''Indexes'' -ColumnName ''ID5'' -Name ''IX_Indexes_ID5'' -Clustered'
+    ThenMigration -HasContent 'Add-Index -TableName ''Indexes'' -ColumnName ''ID6'' -Name ''IX_Indexes_ID6'' -Where ''([ID6]<=(100))'''
+    ThenMigration -HasContent 'Add-Index -SchemaName ''export'' -TableName ''Indexes2'' -ColumnName ''ID'' -Name ''IX_export_Indexes2_ID'''
+    ThenMigration -Not -HasContent 'Add-Index -SchemaName ''export'' -TableName ''Indexes2'' -ColumnName '''' -Name '''''
+
+    ThenMigration -HasContent 'Remove-Index -TableName ''Indexes'' -Name ''IX_Indexes_ID'''
+    ThenMigration -HasContent 'Remove-Index -TableName ''Indexes'' -Name ''IX_Indexes_ID2_ID3'''
+    ThenMigration -HasContent 'Remove-Index -TableName ''Indexes'' -Name ''UIX_Indexes_ID4'''
+    ThenMigration -HasContent 'Remove-Index -TableName ''Indexes'' -Name ''IX_Indexes_ID5'''
+    ThenMigration -HasContent 'Remove-Index -TableName ''Indexes'' -Name ''IX_Indexes_ID6'''
+    ThenMigration -HasContent 'Remove-Index -SchemaName ''export'' -TableName ''Indexes2'' -Name ''IX_export_Indexes2_ID'''
 }

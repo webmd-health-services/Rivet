@@ -6,7 +6,16 @@ function Export-Migration
     Exports objects from a database as Rivet migrations.
 
     .DESCRIPTION
-    The `Export-Migration` function exports database objects as Rivet migrations.
+    The `Export-Migration` function exports database objects, schemas, and data types as a Rivet migration. By default, it exports *all* non-system, non-Rivet objects, data types, and schemas. You can filter specific objects by passing their full name to the `Include` parameter. Wildcards are supported. Objects are matched on their schema *and* name.
+
+    Non-table, user data types are *always* exported.
+
+    Extended properties are *not* exported, except table and column descriptions.
+
+    .EXAMPLE
+    Export-Migration -SqlServerName 'some\instance' -Database 'database'
+
+    Demonstrates how to export an entire database.
     #>
     [CmdletBinding()]
     param(
@@ -39,6 +48,7 @@ function Export-Migration
                             'INFORMATION_SCHEMA' = $true;
                         }
     $exportedTypes = @{ }
+    $exportedIndexes = @{ }
 
     function ConvertTo-SchemaParameter
     {
@@ -203,6 +213,111 @@ where
         }
     }
 
+    function Export-Index
+    {
+        [CmdletBinding(DefaultParameterSetName='All')]
+        param(
+            [Parameter(Mandatory,ParameterSetName='ByIndex')]
+            [object]
+            $Object,
+
+            [Parameter(Mandatory,ParameterSetName='ByTable')]
+            [int]
+            $TableID,
+
+            [Switch]
+            $SkipPop
+        )
+
+        $query = '
+select 
+    sys.tables.name as table_name, 
+    schema_name(sys.tables.schema_id) as schema_name, 
+    sys.indexes.* 
+from 
+    sys.indexes 
+        join 
+    sys.tables 
+            on sys.indexes.object_id = sys.tables.object_id 
+where 
+    is_primary_key = 0 and 
+    sys.indexes.type != 0
+'
+        if( $PSCmdlet.ParameterSetName -eq 'All' )
+        {
+            foreach( $object in (Invoke-Query -Query $query) )
+            {
+                if( (Test-SkipObject -SchemaName $Object.schema_name -Name $Object.name) )
+                {
+                    continue
+                }
+
+                Export-Index -Object $object -SkipPop:$SkipPop
+                ''
+            }
+            return
+        }
+        elseif( $PSCmdlet.ParameterSetName -eq 'ByTable' )
+        {
+            $query = '{0} and sys.indexes.object_id = @object_id' -f $query
+            foreach( $object in (Invoke-Query -Query $query -Parameter @{ '@object_id' = $TableID }) )
+            {
+                Export-Index -Object $object -SkipPop:$SkipPop
+            }
+            return
+        }
+
+        $indexKey = '{0}_{1}' -f $Object.object_id,$Object.index_id
+        if( $exportedIndexes.ContainsKey($indexKey) )
+        {
+            return
+        }
+
+        $query = '
+SELECT 
+    sys.columns.name as column_name,
+    sys.indexes.name as index_name,
+	* 
+FROM 
+	sys.indexes 
+		join 
+	sys.index_columns 
+			on sys.indexes.object_id = sys.index_columns.object_id 
+			and sys.indexes.index_id = sys.index_columns.index_id 
+		join
+	sys.columns
+			on sys.indexes.object_id = sys.columns.object_id
+			and sys.index_columns.column_id = sys.columns.column_id
+where 
+    sys.indexes.object_id = @object_id and
+    sys.indexes.index_id = @index_id
+'
+        $unique = ''
+        if( $Object.is_unique )
+        {
+            $unique = ' -Unique'
+        }
+        $clustered = ''
+        if( $Object.type_desc -eq 'CLUSTERED' )
+        {
+            $clustered = ' -Clustered'
+        }
+        $where = ''
+        if( $Object.has_filter )
+        {
+            $where = ' -Where ''{0}''' -f $Object.filter_definition
+        }
+        $columns = Invoke-Query -Query $query -Parameter @{ '@object_id' = $Object.object_id ; '@index_id' = $Object.index_id }
+        $columnNames = $columns | Select-Object -ExpandProperty 'column_name'
+        $schema = ConvertTo-SchemaParameter -SchemaName $Object.schema_name
+        '    Add-Index{0} -TableName ''{1}'' -ColumnName ''{2}'' -Name ''{3}''{4}{5}{6}' -f $schema,$Object.table_name,($columnNames -join ''','''),$Object.name,$clustered,$unique,$where
+        if( -not $SkipPop )
+        {
+            Push-PopOperation ('Remove-Index{0} -TableName ''{1}'' -Name ''{2}''' -f $schema,$Object.table_name,$Object.name)
+        }
+        $exportedIndexes[$indexKey] = $true
+    }
+
     function Export-PrimaryKey
     {
         param(
@@ -354,7 +469,8 @@ select
     sys.types.scale as default_scale,
     sys.columns.is_sparse,
     sys.columns.collation_name,
-    serverproperty(''collation'') as default_collation_name
+    serverproperty(''collation'') as default_collation_name,
+    sys.columns.is_rowguidcol
 from 
 	sys.columns 
 		inner join 
@@ -388,6 +504,10 @@ where
                         '-Collation'
                         '''{0}''' -f $column.collation_name
                     }
+                }
+                if( $column.is_rowguidcol )
+                {
+                    '-RowGuidCol'
                 }
                 if( $column.precision -ne $column.default_precision )
                 {
@@ -442,6 +562,7 @@ where
         Export-PrimaryKey -TableID $Object.object_id -SkipPop
         Export-DefaultConstraint -TableID $Object.object_id -SkipPop
         Export-CheckConstraint -TableID $Object.object_id -SkipPop
+        Export-Index -TableID $Object.object_id -SkipPop
     }
 
     function Push-PopOperation
@@ -455,6 +576,36 @@ where
         {
             $pops.Push($InputObject)
         }
+    }
+
+    function Test-SkipObject
+    {
+        param(
+            [Parameter(Mandatory)]
+            [string]
+            $SchemaName,
+
+            [Parameter(Mandatory)]
+            [string]
+            $Name
+        )
+
+        if( -not $Include )
+        {
+            return $false
+        }
+
+        $fullName = '{0}.{1}' -f $SchemaName,$Name
+        foreach( $filter in $Include )
+        {
+            if( $fullName -like $filter )
+            {
+                return $false
+            }
+        }
+
+        Write-Debug ('Skipping   NOT SELECTED      {0}' -f $fullName)
+        return $true
     }
 
     Connect-Database -SqlServerName $SqlServerName -Database $Database -ErrorAction Stop | Out-Null
@@ -495,9 +646,8 @@ where
                     continue
                 }
 
-                if( $Include -and -not ($Include | Where-Object { $object.full_name -like $_ }) )
+                if( (Test-SkipObject -SchemaName $object.schema_name -Name $object.object_name) )
                 {
-                    Write-Debug ('Skipping   NOT SELECTED      {0}' -f $object.full_name)
                     continue
                 }
 
@@ -539,6 +689,8 @@ where
                 $exportedObjects[$object.object_id] = $true
                 ''
             }
+
+            Export-Index
         '}'
         ''
         'function Pop-Migration'
