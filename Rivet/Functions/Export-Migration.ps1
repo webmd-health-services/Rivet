@@ -253,7 +253,8 @@ from
             on sys.indexes.object_id = sys.tables.object_id 
 where 
     is_primary_key = 0 and 
-    sys.indexes.type != 0
+    sys.indexes.type != 0 and
+    sys.indexes.is_unique_constraint != 1
 '
         if( $PSCmdlet.ParameterSetName -eq 'All' )
         {
@@ -575,6 +576,84 @@ where
         Export-DefaultConstraint -TableID $Object.object_id -SkipPop
         Export-CheckConstraint -TableID $Object.object_id -SkipPop
         Export-Index -TableID $Object.object_id -SkipPop
+        Export-UniqueKey -TableID $Object.object_id -SkipPop
+    }
+
+    function Export-UniqueKey
+    {
+        param(
+            [Parameter(Mandatory,ParameterSetName='ByKey')]
+            [object]
+            $Object,
+
+            [Parameter(Mandatory,ParameterSetName='ForTable')]
+            [int]
+            $TableID,
+
+            [Switch]
+            $SkipPop
+        )
+
+        if( $PSCmdlet.ParameterSetName -eq 'ForTable' )
+        {
+            $query = '
+select
+    sys.key_constraints.name,
+    schema_name(sys.key_constraints.schema_id) as schema_name,
+    sys.key_constraints.object_id,
+    sys.tables.name as parent_object_name
+from
+    sys.key_constraints
+        join
+    sys.tables
+            on sys.key_constraints.parent_object_id = sys.tables.object_id
+where
+    sys.key_constraints.parent_object_id = @table_id
+'
+            foreach( $object in (Invoke-Query -Query $query -Parameter @{ '@table_id' = $TableID }) )
+            {
+                Export-UniqueKey -Object $object -SkipPop:$SkipPop
+            }
+            return
+        }
+
+        if( $exportedObjects.ContainsKey($Object.object_id) )
+        {
+            return
+        }
+
+        $query = '
+select 
+    sys.columns.name,
+    sys.indexes.type_desc
+from 
+	sys.key_constraints 
+		join
+	sys.indexes
+			on sys.key_constraints.parent_object_id = sys.indexes.object_id
+			and sys.key_constraints.unique_index_id = sys.indexes.index_id
+		join 
+	sys.index_columns 
+			on sys.indexes.object_id = sys.index_columns.object_id 
+			and sys.indexes.index_id = sys.index_columns.index_id 
+		join
+	sys.columns
+			on sys.indexes.object_id = sys.columns.object_id
+			and sys.index_columns.column_id = sys.columns.column_id
+where 
+    sys.key_constraints.object_id = @object_id
+'
+        $columns = Invoke-Query -Query $query -Parameter @{ '@object_id' = $Object.object_id }
+        $columnNames = $columns | Select-Object -ExpandProperty 'name'
+        $clustered = ''
+        if( ($columns | Select-Object -First 1 | Select-Object -ExpandProperty 'type_desc') -eq 'CLUSTERED' )
+        {
+            $clustered = ' -Clustered'
+        }
+        $schema = ConvertTo-SchemaParameter -SchemaName $Object.schema_name
+        '    Add-UniqueKey{0} -TableName ''{1}'' -ColumnName ''{2}''{3} -Name ''{4}''' -f $schema,$Object.parent_object_name,($columnNames -join ''','''),$clustered,$Object.name
+        Push-PopOperation ('Remove-UniqueKey{0} -TableName ''{1}'' -Name ''{2}''' -f $schema,$Object.parent_object_name,$Object.name)
+        $exportedObjects[$Object.object_id] = $true
     }
 
     function Push-PopOperation
@@ -632,9 +711,14 @@ where
             select 
                 sys.schemas.name as schema_name, 
                 sys.objects.name as object_name, 
+                sys.objects.name as name,
                 sys.schemas.name + ''.'' + sys.objects.name as full_name, 
                 sys.extended_properties.value as description,
-                * 
+                parent_objects.name as parent_object_name,
+                sys.objects.object_id as object_id,
+                sys.objects.type,
+                sys.objects.type_desc,
+                sys.objects.parent_object_id
             from 
                 sys.objects 
                     join 
@@ -645,8 +729,11 @@ where
                         on sys.objects.object_id = sys.extended_properties.major_id 
                         and sys.extended_properties.minor_id = 0
                         and sys.extended_properties.name = ''MS_Description''
+                    left join
+                sys.objects parent_objects
+                    on sys.objects.parent_object_id = parent_objects.object_id
             where 
-                is_ms_shipped = 0'
+                sys.objects.is_ms_shipped = 0'
             foreach( $object in (Invoke-Query -Query $query) )
             {
                 if( $exportedObjects.ContainsKey($object.object_id) )
@@ -685,6 +772,10 @@ where
                     'SQL_STORED_PROCEDURE'
                     {
                         Export-StoredProcedure -Object $object
+                    }
+                    'UNIQUE_CONSTRAINT'
+                    {
+                        Export-UniqueKey -Object $object
                     }
                     'USER_TABLE'
                     {

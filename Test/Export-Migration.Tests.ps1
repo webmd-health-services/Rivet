@@ -117,6 +117,7 @@ function Push-Migration
     Add-DefaultConstraint -TableName 'Migrations' -ColumnName 'AtUtc' -Expression '(getutcdate())'
     Add-CheckConstraint -TableName 'Migrations' -Name 'CK_Migrations_Name' -Expression '([Name] = ''Fubar'')'
     Add-Index -TableName 'Migrations' -ColumnName 'BigID'
+    Add-UniqueKey -TableName 'Migrations' -ColumnName 'Korean'
 }
 
 function Pop-Migration
@@ -149,7 +150,8 @@ function Pop-Migration
     ThenMigration -HasContent @'
     Add-CheckConstraint -TableName 'Migrations' -Name 'CK_Migrations_Name' -Expression '([Name]='Fubar')'
 '@
-    ThenMigration -Hascontent 'Add-Index -TableName ''Migrations'' -ColumnName ''BigID'' -Name ''IX_Migrations_BigID'''
+    ThenMigration -HasContent 'Add-Index -TableName ''Migrations'' -ColumnName ''BigID'' -Name ''IX_Migrations_BigID'''
+    ThenMigration -HasContent 'Add-UniqueKey -TableName ''Migrations'' -ColumnName ''Korean'' -Name ''AK_Migrations_Korean'''
     ThenMigration -HasContent 'Remove-Table -Name ''Migrations'''
     ThenMigration -Not -HasContent 'Remove-Schema'
     ThenMigration -Not -HasContent 'Remove-PrimaryKey'
@@ -194,7 +196,7 @@ function Pop-Migration
     }
 '@
     ThenMigration -HasContent 'Add-PrimaryKey -SchemaName ''export'''
-    ThenMigration -HasContent 'Invoke-Ddl -Query @''create procedure [export].[DoSomething]'
+    ThenMigration -HasContent 'Add-StoredProcedure -SchemaName ''export'' -Name ''DoSomething'' -Definition'
     ThenMigration -Not -HasContent 'DoSomethingElse'
 }
 
@@ -415,7 +417,7 @@ function Pop-Migration
     Remove-Schema 'export'
 }
 '@
-    WhenExporting '*.*X_Indexes*'
+    WhenExporting '*.*_Indexes*'
     ThenMigration -HasContent 'Add-Index -TableName ''Indexes'' -ColumnName ''ID'' -Name ''IX_Indexes_ID'''
     ThenMigration -HasContent 'Add-Index -TableName ''Indexes'' -Columnname ''ID2'',''ID3'' -Name ''IX_Indexes_ID2_ID3'''
     ThenMigration -HasContent 'Add-Index -TableName ''Indexes'' -ColumnName ''ID4'' -Name ''UIX_Indexes_ID4'' -Unique'
@@ -430,4 +432,43 @@ function Pop-Migration
     ThenMigration -HasContent 'Remove-Index -TableName ''Indexes'' -Name ''IX_Indexes_ID5'''
     ThenMigration -HasContent 'Remove-Index -TableName ''Indexes'' -Name ''IX_Indexes_ID6'''
     ThenMigration -HasContent 'Remove-Index -SchemaName ''export'' -TableName ''Indexes2'' -Name ''IX_export_Indexes2_ID'''
+}
+
+Describe 'Export-Migration.when exporting unique keys' {
+    Init
+    GivenMigration @'
+function Push-Migration
+{
+    Add-Schema 'export'
+    Add-Table -SchemaName 'export' -Name 'UK' {
+        int 'ID' -NotNull
+        int 'ID2' -NotNull
+    }
+    Add-UniqueKey -SchemaName 'export' -TableName 'UK' -ColumnName 'ID','ID2'
+
+    Add-Table -Name 'UK2' {
+        int 'ID3' -NotNull
+        int 'ID4' -NotNull
+        int 'ID5' -NotNull
+    }
+    Add-UniqueKey -TableName 'UK2' -ColumnName 'ID3','ID4'
+    Add-UniqueKey -TableName 'UK2' -ColumnName 'ID5' -Clustered
+}
+function Pop-Migration
+{
+    Remove-Table 'UK2'
+    Remove-Table -SchemaName 'export' 'UK'
+    Remove-Schema 'export'
+}
+'@
+    WhenExporting '*.*_ID*'
+    ThenMigration -Not -HasContent 'Add-Table'
+    ThenMigration -HasContent 'Add-Schema -Name ''export'''
+    ThenMigration -HasContent 'Add-UniqueKey -SchemaName ''export'' -TableName ''UK'' -ColumnName ''ID'',''ID2'' -Name ''AK_export_UK_ID_ID2'''
+    ThenMigration -HasContent 'Add-UniqueKey -TableName ''UK2'' -ColumnName ''ID3'',''ID4'' -Name ''AK_UK2_ID3_ID4'''
+    ThenMigration -HasContent 'Add-UniqueKey -TableName ''UK2'' -ColumnName ''ID5'' -Clustered -Name ''AK_UK2_ID5'''
+    ThenMigration -HasContent 'Remove-Schema -Name ''export'''
+    ThenMigration -HasContent 'Remove-UniqueKey -SchemaName ''export'' -TableName ''UK'' -Name ''AK_export_UK_ID_ID2'''
+    ThenMigration -HasContent 'Remove-UniqueKey -TableName ''UK2'' -Name ''AK_UK2_ID3_ID4'''
+    ThenMigration -HasContent 'Remove-UniqueKey -TableName ''UK2'' -Name ''AK_UK2_ID5'''
 }
