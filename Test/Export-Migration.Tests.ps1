@@ -612,3 +612,46 @@ ON [dbo].[TriggerSource] for insert as select 1
 ON [export].[TriggerSource2] for insert as select 1
 ''@'
 }
+
+
+Describe 'Export-Migration.when exporting synonyms' {
+    Init
+    GivenMigration @'
+function Push-Migration
+{
+    Add-Table -Name 'Target' {
+        int 'ID' -NotNull
+    }
+
+    Add-Synonym -Name 'Syn1' -TargetObjectName 'Target'
+    Add-Synonym -Name 'AnotherSyn' -TargetObjectName 'Target'
+
+    Add-Schema 'export'
+    Add-Table -SchemaName 'export' -Name 'Target2' {
+        int 'ID' -NotNull
+    }
+
+    Add-Synonym -SchemaName 'export' -Name 'Syn2' -TargetObjectName 'Target'
+    Add-Synonym -SchemaName 'export' -Name 'Syn3' -TargetSchemaName 'export' -TargetObjectName 'Target2'
+}
+function Pop-Migration
+{
+    Remove-Synonym -SchemaName 'export' 'Syn3'
+    Remove-Synonym -SchemaName 'export' 'Syn2'
+    Remove-Synonym 'AnotherSyn'
+    Remove-Synonym 'Syn1'
+    Remove-Table 'Target'
+    Remove-Table -SchemaName 'export' 'Target2'
+    Remove-Schema 'export'
+}
+'@
+    WhenExporting '*.Syn*'
+    ThenMigration -Not -HasContent 'Add-Table'
+    ThenMigration -Not -HasContent 'AnotherSyn'
+    ThenMigration -HasContent 'Add-Synonym -Name ''Syn1'' -TargetSchemaName ''dbo'' -TargetObjectName ''Target'''
+    ThenMigration -HasContent 'Add-Synonym -SchemaName ''export'' -Name ''Syn2'' -TargetSchemaName ''dbo'' -TargetObjectName ''Target'''
+    ThenMigration -HasContent 'Add-Synonym -SchemaName ''export'' -Name ''Syn3'' -TargetSchemaName ''export'' -TargetObjectName ''Target2'''
+    ThenMigration -HasContent 'Remove-Synonym -Name ''Syn1'''
+    ThenMigration -HasContent 'Remove-Synonym -SchemaName ''export'' -Name ''Syn2'''
+    ThenMigration -HasContent 'Remove-Synonym -SchemaName ''export'' -Name ''Syn3'''
+}

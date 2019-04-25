@@ -444,6 +444,43 @@ where
         Push-PopOperation ('Remove-StoredProcedure{0} -Name ''{1}''' -f $schema,$Object.object_name)
     }
 
+    function Export-Synonym
+    {
+        param(
+            [Parameter(Mandatory)]
+            [object]
+            $Object
+        )
+
+        $query = '
+select 
+    parsename(base_object_name,3) as database_name,
+    parsename(base_object_name,2) as schema_name,
+    parsename(base_object_name,1) as object_name
+from
+    sys.synonyms
+where
+    object_id = @synonym_id
+'
+        $schema = ConvertTo-SchemaParameter -SchemaName $Object.schema_name
+        $synonym = Invoke-Query -Query $Query -Parameter @{ '@synonym_id' = $Object.object_id }
+        
+        $targetDBName = ''
+        if( $synonym.database_name )
+        {
+            $targetDBName = ' -TargetDatabaseName ''{0}''' -f $synonym.database_name
+        }
+
+        $targetSchemaName = ''
+        if( $synonym.schema_name )
+        {
+            $targetSchemaName = ' -TargetSchemaName ''{0}''' -f $synonym.schema_name
+        }
+
+        '    Add-Synonym{0} -Name ''{1}''{2}{3} -TargetObjectName ''{4}''' -f $schema,$Object.name,$targetDBName,$targetSchemaName,$synonym.object_name
+        Push-PopOperation ('Remove-Synonym{0} -Name ''{1}''' -f $schema,$Object.name)
+    }
+
     function Export-Table
     {
         param(
@@ -898,6 +935,11 @@ where
                     'SQL_TRIGGER'
                     {
                         Export-Trigger -Object $object
+                        break
+                    }
+                    'SYNONYM'
+                    {
+                        Export-Synonym -Object $object
                         break
                     }
                     'UNIQUE_CONSTRAINT'
