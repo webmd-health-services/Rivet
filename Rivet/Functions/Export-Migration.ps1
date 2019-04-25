@@ -577,6 +577,63 @@ where
         Export-CheckConstraint -TableID $Object.object_id -SkipPop
         Export-Index -TableID $Object.object_id -SkipPop
         Export-UniqueKey -TableID $Object.object_id -SkipPop
+        Export-Trigger -TableID $Object.object_id -SkipPop
+    }
+
+    function Export-Trigger
+    {
+        param(
+            [Parameter(Mandatory,ParameterSetName='ByTrigger')]
+            [object]
+            $Object,
+
+            [Parameter(Mandatory,ParameterSetName='ByTable')]
+            [int]
+            $TableID,
+
+            [Switch]
+            $SkipPop
+        )
+
+        if( $PSCmdlet.ParameterSetName -eq 'ByTable' )
+        {
+            $query = '
+select
+    sys.triggers.name,
+    schema_name(sys.objects.schema_id) as schema_name,
+    sys.triggers.object_id
+from
+    sys.triggers
+        join
+    sys.objects
+        on sys.triggers.object_id = sys.objects.object_id
+where 
+    sys.triggers.parent_id = @table_id
+'
+            foreach( $object in (Invoke-Query -Query $query -Parameter @{ '@table_id' = $TableID }) )
+            {
+                Export-Trigger -Object $object -SkipPop:$SkipPop
+            }
+            return
+        }
+
+        $schema = ConvertTo-SchemaParameter -SchemaName $object.schema_name
+        $query = 'select definition from sys.sql_modules where object_id = @trigger_id'
+        $trigger = Invoke-Query -Query $query -Parameter @{ '@trigger_id' = $Object.object_id } -AsScalar
+        $createPreambleRegex = '^create\s+trigger\s+\[{0}\]\.\[{1}\]\s+' -f [regex]::Escape($Object.schema_name),[regex]::Escape($Object.name)
+        if( $trigger -match $createPreambleRegex )
+        {
+            $trigger = $trigger -replace $createPreambleRegex,''
+            '    Add-Trigger{0} -Name ''{1}'' -Definition @''{2}{3}{2}''@' -f $schema,$Object.name,[Environment]::NewLine,$trigger
+        }
+        else
+        {
+            '    Invoke-Ddl -Query @''{0}{1}{0}''@' -f [Environment]::NewLine,$trigger
+        }
+        if( -not $SkipPop )
+        {
+            Push-PopOperation ('Remove-Trigger{0} -Name ''{1}''' -f $schema,$Object.name)
+        }
     }
 
     function Export-UniqueKey
@@ -652,7 +709,10 @@ where
         }
         $schema = ConvertTo-SchemaParameter -SchemaName $Object.schema_name
         '    Add-UniqueKey{0} -TableName ''{1}'' -ColumnName ''{2}''{3} -Name ''{4}''' -f $schema,$Object.parent_object_name,($columnNames -join ''','''),$clustered,$Object.name
-        Push-PopOperation ('Remove-UniqueKey{0} -TableName ''{1}'' -Name ''{2}''' -f $schema,$Object.parent_object_name,$Object.name)
+        if( -not $SkipPop )
+        {
+            Push-PopOperation ('Remove-UniqueKey{0} -TableName ''{1}'' -Name ''{2}''' -f $schema,$Object.parent_object_name,$Object.name)
+        }
         $exportedObjects[$Object.object_id] = $true
     }
 
@@ -833,6 +893,11 @@ where
                     'SQL_STORED_PROCEDURE'
                     {
                         Export-StoredProcedure -Object $object
+                        break
+                    }
+                    'SQL_TRIGGER'
+                    {
+                        Export-Trigger -Object $object
                         break
                     }
                     'UNIQUE_CONSTRAINT'

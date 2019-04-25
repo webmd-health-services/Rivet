@@ -118,6 +118,7 @@ function Push-Migration
     Add-CheckConstraint -TableName 'Migrations' -Name 'CK_Migrations_Name' -Expression '([Name] = ''Fubar'')'
     Add-Index -TableName 'Migrations' -ColumnName 'BigID'
     Add-UniqueKey -TableName 'Migrations' -ColumnName 'Korean'
+    Add-Trigger -Name 'MigrationsTrigger' -Definition 'ON [dbo].[Migrations] for insert as select 1'
 }
 
 function Pop-Migration
@@ -152,12 +153,17 @@ function Pop-Migration
 '@
     ThenMigration -HasContent 'Add-Index -TableName ''Migrations'' -ColumnName ''BigID'' -Name ''IX_Migrations_BigID'''
     ThenMigration -HasContent 'Add-UniqueKey -TableName ''Migrations'' -ColumnName ''Korean'' -Name ''AK_Migrations_Korean'''
+    ThenMigration -HasContent 'Add-Trigger -Name ''MigrationsTrigger'' -Definition @''
+ON [dbo].[Migrations] for insert as select 1
+''@'
     ThenMigration -HasContent 'Remove-Table -Name ''Migrations'''
     ThenMigration -Not -HasContent 'Remove-Schema'
     ThenMigration -Not -HasContent 'Remove-PrimaryKey'
     ThenMigration -Not -HasContent 'Remove-DefaultConstraint'
     ThenMigration -Not -HasContent 'Remove-CheckConstraint'
     ThenMigration -Not -HasContent 'Remove-Index'
+    ThenMigration -Not -HasContent 'Remove-UniqueKey'
+    ThenMigration -Not -HasContent 'Remove-Trigger'
 }
 
 Describe 'Export-Migration.when exporting with wildcards' {
@@ -567,4 +573,42 @@ function Pop-Migration
     ThenMigration -HasContent 'Remove-UniqueKey -SchemaName ''export'' -TableName ''UK'' -Name ''AK_export_UK_ID_ID2'''
     ThenMigration -HasContent 'Remove-UniqueKey -TableName ''UK2'' -Name ''AK_UK2_ID3_ID4'''
     ThenMigration -HasContent 'Remove-UniqueKey -TableName ''UK2'' -Name ''AK_UK2_ID5'''
+}
+
+Describe 'Export-Migration.when exporting triggers' {
+    Init
+    GivenMigration @'
+function Push-Migration
+{
+    Add-Table -Name 'TriggerSource' {
+        int 'ID' -NotNull
+    }
+
+    Add-Trigger -Name 'TableTrigger' -Definition 'ON [dbo].[TriggerSource] for insert as select 1'
+
+    Add-Schema -SchemaName 'export'
+    Add-Table -SchemaName 'export' -Name 'TriggerSource2' {
+        int 'ID' -NotNull
+    }
+    Add-Trigger -SchemaName 'export' -Name 'TableTrigger2' -Definition 'ON [export].[TriggerSource2] for insert as select 1'
+
+    Invoke-Ddl 'create trigger [TableTriggerDB] on database for create_table as select 1'
+}
+function Pop-Migration
+{
+    Invoke-Ddl 'drop trigger [TableTriggerDB] on database'
+    Remove-Table -SchemaName 'export' 'TriggerSource2'
+    Remove-Schema 'export'
+    Remove-Table 'TriggerSource'
+}
+'@
+    WhenExporting '*.TableTrigger*'
+    ThenMigration -Not -HasContent 'Add-Table'
+    ThenMigration -Not -HasContent 'TableTriggerDB'
+    ThenMigration -HasContent 'Add-Trigger -Name ''TableTrigger'' -Definition @''
+ON [dbo].[TriggerSource] for insert as select 1
+''@'
+    ThenMigration -HasContent 'Add-Trigger -SchemaName ''export'' -Name ''TableTrigger2'' -Definition @''
+ON [export].[TriggerSource2] for insert as select 1
+''@'
 }
