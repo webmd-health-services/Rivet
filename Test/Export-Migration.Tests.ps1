@@ -352,6 +352,58 @@ create view ViewSomething as select 1 as one
     ThenMigration -HasContent 'Remove-View -Name ''ViewSomething'''
 }
 
+Describe 'Export-Migration.when exporting a function' {
+    Init
+    GivenMigration @'
+function Push-Migration
+{
+    Add-UserDefinedFunction -Name 'CallSomething' -Definition '() returns tinyint as begin return 1 end'
+    Add-UserDefinedFunction -Name 'CallTable' -Definition '() returns table as return( select 1 as name )'
+}
+
+function Pop-Migration
+{
+    Remove-UserDefinedFunction -Name 'CallTable'
+    Remove-UserDefinedFunction -Name 'CallSomething'
+}
+'@
+    WhenExporting 'dbo.Call*'
+    ThenMigration -HasContent @"
+    Add-UserDefinedFunction -Name 'CallSomething' -Definition @'
+() returns tinyint as begin return 1 end
+'@
+"@
+    ThenMigration -HasContent @"
+    Add-UserDefinedFunction -Name 'CallTable' -Definition @'
+() returns table as return( select 1 as name )
+'@
+"@
+    ThenMigration -HasContent 'Remove-UserDefinedFunction -Name ''CallSomething'''
+    ThenMigration -HasContent 'Remove-UserDefinedFunction -Name ''CallTable'''
+}
+
+Describe 'Export-Migration.when exporting a function not added with Rivet' {
+    Init
+    GivenMigration @'
+function Push-Migration
+{
+    Invoke-Ddl 'create function CallSomething () returns tinyint as begin return 1 end'
+}
+
+function Pop-Migration
+{
+    Remove-UserDefinedFunction -Name 'CallSomething'
+}
+'@
+    WhenExporting 'dbo.CallSomething'
+    ThenMigration -HasContent @"
+    Invoke-Ddl -Query @'
+create function CallSomething () returns tinyint as begin return 1 end
+'@
+"@
+    ThenMigration -HasContent 'Remove-UserDefinedFunction -Name ''CallSomething'''
+}
+
 Describe 'Export-Migration.when exporting entire database' {
     Init
     WhenExporting

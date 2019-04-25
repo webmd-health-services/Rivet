@@ -656,6 +656,30 @@ where
         $exportedObjects[$Object.object_id] = $true
     }
 
+    function Export-UserDefinedFunction
+    {
+        param(
+            [Parameter(Mandatory)]
+            [object]
+            $Object
+        )
+
+        $schema = ConvertTo-SchemaParameter -SchemaName $object.schema_name
+        $query = 'select definition from sys.sql_modules where object_id = @function_id'
+        $function = Invoke-Query -Query $query -Parameter @{ '@function_id' = $Object.object_id } -AsScalar
+        $createPreambleRegex = '^create\s+function\s+\[{0}\]\.\[{1}\]\s+' -f [regex]::Escape($Object.schema_name),[regex]::Escape($Object.name)
+        if( $function -match $createPreambleRegex )
+        {
+            $function = $function -replace $createPreambleRegex,''
+            '    Add-UserDefinedFunction{0} -Name ''{1}'' -Definition @''{2}{3}{2}''@' -f $schema,$Object.name,[Environment]::NewLine,$function
+        }
+        else
+        {
+            '    Invoke-Ddl -Query @''{0}{1}{0}''@' -f [Environment]::NewLine,$function
+        }
+        Push-PopOperation ('Remove-UserDefinedFunction{0} -Name ''{1}''' -f $schema,$Object.name)
+    }
+
     function Export-View
     {
         param(
@@ -784,30 +808,47 @@ where
                     'CHECK_CONSTRAINT'
                     {
                         Export-CheckConstraint -Object $object
+                        break
                     }
                     'DEFAULT_CONSTRAINT'
                     {
                         Export-DefaultConstraint -Object $object
+                        break
                     }
                     'PRIMARY_KEY_CONSTRAINT'
                     {
                         Export-PrimaryKey -Object $object
+                        break
+                    }
+                    'SQL_INLINE_TABLE_VALUED_FUNCTION'
+                    {
+                        Export-UserDefinedFunction -Object $object
+                        break
+                    }
+                    'SQL_SCALAR_FUNCTION'
+                    {
+                        Export-UserDefinedFunction -Object $object
+                        break
                     }
                     'SQL_STORED_PROCEDURE'
                     {
                         Export-StoredProcedure -Object $object
+                        break
                     }
                     'UNIQUE_CONSTRAINT'
                     {
                         Export-UniqueKey -Object $object
+                        break
                     }
                     'USER_TABLE'
                     {
                         Export-Table -Object $object
+                        break
                     }
                     'VIEW'
                     {
                         Export-View -Object $object
+                        break
                     }
                     default
                     {
