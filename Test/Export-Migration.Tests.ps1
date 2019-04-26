@@ -101,9 +101,9 @@ Describe 'Export-Migration.when exporting a table' {
     GivenMigration @'
 function Push-Migration
 {
-    Add-Table -Name 'Migrations' -Description 'some table' -Column {
+    Add-Table -Name 'Migrations' -Description 'some table'' description' -Column {
         int 'ID' -Identity
-        bigint 'BigID' -NotNull -Description 'some bigint column'
+        bigint 'BigID' -NotNull -Description 'some bigint column''s description'
         nvarchar 'Name' -Size 241 -NotNull
         datetime2 'AtUtc' -NotNull
         decimal 'Dec' -Precision 4 -Scale 2
@@ -129,9 +129,9 @@ function Pop-Migration
     WhenExporting 'dbo.Migrations'
     ThenMigration -Not -HasContent 'Add-Schema -Name ''dbo'''
     ThenMigration -HasContent @'
-    Add-Table -Name 'Migrations' -Description 'some table' -Column {
+    Add-Table -Name 'Migrations' -Description 'some table''s description' -Column {
         int 'ID' -Identity
-        bigint 'BigID' -NotNull -Description 'some bigint column'
+        bigint 'BigID' -NotNull -Description 'some bigint column''s description'
         nvarchar 'Name' -Size 241 -NotNull
         datetime2 'AtUtc' -NotNull
         decimal 'Dec' -Precision 4 -Scale 2
@@ -364,12 +364,14 @@ Describe 'Export-Migration.when exporting a function' {
 function Push-Migration
 {
     Add-UserDefinedFunction -Name 'CallSomething' -Definition '() returns tinyint as begin return 1 end'
-    Add-UserDefinedFunction -Name 'CallTable' -Definition '() returns table as return( select 1 as name )'
+    Add-UserDefinedFunction -Name 'CallInlineTable' -Definition '() returns table as return( select 1 as name )'
+    Add-UserDefinedFunction -Name 'CallTable' -Definition '() returns @Table TABLE ( ID int ) as begin insert into @Table select 1 return end'
 }
 
 function Pop-Migration
 {
     Remove-UserDefinedFunction -Name 'CallTable'
+    Remove-UserDefinedFunction -Name 'CallInlineTable'
     Remove-UserDefinedFunction -Name 'CallSomething'
 }
 '@
@@ -380,11 +382,17 @@ function Pop-Migration
 '@
 "@
     ThenMigration -HasContent @"
-    Add-UserDefinedFunction -Name 'CallTable' -Definition @'
+    Add-UserDefinedFunction -Name 'CallInlineTable' -Definition @'
 () returns table as return( select 1 as name )
 '@
 "@
+    ThenMigration -HasContent @"
+    Add-UserDefinedFunction -Name 'CallTable' -Definition @'
+() returns @Table TABLE ( ID int ) as begin insert into @Table select 1 return end
+'@
+"@
     ThenMigration -HasContent 'Remove-UserDefinedFunction -Name ''CallSomething'''
+    ThenMigration -HasContent 'Remove-UserDefinedFunction -Name ''CallInlineTable'''
     ThenMigration -HasContent 'Remove-UserDefinedFunction -Name ''CallTable'''
 }
 

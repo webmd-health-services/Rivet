@@ -583,7 +583,7 @@ where
         $description = $Object.description
         if( $description )
         {
-            $description = ' -Description ''{0}''' -f $description
+            $description = ' -Description ''{0}''' -f ($description -replace '''','''''')
         }
 
         '    Add-Table{0} -Name ''{1}''{2} -Column {{' -f $schema,$object.object_name,$description
@@ -683,7 +683,7 @@ where
                 }
                 if( $column.description )
                 {
-                    '-Description ''{0}''' -f $column.description
+                    '-Description ''{0}''' -f ($column.description -replace '''','''''')
                 }
             }
             if( $parameters )
@@ -1022,6 +1022,11 @@ where
                     'SQL_STORED_PROCEDURE'
                     {
                         Export-StoredProcedure -Object $object
+                        break
+                    }
+                    'SQL_TABLE_VALUED_FUNCTION'
+                    {
+                        Export-UserDefinedFunction -Object $object
                         break
                     }
                     'SQL_TRIGGER'
