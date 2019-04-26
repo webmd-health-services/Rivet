@@ -213,8 +213,10 @@ function Push-Migration
 {
     Add-Table 'Fubar' {
         int 'ID'
+        char 'YN' -Size 1
     }
     Add-DefaultConstraint -TableName 'Fubar' -ColumnName 'ID' -Expression '1'
+    Add-DefaultConstraint -TableName 'Fubar' -ColumnName 'YN' -Expression '''N'''
 }
 
 function Pop-Migration
@@ -222,8 +224,9 @@ function Pop-Migration
     Remove-Table 'Fubar'
 }
 '@
-    WhenExporting 'dbo.DF_Fubar_ID'
+    WhenExporting 'dbo.DF_Fubar_*'
     ThenMigration -HasContent 'Add-DefaultConstraint -TableName ''Fubar'' -ColumnName ''ID'' -Name ''DF_Fubar_ID'' -Expression ''((1))'''
+    ThenMigration -HasContent 'Add-DefaultConstraint -TableName ''Fubar'' -ColumnName ''YN'' -Name ''DF_Fubar_YN'' -Expression ''(''''N'''')'''
     ThenMigration -HasContent 'Remove-DefaultConstraint -TableName ''Fubar'' -Name ''DF_Fubar_ID'''
 }
 
@@ -255,8 +258,10 @@ function Push-Migration
 {
     Add-Table 'CheckConstraint' {
         int ID
+        char 'YN' -Size 1
     }
     Add-CheckConstraint -TableName 'CheckConstraint' -Name 'CK_CheckConstraint_ID' -Expression '[ID] > 0 and [ID] < 10'
+    Add-CheckConstraint -TableName 'CheckConstraint' -Name 'CK_CheckConstraint_YN' -Expression '[YN] = ''Y'' or [YN] = ''N'''
 }
 
 function Pop-Migration
@@ -264,8 +269,9 @@ function Pop-Migration
     Remove-Table 'CheckConstraint'
 }
 '@
-    WhenExporting 'dbo.CK_CheckConstraint_ID'
+    WhenExporting 'dbo.CK_CheckConstraint_*'
     ThenMigration -HasContent 'Add-CheckConstraint -TableName ''CheckConstraint'' -Name ''CK_CheckConstraint_ID'' -Expression ''([ID]>(0) AND [ID]<(10))'''
+    ThenMigration -HasContent 'Add-CheckConstraint -TableName ''CheckConstraint'' -Name ''CK_CheckConstraint_YN'' -Expression ''([YN]=''''Y'''' OR [YN]=''''N'''')'
     ThenMigration -HasContent 'Remove-CheckConstraint -TableName ''CheckConstraint'' -Name ''CK_CheckConstraint_ID'''
     ThenMigration -Not -HasContent 'Add-Table'
 }

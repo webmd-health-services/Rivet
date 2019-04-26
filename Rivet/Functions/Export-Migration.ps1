@@ -127,10 +127,10 @@ where
     sys.check_constraints.object_id = @object_id'
             $constraint = Invoke-Query -Query $query -Parameter @{ '@object_id' = $constraintObject.object_id }
             $schema = ConvertTo-SchemaParameter -SchemaName $constraint.schema_name
-            '    Add-CheckConstraint{0} -TableName ''{1}'' -Name ''{2}'' -Expression ''{3}''' -f $schema,$constraint.table_name,$constraint.name,$constraint.definition
+            '    Add-CheckConstraint{0} -TableName ''{1}'' -Name ''{2}'' -Expression ''{3}''' -f $schema,$constraint.table_name,$constraint.name,($constraint.definition -replace '''','''''')
             if( -not $SkipPop )
             {
-                Push-PopOperation ('    Remove-CheckConstraint{0} -TableName ''{1}'' -Name ''{2}''' -f $schema,$constraint.table_name,$constraint.name)
+                Push-PopOperation ('Remove-CheckConstraint{0} -TableName ''{1}'' -Name ''{2}''' -f $schema,$constraint.table_name,$constraint.name)
             }
             $exportedObjects[$constraintObject.object_id] = $true
         }
@@ -222,10 +222,10 @@ where
     sys.default_constraints.object_id = @object_id'
             $constraint = Invoke-Query -Query $query -Parameter @{ '@object_id' = $constraintObject.object_id }
             $schema = ConvertTo-SchemaParameter -SchemaName $constraint.schema_name
-            '    Add-DefaultConstraint{0} -TableName ''{1}'' -ColumnName ''{2}'' -Name ''{3}'' -Expression ''{4}''' -f $schema,$constraint.table_name,$constraint.column_name,$constraint.name,$constraint.definition
+            '    Add-DefaultConstraint{0} -TableName ''{1}'' -ColumnName ''{2}'' -Name ''{3}'' -Expression ''{4}''' -f $schema,$constraint.table_name,$constraint.column_name,$constraint.name,($constraint.definition -replace '''','''''')
             if( -not $SkipPop )
             {
-                Push-PopOperation ('    Remove-DefaultConstraint{0} -TableName ''{1}'' -Name ''{2}''' -f $schema,$constraint.table_name,$constraint.name)
+                Push-PopOperation ('Remove-DefaultConstraint{0} -TableName ''{1}'' -Name ''{2}''' -f $schema,$constraint.table_name,$constraint.name)
             }
             $exportedObjects[$constraintObject.object_id] = $true
         }
@@ -1054,6 +1054,7 @@ where
                         Export-View -Object $object
                         break
                     }
+
                     default
                     {
                         Write-Error -Message ('Unable to export object "{0}": unsupported object type "{1}".' -f $object.full_name,$object.type_desc)
