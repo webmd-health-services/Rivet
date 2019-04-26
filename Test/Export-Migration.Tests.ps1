@@ -784,3 +784,31 @@ function Pop-Migration
     ThenMigration -HasContent 'Add-ForeignKey -TableName ''Table'' -ColumnName ''Table_ID'',''Table_ID2'' -References ''Table2'' -ReferencedColumn ''Table2_ID'',''Table2_ID2'' -Name ''FK_Table_Table2'''
     ThenMigration -HasContent 'Add-ForeignKey -SchemaName ''export'' -TableName ''Table3'' -ColumnName ''Table3_ID'' -ReferencesSchema ''export'' -References ''Table4'' -ReferencedColumn ''Table4_ID'' -Name ''FK_export_Table3_export_Table4'' -OnDelete ''CASCADE'' -OnUpdate ''CASCADE'' -NotForReplication -NoCheck'
 }
+
+Describe 'Export-Migration.when exporting a table with a custom identity seed or increment' {
+    Init
+    GivenMigration @'
+function Push-Migration
+{
+    Add-Table -Name 'Seed' {
+        int 'ID' -Identity -Seed 101 -Increment 1
+    }
+    Add-Table -Name 'Increment' {
+        int 'ID2' -Identity -Seed 1 -Increment 101
+    }
+    Add-Table -Name 'Defaults' {
+        int 'ID3' -Identity -Seed 1 -Increment 1
+    }
+}
+function Pop-Migration
+{
+    Remove-Table -Name 'Defaults'
+    Remove-Table -Name 'Increment'
+    Remove-Table -Name 'Seed'
+}
+'@
+    WhenExporting
+    ThenMigration -HasContent 'int ''ID'' -Identity -Seed 101 -Increment 1'
+    ThenMigration -HasContent 'int ''ID2'' -Identity -Seed 1 -Increment 101'
+    ThenMigration -HasContent 'int ''ID3'' -Identity'
+}

@@ -721,13 +721,10 @@ where
                 if( $column.is_identity )
                 {
                     '-Identity'
-                    if( $column.seed_value -ne 1 )
+                    if( $column.seed_value -ne 1 -or $column.increment_value -ne 1 )
                     {
                         '-Seed'
                         $column.seed_value
-                    }
-                    if( $column.increment_value -ne 1 )
-                    {
                         '-Increment'
                         $column.increment_value
                     }
