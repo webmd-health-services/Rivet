@@ -283,6 +283,28 @@ function Pop-Migration
     ThenMigration -HasContent 'Remove-PrimaryKey -TableName ''Fubar'' -Name ''PK_Fubar'''
 }
 
+Describe 'Export-Migration.when exporting a non-clustered primary key' {
+    Init
+    GivenMigration @'
+function Push-Migration 
+{
+    Add-Table 'Fubar' {
+        int 'ID' -NotNull
+    }
+    Add-PrimaryKey -TableName 'Fubar' -ColumnName 'ID' -NonClustered
+}
+
+function Pop-Migration
+{
+    Remove-Table 'Fubar'
+}
+'@
+    WhenExporting
+    ThenMigration -HasContent 'Add-PrimaryKey -TableName ''Fubar'' -ColumnName ''ID'' -Name ''PK_Fubar'' -NonClustered'
+    ThenMigration -HasContent 'Remove-Table -Name ''Fubar'''
+    ThenMigration -Not -HasContent 'Remove-PrimaryKey'
+}
+
 Describe 'Export-Migration.when exporting a check constraint' {
     Init
     GivenMigration @'

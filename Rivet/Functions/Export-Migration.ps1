@@ -500,7 +500,10 @@ where
         }
 
         $query = 'select 
-	sys.schemas.name as schema_name, sys.tables.name as table_name, sys.columns.name as column_name
+	sys.schemas.name as schema_name, 
+	sys.tables.name as table_name, 
+	sys.columns.name as column_name, 
+	sys.indexes.type_desc
 from 
     sys.objects 
     join sys.tables 
@@ -525,7 +528,12 @@ where
         {
             $schema = ConvertTo-SchemaParameter -SchemaName $primaryKey.schema_name
             $columnNames = $columns | Select-Object -ExpandProperty 'column_name'
-            '    Add-PrimaryKey{0} -TableName ''{1}'' -ColumnName ''{2}'' -Name ''{3}''' -f $schema,$primaryKey.table_name,($columnNames -join ''','''),$object.object_name
+            $nonClustered = ''
+            if( $primaryKey.type_desc -eq 'NONCLUSTERED' )
+            {
+                $nonClustered = ' -NonClustered'
+            }
+            '    Add-PrimaryKey{0} -TableName ''{1}'' -ColumnName ''{2}'' -Name ''{3}''{4}' -f $schema,$primaryKey.table_name,($columnNames -join ''','''),$object.object_name,$nonClustered
             if( -not $SkipPop )
             {
                 Push-PopOperation ('Remove-PrimaryKey{0} -TableName ''{1}'' -Name ''{2}''' -f $schema,$primaryKey.table_name,$object.object_name)
