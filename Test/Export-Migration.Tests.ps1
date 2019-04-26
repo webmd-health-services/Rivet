@@ -655,3 +655,52 @@ function Pop-Migration
     ThenMigration -HasContent 'Remove-Synonym -SchemaName ''export'' -Name ''Syn2'''
     ThenMigration -HasContent 'Remove-Synonym -SchemaName ''export'' -Name ''Syn3'''
 }
+
+Describe 'Export-Migration.when exporting foreign keys' {
+    Init
+    GivenMigration @'
+function Push-Migration
+{
+    Add-Table 'Table' {
+        int 'Table_ID' -Identity
+        int 'Table_ID2' -NotNull
+    }
+    Add-PrimaryKey -TableName 'Table' -ColumnName 'Table_ID','Table_ID2'
+
+    Add-Table 'Table2' {
+        int 'Table2_ID' -Identity
+        int 'Table2_ID2' -NotNull
+    }
+    Add-PrimaryKey -TableName 'Table2' -ColumnName 'Table2_ID','Table2_ID2'
+
+    Add-ForeignKey 'Table' -ColumnName 'Table_ID','Table_ID2' -References 'Table2' -ReferencedColumn 'Table2_ID','Table2_ID2'
+
+    Add-Schema 'export'
+
+    Add-Table -SchemaName 'export' 'Table3' {
+        int 'Table3_ID' -NotNull
+    }
+    Add-PrimaryKey -SchemaName 'export' -TableName 'Table3' -ColumnName 'Table3_ID'
+
+    Add-Table -SchemaName 'export' 'Table4' {
+        int 'Table4_ID' -NotNull
+    }
+    Add-PrimaryKey -SchemaName 'export' -TableName 'Table4' -ColumnName 'Table4_ID'
+    
+    Add-ForeignKey -SchemaName 'export' -TableName 'Table3' -ColumnName 'Table3_ID' -ReferencesSchema 'export' -References 'Table4' -ReferencedColumn 'Table4_ID' -OnDelete 'CASCADE' -OnUpdate 'CASCADE' -NotForReplication -NoCheck
+}
+function Pop-Migration
+{
+    Remove-Table -SchemaName 'export' -Name 'Table3'
+    Remove-Table -SchemaName 'export' -Name 'Table4'
+    Remove-Table -Name 'Table'
+    Remove-Table -Name 'Table2'
+    Remove-Schema 'export'
+}
+'@
+    WhenExporting '*.FK_*'
+    ThenMigration -Not -HasContent 'Add-Table'
+    ThenMigration -Not -HasContent 'Add-PrimaryKey'
+    ThenMigration -HasContent 'Add-ForeignKey -TableName ''Table'' -ColumnName ''Table_ID'',''Table_ID2'' -References ''Table2'' -ReferencedColumn ''Table2_ID'',''Table2_ID2'' -Name ''FK_Table_Table2'''
+    ThenMigration -HasContent 'Add-ForeignKey -SchemaName ''export'' -TableName ''Table3'' -ColumnName ''Table3_ID'' -ReferencesSchema ''export'' -References ''Table4'' -ReferencedColumn ''Table4_ID'' -Name ''FK_export_Table3_export_Table4'' -OnDelete ''CASCADE'' -OnUpdate ''CASCADE'' -NotForReplication -NoCheck'
+}

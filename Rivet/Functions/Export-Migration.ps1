@@ -51,14 +51,20 @@ function Export-Migration
     function ConvertTo-SchemaParameter
     {
         param(
+            [Parameter(Mandatory)]
+            [AllowNull()]
+            [AllowEmptyString()]
             [string]
-            $SchemaName
+            $SchemaName,
+
+            [string]
+            $ParameterName = 'SchemaName'
         )
 
         $parameter = ''
         if( $SchemaName -and $SchemaName -ne 'dbo' )
         {
-            $parameter = ' -SchemaName ''{0}''' -f $SchemaName
+            $parameter = ' -{0} ''{1}''' -f $ParameterName,$SchemaName
         }
         return $parameter
     }
@@ -223,6 +229,87 @@ where
             }
             $exportedObjects[$constraintObject.object_id] = $true
         }
+    }
+
+    function Export-ForeignKey
+    {
+        param(
+            [Parameter(Mandatory)]
+            [object]
+            $Object
+        )
+
+        $query = '
+select
+    is_not_trusted,
+    is_not_for_replication,
+    delete_referential_action_desc,
+    update_referential_action_desc,
+    schema_name(sys.objects.schema_id) as references_schema_name,
+    sys.objects.name as references_table_name
+from
+    sys.foreign_keys
+        join
+    sys.objects
+        on sys.foreign_keys.referenced_object_id = sys.objects.object_id
+where
+    sys.foreign_keys.object_id = @foreign_key_id
+'
+
+        $schema = ConvertTo-SchemaParameter -SchemaName $Object.schema_name
+        $foreignKey = Invoke-Query -Query $query -Parameter @{ '@foreign_key_id' = $Object.object_id }
+
+        $referencesSchema = ConvertTo-SchemaParameter -SchemaName $foreignKey.references_schema_name -ParameterName 'ReferencesSchema'
+        $referencesTableName = $foreignKey.references_table_name
+
+        $query = '
+select 
+	sys.columns.name as name,
+	referenced_columns.name as referenced_name
+from 
+	sys.foreign_key_columns
+		join
+	sys.columns
+			on sys.foreign_key_columns.parent_object_id = sys.columns.object_id
+			and sys.foreign_key_columns.parent_column_id = sys.columns.column_id
+		join
+	sys.columns as referenced_columns		
+			on sys.foreign_key_columns.referenced_object_id = referenced_columns.object_id
+			and sys.foreign_key_columns.referenced_column_id = referenced_columns.column_id
+where
+	sys.foreign_key_columns.constraint_object_id = @foreign_key_id
+'
+        $columns = Invoke-Query -Query $query -Parameter @{ '@foreign_key_id' = $Object.object_id }
+
+        $columnNames = $columns | Select-Object -ExpandProperty 'name'
+        $referencesColumnNames = $columns | Select-Object -ExpandProperty 'referenced_name'
+
+        $onDelete = ''
+        if( $foreignKey.delete_referential_action_desc -ne 'NO_ACTION' )
+        {
+            $onDelete = ' -OnDelete ''{0}''' -f $foreignKey.delete_referential_action_desc
+        }
+
+        $onUpdate = ''
+        if( $foreignKey.update_referential_action_desc -ne 'NO_ACTION' )
+        {
+            $onUpdate = ' -OnUpdate ''{0}''' -f $foreignKey.update_referential_action_desc
+        }
+
+        $notForReplication = ''
+        if( $foreignKey.is_not_for_replication )
+        {
+            $notForReplication = ' -NotForReplication'
+        }
+
+        $noCheck = ''
+        if( $foreignKey.is_not_trusted )
+        {
+            $noCheck = ' -NoCheck'
+        }
+
+        '    Add-ForeignKey{0} -TableName ''{1}'' -ColumnName ''{2}''{3} -References ''{4}'' -ReferencedColumn ''{5}'' -Name ''{6}''{7}{8}{9}{10}' -f $schema,$Object.parent_object_name,($columnNames -join ''','''),$referencesSchema,$referencesTableName,($referencesColumnNames -join ''','''),$Object.name,$onDelete,$onUpdate,$notForReplication,$noCheck
+        Push-PopOperation ('Remove-ForeignKey{0} -TableName ''{1}'' -Name ''{2}''' -f $schema,$Object.parent_object_name,$object.name)
     }
 
     function Export-Index
@@ -910,6 +997,11 @@ where
                     'DEFAULT_CONSTRAINT'
                     {
                         Export-DefaultConstraint -Object $object
+                        break
+                    }
+                    'FOREIGN_KEY_CONSTRAINT'
+                    {
+                        Export-ForeignKey -Object $object
                         break
                     }
                     'PRIMARY_KEY_CONSTRAINT'
