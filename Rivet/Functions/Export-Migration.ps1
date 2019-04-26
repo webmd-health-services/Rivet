@@ -47,6 +47,10 @@ function Export-Migration
                         }
     $exportedTypes = @{ }
     $exportedIndexes = @{ }
+    $rivetColumnTypes = Get-Alias | 
+                            Where-Object { $_.Source -eq 'Rivet' } | 
+                            Where-Object { $_.ReferencedCommand -like 'New-*Column' } | 
+                            Select-Object -ExpandProperty 'Name'
 
     function ConvertTo-SchemaParameter
     {
@@ -147,10 +151,32 @@ where
 
         if( $PSCmdlet.ParameterSetName -eq 'All' )
         {
-            $query = 'select sys.types.name as type_name, systype.name as from_type_name, schema_name(sys.types.schema_id) as schema_name, * from sys.types join sys.types systype on sys.types.system_type_id = systype.system_type_id and sys.types.system_type_id = systype.user_type_id where sys.types.is_user_defined = 1 and sys.types.is_table_type = 0'
+            $query = '
+select 
+    schema_name(sys.types.schema_id) as schema_name, 
+    sys.types.name, 
+    sys.types.max_length,
+    sys.types.precision,
+    sys.types.scale,
+    sys.types.collation_name,
+    sys.types.is_nullable,
+    systype.name as from_name, 
+    systype.max_length as from_max_length,
+    systype.precision as from_precision,
+    systype.scale as from_scale,
+    systype.collation_name as from_collation_name
+from 
+    sys.types 
+        join 
+    sys.types systype 
+            on sys.types.system_type_id = systype.system_type_id 
+            and sys.types.system_type_id = systype.user_type_id 
+where 
+    sys.types.is_user_defined = 1 and 
+    sys.types.is_table_type = 0'
             foreach( $object in (Invoke-Query -Query $query) )
             {
-                if( (Test-SkipObject -SchemaName $object.schema_name -Name $object.type_name) )
+                if( (Test-SkipObject -SchemaName $object.schema_name -Name $object.name) )
                 {
                     continue
                 }
@@ -159,18 +185,44 @@ where
             return
         }
 
-        if( $exportedTypes.ContainsKey($Object.type_name) )
+        if( $exportedTypes.ContainsKey($Object.name) )
         {
-            Write-Debug ('Skipping   ALREADY EXPORTED  {0}' -f $Object.type_name)
+            Write-Debug ('Skipping   ALREADY EXPORTED  {0}' -f $Object.name)
             continue
         }
         
         Export-Schema -Name $Object.schema_name
 
+        $typeDef = $object.from_name
+        if( $object.from_collation_name )
+        {
+            if( $object.max_length -ne $object.from_max_length )
+            {
+                $maxLength = $object.max_length
+                if( $maxLength -eq -1 )
+                {
+                    $maxLength = 'max'
+                }
+                $typeDef = '{0}({1})' -f $typeDef,$maxLength
+            }
+        }
+        else
+        {
+            if( ($object.precision -ne $object.from_precision) -or ($object.scale -ne $object.from_scale) )
+            {
+                $typeDef = '{0}({1},{2})' -f $typeDef,$object.precision,$object.scale
+            }
+        }
+
+        if( -not $object.is_nullable )
+        {
+            $typeDef = '{0} not null' -f $typeDef
+        }
+
         $schema = ConvertTo-SchemaParameter -SchemaName $Object.schema_name
-        '    Add-DataType{0} -Name ''{1}'' -From ''{2}''' -F $schema,$Object.type_name,$Object.from_type_name
-        $pops.Push(('Remove-DataType{0} -Name ''{1}''' -f $schema,$Object.type_name))
-        $exportedtypes[$object.type_name] = $true
+        '    Add-DataType{0} -Name ''{1}'' -From ''{2}''' -F $schema,$Object.name,$typeDef
+        $pops.Push(('Remove-DataType{0} -Name ''{1}''' -f $schema,$Object.name))
+        $exportedtypes[$object.name] = $true
     }
 
     function Export-DefaultConstraint
@@ -607,7 +659,9 @@ select
     sys.columns.is_sparse,
     sys.columns.collation_name,
     serverproperty(''collation'') as default_collation_name,
-    sys.columns.is_rowguidcol
+    sys.columns.is_rowguidcol,
+	sys.types.system_type_id,
+	sys.types.user_type_id
 from 
 	sys.columns 
 		inner join 
@@ -686,12 +740,25 @@ where
                     '-Description ''{0}''' -f ($column.description -replace '''','''''')
                 }
             }
-            if( $parameters )
+            if( $rivetColumnTypes -contains $column.type_name )
             {
-                $parameters = $parameters -join ' '
-                $parameters = ' {0}' -f $parameters
+                if( $parameters )
+                {
+                    $parameters = $parameters -join ' '
+                    $parameters = ' {0}' -f $parameters
+                }
+                '        {0} ''{1}''{2}' -f $column.type_name,$column.column_name,$parameters
             }
-            '        {0} ''{1}''{2}' -f $column.type_name,$column.column_name,$parameters
+            else
+            {
+                $parameters = $parameters | Where-Object { $_ -match ('^-(Sparse|NotNull|Description)') }
+                if( $parameters )
+                {
+                    $parameters = $parameters -join ' '
+                    $parameters = ' {0}' -f $parameters
+                }
+                '        New-Column -DataType ''{0}'' -Name ''{1}''{2}' -f $column.type_name,$column.column_name,$parameters
+            }
         }
 
         '    }'

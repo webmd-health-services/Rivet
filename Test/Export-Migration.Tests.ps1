@@ -101,7 +101,8 @@ Describe 'Export-Migration.when exporting a table' {
     GivenMigration @'
 function Push-Migration
 {
-    Add-Table -Name 'Migrations' -Description 'some table'' description' -Column {
+    Add-DataType -Name 'CUI' -From 'char(8)'
+    Add-Table -Name 'Migrations' -Description 'some table''s description' -Column {
         int 'ID' -Identity
         bigint 'BigID' -NotNull -Description 'some bigint column''s description'
         nvarchar 'Name' -Size 241 -NotNull
@@ -112,6 +113,12 @@ function Push-Migration
         smallint 'sparsesmallint' -Sparse
         nvarchar 'Korean' -Size 47 -Collation 'Korean_100_CS_AS_KS_WS_SC'
         uniqueidentifier 'GUID' -RowGuidCol
+        New-Column -DataType 'text' -Name 'textcolumn' -Description 'a text column'
+        New-Column -DataType 'ntext' -Name 'ntextcolumn' -NotNull
+        New-Column -DataType 'image' -Name 'imagecolumn'
+        New-Column -DataType 'sysname' -Name 'sysnamecolumn' -NotNull 
+        New-Column -DataType 'sql_variant' -Name 'sql_variantcolumn' -Sparse
+        New-Column -DataType 'CUI' -Name 'CUI' -NotNull
     }
     Add-PrimaryKey -TableName 'Migrations' -ColumnName 'ID'
     Add-DefaultConstraint -TableName 'Migrations' -ColumnName 'AtUtc' -Expression '(getutcdate())'
@@ -124,6 +131,7 @@ function Push-Migration
 function Pop-Migration
 {
     Remove-Table 'Migrations'
+    Remove-DataType 'CUI'
 }
 '@
     WhenExporting 'dbo.Migrations'
@@ -140,6 +148,12 @@ function Pop-Migration
         smallint 'sparsesmallint' -Sparse
         nvarchar 'Korean' -Size 47 -Collation 'Korean_100_CS_AS_KS_WS_SC'
         uniqueidentifier 'GUID' -RowGuidCol
+        New-Column -DataType 'text' -Name 'textcolumn' -Description 'a text column'
+        New-Column -DataType 'ntext' -Name 'ntextcolumn' -NotNull
+        New-Column -DataType 'image' -Name 'imagecolumn'
+        New-Column -DataType 'sysname' -Name 'sysnamecolumn' -NotNull
+        New-Column -DataType 'sql_variant' -Name 'sql_variantcolumn' -Sparse
+        New-Column -DataType 'CUI' -Name 'CUI' -NotNull
     }
 '@
     ThenMigration -HasContent @'
@@ -149,7 +163,7 @@ function Pop-Migration
     Add-DefaultConstraint -TableName 'Migrations' -ColumnName 'AtUtc' -Name 'DF_Migrations_AtUtc' -Expression '(getutcdate())'
 '@
     ThenMigration -HasContent @'
-    Add-CheckConstraint -TableName 'Migrations' -Name 'CK_Migrations_Name' -Expression '([Name]='Fubar')'
+    Add-CheckConstraint -TableName 'Migrations' -Name 'CK_Migrations_Name' -Expression '([Name]=''Fubar'')'
 '@
     ThenMigration -HasContent 'Add-Index -TableName ''Migrations'' -ColumnName ''BigID'' -Name ''IX_Migrations_BigID'''
     ThenMigration -HasContent 'Add-UniqueKey -TableName ''Migrations'' -ColumnName ''Korean'' -Name ''AK_Migrations_Korean'''
@@ -438,17 +452,29 @@ function Push-Migration
 {
     Add-Schema 'export'
     Add-DataType 'GUID' 'uniqueidentifier'
+    Add-DataType 'SUI' 'int'
+    Add-DataType 'CUI' 'char(8)'
+    Add-DataType 'mymoney' 'decimal(20,2) not null'
+    Add-DataType 'lotsa' 'varchar(max)'
     Add-DataType -SchemaName 'export' 'GUID2' 'uniqueidentifier'
 }
 function Pop-Migration
 {
-    Remove-Datatype 'GUID'
     Remove-DataType -SchemaName 'export' 'GUID2'
+    Remove-DataType 'lotsa'
+    Remove-DataType 'mymoney'
+    Remove-DataType 'CUI'
+    Remove-DataType 'SUI'
+    Remove-Datatype 'GUID'
     Remove-Schema 'export'
 }
 '@
     WhenExporting
     ThenMigration -HasContent 'Add-DataType -Name ''GUID'' -From ''uniqueidentifier'''
+    ThenMigration -HasContent 'Add-DataType -Name ''SUI'' -From ''int'''
+    ThenMigration -HasContent 'Add-DataType -Name ''CUI'' -From ''char(8)'''
+    ThenMigration -HasContent 'Add-DataType -Name ''mymoney'' -From ''decimal(20,2) not null'''
+    ThenMigration -HasContent 'Add-DataType -Name ''lotsa'' -From ''varchar(max)'''
     ThenMigration -HasContent 'Add-DataType -SchemaName ''export'' -Name ''GUID2'' -From ''uniqueidentifier'''
     ThenMigration -HasContent 'Add-Schema -Name ''export'
     ThenMigration -HasContent 'Remove-DataType -Name ''GUID'''
