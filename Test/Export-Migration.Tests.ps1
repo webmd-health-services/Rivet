@@ -68,16 +68,21 @@ function WhenExporting
     [CmdletBinding()]
     param(
         [string[]]
-        $Include
+        $Include,
+
+        [Switch]
+        $SkipVerification
     )
 
     Start-RivetTest
     try
     {
+        $migrationPath = ''
         if( $migration )
         {
-            $migration | New-TestMigration -Name 'ExportMigration'
+            $migrationPath = $migration | New-TestMigration -Name 'ExportMigration'
         }
+
         Invoke-RTRivet -Push
         $optionalParams = @{}
         if( $PSBoundParameters.ContainsKey('Include') )
@@ -89,11 +94,24 @@ function WhenExporting
 
         $script:migration = Export-Migration -SqlServerName $RTServer -Database $RTDatabaseName @optionalParams
         Write-Debug -Message ($migration -join [Environment]::NewLine)
+
+        if( -not $SkipVerification )
+        {
+            It ('should export a runnable migration') {
+                # Now, check that the migration is runnable
+                Invoke-RTRivet -Pop
+
+                $migration | Set-Content -Path $migrationPath
+                Invoke-RTRivet -Push -ErrorAction Stop
+                Invoke-RTRivet -Pop -ErrorAction Stop
+            }
+        }
     }
     finally
     {
         Stop-RivetTest
     }
+
 }
 
 Describe 'Export-Migration.when exporting a table' {
@@ -134,7 +152,7 @@ function Pop-Migration
     Remove-DataType 'CUI'
 }
 '@
-    WhenExporting 'dbo.Migrations'
+    WhenExporting
     ThenMigration -Not -HasContent 'Add-Schema -Name ''dbo'''
     ThenMigration -HasContent @'
     Add-Table -Name 'Migrations' -Description 'some table''s description' -Column {
@@ -238,7 +256,7 @@ function Pop-Migration
     Remove-Table 'Fubar'
 }
 '@
-    WhenExporting 'dbo.DF_Fubar_*'
+    WhenExporting 'dbo.DF_Fubar_*' -SkipVerification
     ThenMigration -HasContent 'Add-DefaultConstraint -TableName ''Fubar'' -ColumnName ''ID'' -Name ''DF_Fubar_ID'' -Expression ''((1))'''
     ThenMigration -HasContent 'Add-DefaultConstraint -TableName ''Fubar'' -ColumnName ''YN'' -Name ''DF_Fubar_YN'' -Expression ''(''''N'''')'''
     ThenMigration -HasContent 'Remove-DefaultConstraint -TableName ''Fubar'' -Name ''DF_Fubar_ID'''
@@ -260,7 +278,7 @@ function Pop-Migration
     Remove-Table 'Fubar'
 }
 '@
-    WhenExporting 'dbo.PK_Fubar'
+    WhenExporting 'dbo.PK_Fubar' -SkipVerification
     ThenMigration -HasContent 'Add-PrimaryKey -TableName ''Fubar'' -ColumnName ''ID'' -Name ''PK_Fubar'''
     ThenMigration -HasContent 'Remove-PrimaryKey -TableName ''Fubar'' -Name ''PK_Fubar'''
 }
@@ -283,7 +301,7 @@ function Pop-Migration
     Remove-Table 'CheckConstraint'
 }
 '@
-    WhenExporting 'dbo.CK_CheckConstraint_*'
+    WhenExporting 'dbo.CK_CheckConstraint_*' -SkipVerification
     ThenMigration -HasContent 'Add-CheckConstraint -TableName ''CheckConstraint'' -Name ''CK_CheckConstraint_ID'' -Expression ''([ID]>(0) AND [ID]<(10))'''
     ThenMigration -HasContent 'Add-CheckConstraint -TableName ''CheckConstraint'' -Name ''CK_CheckConstraint_YN'' -Expression ''([YN]=''''Y'''' OR [YN]=''''N'''')'
     ThenMigration -HasContent 'Remove-CheckConstraint -TableName ''CheckConstraint'' -Name ''CK_CheckConstraint_ID'''
@@ -440,7 +458,7 @@ create function CallSomething () returns tinyint as begin return 1 end
 
 Describe 'Export-Migration.when exporting entire database' {
     Init
-    WhenExporting
+    WhenExporting -SkipVerification
     ThenMigration -Not -HasContent 'rivet'
     ThenNoErrors
 }
@@ -559,7 +577,7 @@ function Pop-Migration
     Remove-Schema 'export'
 }
 '@
-    WhenExporting '*.*_Indexes*'
+    WhenExporting '*.*_Indexes*' -SkipVerification
     ThenMigration -HasContent 'Add-Index -TableName ''Indexes'' -ColumnName ''ID'' -Name ''IX_Indexes_ID'''
     ThenMigration -HasContent 'Add-Index -TableName ''Indexes'' -Columnname ''ID2'',''ID3'' -Name ''IX_Indexes_ID2_ID3'''
     ThenMigration -HasContent 'Add-Index -TableName ''Indexes'' -ColumnName ''ID4'' -Name ''UIX_Indexes_ID4'' -Unique'
@@ -603,7 +621,7 @@ function Pop-Migration
     Remove-Schema 'export'
 }
 '@
-    WhenExporting '*.*_ID*'
+    WhenExporting '*.*_ID*' -SkipVerification
     ThenMigration -Not -HasContent 'Add-Table'
     ThenMigration -HasContent 'Add-Schema -Name ''export'''
     ThenMigration -HasContent 'Add-UniqueKey -SchemaName ''export'' -TableName ''UK'' -ColumnName ''ID'',''ID2'' -Name ''AK_export_UK_ID_ID2'''
@@ -642,7 +660,7 @@ function Pop-Migration
     Remove-Table 'TriggerSource'
 }
 '@
-    WhenExporting '*.TableTrigger*'
+    WhenExporting '*.TableTrigger*' -SkipVerification
     ThenMigration -Not -HasContent 'Add-Table'
     ThenMigration -Not -HasContent 'TableTriggerDB'
     ThenMigration -HasContent 'Add-Trigger -Name ''TableTrigger'' -Definition @''
@@ -738,7 +756,7 @@ function Pop-Migration
     Remove-Schema 'export'
 }
 '@
-    WhenExporting '*.FK_*'
+    WhenExporting '*.FK_*' -SkipVerification
     ThenMigration -Not -HasContent 'Add-Table'
     ThenMigration -Not -HasContent 'Add-PrimaryKey'
     ThenMigration -HasContent 'Add-ForeignKey -TableName ''Table'' -ColumnName ''Table_ID'',''Table_ID2'' -References ''Table2'' -ReferencedColumn ''Table2_ID'',''Table2_ID2'' -Name ''FK_Table_Table2'''

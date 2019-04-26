@@ -808,6 +808,11 @@ where
             return
         }
 
+        if( $exportedObjects.ContainsKey($Object.object_id) )
+        {
+            return
+        }
+
         $schema = ConvertTo-SchemaParameter -SchemaName $object.schema_name
         $query = 'select definition from sys.sql_modules where object_id = @trigger_id'
         $trigger = Invoke-Query -Query $query -Parameter @{ '@trigger_id' = $Object.object_id } -AsScalar
@@ -825,6 +830,7 @@ where
         {
             Push-PopOperation ('Remove-Trigger{0} -Name ''{1}''' -f $schema,$Object.name)
         }
+        $exportedObjects[$Object.object_id] = $true
     }
 
     function Export-UniqueKey
