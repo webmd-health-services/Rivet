@@ -405,7 +405,6 @@ where
                 }
 
                 Export-Index -Object $object -SkipPop:$SkipPop
-                ''
             }
             return
         }
@@ -700,7 +699,6 @@ where
         if( $schema )
         {
             '    Add-Schema -Name ''{0}'' -Owner ''{1}''' -f $schema.name,$schema.owner
-            ''
             $exportedSchemas[$schema.name] = $true
             Push-PopOperation ('Remove-Schema -Name ''{0}''' -f $schema.name)
         }
@@ -922,7 +920,6 @@ where
         Export-Index -TableID $Object.object_id -SkipPop
         Export-UniqueKey -TableID $Object.object_id -SkipPop
         Export-Trigger -TableID $Object.object_id -SkipPop
-        ''
     }
 
     function Export-Trigger
