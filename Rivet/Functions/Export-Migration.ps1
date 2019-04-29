@@ -655,7 +655,7 @@ select
 	sys.types.name as type_name, 
 	sys.columns.name as column_name, 
 	sys.types.collation_name as type_collation_name, 
-	sys.columns.max_length as column_max_length, 
+	sys.columns.max_length as max_length, 
 	sys.extended_properties.value as description,
     sys.columns.is_identity,
     sys.identity_columns.increment_value,
@@ -690,15 +690,23 @@ where
         {
             $notNull = ''
             $parameters = & {
-                if( $column.type_collation_name )
+                $isBinaryVarColumn = $column.type_name -in @( 'varbinary' )
+                if( $column.type_collation_name -or $isBinaryVarColumn )
                 {
-                    $maxLength = $column.column_max_length
-                    if( $column.type_name -like 'n*' )
+                    $maxLength = $column.max_length
+                    if( $maxLength -eq -1 )
                     {
-                        $maxLength = $maxLength / 2
+                        '-Max'
                     }
-                    '-Size {0}' -f $maxLength
-                    if( $column.collation_name -ne $column.default_collation_name )
+                    else
+                    {
+                        if( $column.type_name -like 'n*' )
+                        {
+                            $maxLength = $maxLength / 2
+                        }
+                        '-Size {0}' -f $maxLength
+                    }
+                    if( $column.collation_name -ne $column.default_collation_name -and -not $isBinaryVarColumn )
                     {
                         '-Collation'
                         '''{0}''' -f $column.collation_name

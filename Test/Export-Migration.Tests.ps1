@@ -124,6 +124,7 @@ function Push-Migration
         int 'ID' -Identity
         bigint 'BigID' -NotNull -Description 'some bigint column''s description'
         nvarchar 'Name' -Size 241 -NotNull
+        varchar 'NameMax' -Max
         datetime2 'AtUtc' -NotNull
         decimal 'Dec' -Precision 4 -Scale 2
         float 'Fl' -Precision 5
@@ -137,6 +138,10 @@ function Push-Migration
         New-Column -DataType 'sysname' -Name 'sysnamecolumn' -NotNull 
         New-Column -DataType 'sql_variant' -Name 'sql_variantcolumn' -Sparse
         New-Column -DataType 'CUI' -Name 'CUI' -NotNull
+        varbinary 'VarBinDefault' -Size 1
+        varbinary 'VarBinLargest' -Size 8000
+        varbinary 'VarBinCustom' -Size 101
+        varbinary 'VarBinMax' -Max
     }
     Add-PrimaryKey -TableName 'Migrations' -ColumnName 'ID'
     Add-DefaultConstraint -TableName 'Migrations' -ColumnName 'AtUtc' -Expression '(getutcdate())'
@@ -159,6 +164,7 @@ function Pop-Migration
         int 'ID' -Identity
         bigint 'BigID' -NotNull -Description 'some bigint column''s description'
         nvarchar 'Name' -Size 241 -NotNull
+        varchar 'NameMax' -Max
         datetime2 'AtUtc' -NotNull
         decimal 'Dec' -Precision 4 -Scale 2
         real 'Fl'
@@ -172,6 +178,10 @@ function Pop-Migration
         New-Column -DataType 'sysname' -Name 'sysnamecolumn' -NotNull
         New-Column -DataType 'sql_variant' -Name 'sql_variantcolumn' -Sparse
         New-Column -DataType 'CUI' -Name 'CUI' -NotNull
+        varbinary 'VarBinDefault' -Size 1
+        varbinary 'VarBinLargest' -Size 8000
+        varbinary 'VarBinCustom' -Size 101
+        varbinary 'VarBinMax' -Max
     }
 '@
     ThenMigration -HasContent @'
@@ -783,6 +793,34 @@ function Pop-Migration
     ThenMigration -Not -HasContent 'Add-PrimaryKey'
     ThenMigration -HasContent 'Add-ForeignKey -TableName ''Table'' -ColumnName ''Table_ID'',''Table_ID2'' -References ''Table2'' -ReferencedColumn ''Table2_ID'',''Table2_ID2'' -Name ''FK_Table_Table2'''
     ThenMigration -HasContent 'Add-ForeignKey -SchemaName ''export'' -TableName ''Table3'' -ColumnName ''Table3_ID'' -ReferencesSchema ''export'' -References ''Table4'' -ReferencedColumn ''Table4_ID'' -Name ''FK_export_Table3_export_Table4'' -OnDelete ''CASCADE'' -OnUpdate ''CASCADE'' -NotForReplication -NoCheck'
+}
+
+Describe 'Export-Migration.when exporting a table with a custom identity seed or increment' {
+    Init
+    GivenMigration @'
+function Push-Migration
+{
+    Add-Table -Name 'Seed' {
+        int 'ID' -Identity -Seed 101 -Increment 1
+    }
+    Add-Table -Name 'Increment' {
+        int 'ID2' -Identity -Seed 1 -Increment 101
+    }
+    Add-Table -Name 'Defaults' {
+        int 'ID3' -Identity -Seed 1 -Increment 1
+    }
+}
+function Pop-Migration
+{
+    Remove-Table -Name 'Defaults'
+    Remove-Table -Name 'Increment'
+    Remove-Table -Name 'Seed'
+}
+'@
+    WhenExporting
+    ThenMigration -HasContent 'int ''ID'' -Identity -Seed 101 -Increment 1'
+    ThenMigration -HasContent 'int ''ID2'' -Identity -Seed 1 -Increment 101'
+    ThenMigration -HasContent 'int ''ID3'' -Identity'
 }
 
 Describe 'Export-Migration.when exporting a table with a custom identity seed or increment' {
