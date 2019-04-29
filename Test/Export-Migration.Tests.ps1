@@ -142,6 +142,8 @@ function Push-Migration
         varbinary 'VarBinLargest' -Size 8000
         varbinary 'VarBinCustom' -Size 101
         varbinary 'VarBinMax' -Max
+        binary 'BinOne' -Size 1
+        binary 'BinSixteen' -Size 16
     }
     Add-PrimaryKey -TableName 'Migrations' -ColumnName 'ID'
     Add-DefaultConstraint -TableName 'Migrations' -ColumnName 'AtUtc' -Expression '(getutcdate())'
@@ -182,6 +184,8 @@ function Pop-Migration
         varbinary 'VarBinLargest' -Size 8000
         varbinary 'VarBinCustom' -Size 101
         varbinary 'VarBinMax' -Max
+        binary 'BinOne' -Size 1
+        binary 'BinSixteen' -Size 16
     }
 '@
     ThenMigration -HasContent @'

@@ -190,7 +190,7 @@ where
         {
             $notNull = ''
             $parameters = & {
-                $isBinaryVarColumn = $column.type_name -in @( 'varbinary' )
+                $isBinaryVarColumn = $column.type_name -in @( 'varbinary', 'binary' )
                 if( $column.type_collation_name -or $isBinaryVarColumn )
                 {
                     $maxLength = $column.max_length
