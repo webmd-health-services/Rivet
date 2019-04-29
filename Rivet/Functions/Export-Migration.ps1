@@ -140,6 +140,141 @@ where
         }
     }
 
+    function Export-Column
+    {
+        param(
+            [Parameter(Mandatory,ParameterSetName='ForTable')]
+            [int]
+            $TableID
+        )
+
+        $query = '
+select 
+    sys.columns.object_id,
+    sys.columns.is_nullable,
+	sys.types.name as type_name, 
+	sys.columns.name as column_name, 
+	sys.types.collation_name as type_collation_name, 
+	sys.columns.max_length as max_length, 
+	sys.extended_properties.value as description,
+    sys.columns.is_identity,
+    sys.identity_columns.increment_value,
+    sys.identity_columns.seed_value,
+    sys.columns.precision,
+    sys.columns.scale,
+    sys.types.precision as default_precision,
+    sys.types.scale as default_scale,
+    sys.columns.is_sparse,
+    sys.columns.collation_name,
+    serverproperty(''collation'') as default_collation_name,
+    sys.columns.is_rowguidcol,
+	sys.types.system_type_id,
+	sys.types.user_type_id
+from 
+	sys.columns 
+		inner join 
+	sys.types 
+			on columns.user_type_id = sys.types.user_type_id  
+		left join
+	sys.extended_properties
+			on sys.columns.object_id = sys.extended_properties.major_id
+			and sys.columns.column_id = sys.extended_properties.minor_id
+			and sys.extended_properties.name = ''MS_Description''
+        left join
+    sys.identity_columns
+            on sys.columns.object_id = sys.identity_columns.object_id
+            and sys.columns.column_id = sys.identity_columns.column_id
+where 
+    sys.columns.object_id = @object_id'
+        foreach( $column in (Invoke-Query -Query $query -Parameter @{ '@object_id' = $TableID }) )
+        {
+            $notNull = ''
+            $parameters = & {
+                $isBinaryVarColumn = $column.type_name -in @( 'varbinary' )
+                if( $column.type_collation_name -or $isBinaryVarColumn )
+                {
+                    $maxLength = $column.max_length
+                    if( $maxLength -eq -1 )
+                    {
+                        '-Max'
+                    }
+                    else
+                    {
+                        if( $column.type_name -like 'n*' )
+                        {
+                            $maxLength = $maxLength / 2
+                        }
+                        '-Size {0}' -f $maxLength
+                    }
+                    if( $column.collation_name -ne $column.default_collation_name -and -not $isBinaryVarColumn )
+                    {
+                        '-Collation'
+                        '''{0}''' -f $column.collation_name
+                    }
+                }
+                if( $column.is_rowguidcol )
+                {
+                    '-RowGuidCol'
+                }
+                if( $column.precision -ne $column.default_precision )
+                {
+                    '-Precision'
+                    $column.precision
+                }
+                if( $column.scale -ne $column.default_scale )
+                {
+                    '-Scale'
+                    $column.scale
+                }
+                if( $column.is_identity )
+                {
+                    '-Identity'
+                    if( $column.seed_value -ne 1 -or $column.increment_value -ne 1 )
+                    {
+                        '-Seed'
+                        $column.seed_value
+                        '-Increment'
+                        $column.increment_value
+                    }
+                }
+                if( -not $column.is_nullable )
+                {
+                    if( -not $column.is_identity )
+                    {
+                        '-NotNull'
+                    }
+                }
+                if( $column.is_sparse )
+                {
+                    '-Sparse'
+                }
+                if( $column.description )
+                {
+                    '-Description ''{0}''' -f ($column.description -replace '''','''''')
+                }
+            }
+            if( $rivetColumnTypes -contains $column.type_name )
+            {
+                if( $parameters )
+                {
+                    $parameters = $parameters -join ' '
+                    $parameters = ' {0}' -f $parameters
+                }
+                '        {0} ''{1}''{2}' -f $column.type_name,$column.column_name,$parameters
+            }
+            else
+            {
+                $parameters = $parameters | Where-Object { $_ -match ('^-(Sparse|NotNull|Description)') }
+                if( $parameters )
+                {
+                    $parameters = $parameters -join ' '
+                    $parameters = ' {0}' -f $parameters
+                }
+                '        New-Column -DataType ''{0}'' -Name ''{1}''{2}' -f $column.type_name,$column.column_name,$parameters
+            }
+        }
+    }
+
     function Export-DataType
     {
         [CmdletBinding(DefaultParameterSetName='All')]
@@ -164,16 +299,20 @@ select
     systype.max_length as from_max_length,
     systype.precision as from_precision,
     systype.scale as from_scale,
-    systype.collation_name as from_collation_name
+    systype.collation_name as from_collation_name,
+    sys.types.is_table_type,
+    sys.table_types.type_table_object_id
 from 
     sys.types 
-        join 
+        left join 
     sys.types systype 
             on sys.types.system_type_id = systype.system_type_id 
             and sys.types.system_type_id = systype.user_type_id 
+        left join
+    sys.table_types
+            on sys.types.user_type_id = sys.table_types.user_type_id
 where 
-    sys.types.is_user_defined = 1 and 
-    sys.types.is_table_type = 0'
+    sys.types.is_user_defined = 1'
             foreach( $object in (Invoke-Query -Query $query) )
             {
                 if( (Test-SkipObject -SchemaName $object.schema_name -Name $object.name) )
@@ -193,34 +332,43 @@ where
         
         Export-Schema -Name $Object.schema_name
 
-        $typeDef = $object.from_name
-        if( $object.from_collation_name )
+        $schema = ConvertTo-SchemaParameter -SchemaName $Object.schema_name
+        if( $Object.is_table_type )
         {
-            if( $object.max_length -ne $object.from_max_length )
-            {
-                $maxLength = $object.max_length
-                if( $maxLength -eq -1 )
-                {
-                    $maxLength = 'max'
-                }
-                $typeDef = '{0}({1})' -f $typeDef,$maxLength
-            }
+            '    Add-DataType{0} -Name ''{1}'' -AsTable {{' -f $schema,$Object.name
+            Export-Column -TableID $Object.type_table_object_id
+            '    }'
         }
         else
         {
-            if( ($object.precision -ne $object.from_precision) -or ($object.scale -ne $object.from_scale) )
+            $typeDef = $object.from_name
+            if( $object.from_collation_name )
             {
-                $typeDef = '{0}({1},{2})' -f $typeDef,$object.precision,$object.scale
+                if( $object.max_length -ne $object.from_max_length )
+                {
+                    $maxLength = $object.max_length
+                    if( $maxLength -eq -1 )
+                    {
+                        $maxLength = 'max'
+                    }
+                    $typeDef = '{0}({1})' -f $typeDef,$maxLength
+                }
             }
-        }
+            else
+            {
+                if( ($object.precision -ne $object.from_precision) -or ($object.scale -ne $object.from_scale) )
+                {
+                    $typeDef = '{0}({1},{2})' -f $typeDef,$object.precision,$object.scale
+                }
+            }
 
-        if( -not $object.is_nullable )
-        {
-            $typeDef = '{0} not null' -f $typeDef
-        }
+            if( -not $object.is_nullable )
+            {
+                $typeDef = '{0} not null' -f $typeDef
+            }
 
-        $schema = ConvertTo-SchemaParameter -SchemaName $Object.schema_name
-        '    Add-DataType{0} -Name ''{1}'' -From ''{2}''' -F $schema,$Object.name,$typeDef
+            '    Add-DataType{0} -Name ''{1}'' -From ''{2}''' -F $schema,$Object.name,$typeDef
+        }
         $pops.Push(('Remove-DataType{0} -Name ''{1}''' -f $schema,$Object.name))
         $exportedtypes[$object.name] = $true
     }
@@ -785,133 +933,7 @@ where
         }
 
         '    Add-Table{0} -Name ''{1}''{2} -Column {{' -f $schema,$object.object_name,$description
-
-        $query = '
-select 
-    sys.columns.object_id,
-    sys.columns.is_nullable,
-	sys.types.name as type_name, 
-	sys.columns.name as column_name, 
-	sys.types.collation_name as type_collation_name, 
-	sys.columns.max_length as max_length, 
-	sys.extended_properties.value as description,
-    sys.columns.is_identity,
-    sys.identity_columns.increment_value,
-    sys.identity_columns.seed_value,
-    sys.columns.precision,
-    sys.columns.scale,
-    sys.types.precision as default_precision,
-    sys.types.scale as default_scale,
-    sys.columns.is_sparse,
-    sys.columns.collation_name,
-    serverproperty(''collation'') as default_collation_name,
-    sys.columns.is_rowguidcol,
-	sys.types.system_type_id,
-	sys.types.user_type_id
-from 
-	sys.columns 
-		inner join 
-	sys.types 
-			on columns.user_type_id = sys.types.user_type_id  
-		left join
-	sys.extended_properties
-			on sys.columns.object_id = sys.extended_properties.major_id
-			and sys.columns.column_id = sys.extended_properties.minor_id
-			and sys.extended_properties.name = ''MS_Description''
-        left join
-    sys.identity_columns
-            on sys.columns.object_id = sys.identity_columns.object_id
-            and sys.columns.column_id = sys.identity_columns.column_id
-where 
-    sys.columns.object_id = @object_id'
-        foreach( $column in (Invoke-Query -Query $query -Parameter @{ '@object_id' = $object.object_id }) )
-        {
-            $notNull = ''
-            $parameters = & {
-                $isBinaryVarColumn = $column.type_name -in @( 'varbinary' )
-                if( $column.type_collation_name -or $isBinaryVarColumn )
-                {
-                    $maxLength = $column.max_length
-                    if( $maxLength -eq -1 )
-                    {
-                        '-Max'
-                    }
-                    else
-                    {
-                        if( $column.type_name -like 'n*' )
-                        {
-                            $maxLength = $maxLength / 2
-                        }
-                        '-Size {0}' -f $maxLength
-                    }
-                    if( $column.collation_name -ne $column.default_collation_name -and -not $isBinaryVarColumn )
-                    {
-                        '-Collation'
-                        '''{0}''' -f $column.collation_name
-                    }
-                }
-                if( $column.is_rowguidcol )
-                {
-                    '-RowGuidCol'
-                }
-                if( $column.precision -ne $column.default_precision )
-                {
-                    '-Precision'
-                    $column.precision
-                }
-                if( $column.scale -ne $column.default_scale )
-                {
-                    '-Scale'
-                    $column.scale
-                }
-                if( $column.is_identity )
-                {
-                    '-Identity'
-                    if( $column.seed_value -ne 1 -or $column.increment_value -ne 1 )
-                    {
-                        '-Seed'
-                        $column.seed_value
-                        '-Increment'
-                        $column.increment_value
-                    }
-                }
-                if( -not $column.is_nullable )
-                {
-                    if( -not $column.is_identity )
-                    {
-                        '-NotNull'
-                    }
-                }
-                if( $column.is_sparse )
-                {
-                    '-Sparse'
-                }
-                if( $column.description )
-                {
-                    '-Description ''{0}''' -f ($column.description -replace '''','''''')
-                }
-            }
-            if( $rivetColumnTypes -contains $column.type_name )
-            {
-                if( $parameters )
-                {
-                    $parameters = $parameters -join ' '
-                    $parameters = ' {0}' -f $parameters
-                }
-                '        {0} ''{1}''{2}' -f $column.type_name,$column.column_name,$parameters
-            }
-            else
-            {
-                $parameters = $parameters | Where-Object { $_ -match ('^-(Sparse|NotNull|Description)') }
-                if( $parameters )
-                {
-                    $parameters = $parameters -join ' '
-                    $parameters = ' {0}' -f $parameters
-                }
-                '        New-Column -DataType ''{0}'' -Name ''{1}''{2}' -f $column.type_name,$column.column_name,$parameters
-            }
-        }
-
+        Export-Column -TableID $object.object_id
         '    }'
 
         Export-PrimaryKey -TableID $Object.object_id -SkipPop

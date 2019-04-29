@@ -507,9 +507,21 @@ function Push-Migration
     Add-DataType 'mymoney' 'decimal(20,2) not null'
     Add-DataType 'lotsa' 'varchar(max)'
     Add-DataType -SchemaName 'export' 'GUID2' 'uniqueidentifier'
+    Add-DataType 'TableType' -AsTable {
+        uniqueidentifier 'uniqueID' -NotNull
+        smallint 'appID' -NotNull
+        int 'statusID' -NotNull
+    }
+    Add-DataType -SchemaName 'export' 'TableType2' -AsTable {
+        uniqueidentifier 'uniqueID2'
+        smallint 'appID2'
+        int 'statusID2'
+    }
 }
 function Pop-Migration
 {
+    Remove-DataType -SchemaName 'export' 'TableType2'
+    Remove-DataType 'TableType'
     Remove-DataType -SchemaName 'export' 'GUID2'
     Remove-DataType 'lotsa'
     Remove-DataType 'mymoney'
@@ -530,6 +542,20 @@ function Pop-Migration
     ThenMigration -HasContent 'Remove-DataType -Name ''GUID'''
     ThenMigration -HasContent 'Remove-DataType -SchemaName ''export'' -Name ''GUID2'''
     ThenMigration -HasContent 'Remove-Schema -Name ''export'''
+    ThenMigration -HasContent @'
+    Add-DataType -Name 'TableType' -AsTable {
+        uniqueidentifier 'uniqueID' -NotNull
+        smallint 'appID' -NotNull
+        int 'statusID' -NotNull
+    }
+'@
+    ThenMigration -HasContent @'
+    Add-DataType -SchemaName 'export' -Name 'TableType2' -AsTable {
+        uniqueidentifier 'uniqueID2'
+        smallint 'appID2'
+        int 'statusID2'
+    }
+'@
 }
 
 Describe 'Export-Migration.when exporting filtered data type' {
