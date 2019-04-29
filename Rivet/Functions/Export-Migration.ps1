@@ -470,6 +470,146 @@ where
         $exportedIndexes[$indexKey] = $true
     }
 
+    function Export-Object
+    {
+        param(
+            [string[]]
+            [ValidatePattern('^[A-Z]+$')]
+            $Type
+        )
+
+        $parameter = @{}
+        $typeClause = ''
+        if( $Type )
+        {
+            $typeClause = ' and sys.objects.type in (''{0}'')' -f ($Type -join ''',''')
+        }
+
+        $query = '
+        select 
+            sys.schemas.name as schema_name, 
+            sys.objects.name as object_name, 
+            sys.objects.name as name,
+            sys.schemas.name + ''.'' + sys.objects.name as full_name, 
+            sys.extended_properties.value as description,
+            parent_objects.name as parent_object_name,
+            sys.objects.object_id as object_id,
+            sys.objects.type,
+            sys.objects.type_desc,
+            sys.objects.parent_object_id
+        from 
+            sys.objects 
+                join 
+            sys.schemas 
+                    on sys.objects.schema_id = sys.schemas.schema_id 
+                left join
+            sys.extended_properties
+                    on sys.objects.object_id = sys.extended_properties.major_id 
+                    and sys.extended_properties.minor_id = 0
+                    and sys.extended_properties.name = ''MS_Description''
+                left join
+            sys.objects parent_objects
+                on sys.objects.parent_object_id = parent_objects.object_id
+        where 
+            sys.objects.is_ms_shipped = 0{0}' -f $typeClause
+        foreach( $object in (Invoke-Query -Query $query -Parameter $parameter) )
+        {
+            if( $exportedObjects.ContainsKey($object.object_id) )
+            {
+                Write-Debug ('Skipping   ALREADY EXPORTED  {0}' -f $object.full_name)
+                continue
+            }
+
+            if( (Test-SkipObject -SchemaName $object.schema_name -Name $object.object_name) )
+            {
+                continue
+            }
+
+            if( $object.schema_name -eq 'rivet' )
+            {
+                continue
+            }
+
+            Export-Schema -Name $object.schema_name
+
+            Write-Verbose ('Exporting  {0}' -f $object.full_name)
+            switch ($object.type_desc)
+            {
+                'CHECK_CONSTRAINT'
+                {
+                    Export-CheckConstraint -Object $object
+                    break
+                }
+                'DEFAULT_CONSTRAINT'
+                {
+                    Export-DefaultConstraint -Object $object
+                    break
+                }
+                'FOREIGN_KEY_CONSTRAINT'
+                {
+                    Export-ForeignKey -Object $object
+                    break
+                }
+                'PRIMARY_KEY_CONSTRAINT'
+                {
+                    Export-PrimaryKey -Object $object
+                    break
+                }
+                'SQL_INLINE_TABLE_VALUED_FUNCTION'
+                {
+                    Export-UserDefinedFunction -Object $object
+                    break
+                }
+                'SQL_SCALAR_FUNCTION'
+                {
+                    Export-UserDefinedFunction -Object $object
+                    break
+                }
+                'SQL_STORED_PROCEDURE'
+                {
+                    Export-StoredProcedure -Object $object
+                    break
+                }
+                'SQL_TABLE_VALUED_FUNCTION'
+                {
+                    Export-UserDefinedFunction -Object $object
+                    break
+                }
+                'SQL_TRIGGER'
+                {
+                    Export-Trigger -Object $object
+                    break
+                }
+                'SYNONYM'
+                {
+                    Export-Synonym -Object $object
+                    break
+                }
+                'UNIQUE_CONSTRAINT'
+                {
+                    Export-UniqueKey -Object $object
+                    break
+                }
+                'USER_TABLE'
+                {
+                    Export-Table -Object $object
+                    break
+                }
+                'VIEW'
+                {
+                    Export-View -Object $object
+                    break
+                }
+
+                default
+                {
+                    Write-Error -Message ('Unable to export object "{0}": unsupported object type "{1}".' -f $object.full_name,$object.type_desc)
+                }
+            }
+            $exportedObjects[$object.object_id] = $true
+        }
+    }
+
     function Export-PrimaryKey
     {
         param(
@@ -782,6 +922,7 @@ where
         Export-Index -TableID $Object.object_id -SkipPop
         Export-UniqueKey -TableID $Object.object_id -SkipPop
         Export-Trigger -TableID $Object.object_id -SkipPop
+        ''
     }
 
     function Export-Trigger
@@ -1022,134 +1163,11 @@ where
     {
         'function Push-Migration'
         '{'
-
             Export-DataType
-
-            $query = '
-            select 
-                sys.schemas.name as schema_name, 
-                sys.objects.name as object_name, 
-                sys.objects.name as name,
-                sys.schemas.name + ''.'' + sys.objects.name as full_name, 
-                sys.extended_properties.value as description,
-                parent_objects.name as parent_object_name,
-                sys.objects.object_id as object_id,
-                sys.objects.type,
-                sys.objects.type_desc,
-                sys.objects.parent_object_id
-            from 
-                sys.objects 
-                    join 
-                sys.schemas 
-                        on sys.objects.schema_id = sys.schemas.schema_id 
-                    left join
-                sys.extended_properties
-                        on sys.objects.object_id = sys.extended_properties.major_id 
-                        and sys.extended_properties.minor_id = 0
-                        and sys.extended_properties.name = ''MS_Description''
-                    left join
-                sys.objects parent_objects
-                    on sys.objects.parent_object_id = parent_objects.object_id
-            where 
-                sys.objects.is_ms_shipped = 0'
-            foreach( $object in (Invoke-Query -Query $query) )
-            {
-                if( $exportedObjects.ContainsKey($object.object_id) )
-                {
-                    Write-Debug ('Skipping   ALREADY EXPORTED  {0}' -f $object.full_name)
-                    continue
-                }
-
-                if( (Test-SkipObject -SchemaName $object.schema_name -Name $object.object_name) )
-                {
-                    continue
-                }
-
-                if( $object.schema_name -eq 'rivet' )
-                {
-                    continue
-                }
-
-                Export-Schema -Name $object.schema_name
-
-                Write-Verbose ('Exporting  {0}' -f $object.full_name)
-                switch ($object.type_desc)
-                {
-                    'CHECK_CONSTRAINT'
-                    {
-                        Export-CheckConstraint -Object $object
-                        break
-                    }
-                    'DEFAULT_CONSTRAINT'
-                    {
-                        Export-DefaultConstraint -Object $object
-                        break
-                    }
-                    'FOREIGN_KEY_CONSTRAINT'
-                    {
-                        Export-ForeignKey -Object $object
-                        break
-                    }
-                    'PRIMARY_KEY_CONSTRAINT'
-                    {
-                        Export-PrimaryKey -Object $object
-                        break
-                    }
-                    'SQL_INLINE_TABLE_VALUED_FUNCTION'
-                    {
-                        Export-UserDefinedFunction -Object $object
-                        break
-                    }
-                    'SQL_SCALAR_FUNCTION'
-                    {
-                        Export-UserDefinedFunction -Object $object
-                        break
-                    }
-                    'SQL_STORED_PROCEDURE'
-                    {
-                        Export-StoredProcedure -Object $object
-                        break
-                    }
-                    'SQL_TABLE_VALUED_FUNCTION'
-                    {
-                        Export-UserDefinedFunction -Object $object
-                        break
-                    }
-                    'SQL_TRIGGER'
-                    {
-                        Export-Trigger -Object $object
-                        break
-                    }
-                    'SYNONYM'
-                    {
-                        Export-Synonym -Object $object
-                        break
-                    }
-                    'UNIQUE_CONSTRAINT'
-                    {
-                        Export-UniqueKey -Object $object
-                        break
-                    }
-                    'USER_TABLE'
-                    {
-                        Export-Table -Object $object
-                        break
-                    }
-                    'VIEW'
-                    {
-                        Export-View -Object $object
-                        break
-                    }
-
-                    default
-                    {
-                        Write-Error -Message ('Unable to export object "{0}": unsupported object type "{1}".' -f $object.full_name,$object.type_desc)
-                    }
-                }
-                $exportedObjects[$object.object_id] = $true
-                ''
-            }
-
+            # Export tables first.
+            Export-Object -Type 'U'
+            # Now export everything else
+            Export-Object
             Export-Index
         '}'
         ''
