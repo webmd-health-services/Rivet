@@ -439,7 +439,7 @@ function Push-Migration
 {
     Add-UserDefinedFunction -Name 'CallSomething' -Definition '() returns tinyint as begin return 1 end'
     Add-UserDefinedFunction -Name 'CallInlineTable' -Definition '() returns table as return( select 1 as name )'
-    Add-UserDefinedFunction -Name 'CallTable' -Definition '() returns @Table TABLE ( ID int ) as begin insert into @Table select 1 return end'
+    Add-UserDefinedFunction -Name 'CallTable' -Definition '() returns @Table TABLE ( ID int primary key ) as begin insert into @Table select 1 return end'
 }
 
 function Pop-Migration
@@ -449,7 +449,7 @@ function Pop-Migration
     Remove-UserDefinedFunction -Name 'CallSomething'
 }
 '@
-    WhenExporting 'dbo.Call*'
+    WhenExporting 'dbo.Call*','*.PK*'
     ThenMigration -HasContent @"
     Add-UserDefinedFunction -Name 'CallSomething' -Definition @'
 () returns tinyint as begin return 1 end
@@ -462,12 +462,13 @@ function Pop-Migration
 "@
     ThenMigration -HasContent @"
     Add-UserDefinedFunction -Name 'CallTable' -Definition @'
-() returns @Table TABLE ( ID int ) as begin insert into @Table select 1 return end
+() returns @Table TABLE ( ID int primary key ) as begin insert into @Table select 1 return end
 '@
 "@
     ThenMigration -HasContent 'Remove-UserDefinedFunction -Name ''CallSomething'''
     ThenMigration -HasContent 'Remove-UserDefinedFunction -Name ''CallInlineTable'''
     ThenMigration -HasContent 'Remove-UserDefinedFunction -Name ''CallTable'''
+    ThenMigration -Not -HasContent 'Add-PrimaryKey'
 }
 
 Describe 'Export-Migration.when exporting a function not added with Rivet' {
