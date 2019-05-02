@@ -148,6 +148,7 @@ function Push-Migration
     Add-PrimaryKey -TableName 'Migrations' -ColumnName 'ID'
     Add-DefaultConstraint -TableName 'Migrations' -ColumnName 'AtUtc' -Expression '(getutcdate())'
     Add-CheckConstraint -TableName 'Migrations' -Name 'CK_Migrations_Name' -Expression '([Name] = ''Fubar'')'
+    Add-CheckConstraint -TableName 'Migrations' -Name 'CK_Migrations_Name2' -Expression '([Name] = ''Snafu'')' -NoCheck
     Add-Index -TableName 'Migrations' -ColumnName 'BigID'
     Add-UniqueKey -TableName 'Migrations' -ColumnName 'Korean'
     Add-Trigger -Name 'MigrationsTrigger' -Definition 'ON [dbo].[Migrations] for insert as select 1'
@@ -197,11 +198,13 @@ function Pop-Migration
     ThenMigration -HasContent @'
     Add-CheckConstraint -TableName 'Migrations' -Name 'CK_Migrations_Name' -Expression '([Name]=''Fubar'')'
 '@
+    ThenMigration -HasContent 'Add-CheckConstraint -TableName ''Migrations'' -Name ''CK_Migrations_Name2'' -Expression ''([Name]=''''Snafu'''')'' -NoCheck'
     ThenMigration -HasContent 'Add-Index -TableName ''Migrations'' -ColumnName ''BigID'' -Name ''IX_Migrations_BigID'''
     ThenMigration -HasContent 'Add-UniqueKey -TableName ''Migrations'' -ColumnName ''Korean'' -Name ''AK_Migrations_Korean'''
     ThenMigration -HasContent 'Add-Trigger -Name ''MigrationsTrigger'' -Definition @''
 ON [dbo].[Migrations] for insert as select 1
 ''@'
+    
     ThenMigration -HasContent 'Remove-Table -Name ''Migrations'''
     ThenMigration -Not -HasContent 'Remove-Schema'
     ThenMigration -Not -HasContent 'Remove-PrimaryKey'
@@ -210,6 +213,38 @@ ON [dbo].[Migrations] for insert as select 1
     ThenMigration -Not -HasContent 'Remove-Index'
     ThenMigration -Not -HasContent 'Remove-UniqueKey'
     ThenMigration -Not -HasContent 'Remove-Trigger'
+}
+
+Describe 'Export-Migration.when identity column is not for replication' {
+    Init
+    GivenMigration @'
+function Push-Migration
+{
+    Add-Table -Name 'Replicated' -Column {
+        int 'ID' -Identity
+    }
+    Add-Table -Name 'NotReplicated' -Column {
+        int 'ID' -Identity -NotForReplication
+    }
+}
+
+function Pop-Migration
+{
+    Remove-Table 'Replicated'
+    Remove-Table 'NotReplicated'
+}
+'@
+    WhenExporting
+    ThenMigration -HasContent @'
+    Add-Table -Name 'Replicated' -Column {
+        int 'ID' -Identity
+    }
+'@
+    ThenMigration -HasContent @'
+    Add-Table -Name 'NotReplicated' -Column {
+        int 'ID' -Identity -NotForReplication
+    }
+'@
 }
 
 Describe 'Export-Migration.when exporting with wildcards' {
@@ -796,6 +831,8 @@ function Push-Migration
 
     Add-ForeignKey 'Table' -ColumnName 'Table_ID','Table_ID2' -References 'Table2' -ReferencedColumn 'Table2_ID','Table2_ID2'
 
+    Disable-Constraint -TableName 'Table' -Name 'FK_Table_Table2'
+
     Add-Schema 'export'
 
     Add-Table -SchemaName 'export' 'Table3' {
@@ -808,7 +845,7 @@ function Push-Migration
     }
     Add-PrimaryKey -SchemaName 'export' -TableName 'Table4' -ColumnName 'Table4_ID'
     
-    Add-ForeignKey -SchemaName 'export' -TableName 'Table3' -ColumnName 'Table3_ID' -ReferencesSchema 'export' -References 'Table4' -ReferencedColumn 'Table4_ID' -OnDelete 'CASCADE' -OnUpdate 'CASCADE' -NotForReplication -NoCheck
+    Add-ForeignKey -SchemaName 'export' -TableName 'Table3' -ColumnName 'Table3_ID' -ReferencesSchema 'export' -References 'Table4' -ReferencedColumn 'Table4_ID' -OnDelete 'CASCADE' -OnUpdate 'CASCADE' -NotForReplication
 }
 function Pop-Migration
 {
@@ -824,6 +861,8 @@ function Pop-Migration
     ThenMigration -Not -HasContent 'Add-PrimaryKey'
     ThenMigration -HasContent 'Add-ForeignKey -TableName ''Table'' -ColumnName ''Table_ID'',''Table_ID2'' -References ''Table2'' -ReferencedColumn ''Table2_ID'',''Table2_ID2'' -Name ''FK_Table_Table2'''
     ThenMigration -HasContent 'Add-ForeignKey -SchemaName ''export'' -TableName ''Table3'' -ColumnName ''Table3_ID'' -ReferencesSchema ''export'' -References ''Table4'' -ReferencedColumn ''Table4_ID'' -Name ''FK_export_Table3_export_Table4'' -OnDelete ''CASCADE'' -OnUpdate ''CASCADE'' -NotForReplication -NoCheck'
+    ThenMigration -HasContent 'Disable-Constraint -TableName ''Table'' -Name ''FK_Table_Table2'''
+    ThenMigration -Not -HasContent 'Disable-Constraint -SchemaName ''export'' -TableName ''Table3'''
 }
 
 Describe 'Export-Migration.when exporting a table with a custom identity seed or increment' {

@@ -31,7 +31,10 @@ function Export-Migration
         # The names of the objects to export. Must include the schema if exporting a specific object. Wildcards supported.
         #
         # The default behavior is to export all non-system objects.
-        $Include
+        $Include,
+
+        [Switch]
+        $NoProgress
     )
 
     Set-StrictMode -Version 'Latest'
@@ -181,8 +184,14 @@ function Export-Migration
 
         Write-ExportingMessage -Schema $constraint.schema_name -Name $constraint.name -Type CheckConstraint
 
+        $notChecked = ''
+        if( $constraint.is_not_trusted )
+        {
+            $notChecked = ' -NoCheck'
+        }
+
         $schema = ConvertTo-SchemaParameter -SchemaName $constraint.schema_name
-        '    Add-CheckConstraint{0} -TableName ''{1}'' -Name ''{2}'' -Expression ''{3}''' -f $schema,$constraint.table_name,$constraint.name,($constraint.definition -replace '''','''''')
+        '    Add-CheckConstraint{0} -TableName ''{1}'' -Name ''{2}'' -Expression ''{3}''{4}' -f $schema,$constraint.table_name,$constraint.name,($constraint.definition -replace '''',''''''),$notChecked
         if( -not $ForTable )
         {
             Push-PopOperation ('Remove-CheckConstraint{0} -TableName ''{1}'' -Name ''{2}''' -f $schema,$constraint.table_name,$constraint.name)
@@ -248,6 +257,10 @@ function Export-Migration
                         '-Increment'
                         $column.increment_value
                     }
+                }
+                if( $column.is_not_for_replication )
+                {
+                    '-NotForReplication'
                 }
                 if( -not $column.is_nullable )
                 {
@@ -442,18 +455,18 @@ function Export-Migration
         )
 
         # Make sure the key's table is exported.
-        Export-DependentObject -ObjectID $Object.object_id
+        Export-Object -ObjectID $Object.parent_object_id
 
         $schema = ConvertTo-SchemaParameter -SchemaName $Object.schema_name
         $foreignKey = $foreignKeysByID[$Object.object_id]
 
         # Make sure the key's referenced table is exported.
-        Export-DependentObject -ObjectID $foreignKey.referenced_object_id
+        Export-Object -ObjectID $foreignKey.referenced_object_id
 
         $referencesSchema = ConvertTo-SchemaParameter -SchemaName $foreignKey.references_schema_name -ParameterName 'ReferencesSchema'
         $referencesTableName = $foreignKey.references_table_name
 
-        $columns = $foreignKeyColumnsByObjectID[$Object.object_id]
+        $columns = $foreignKeyColumnsByObjectID[$Object.object_id] | Sort-Object -Property 'constraint_column_id'
 
         $columnNames = $columns | Select-Object -ExpandProperty 'name'
         $referencesColumnNames = $columns | Select-Object -ExpandProperty 'referenced_name'
@@ -485,7 +498,12 @@ function Export-Migration
         Write-ExportingMessage -Schema $Object.schema_name -Name $Object.name -Type ForeignKey
 
         '    Add-ForeignKey{0} -TableName ''{1}'' -ColumnName ''{2}''{3} -References ''{4}'' -ReferencedColumn ''{5}'' -Name ''{6}''{7}{8}{9}{10}' -f $schema,$Object.parent_object_name,($columnNames -join ''','''),$referencesSchema,$referencesTableName,($referencesColumnNames -join ''','''),$Object.name,$onDelete,$onUpdate,$notForReplication,$noCheck
-        Push-PopOperation ('Remove-ForeignKey{0} -TableName ''{1}'' -Name ''{2}''' -f $schema,$Object.parent_object_name,$object.name)
+        if( $foreignKey.is_disabled )
+        {
+            '    Disable-Constraint{0} -TableName ''{1}'' -Name ''{2}''' -f $schema,$Object.parent_object_name,$Object.name
+        }
+        Push-PopOperation ('Remove-ForeignKey{0} -TableName ''{1}'' -Name ''{2}''' -f $schema,$Object.parent_object_name,$Object.name)
+        $exportedObjects[$Object.object_id] = $true
     }
 
     function Export-Index
@@ -554,7 +572,7 @@ function Export-Migration
         {
             $where = ' -Where ''{0}''' -f $Object.filter_definition
         }
-        $columns = $indexColumnsByObjectID[$Object.object_id] | Where-Object { $_.index_id -eq $Object.index_id }
+        $columns = $indexColumnsByObjectID[$Object.object_id] | Where-Object { $_.index_id -eq $Object.index_id } | Sort-Object -Property 'key_ordinal'
         $columnNames = $columns | Select-Object -ExpandProperty 'name'
         Write-ExportingMessage -Schema $Object.schema_name -Name $Object.name -Type Index
         $schema = ConvertTo-SchemaParameter -SchemaName $Object.schema_name
@@ -810,6 +828,7 @@ function Export-Migration
             '    Invoke-Ddl -Query @''{0}{1}{0}''@' -f [Environment]::NewLine,$definition
         }
         Push-PopOperation ('Remove-StoredProcedure{0} -Name ''{1}''' -f $schema,$Object.object_name)
+        $exportedObjects[$Object.object_id] = $true
     }
 
     function Export-Synonym
@@ -839,6 +858,7 @@ function Export-Migration
         Write-ExportingMessage -Schema $Object.schema_name -Name $Object.name -Type Synonym
         '    Add-Synonym{0} -Name ''{1}''{2}{3} -TargetObjectName ''{4}''' -f $schema,$Object.name,$targetDBName,$targetSchemaName,$synonym.object_name
         Push-PopOperation ('Remove-Synonym{0} -Name ''{1}''' -f $schema,$Object.name)
+        $exportedObjects[$Object.object_id] = $true
     }
 
     function Export-Table
@@ -1009,6 +1029,7 @@ function Export-Migration
             '    Invoke-Ddl -Query @''{0}{1}{0}''@' -f [Environment]::NewLine,$function
         }
         Push-PopOperation ('Remove-UserDefinedFunction{0} -Name ''{1}''' -f $schema,$Object.name)
+        $exportedObjects[$Object.object_id] = $true
     }
 
     function Export-View
@@ -1036,6 +1057,7 @@ function Export-Migration
             '    Invoke-Ddl -Query @''{0}{1}{0}''@' -f [Environment]::NewLine,$view
         }
         Push-PopOperation ('Remove-View{0} -Name ''{1}''' -f $schema,$Object.name)
+        $exportedObjects[$Object.object_id] = $true
     }
 
     function Push-PopOperation
@@ -1114,6 +1136,10 @@ function Export-Migration
 
     $activity = 'Exporting migrations from {0}.{1}' -f $SqlServerName,$Database
     $writeProgress = [Environment]::UserInteractive
+    if( $NoProgress )
+    {
+        $writeProgress = $false
+    }
     $event = $null
 
     Connect-Database -SqlServerName $SqlServerName -Database $Database -ErrorAction Stop | Out-Null
@@ -1128,6 +1154,7 @@ select
     schema_name(sys.tables.schema_id) as schema_name, 
     sys.tables.name as table_name, 
     sys.check_constraints.name as name, 
+    sys.check_constraints.is_not_trusted,
     definition 
 from 
     sys.check_constraints 
@@ -1162,7 +1189,8 @@ select
     serverproperty(''collation'') as default_collation_name,
     sys.columns.is_rowguidcol,
 	sys.types.system_type_id,
-	sys.types.user_type_id
+	sys.types.user_type_id,
+    isnull(sys.identity_columns.is_not_for_replication, 0) as is_not_for_replication
 from 
 	sys.columns 
 		inner join 
@@ -1255,7 +1283,8 @@ select
     update_referential_action_desc,
     schema_name(sys.objects.schema_id) as references_schema_name,
     sys.objects.name as references_table_name,
-    sys.foreign_keys.referenced_object_id
+    sys.foreign_keys.referenced_object_id,
+    is_disabled
 from
     sys.foreign_keys
         join
@@ -1273,7 +1302,8 @@ from
 select 
     sys.foreign_key_columns.constraint_object_id,
 	sys.columns.name as name,
-	referenced_columns.name as referenced_name
+	referenced_columns.name as referenced_name,
+    sys.foreign_key_columns.constraint_column_id
 from 
 	sys.foreign_key_columns
 		join
@@ -1321,7 +1351,8 @@ where
 select
     sys.indexes.object_id,
     sys.indexes.index_id,
-    sys.columns.name
+    sys.columns.name,
+    sys.index_columns.key_ordinal
 from
 	sys.indexes 
 		join 
@@ -1366,7 +1397,8 @@ from
     sys.objects parent_objects
         on sys.objects.parent_object_id = parent_objects.object_id
 where 
-    sys.objects.is_ms_shipped = 0 -- {0}{1}' #-f $typeClause,$objectIDClause
+    sys.objects.is_ms_shipped = 0 
+    and (parent_objects.is_ms_shipped is null or parent_objects.is_ms_shipped = 0) -- {0}{1}' #-f $typeClause,$objectIDClause
         $objects = Invoke-Query -Query $query #-Parameter $parameter) )
         $objects | ForEach-Object { $objectsByID[$_.object_id] = $_ }
         $objects | Group-Object -Property 'parent_object_id' | ForEach-Object { $objectsByParentID[[int]$_.Name] = $_.Group }
