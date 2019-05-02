@@ -190,8 +190,14 @@ function Export-Migration
             $notChecked = ' -NoCheck'
         }
 
+        $notForReplication = ''
+        if( $constraint.is_not_for_replication )
+        {
+            $notForReplication = ' -NotForReplication'
+        }
+
         $schema = ConvertTo-SchemaParameter -SchemaName $constraint.schema_name
-        '    Add-CheckConstraint{0} -TableName ''{1}'' -Name ''{2}'' -Expression ''{3}''{4}' -f $schema,$constraint.table_name,$constraint.name,($constraint.definition -replace '''',''''''),$notChecked
+        '    Add-CheckConstraint{0} -TableName ''{1}'' -Name ''{2}'' -Expression ''{3}''{4}{5}' -f $schema,$constraint.table_name,$constraint.name,($constraint.definition -replace '''',''''''),$notForReplication,$notChecked
         if( -not $ForTable )
         {
             Push-PopOperation ('Remove-CheckConstraint{0} -TableName ''{1}'' -Name ''{2}''' -f $schema,$constraint.table_name,$constraint.name)
@@ -1155,6 +1161,7 @@ select
     sys.tables.name as table_name, 
     sys.check_constraints.name as name, 
     sys.check_constraints.is_not_trusted,
+	sys.check_constraints.is_not_for_replication,
     definition 
 from 
     sys.check_constraints 

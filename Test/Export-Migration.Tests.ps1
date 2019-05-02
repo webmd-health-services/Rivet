@@ -148,7 +148,7 @@ function Push-Migration
     Add-PrimaryKey -TableName 'Migrations' -ColumnName 'ID'
     Add-DefaultConstraint -TableName 'Migrations' -ColumnName 'AtUtc' -Expression '(getutcdate())'
     Add-CheckConstraint -TableName 'Migrations' -Name 'CK_Migrations_Name' -Expression '([Name] = ''Fubar'')'
-    Add-CheckConstraint -TableName 'Migrations' -Name 'CK_Migrations_Name2' -Expression '([Name] = ''Snafu'')' -NoCheck
+    Add-CheckConstraint -TableName 'Migrations' -Name 'CK_Migrations_Name2' -Expression '([Name] = ''Snafu'')' -NotForReplication -NoCheck
     Add-Index -TableName 'Migrations' -ColumnName 'BigID'
     Add-UniqueKey -TableName 'Migrations' -ColumnName 'Korean'
     Add-Trigger -Name 'MigrationsTrigger' -Definition 'ON [dbo].[Migrations] for insert as select 1'
@@ -198,7 +198,7 @@ function Pop-Migration
     ThenMigration -HasContent @'
     Add-CheckConstraint -TableName 'Migrations' -Name 'CK_Migrations_Name' -Expression '([Name]=''Fubar'')'
 '@
-    ThenMigration -HasContent 'Add-CheckConstraint -TableName ''Migrations'' -Name ''CK_Migrations_Name2'' -Expression ''([Name]=''''Snafu'''')'' -NoCheck'
+    ThenMigration -HasContent 'Add-CheckConstraint -TableName ''Migrations'' -Name ''CK_Migrations_Name2'' -Expression ''([Name]=''''Snafu'''')'' -NotForReplication -NoCheck'
     ThenMigration -HasContent 'Add-Index -TableName ''Migrations'' -ColumnName ''BigID'' -Name ''IX_Migrations_BigID'''
     ThenMigration -HasContent 'Add-UniqueKey -TableName ''Migrations'' -ColumnName ''Korean'' -Name ''AK_Migrations_Korean'''
     ThenMigration -HasContent 'Add-Trigger -Name ''MigrationsTrigger'' -Definition @''
