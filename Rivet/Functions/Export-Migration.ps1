@@ -722,6 +722,51 @@ function Export-Migration
         }
     }
 
+    # PRIMARY KEYS
+    $primaryKeysQuery = '
+-- PRIMARY KEYS
+select 
+	sys.key_constraints.object_id,
+    sys.indexes.type_desc
+from 
+	sys.key_constraints 
+		join 
+	sys.indexes 
+			on sys.key_constraints.parent_object_id = sys.indexes.object_id 
+			and sys.key_constraints.unique_index_id = sys.indexes.index_id 
+where 
+	sys.key_constraints.type = ''PK'' 
+	and sys.key_constraints.is_ms_shipped = 0'
+
+    # PRIMARY KEY COLUMNS
+    $primaryKeyColumnsQuery = '
+-- PRIMARY KEY COLUMNS
+select 
+    sys.objects.object_id,
+	sys.schemas.name as schema_name, 
+	sys.tables.name as table_name, 
+	sys.columns.name as column_name, 
+	sys.indexes.type_desc,
+    sys.index_columns.key_ordinal
+from 
+    sys.objects 
+    join sys.tables 
+        on sys.objects.parent_object_id = sys.tables.object_id
+    join sys.schemas
+        on sys.schemas.schema_id = sys.tables.schema_id
+    join sys.indexes
+        on sys.indexes.object_id = sys.tables.object_id
+	join sys.index_columns 
+		on sys.indexes.object_id = sys.index_columns.object_id 
+        and sys.indexes.index_id = sys.index_columns.index_id
+	join sys.columns 
+		on sys.indexes.object_id = sys.columns.object_id 
+		and sys.columns.column_id = sys.index_columns.column_id
+where
+--    sys.objects.object_id = @object_id and
+	sys.objects.type = ''PK'' and
+	sys.indexes.is_primary_key = 1'
+
     function Export-PrimaryKey
     {
         param(
@@ -768,7 +813,7 @@ function Export-Migration
         }
 
         $schema = ConvertTo-SchemaParameter -SchemaName $Object.schema_name
-        $columnNames = $columns | Select-Object -ExpandProperty 'column_name'
+        $columnNames = $columns | Sort-Object -Property 'key_ordinal' | Select-Object -ExpandProperty 'column_name'
         $nonClustered = ''
         if( $primaryKey.type_desc -eq 'NONCLUSTERED' )
         {
@@ -1410,52 +1455,10 @@ where
         $objects | ForEach-Object { $objectsByID[$_.object_id] = $_ }
         $objects | Group-Object -Property 'parent_object_id' | ForEach-Object { $objectsByParentID[[int]$_.Name] = $_.Group }
 
-        # PRIMARY KEYS
-        $query = '
--- PRIMARY KEYS
-select 
-	sys.key_constraints.object_id,
-    sys.indexes.type_desc
-from 
-	sys.key_constraints 
-		join 
-	sys.indexes 
-			on sys.key_constraints.parent_object_id = sys.indexes.object_id 
-			and sys.key_constraints.unique_index_id = sys.indexes.index_id 
-where 
-	sys.key_constraints.type = ''PK'' 
-	and sys.key_constraints.is_ms_shipped = 0'
-        $primaryKeys = Invoke-Query -Query $query
+        $primaryKeys = Invoke-Query -Query $primaryKeysQuery
         $primaryKeys | ForEach-Object { $primaryKeysByID[$_.object_id] = $_ }
 
-        # PRIMARY KEY COLUMNS
-        $query = '
--- PRIMARY KEY COLUMNS
-select 
-    sys.objects.object_id,
-	sys.schemas.name as schema_name, 
-	sys.tables.name as table_name, 
-	sys.columns.name as column_name, 
-	sys.indexes.type_desc
-from 
-    sys.objects 
-    join sys.tables 
-        on sys.objects.parent_object_id = sys.tables.object_id
-    join sys.schemas
-        on sys.schemas.schema_id = sys.tables.schema_id
-    join sys.indexes
-        on sys.indexes.object_id = sys.tables.object_id
-	join sys.index_columns 
-		on sys.indexes.object_id = sys.index_columns.object_id 
-        and sys.indexes.index_id = sys.index_columns.index_id
-	join sys.columns 
-		on sys.indexes.object_id = sys.columns.object_id 
-		and sys.columns.column_id = sys.index_columns.column_id
-where
---    sys.objects.object_id = @object_id and
-	sys.objects.type = ''PK'' and
-	sys.indexes.is_primary_key = 1'
-        $primaryKeyColumns = Invoke-Query -Query $query
+        $primaryKeyColumns = Invoke-Query -Query $primaryKeyColumnsQuery
         $primaryKeyColumns | Group-Object -Property 'object_id' | ForEach-Object { $primaryKeyColumnsByObjectID[[int]$_.Name] = $_.Group }
 
         # SCHEMAS
