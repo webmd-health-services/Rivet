@@ -287,7 +287,7 @@ function Pop-Migration
     ThenMigration -Not -HasContent 'DoSomethingElse'
 }
 
-Describe 'Export-Migration.when exporting a default constraint' {
+Describe 'Export-Migration.when exporting default constraints' {
     Init
     GivenMigration @'
 function Push-Migration 
@@ -298,17 +298,34 @@ function Push-Migration
     }
     Add-DefaultConstraint -TableName 'Fubar' -ColumnName 'ID' -Expression '1'
     Add-DefaultConstraint -TableName 'Fubar' -ColumnName 'YN' -Expression '''N'''
+
+    # Make sure default constraints on table-valued functions don't get exported.
+    Add-UserDefinedFunction -Name 'HasDefaultConstraint' -Definition '
+(
+)
+    RETURNS		@Table		TABLE
+	(
+	    [Status] [int] NOT NULL DEFAULT (0)
+	)
+as
+begin
+    insert into @Table select 1
+	return
+end
+'
 }
 
 function Pop-Migration
 {
+    Remove-UserDefinedFunction 'HasDefaultConstraint'
     Remove-Table 'Fubar'
 }
 '@
-    WhenExporting 'dbo.DF_Fubar_*' -SkipVerification
+    WhenExporting 'dbo.DF_Fubar_*','dbo.DF__*' -SkipVerification
     ThenMigration -HasContent 'Add-DefaultConstraint -TableName ''Fubar'' -ColumnName ''ID'' -Name ''DF_Fubar_ID'' -Expression ''((1))'''
     ThenMigration -HasContent 'Add-DefaultConstraint -TableName ''Fubar'' -ColumnName ''YN'' -Name ''DF_Fubar_YN'' -Expression ''(''''N'''')'''
     ThenMigration -HasContent 'Remove-DefaultConstraint -TableName ''Fubar'' -Name ''DF_Fubar_ID'''
+    ThenMigration -Not -HasContent 'DF__'
 }
 
 Describe 'Export-Migration.when exporting a primary key' {

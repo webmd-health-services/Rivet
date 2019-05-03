@@ -401,6 +401,33 @@ from
         $exportedtypes[$object.name] = $true
     }
 
+    $defaultConstraintsQuery = '
+-- DEFAULT CONSTRAINTS
+select 
+    schema_name(sys.tables.schema_id) as schema_name, 
+    sys.tables.name as table_name, 
+    sys.default_constraints.name as name, 
+    sys.columns.name as column_name, 
+    definition,
+    sys.default_constraints.object_id,
+	sys.default_constraints.parent_object_id
+from 
+    sys.objects 
+        join 
+    sys.default_constraints
+            on sys.default_constraints.object_id = sys.objects.object_id
+	    join 
+    sys.columns 
+	    	on sys.columns.object_id = sys.default_constraints.parent_object_id
+		    and sys.columns.column_id = sys.default_constraints.parent_column_id
+        left join 
+    sys.tables 
+            on sys.objects.parent_object_id = sys.tables.object_id
+        left join 
+    sys.schemas
+            on sys.schemas.schema_id = sys.tables.schema_id
+-- where
+--    sys.default_constraints.object_id = @object_id'
     function Export-DefaultConstraint
     {
         param(
@@ -427,6 +454,14 @@ from
         }
 
         $constraint = $defaultConstraintsByID[$Object.object_id]
+
+        # Default constraint isn't on a table
+        if( $constraint.table_name -eq $null )
+        {
+            $exportedObjects[$Object.object_id] = $true
+            return
+        }
+
         if( -not $ForTable )
         {
             Export-Object -ObjectID $constraint.parent_object_id
@@ -439,7 +474,7 @@ from
 
         Export-DependentObject -ObjectID $constraint.object_id
 
-        Write-ExportingMessage -Schema $constraint.schema_name -Name $constraint.name -Type DefaultConstraint
+        Write-ExportingMessage -Schema $Object.schema_name -Name $constraint.name -Type DefaultConstraint
         $schema = ConvertTo-SchemaParameter -SchemaName $constraint.schema_name
         '    Add-DefaultConstraint{0} -TableName ''{1}'' -ColumnName ''{2}'' -Name ''{3}'' -Expression ''{4}''' -f $schema,$Object.parent_object_name,$constraint.column_name,$constraint.name,($constraint.definition -replace '''','''''')
         if( -not $ForTable )
@@ -1362,34 +1397,7 @@ where
         $dataTypes = Invoke-Query -Query $query
 
         # DEFAULT CONSTRAINTS
-        $query = '
--- DEFAULT CONSTRAINTS
-select 
-    schema_name(sys.tables.schema_id) as schema_name, 
-    sys.tables.name as table_name, 
-    sys.default_constraints.name as name, 
-    sys.columns.name as column_name, 
-    definition,
-    sys.default_constraints.object_id,
-	sys.default_constraints.parent_object_id
-from 
-    sys.objects 
-        join 
-    sys.tables 
-            on sys.objects.parent_object_id = sys.tables.object_id
-        join 
-    sys.schemas
-            on sys.schemas.schema_id = sys.tables.schema_id
-        join 
-    sys.default_constraints
-            on sys.default_constraints.object_id = sys.objects.object_id
-	    join 
-    sys.columns 
-	    	on sys.columns.object_id = sys.default_constraints.parent_object_id
-		    and sys.columns.column_id = sys.default_constraints.parent_column_id
--- where
---    sys.default_constraints.object_id = @object_id'
-        $defaultConstraints = Invoke-Query -Query $query #-Parameter @{ '@object_id' = $constraintObject.object_id }
+        $defaultConstraints = Invoke-Query -Query $defaultConstraintsQuery #-Parameter @{ '@object_id' = $constraintObject.object_id }
         $defaultConstraints | ForEach-Object { $defaultConstraintsByID[$_.object_id] = $_ }
 
         # FOREIGN KEYS
