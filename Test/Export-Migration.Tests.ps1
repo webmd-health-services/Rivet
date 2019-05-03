@@ -672,6 +672,16 @@ function Push-Migration
     }
     Add-Index -TableName 'IndexesWithInclude' -ColumnName 'ID' -Include 'ID6','ID5','ID4'
 
+    Add-Table -Name 'IndexesWithDescending' -Column {
+        int ID -NotNull
+        int ID2 -NotNull
+        int ID3 -NotNull
+        int ID4 -NotNull
+        int ID5 -NotNull
+        int ID6 -NotNull
+    }
+    Add-Index -TableName 'IndexesWithDescending' -ColumnName 'ID','ID2','ID3' -Descending $true,$false,$true
+
     Add-Schema -Name 'export'
     Add-Table -SchemaName 'export' -Name 'Indexes2' -Column {
         int ID
@@ -680,10 +690,11 @@ function Push-Migration
 }
 function Pop-Migration
 {
-    Remove-Table 'IndexesWithInclude'
-    Remove-Table 'Indexes'
     Remove-Table -SchemaName 'export' -Name 'Indexes2'
     Remove-Schema 'export'
+    Remove-Table 'IndexesWithDescending'
+    Remove-Table 'IndexesWithInclude'
+    Remove-Table 'Indexes'
 }
 '@
     WhenExporting '*.*_Indexes*' -SkipVerification
@@ -694,6 +705,7 @@ function Pop-Migration
     ThenMigration -HasContent 'Add-Index -TableName ''Indexes'' -ColumnName ''ID6'' -Name ''IX_Indexes_ID6'' -Where ''([ID6]<=(100))'''
     ThenMigration -HasContent 'Add-Index -SchemaName ''export'' -TableName ''Indexes2'' -ColumnName ''ID'' -Name ''IX_export_Indexes2_ID'''
     ThenMigration -HasContent 'Add-Index -TableName ''IndexesWithInclude'' -ColumnName ''ID'' -Name ''IX_IndexesWithInclude_ID'' -Include ''ID4'',''ID5'',''ID6'''
+    ThenMigration -HasContent 'Add-Index -TableName ''IndexesWithDescending'' -ColumnName ''ID'',''ID2'',''ID3'' -Name ''IX_IndexesWithDescending_ID_ID2_ID3'' -Descending $true,$false,$true'
     ThenMigration -Not -HasContent 'Add-Index -SchemaName ''export'' -TableName ''Indexes2'' -ColumnName '''' -Name '''''
 
     ThenMigration -HasContent 'Remove-Index -TableName ''Indexes'' -Name ''IX_Indexes_ID'''

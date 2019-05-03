@@ -625,17 +625,27 @@ from
         }
 
         $allColumns = $indexColumnsByObjectID[$Object.object_id] | Where-Object { $_.index_id -eq $Object.index_id }
-        $columns = $allColumns | Where-Object { -not $_.is_included_column } | Sort-Object -Property 'key_ordinal'
+
         $includedColumns = $allColumns | Where-Object { $_.is_included_column } | Sort-Object -Property 'name' # I don't think order matters so order them discretely.
         $include = ''
         if( $includedColumns )
         {
             $include = ' -Include ''{0}''' -f (($includedColumns | Select-Object -ExpandProperty 'name') -join ''',''')
         }
+
+        $columns = $allColumns | Where-Object { -not $_.is_included_column } | Sort-Object -Property 'key_ordinal'
+
+        $descending = ''
+        if( $columns | Where-Object { $_.is_descending_key } )
+        {
+            $descending = $columns | Select-Object -ExpandProperty 'is_descending_key' | ForEach-Object { if( $_ ) { '$true' } else { '$false' } }
+            $descending = ' -Descending {0}' -f ($descending -join ',')
+        }
+
         $columnNames = $columns | Select-Object -ExpandProperty 'name'
         Write-ExportingMessage -Schema $Object.schema_name -Name $Object.name -Type Index
         $schema = ConvertTo-SchemaParameter -SchemaName $Object.schema_name
-        '    Add-Index{0} -TableName ''{1}'' -ColumnName ''{2}'' -Name ''{3}''{4}{5}{6}{7}' -f $schema,$Object.table_name,($columnNames -join ''','''),$Object.name,$clustered,$unique,$include,$where
+        '    Add-Index{0} -TableName ''{1}'' -ColumnName ''{2}'' -Name ''{3}''{4}{5}{6}{7}{8}' -f $schema,$Object.table_name,($columnNames -join ''','''),$Object.name,$clustered,$unique,$include,$descending,$where
         if( -not $ForTable )
         {
             Push-PopOperation ('Remove-Index{0} -TableName ''{1}'' -Name ''{2}''' -f $schema,$Object.table_name,$Object.name)
