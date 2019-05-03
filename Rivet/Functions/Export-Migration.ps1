@@ -1052,6 +1052,21 @@ where
         $exportedObjects[$Object.object_id] = $true
     }
 
+    $synonymsQuery = '
+-- SYNONYMS
+select 
+    sys.synonyms.object_id,
+    parsename(base_object_name,3) as database_name,
+    parsename(base_object_name,2) as schema_name,
+    parsename(base_object_name,1) as object_name,
+	sys.objects.object_id as target_object_id
+from
+    sys.synonyms
+		left join
+	sys.objects
+			on parsename(sys.synonyms.base_object_name,2) = schema_name(sys.objects.schema_id) 
+			and parsename(sys.synonyms.base_object_name,1) = sys.objects.name
+'
     function Export-Synonym
     {
         param(
@@ -1059,10 +1074,14 @@ where
             [object]
             $Object
         )
-
         
         $schema = ConvertTo-SchemaParameter -SchemaName $Object.schema_name
         $synonym = $synonymsByID[$Object.object_id]
+
+        if( $synonym.target_object_id )
+        {
+            Export-Object -ObjectID $synonym.target_object_id
+        }
         
         $targetDBName = ''
         if( $synonym.database_name )
@@ -1527,19 +1546,7 @@ from
         $modules | ForEach-Object { $modulesByID[$_.object_id] = $_ }
 
         # SYNONYMS
-        $query = '
--- SYNONYMS
-select 
-    object_id,
-    parsename(base_object_name,3) as database_name,
-    parsename(base_object_name,2) as schema_name,
-    parsename(base_object_name,1) as object_name
-from
-    sys.synonyms
---where
---    object_id = @synonym_id
-'
-        $synonyms = Invoke-Query -Query $query
+        $synonyms = Invoke-Query -Query $synonymsQuery
         $synonyms | ForEach-Object { $synonymsByID[$_.object_id] = $_ }
 
         # TRIGGERS

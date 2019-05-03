@@ -825,7 +825,6 @@ ON [export].[TriggerSource2] for insert as select 1
 ''@'
 }
 
-
 Describe 'Export-Migration.when exporting synonyms' {
     Init
     GivenMigration @'
@@ -866,6 +865,39 @@ function Pop-Migration
     ThenMigration -HasContent 'Remove-Synonym -Name ''Syn1'''
     ThenMigration -HasContent 'Remove-Synonym -SchemaName ''export'' -Name ''Syn2'''
     ThenMigration -HasContent 'Remove-Synonym -SchemaName ''export'' -Name ''Syn3'''
+}
+
+Describe 'Export-Migration.when synonyms points to internal object' {
+    Init
+    GivenMigration @'
+function Push-Migration
+{
+    Add-Table -Name 'Target' {
+        int 'ID' -NotNull
+    }
+
+    Add-Synonym -Name 'Syn1' -TargetObjectName 'Target'
+
+    # We remove and re-create so that the synonym gets exported before the table.
+    Remove-Table 'Target'
+
+    Add-Table -Name 'Target' {
+        int 'ID' -NotNull
+    }
+}
+function Pop-Migration
+{
+    Remove-Synonym 'Syn1'
+    Remove-Table 'Target'
+}
+'@
+    WhenExporting 
+    ThenMigration -HasContent @'
+    Add-Table -Name 'Target' -Column {
+        int 'ID' -NotNull
+    }
+    Add-Synonym -Name 'Syn1' -TargetSchemaName 'dbo' -TargetObjectName 'Target'
+'@
 }
 
 Describe 'Export-Migration.when exporting foreign keys' {
