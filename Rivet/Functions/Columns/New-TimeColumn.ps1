@@ -45,7 +45,7 @@ function New-TimeColumn
         [Parameter(Position=1)]
         [Alias('Precision')]
         [Int]
-        # The number of decimal digits that will be stored for the fractional seconds. The default is `7`, which is 100 nanoseconds. Must be a value between 0 and 7.
+        # The number of decimal digits for the fractional seconds. SQL Server's default is `7`, or 100 nanoseconds..
         $Scale,
 
         [Parameter(Mandatory=$true,ParameterSetName='NotNull')]
@@ -70,10 +70,9 @@ function New-TimeColumn
     )
 
     $dataSize = $null
-    # Yes. This is correct. Users can only specify the scale of a time column. Rivet's objects always store the precision,scale pair with precision first.d
     if( $PSBoundParameters.ContainsKey('Scale') )
     {
-        $dataSize = New-Object Rivet.PrecisionScale $Scale
+        $dataSize = New-Object Rivet.Scale $Scale
     }
     
     $nullable = $PSCmdlet.ParameterSetName

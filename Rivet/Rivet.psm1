@@ -39,6 +39,12 @@ if( -not (Test-TypeDataMember -TypeName 'Rivet.OperationResult' -MemberName 'Mig
     Update-TypeData -TypeName 'Rivet.OperationResult' -MemberType ScriptProperty -MemberName 'MigrationID' -Value { $this.Migration.ID }
 }
 
+# Added in Rivet 0.10.0
+if( -not (New-Object -TypeName 'Rivet.Scale' -ArgumentList '1' -ErrorAction Ignore) )
+{
+    Write-Error -Message ('You have an old version of Rivet loaded. Please restart your PowerShell session.') -ErrorAction Stop
+}
+
 $functionRoot = Join-Path -Path $PSScriptRoot -ChildPath 'Functions' -Resolve
 $columnRoot = Join-Path -Path $functionRoot -ChildPath 'Columns' -Resolve
 $operationsRoot = Join-Path -Path $functionRoot -ChildPath 'Operations' -Resolve

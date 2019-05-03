@@ -9,7 +9,7 @@
 
 	public class Column
 	{
-		private Column(string name, DataType dataType, PrecisionScale size, string collation, Nullable nullable, string defaultExpression, string description)
+		private Column(string name, DataType dataType, ColumnSize size, string collation, Nullable nullable, string defaultExpression, string description)
 			: this(name, dataType, defaultExpression, description)
 		{
 			if (size != null)
@@ -25,7 +25,7 @@
 			Nullable = nullable;
 		}
 
-		private Column(string name, DataType dataType, PrecisionScale size, Nullable nullable, string defaultExpression, string description)
+		private Column(string name, DataType dataType, ColumnSize size, Nullable nullable, string defaultExpression, string description)
 			: this(name, dataType, defaultExpression, description)
 		{
 			if (size != null)
@@ -35,7 +35,7 @@
 			Nullable = nullable;
 		}
 
-		private Column(string name, DataType dataType, PrecisionScale size, bool filestream, Nullable nullable, string defaultExpression, string description)
+		private Column(string name, DataType dataType, ColumnSize size, bool filestream, Nullable nullable, string defaultExpression, string description)
 			: this(name, dataType, defaultExpression, description)
 		{
 			if (size != null)
@@ -59,7 +59,7 @@
 			Nullable = Nullable.NotNull;
 		}
 
-		private Column(string name, DataType dataType, PrecisionScale size, Identity identity, string description)
+		private Column(string name, DataType dataType, ColumnSize size, Identity identity, string description)
 			: this(name, dataType, (string)null, description)
 		{
 			if (size != null)
@@ -130,7 +130,7 @@
 
 		public Nullable Nullable { get; set; }
 
-		public PrecisionScale Size { get; set; }
+		public ColumnSize Size { get; set; }
 
 		public bool RowGuidCol { get; set; }
 
@@ -170,12 +170,12 @@
 			return new Column(name, DataType.Date, nullable, defaultExpression, description);
 		}
 
-		public static Column DateTime2(string name, PrecisionScale size, Nullable nullable, string defaultExpression, string description)
+		public static Column DateTime2(string name, Scale size, Nullable nullable, string defaultExpression, string description)
 		{
 			return new Column(name, DataType.DateTime2, size, nullable, defaultExpression, description);
 		}
 
-		public static Column DateTimeOffset(string name, PrecisionScale size, Nullable nullable, string defaultExpression, string description)
+		public static Column DateTimeOffset(string name, Scale size, Nullable nullable, string defaultExpression, string description)
 		{
 			return new Column(name, DataType.DateTimeOffset, size, nullable, defaultExpression, description);
 		}
@@ -262,7 +262,7 @@
 			return new Column(name, DataType.SqlVariant, nullable, defaultExpression, description);
 		}
 
-		public static Column Time(string name, PrecisionScale size, Nullable nullable, string defaultExpression, string description)
+		public static Column Time(string name, Scale size, Nullable nullable, string defaultExpression, string description)
 		{
 			return new Column(name, DataType.Time, size, nullable, defaultExpression, description);
 		}

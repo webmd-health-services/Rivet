@@ -155,7 +155,7 @@ namespace Rivet.Test
 			string name,
 			
 			[Values(7, null)]
-			int? precision,
+			int? scale,
 
 			[Values(Nullable.Null, Nullable.NotNull, Nullable.Sparse)]
 			Nullable nullable,
@@ -166,7 +166,7 @@ namespace Rivet.Test
 			[Values("datetime2 column", null)]
 			string description)
 		{
-			var size = (precision == null) ? null : new PrecisionScale(precision.Value);
+			var size = (scale == null) ? null : new Scale(scale.Value);
 			GivenColumn(Column.DateTime2(name, size, nullable, defaultExpression, description));
 			ThenColumnShouldBe(name, DataType.DateTime2,  size, nullable, defaultExpression, description);
 		}
@@ -179,7 +179,7 @@ namespace Rivet.Test
 			string name,
 
 			[Values(7, null)]
-			int? precision,
+			int? scale,
 
 			[Values(Nullable.Null, Nullable.NotNull, Nullable.Sparse)]
 			Nullable nullable,
@@ -190,7 +190,7 @@ namespace Rivet.Test
 			[Values("datetimeoffset column", null)]
 			string description)
 		{
-			var size = (precision == null) ? null : new PrecisionScale(precision.Value);
+			var size = (scale == null) ? null : new Scale(scale.Value);
 			GivenColumn(Column.DateTimeOffset(name, size, nullable, defaultExpression, description));
 			ThenColumnShouldBe(name, DataType.DateTimeOffset, size, nullable, defaultExpression, description);
 		}
@@ -269,7 +269,7 @@ namespace Rivet.Test
 			[Values("float column", null)]
 			string description)
 		{
-			PrecisionScale size = null;
+            PrecisionScale size = null;
 			if (precision == null && scale == null)
 			{
 			}
@@ -550,7 +550,7 @@ namespace Rivet.Test
 			string name,
 
 			[Values(7, null)]
-			int? precision,
+			int? scale,
 
 			[Values(Nullable.Null, Nullable.NotNull, Nullable.Sparse)]
 			Nullable nullable,
@@ -561,7 +561,7 @@ namespace Rivet.Test
 			[Values("time column", null)]
 			string description)
 		{
-			var size = (precision == null) ? null : new PrecisionScale(precision.Value);
+			var size = (scale == null) ? null : new Scale(scale.Value);
 			GivenColumn(Column.Time(name, size, nullable, defaultExpression, description));
 			ThenColumnShouldBe(name, DataType.Time, size, nullable, defaultExpression, description);
 		}
@@ -777,7 +777,7 @@ namespace Rivet.Test
 				if (dataType.ToString().Contains("Var"))
 				{
 					Assert.That(_column.Size, Is.Not.Null);
-					Assert.That(_column.Size.Precision, Is.EqualTo(0));
+					Assert.That(_column.Size.Value, Is.EqualTo(CharacterLength.Max));
 					Assert.That(((CharacterLength)_column.Size).IsMax, Is.True);
 					Assert.That(_column.Size.ToString(), Is.EqualTo("(max)"));
 				}
@@ -789,8 +789,8 @@ namespace Rivet.Test
 			}
 			else
 			{
-				Assert.That(_column.Size.Precision, Is.EqualTo(size.Precision));
-				sizeClause = string.Format("({0})", _column.Size.Precision);
+				Assert.That(_column.Size.Value, Is.EqualTo(size.Value));
+				sizeClause = string.Format("({0})", _column.Size.Value);
 			}
 			Assert.That(_column.Collation, Is.EqualTo(collation));
 
@@ -834,14 +834,14 @@ namespace Rivet.Test
 			Assert.That(_column.GetColumnDefinition("any","any",false), Is.EqualTo(string.Format("[{0}] {1}{2}{3}{4}", name, dataTypeName, notNullClause, defaultClause, sparseClause)));
 		}
 
-		private void ThenColumnShouldBe(string name, DataType dataType, PrecisionScale size, bool filestream,
+		private void ThenColumnShouldBe(string name, DataType dataType, ColumnSize size, bool filestream,
 		                                Nullable nullable, string defaultExpression, string description)
 		{
 			Assert.That(_column.FileStream, Is.EqualTo(filestream));
 			ThenColumnShouldBe(name, dataType, size, nullable, defaultExpression, description);
 		}
 
-		private void ThenColumnShouldBe(string name, DataType dataType, PrecisionScale size, Nullable nullable, string defaultExpression, string description)
+		private void ThenColumnShouldBe(string name, DataType dataType, ColumnSize size, Nullable nullable, string defaultExpression, string description)
 		{
 			ThenColumnShouldBe(name, dataType, defaultExpression, description);
 			var sizeClause = "";
@@ -851,7 +851,7 @@ namespace Rivet.Test
 				{
 					Assert.That(_column.Size, Is.Not.Null);
 					Assert.That(_column.Size.GetType(), Is.EqualTo(typeof (CharacterLength)));
-					Assert.That(_column.Size.Precision, Is.EqualTo(0));
+					Assert.That(_column.Size.Value, Is.EqualTo(CharacterLength.Max));
 					Assert.That(_column.Size.ToString(), Is.EqualTo("(max)"));
 					sizeClause = "(max)";
 				}
@@ -863,8 +863,7 @@ namespace Rivet.Test
 			else
 			{
 				Assert.That(_column.Size, Is.Not.Null);
-				Assert.That(_column.Size.Precision, Is.EqualTo(size.Precision));
-				Assert.That(_column.Size.Scale, Is.EqualTo(size.Scale));
+				Assert.That(_column.Size.Value, Is.EqualTo(size.Value));
 				Assert.That(_column.Size.ToString(), Is.EqualTo(size.ToString()));
 				sizeClause = size.ToString();
 			}
@@ -898,12 +897,10 @@ namespace Rivet.Test
 			Assert.That(_column.GetColumnDefinition("identity", "id", false), Is.EqualTo(expectedDefinition));
 		}
 
-		private void ThenColumnShouldBe(string name, DataType dataType, PrecisionScale size, Identity identity, string description)
+		private void ThenColumnShouldBe(string name, DataType dataType, ColumnSize size, Identity identity, string description)
 		{
 			ThenColumnShouldBe(name, dataType, (string)null, description);
 			Assert.That(_column.Size, Is.Not.Null);
-			Assert.That(_column.Size.Precision, Is.EqualTo(size.Precision));
-			Assert.That(_column.Size.Scale, Is.EqualTo(size.Scale));
 			Assert.That(_column.Size.ToString(), Is.EqualTo(size.ToString()));
 			Assert.That(_column.Identity.Seed, Is.EqualTo(identity.Seed));
 			Assert.That(_column.Identity.Increment, Is.EqualTo(identity.Increment));

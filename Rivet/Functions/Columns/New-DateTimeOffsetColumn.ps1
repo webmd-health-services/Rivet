@@ -48,9 +48,10 @@ function New-DateTimeOffsetColumn
         $Name,
 
         [Parameter(Position=1)]
+        [Alias('Precision')]
         [Int]
-        # The number of decimal digits that will be stored to the right of the decimal point
-        $Precision,
+        # The number of decimal digits for the fractional seconds. SQL Server's default is `7`, or 100 nanoseconds.
+        $Scale,
 
         [Parameter(Mandatory=$true,ParameterSetName='NotNull')]
         [Switch]
@@ -74,9 +75,9 @@ function New-DateTimeOffsetColumn
     )
 
     $dataSize = $null
-    if( $PSBoundParameters.ContainsKey('Precision') )
+    if( $PSBoundParameters.ContainsKey('Scale') )
     {
-        $dataSize = New-Object Rivet.PrecisionScale $Precision
+        $dataSize = New-Object Rivet.Scale $Scale
     }
      
     $nullable = $PSCmdlet.ParameterSetName
