@@ -126,6 +126,9 @@ function Push-Migration
         nvarchar 'Name' -Size 241 -NotNull
         varchar 'NameMax' -Max
         datetime2 'AtUtc' -NotNull
+        datetime2 'AtUtcCustomScale' -Scale 2
+        datetimeoffset 'DTO' -NotNull
+        datetimeoffset 'DTOwScale' -Scale 3
         decimal 'Dec' -Precision 4 -Scale 2
         float 'Fl' -Precision 5
         float 'bigger' -Precision 50
@@ -171,6 +174,9 @@ function Pop-Migration
         nvarchar 'Name' -Size 241 -NotNull
         varchar 'NameMax' -Max
         datetime2 'AtUtc' -NotNull
+        datetime2 'AtUtcCustomScale' -Scale 2
+        datetimeoffset 'DTO' -NotNull
+        datetimeoffset 'DTOwScale' -Scale 3
         decimal 'Dec' -Precision 4 -Scale 2
         real 'Fl'
         float 'bigger'

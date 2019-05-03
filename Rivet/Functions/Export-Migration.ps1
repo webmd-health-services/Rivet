@@ -307,7 +307,7 @@ from
                     '-RowGuidCol'
                 }
 
-                $scaleOnlyTypes = @( 'time' )
+                $scaleOnlyTypes = @( 'time','datetime2', 'datetimeoffset' )
                 if( $column.precision -ne $column.default_precision -and $column.type_name -notin $scaleOnlyTypes )
                 {
                     '-Precision'
