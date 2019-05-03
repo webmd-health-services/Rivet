@@ -512,6 +512,51 @@ function Export-Migration
         $exportedObjects[$Object.object_id] = $true
     }
 
+    $indexesQuery = '
+-- INDEXES
+select 
+    sys.indexes.object_id,
+    schema_name(sys.tables.schema_id) as schema_name,
+    sys.indexes.name,
+    sys.tables.name as table_name, 
+    sys.indexes.is_unique,
+    sys.indexes.type_desc,
+    sys.indexes.has_filter,
+    sys.indexes.filter_definition,
+    sys.indexes.index_id
+from 
+    sys.indexes 
+        join 
+    sys.tables 
+            on sys.indexes.object_id = sys.tables.object_id 
+where 
+    is_primary_key = 0 and 
+    sys.indexes.type != 0 and
+    sys.indexes.is_unique_constraint != 1'
+
+    $indexesColumnsQuery = '
+-- INDEX COLUMNS
+select
+    sys.indexes.object_id,
+    sys.indexes.index_id,
+    sys.columns.name,
+    sys.index_columns.key_ordinal,
+    sys.index_columns.is_included_column,
+    sys.index_columns.is_descending_key
+from
+	sys.indexes 
+		join 
+	sys.index_columns 
+			on sys.indexes.object_id = sys.index_columns.object_id 
+			and sys.indexes.index_id = sys.index_columns.index_id 
+		join
+	sys.columns
+			on sys.indexes.object_id = sys.columns.object_id
+			and sys.index_columns.column_id = sys.columns.column_id
+-- where 
+--    sys.indexes.object_id = @object_id and
+--    sys.indexes.index_id = @index_id
+'
     function Export-Index
     {
         [CmdletBinding(DefaultParameterSetName='All')]
@@ -578,11 +623,19 @@ function Export-Migration
         {
             $where = ' -Where ''{0}''' -f $Object.filter_definition
         }
-        $columns = $indexColumnsByObjectID[$Object.object_id] | Where-Object { $_.index_id -eq $Object.index_id } | Sort-Object -Property 'key_ordinal'
+
+        $allColumns = $indexColumnsByObjectID[$Object.object_id] | Where-Object { $_.index_id -eq $Object.index_id }
+        $columns = $allColumns | Where-Object { -not $_.is_included_column } | Sort-Object -Property 'key_ordinal'
+        $includedColumns = $allColumns | Where-Object { $_.is_included_column } | Sort-Object -Property 'name' # I don't think order matters so order them discretely.
+        $include = ''
+        if( $includedColumns )
+        {
+            $include = ' -Include ''{0}''' -f (($includedColumns | Select-Object -ExpandProperty 'name') -join ''',''')
+        }
         $columnNames = $columns | Select-Object -ExpandProperty 'name'
         Write-ExportingMessage -Schema $Object.schema_name -Name $Object.name -Type Index
         $schema = ConvertTo-SchemaParameter -SchemaName $Object.schema_name
-        '    Add-Index{0} -TableName ''{1}'' -ColumnName ''{2}'' -Name ''{3}''{4}{5}{6}' -f $schema,$Object.table_name,($columnNames -join ''','''),$Object.name,$clustered,$unique,$where
+        '    Add-Index{0} -TableName ''{1}'' -ColumnName ''{2}'' -Name ''{3}''{4}{5}{6}{7}' -f $schema,$Object.table_name,($columnNames -join ''','''),$Object.name,$clustered,$unique,$include,$where
         if( -not $ForTable )
         {
             Push-PopOperation ('Remove-Index{0} -TableName ''{1}'' -Name ''{2}''' -f $schema,$Object.table_name,$Object.name)
@@ -1373,53 +1426,11 @@ from
         $foreignKeyColumns | Group-Object -Property 'constraint_object_id' | ForEach-Object { $foreignKeyColumnsByObjectID[[int]$_.Name] = $_.Group }
 
         # INDEXES
-        $query = '
--- INDEXES
-select 
-    sys.indexes.object_id,
-    schema_name(sys.tables.schema_id) as schema_name,
-    sys.indexes.name,
-    sys.tables.name as table_name, 
-    sys.indexes.is_unique,
-    sys.indexes.type_desc,
-    sys.indexes.has_filter,
-    sys.indexes.filter_definition,
-    sys.indexes.index_id
-from 
-    sys.indexes 
-        join 
-    sys.tables 
-            on sys.indexes.object_id = sys.tables.object_id 
-where 
-    is_primary_key = 0 and 
-    sys.indexes.type != 0 and
-    sys.indexes.is_unique_constraint != 1'
-        $indexes = Invoke-Query -Query $query
+        $indexes = Invoke-Query -Query $indexesQuery
         $indexes | Group-Object -Property 'object_id' | ForEach-Object { $indexesByObjectID[[int]$_.Name] = $_.Group }
 
         # INDEX COLUMNS
-        $query = '
--- INDEX COLUMNS
-select
-    sys.indexes.object_id,
-    sys.indexes.index_id,
-    sys.columns.name,
-    sys.index_columns.key_ordinal
-from
-	sys.indexes 
-		join 
-	sys.index_columns 
-			on sys.indexes.object_id = sys.index_columns.object_id 
-			and sys.indexes.index_id = sys.index_columns.index_id 
-		join
-	sys.columns
-			on sys.indexes.object_id = sys.columns.object_id
-			and sys.index_columns.column_id = sys.columns.column_id
--- where 
---    sys.indexes.object_id = @object_id and
---    sys.indexes.index_id = @index_id
-'
-        $indexColumns = Invoke-Query -Query $query #-Parameter @{ '@object_id' = $Object.object_id ; '@index_id' = $Object.index_id }
+        $indexColumns = Invoke-Query -Query $indexesColumnsQuery
         $indexColumns | Group-Object -Property 'object_id' | ForEach-Object { $indexColumnsByObjectID[[int]$_.Name] = $_.Group }
 
         # OBJECTS
