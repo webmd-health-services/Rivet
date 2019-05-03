@@ -11,8 +11,8 @@ namespace Rivet.Test
 		private static readonly Identity SeedIncrementNotForReplicationIdentity = new Identity(3, 4);
 		private static readonly Identity[] Identities = new[] {DefaultIdentity, DefaultNotForReplicationIdentity, SeedIncrementIdentity, SeedIncrementNotForReplicationIdentity};
 
-		private static readonly PrecisionScale PrecisionNoScale = new PrecisionScale(1);
-		private static readonly PrecisionScale PrecisionWithScale = new PrecisionScale(2, 1);
+		private static readonly PrecisionScale PrecisionNoScale = new PrecisionScale(4);
+		private static readonly PrecisionScale PrecisionWithScale = new PrecisionScale(4, 2);
 		private static readonly PrecisionScale[] Precisions = new [] { PrecisionNoScale, PrecisionWithScale};
 
 		private Column _column;
@@ -201,6 +201,7 @@ namespace Rivet.Test
 		public void ShouldCreateDecimalColumn(
 			[Values("Decimal")]
 			string name,
+
 			[Values(Nullable.Null, Nullable.NotNull, Nullable.Sparse)]
 			Nullable nullable)
 		{

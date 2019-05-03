@@ -28,7 +28,7 @@
 			var scaleClause = "";
 			if (_hasScale)
 			{
-				scaleClause = $",{Value}";
+				scaleClause = $",{Scale}";
 			}
 			return $"({Precision}{scaleClause})";
 		}
