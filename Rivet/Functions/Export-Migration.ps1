@@ -1599,6 +1599,7 @@ where
         $uniqueKeyColumns | Group-Object -Property 'object_id' | ForEach-Object { $uniqueKeyColumnsByObjectID[[int]$_.Name] = $_.Group }
         #endregion
 
+        $sysDatabases = @( 'master', 'model', 'msdb', 'tempdb' )
         $query = 'select * from sys.sql_expression_dependencies'
         foreach( $row in (Invoke-Query -Query $query) )
         {
@@ -1609,6 +1610,12 @@ where
             }
             if( $row.referenced_database_name )
             {
+                # Allow references to system databases.
+                if( $row.referenced_database_name -in $sysDatabases )
+                {
+                    continue
+                }
+
                 $externalName = '[{0}].{1}' -f $row.referenced_database_name,$externalName
             }
             if( $row.referenced_server_name )
