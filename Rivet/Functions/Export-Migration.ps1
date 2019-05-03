@@ -227,6 +227,47 @@ from
         $exportedObjects[$constraint.object_id] = $true
     }
 
+    $columnsQuery = '
+-- COLUMNS
+select 
+    sys.columns.object_id,
+    sys.columns.is_nullable,
+	sys.types.name as type_name, 
+	sys.columns.name as column_name, 
+	sys.types.collation_name as type_collation_name, 
+	sys.columns.max_length as max_length, 
+	sys.extended_properties.value as description,
+    sys.columns.is_identity,
+    sys.identity_columns.increment_value,
+    sys.identity_columns.seed_value,
+    sys.columns.precision,
+    sys.columns.scale,
+    sys.types.precision as default_precision,
+    sys.types.scale as default_scale,
+    sys.columns.is_sparse,
+    sys.columns.collation_name,
+    serverproperty(''collation'') as default_collation_name,
+    sys.columns.is_rowguidcol,
+	sys.types.system_type_id,
+	sys.types.user_type_id,
+    isnull(sys.identity_columns.is_not_for_replication, 0) as is_not_for_replication,
+    sys.columns.column_id
+from 
+	sys.columns 
+		inner join 
+	sys.types 
+			on columns.user_type_id = sys.types.user_type_id  
+		left join
+	sys.extended_properties
+			on sys.columns.object_id = sys.extended_properties.major_id
+			and sys.columns.column_id = sys.extended_properties.minor_id
+			and sys.extended_properties.name = ''MS_Description''
+        left join
+    sys.identity_columns
+            on sys.columns.object_id = sys.identity_columns.object_id
+            and sys.columns.column_id = sys.identity_columns.column_id
+--where 
+--    sys.columns.object_id = @object_id'
     function Export-Column
     {
         param(
@@ -235,7 +276,7 @@ from
             $TableID
         )
 
-        foreach( $column in $columnsByTable[$TableID] )
+        foreach( $column in ($columnsByTable[$TableID] | Sort-Object -Property 'column_id') )
         {
             $notNull = ''
             $parameters = & {
@@ -265,7 +306,9 @@ from
                 {
                     '-RowGuidCol'
                 }
-                if( $column.precision -ne $column.default_precision )
+
+                $scaleOnlyTypes = @( 'time' )
+                if( $column.precision -ne $column.default_precision -and $column.type_name -notin $scaleOnlyTypes )
                 {
                     '-Precision'
                     $column.precision
@@ -275,6 +318,7 @@ from
                     '-Scale'
                     $column.scale
                 }
+
                 if( $column.is_identity )
                 {
                     '-Identity'
@@ -454,6 +498,12 @@ from
         }
 
         $constraint = $defaultConstraintsByID[$Object.object_id]
+        if( -not $constraint )
+        {
+            Write-Warning -Message ('Unable to export default constraint [{0}].[{1}] ({2}): its metadata is missing from the databse.' -f $Object.schema_name,$Object.name,$Object.object_id)
+            $exportedObjects[$Object.object_id] = $true
+            return
+        }
 
         # Default constraint isn't on a table
         if( $constraint.table_name -eq $null )
@@ -1322,47 +1372,7 @@ where
         $checkConstraints | ForEach-Object { $checkConstraintsByID[$_.object_id] = $_ }
 
         # COLUMNS
-        $query = '
--- COLUMNS
-select 
-    sys.columns.object_id,
-    sys.columns.is_nullable,
-	sys.types.name as type_name, 
-	sys.columns.name as column_name, 
-	sys.types.collation_name as type_collation_name, 
-	sys.columns.max_length as max_length, 
-	sys.extended_properties.value as description,
-    sys.columns.is_identity,
-    sys.identity_columns.increment_value,
-    sys.identity_columns.seed_value,
-    sys.columns.precision,
-    sys.columns.scale,
-    sys.types.precision as default_precision,
-    sys.types.scale as default_scale,
-    sys.columns.is_sparse,
-    sys.columns.collation_name,
-    serverproperty(''collation'') as default_collation_name,
-    sys.columns.is_rowguidcol,
-	sys.types.system_type_id,
-	sys.types.user_type_id,
-    isnull(sys.identity_columns.is_not_for_replication, 0) as is_not_for_replication
-from 
-	sys.columns 
-		inner join 
-	sys.types 
-			on columns.user_type_id = sys.types.user_type_id  
-		left join
-	sys.extended_properties
-			on sys.columns.object_id = sys.extended_properties.major_id
-			and sys.columns.column_id = sys.extended_properties.minor_id
-			and sys.extended_properties.name = ''MS_Description''
-        left join
-    sys.identity_columns
-            on sys.columns.object_id = sys.identity_columns.object_id
-            and sys.columns.column_id = sys.identity_columns.column_id
---where 
---    sys.columns.object_id = @object_id'
-        $columns = Invoke-Query -Query $query #-Parameter @{ '@object_id' = $TableID }        
+        $columns = Invoke-Query -Query $columnsQuery #-Parameter @{ '@object_id' = $TableID }        
         $columns | Group-Object -Property 'object_id' | ForEach-Object { $columnsByTable[[int]$_.Name] = $_.Group }
 
         # DATA TYPES
