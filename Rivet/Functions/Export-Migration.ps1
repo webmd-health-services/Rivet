@@ -144,6 +144,24 @@ function Export-Migration
         }
     }
 
+    $checkConstraintsQuery = '
+-- CHECK CONSTRAINTS
+select 
+    sys.check_constraints.object_id,
+    schema_name(sys.tables.schema_id) as schema_name, 
+    sys.tables.name as table_name, 
+    sys.check_constraints.name as name, 
+    sys.check_constraints.is_not_trusted,
+	sys.check_constraints.is_not_for_replication,
+	sys.check_constraints.is_disabled,
+    sys.check_constraints.definition
+from 
+    sys.check_constraints 
+        join 
+    sys.tables 
+            on sys.check_constraints.parent_object_id = sys.tables.object_id
+--where
+--    sys.check_constraints.object_id = @object_id'
     function Export-CheckConstraint
     {
         param(
@@ -198,6 +216,10 @@ function Export-Migration
 
         $schema = ConvertTo-SchemaParameter -SchemaName $constraint.schema_name
         '    Add-CheckConstraint{0} -TableName ''{1}'' -Name ''{2}'' -Expression ''{3}''{4}{5}' -f $schema,$constraint.table_name,$constraint.name,($constraint.definition -replace '''',''''''),$notForReplication,$notChecked
+        if( $constraint.is_disabled )
+        {
+            '    Disable-Constraint{0} -TableName ''{1}'' -Name ''{2}''' -f $schema,$constraint.table_name,$constraint.name
+        }
         if( -not $ForTable )
         {
             Push-PopOperation ('Remove-CheckConstraint{0} -TableName ''{1}'' -Name ''{2}''' -f $schema,$constraint.table_name,$constraint.name)
@@ -1261,24 +1283,7 @@ where
     {
         #region QUERIES
         # CHECK CONSTRAINTS
-        $query = '
--- CHECK CONSTRAINTS
-select 
-    sys.check_constraints.object_id,
-    schema_name(sys.tables.schema_id) as schema_name, 
-    sys.tables.name as table_name, 
-    sys.check_constraints.name as name, 
-    sys.check_constraints.is_not_trusted,
-	sys.check_constraints.is_not_for_replication,
-    definition 
-from 
-    sys.check_constraints 
-        join 
-    sys.tables 
-            on sys.check_constraints.parent_object_id = sys.tables.object_id
---where
---    sys.check_constraints.object_id = @object_id'
-        $checkConstraints = Invoke-Query -Query $query
+        $checkConstraints = Invoke-Query -Query $checkConstraintsQuery
         $checkConstraints | ForEach-Object { $checkConstraintsByID[$_.object_id] = $_ }
 
         # COLUMNS

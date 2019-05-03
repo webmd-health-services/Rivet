@@ -354,7 +354,7 @@ function Pop-Migration
     ThenMigration -Not -HasContent 'Remove-PrimaryKey'
 }
 
-Describe 'Export-Migration.when exporting a check constraint' {
+Describe 'Export-Migration.when exporting check constraints' {
     Init
     GivenMigration @'
 function Push-Migration
@@ -362,9 +362,12 @@ function Push-Migration
     Add-Table 'CheckConstraint' {
         int ID
         char 'YN' -Size 1
+        int LessThan10
     }
     Add-CheckConstraint -TableName 'CheckConstraint' -Name 'CK_CheckConstraint_ID' -Expression '[ID] > 0 and [ID] < 10'
-    Add-CheckConstraint -TableName 'CheckConstraint' -Name 'CK_CheckConstraint_YN' -Expression '[YN] = ''Y'' or [YN] = ''N'''
+    Add-CheckConstraint -TableName 'CheckConstraint' -Name 'CK_CheckConstraint_YN' -Expression '[YN] = ''Y'' or [YN] = ''N''' -NoCheck
+    Add-CheckConstraint -TableName 'CheckConstraint' -Name 'CK_CheckConstraint_ID_LessThan10' -Expression '[LessThan10] < 10'
+    Disable-Constraint -TableName 'CheckConstraint' -Name 'CK_CheckConstraint_ID_LessThan10'
 }
 
 function Pop-Migration
@@ -374,7 +377,9 @@ function Pop-Migration
 '@
     WhenExporting 'dbo.CK_CheckConstraint_*' -SkipVerification
     ThenMigration -HasContent 'Add-CheckConstraint -TableName ''CheckConstraint'' -Name ''CK_CheckConstraint_ID'' -Expression ''([ID]>(0) AND [ID]<(10))'''
-    ThenMigration -HasContent 'Add-CheckConstraint -TableName ''CheckConstraint'' -Name ''CK_CheckConstraint_YN'' -Expression ''([YN]=''''Y'''' OR [YN]=''''N'''')'
+    ThenMigration -HasContent 'Add-CheckConstraint -TableName ''CheckConstraint'' -Name ''CK_CheckConstraint_YN'' -Expression ''([YN]=''''Y'''' OR [YN]=''''N'''')'' -NoCheck'
+    ThenMigration -HasContent 'Add-CheckConstraint -TableName ''CheckConstraint'' -Name ''CK_CheckConstraint_ID_LessThan10'' -Expression ''([LessThan10]<(10))'''
+    ThenMigration -HasContent 'Disable-Constraint -TableName ''CheckConstraint'' -Name ''CK_CheckConstraint_ID_LessThan10'''
     ThenMigration -HasContent 'Remove-CheckConstraint -TableName ''CheckConstraint'' -Name ''CK_CheckConstraint_ID'''
     ThenMigration -Not -HasContent 'Add-Table'
 }
