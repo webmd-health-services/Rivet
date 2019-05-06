@@ -14,7 +14,7 @@ function Clear-TestDatabase
 
     $startedAt = Get-Date
 
-    if( (Test-Path -Path $RTDatabasesRoot -PathType Container) )
+    if( $RTDatabasesRoot -and (Test-Path -Path $RTDatabasesRoot -PathType Container) )
     {
         Invoke-RTRivet -Pop -All -Database $Name -ConfigFilePath $RTConfigFilePath
     }

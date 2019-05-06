@@ -34,22 +34,21 @@ function New-XmlColumn
     #>
     [CmdletBinding(DefaultParameterSetName='Nullable')]
     param(
-        [Parameter(Mandatory=$true,Position=0)]
+        [Parameter(Mandatory,Position=0)]
         [string]
         # The column's name.
         $Name,
 
-        [Parameter(Mandatory=$true,Position=1)]
+        [Parameter(Position=1)]
         [string]
         # Name of an XML schema collection
         $XmlSchemaCollection,
 
-        [Parameter()]
         [Switch]
         # Specifies that this is a well-formed XML document instead of an XML fragment.
         $Document,
 
-        [Parameter(Mandatory=$true,ParameterSetName='NotNull')]
+        [Parameter(Mandatory,ParameterSetName='NotNull')]
         [Switch]
         # Don't allow `NULL` values in this column.
         $NotNull,
@@ -70,23 +69,28 @@ function New-XmlColumn
         $Description
     )
 
-    switch ($PSCmdlet.ParameterSetName)
+    $nullable = 'Null'
+    if( $PSCmdlet.ParameterSetName -eq 'NotNull' )
     {
-        'Nullable'
+        $nullable = 'NotNull'
+    }
+    else
+    {
+        if( $Sparse )
         {
-            $nullable = 'Null'
-            if( $Sparse )
-            {
-                $nullable = 'Sparse'
-            }
-            [Rivet.Column]::Xml($Name, $Document, $XmlSchemaCollection, $nullable, $Default, $Description)
-        }
-            
-        'NotNull'
-        {
-            [Rivet.Column]::Xml($Name, $Document, $XmlSchemaCollection, 'NotNull', $Default, $Description)
+            $nullable = 'Sparse'
         }
     }
+
+    if( $XmlSchemaCollection )
+    {
+        [Rivet.Column]::Xml($Name,$Document,$XmlSchemaCollection,$nullable,$Default,$description)
+    }
+    else
+    {
+        [Rivet.Column]::Xml($Name,$nullable,$Default,$Description)
+    }
 }
+
     
 Set-Alias -Name 'Xml' -Value 'New-XmlColumn'

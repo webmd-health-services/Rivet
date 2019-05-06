@@ -296,7 +296,12 @@
 		{
 			return new Column(name, DataType.Xml, new XmlPrecisionScale(isDocument, xmlSchemaCollection), nullable, defaultExpression, description);
 		}
-		#endregion
+
+        public static Column Xml(string name, Nullable nullable, string defaultExpression, string description)
+        {
+            return new Column(name, DataType.Xml, new XmlPrecisionScale(), nullable, defaultExpression, description);
+        }
+        #endregion
 
 		public override string ToString()
 		{

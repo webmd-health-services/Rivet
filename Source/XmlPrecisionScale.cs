@@ -4,14 +4,22 @@ namespace Rivet
 {
     public sealed class XmlPrecisionScale : ColumnSize
     {
+        public XmlPrecisionScale() : base(NoSize)
+        {
+            HasSchema = false;
+            Content = false;
+        }
+
         public XmlPrecisionScale(string xmlSchemaCollection) : base(NoSize)
         {
+            HasSchema = true;
             Content = true;
             XmlSchemaCollection = xmlSchemaCollection;
         }
 
         public XmlPrecisionScale(bool isDocument, string xmlSchemaCollection) : base(NoSize)
         {
+            HasSchema = true;
             Document = isDocument;
             XmlSchemaCollection = xmlSchemaCollection;
         }
@@ -24,10 +32,17 @@ namespace Rivet
             set { Content = !value; }
         }
 
+        public bool HasSchema { get; private set; }
+
         public string XmlSchemaCollection { get; private set; }
 
         public override string ToString()
         {
+            if (!HasSchema)
+            {
+                return string.Empty;
+            }
+
             var clause = "content";
             if (Document)
             {

@@ -28,5 +28,12 @@ namespace Rivet.Test
             var size = new XmlPrecisionScale(false, "some other content");
             Assert.That(size.ToString(), Is.EqualTo("(content some other content)"));
         }
+
+        [Test]
+        public void ShouldCreateSizeWhenNoSchema()
+        {
+            var size = new XmlPrecisionScale();
+            Assert.That(size.ToString(), Is.Empty);
+        }
     }
 }

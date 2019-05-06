@@ -1,4 +1,6 @@
 
+Set-StrictMode -Version 'Latest'
+
 & (Join-Path -Path $PSScriptRoot -ChildPath 'Initialize-Test.ps1' -Resolve)
 
 Describe 'New-XmlColumn' {
@@ -89,3 +91,78 @@ Describe 'New-XmlColumn' {
         Assert-Column -Name 'Two' -DataType 'Xml' -TableName 'WithXmlDocument'
     }
 }
+
+function GivenMigration
+{
+    param(
+        [Parameter(Mandatory)]
+        [string]
+        $Migration
+    )
+
+    $Migration | New-TestMigration -Name 'Migration'
+}
+
+function Init
+{
+    Stop-RivetTest -ErrorAction Ignore
+    Start-RivetTest
+}
+
+function ThenMigrationPoppable
+{
+    Invoke-RTRivet -Pop
+}
+
+function ThenTable
+{
+    param(
+        [Parameter(Mandatory)]
+        [string]
+        $Named,
+
+        [Parameter(Mandatory)]
+        [string]
+        $HasXmlColumn,
+
+        [Switch]
+        $NoSchema
+    )
+
+    $column = Get-Column -Name $HasXmlColumn -TableName $Named
+    It ('should create column' ) {
+        $column | Should -Not -BeNullOrEmpty
+        $column.type_name | Should -Be 'xml'
+        if( $NoSchema )
+        {
+            $column.is_xml_document | Should -BeFalse
+            $column.xml_collection_id | Should -Be 0
+        }
+    }
+}
+
+function WhenPushing
+{
+    Invoke-RTRivet -Push
+}
+
+Describe 'New-XmlColumn.when column has no schema' {
+    Init
+    GivenMigration @'
+    function Push-Migration
+    {
+        Add-Table -Name 'WithXmlColumn' -Column {
+            Xml 'Two'
+        }
+    }
+    function Pop-Migration
+    {
+        Remove-Table 'WithXmlColumn'
+    }
+'@
+    WhenPushing
+    ThenTable 'WithXmlColumn' -HasXmlColumn 'Two' -NoSchema
+    ThenMigrationPoppable
+}
+
+Stop-RivetTest

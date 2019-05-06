@@ -198,7 +198,8 @@ Rivet is a database migration/change management/versioning tool inspired by Ruby
 
             # ReleaseNotes of this module
             ReleaseNotes = @'
-Created `Export-Migration` function for exporting database objects as Rivet migrations.
+* Created `Export-Migration` function for exporting database objects as Rivet migrations.
+* Rivet can now add XML columns that don't have schema associated with them.
 '@
         } # End of PSData hashtable
 
