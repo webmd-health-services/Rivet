@@ -1,93 +1,91 @@
 
-& (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
+& (Join-Path -Path $PSScriptRoot -ChildPath 'Initialize-Test.ps1' -Resolve)
 
-function Start-Test
-{
-    Start-RivetTest
-}
-
-function Stop-Test
-{
-    Stop-RivetTest
-}
-
-function Test-ShouldCreateXmlColumnWithContent
-{
-
-@"
-function Push-Migration
-{
-         Invoke-Ddl -Query @'
-create xml schema collection EmptyXsd as 
-N'
-<xsd:schema targetNamespace="http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelManuInstructions" 
-   xmlns          ="http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelManuInstructions" 
-   elementFormDefault="qualified" 
-   attributeFormDefault="unqualified"
-   xmlns:xsd="http://www.w3.org/2001/XMLSchema" >
-
-    <xsd:element  name="root" />
-
-</xsd:schema>
-';
-'@
-
-    Add-Table -Name 'WithXmlContent' -Column {
-        VarChar 'One' -Max -NotNull
-        Xml 'Two' -XmlSchemaCollection 'EmptyXsd'
+Describe 'New-XmlColumn' {
+    BeforeEach {
+        Start-RivetTest
     }
-}
-
-function Pop-Migration
-{
-    Remove-Table 'WithXmlContent'
-    Invoke-Ddl 'drop xml schema collection EmptyXsd'
-}
-"@ | New-TestMigration -Name 'CreateXmlColumn'
-
-    Invoke-RTRivet -Push 'CreateXmlColumn'
     
-    Assert-Table 'WithXmlContent'
-    Assert-Column -Name 'Two' -DataType 'Xml' -TableName 'WithXmlContent'
-}
-
-
-function Test-ShouldCreateXmlColumnWithDocument
-{
-
-@"
-function Push-Migration
-{
-         Invoke-Ddl -Query @'
-create xml schema collection EmptyXsd as 
-N'
-<xsd:schema targetNamespace="http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelManuInstructions" 
-   xmlns          ="http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelManuInstructions" 
-   elementFormDefault="qualified" 
-   attributeFormDefault="unqualified"
-   xmlns:xsd="http://www.w3.org/2001/XMLSchema" >
-
-    <xsd:element  name="root" />
-
-</xsd:schema>
-';
-'@
-
-    Add-Table -Name 'WithXmlDocument' -Column {
-        VarChar 'One' -Max -NotNull
-        Xml 'Two' -Document -XmlSchemaCollection 'EmptyXsd'
+    AfterEach {
+        Stop-RivetTest
     }
-}
-
-function Pop-Migration
-{
-    Remove-Table 'WithXmlDocument'
-    Invoke-Ddl 'drop xml schema collection EmptyXsd'
-}
-"@ | New-TestMigration -Name 'CreateXmlColumn'
-
-    Invoke-RTRivet -Push 'CreateXmlColumn'
     
-    Assert-Table 'WithXmlDocument'
-    Assert-Column -Name 'Two' -DataType 'Xml' -TableName 'WithXmlDocument'
+    It 'should create xml column with content' {
+    
+    @"
+    function Push-Migration
+    {
+             Invoke-Ddl -Query @'
+    create xml schema collection EmptyXsd as 
+    N'
+    <xsd:schema targetNamespace="http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelManuInstructions" 
+       xmlns          ="http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelManuInstructions" 
+       elementFormDefault="qualified" 
+       attributeFormDefault="unqualified"
+       xmlns:xsd="http://www.w3.org/2001/XMLSchema" >
+    
+        <xsd:element  name="root" />
+    
+    </xsd:schema>
+    ';
+'@
+    
+        Add-Table -Name 'WithXmlContent' -Column {
+            VarChar 'One' -Max -NotNull
+            Xml 'Two' -XmlSchemaCollection 'EmptyXsd'
+        }
+    }
+    
+    function Pop-Migration
+    {
+        Remove-Table 'WithXmlContent'
+        Invoke-Ddl 'drop xml schema collection EmptyXsd'
+    }
+"@ | New-TestMigration -Name 'CreateXmlColumn'
+    
+        Invoke-RTRivet -Push 'CreateXmlColumn'
+        
+        Assert-Table 'WithXmlContent'
+        Assert-Column -Name 'Two' -DataType 'Xml' -TableName 'WithXmlContent'
+    }
+    
+    
+    It 'should create xml column with document' {
+    
+    @"
+    function Push-Migration
+    {
+             Invoke-Ddl -Query @'
+    create xml schema collection EmptyXsd as 
+    N'
+    <xsd:schema targetNamespace="http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelManuInstructions" 
+       xmlns          ="http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelManuInstructions" 
+       elementFormDefault="qualified" 
+       attributeFormDefault="unqualified"
+       xmlns:xsd="http://www.w3.org/2001/XMLSchema" >
+    
+        <xsd:element  name="root" />
+    
+    </xsd:schema>
+    ';
+'@
+    
+        Add-Table -Name 'WithXmlDocument' -Column {
+            VarChar 'One' -Max -NotNull
+            Xml 'Two' -Document -XmlSchemaCollection 'EmptyXsd'
+        }
+    }
+    
+    function Pop-Migration
+    {
+        Remove-Table 'WithXmlDocument'
+        Invoke-Ddl 'drop xml schema collection EmptyXsd'
+    }
+"@ | New-TestMigration -Name 'CreateXmlColumn'
+    
+        Invoke-RTRivet -Push 'CreateXmlColumn'
+        
+        Assert-Table 'WithXmlDocument'
+        Assert-Column -Name 'Two' -DataType 'Xml' -TableName 'WithXmlDocument'
+    }
 }
