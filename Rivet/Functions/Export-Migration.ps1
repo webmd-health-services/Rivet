@@ -51,6 +51,7 @@ function Export-Migration
                         }
     $exportedTypes = @{ }
     $exportedIndexes = @{ }
+    $exportedXmlSchemas = @{ }
     $rivetColumnTypes = Get-Alias | 
                             Where-Object { $_.Source -eq 'Rivet' } | 
                             Where-Object { $_.ReferencedCommand -like 'New-*Column' } | 
@@ -104,6 +105,8 @@ function Export-Migration
     $functionsByID = @{}
     $views = $null
     $viewByID = @{}
+    $xmlSchemaDependencies = @{ }
+    $xmlSchemasByID = @{ }
 
     function ConvertTo-SchemaParameter
     {
@@ -229,6 +232,7 @@ from
 
     $columnsQuery = '
 -- COLUMNS
+
 select 
     sys.columns.object_id,
     sys.columns.is_nullable,
@@ -251,7 +255,10 @@ select
 	sys.types.system_type_id,
 	sys.types.user_type_id,
     isnull(sys.identity_columns.is_not_for_replication, 0) as is_not_for_replication,
-    sys.columns.column_id
+    sys.columns.column_id,
+    sys.columns.is_xml_document,
+    sys.columns.xml_collection_id,
+	sys.xml_schema_collections.name as xml_schema_name
 from 
 	sys.columns 
 		inner join 
@@ -266,8 +273,14 @@ from
     sys.identity_columns
             on sys.columns.object_id = sys.identity_columns.object_id
             and sys.columns.column_id = sys.identity_columns.column_id
---where 
---    sys.columns.object_id = @object_id'
+		left join
+	sys.xml_schema_collections
+			on sys.columns.xml_collection_id=sys.xml_schema_collections.xml_collection_id
+		join
+	sys.objects
+		on sys.objects.object_id=sys.columns.object_id
+where 
+    sys.objects.is_ms_shipped=0'
     function Export-Column
     {
         param(
@@ -302,6 +315,20 @@ from
                         '''{0}''' -f $column.collation_name
                     }
                 }
+
+                if( $column.type_name -eq 'xml' )
+                {
+                    if( $column.xml_schema_name )
+                    {
+                        if( $column.is_xml_document )
+                        {
+                            '-Document'
+                        }
+                        '-XmlSchemaCollection'
+                        '''{0}''' -f $column.xml_schema_name
+                    }
+                }
+
                 if( $column.is_rowguidcol )
                 {
                     '-RowGuidCol'
@@ -550,6 +577,14 @@ from
                 foreach( $dependencyID in $dependencies[$ObjectID].Keys )
                 {
                     Export-Object -ObjectID $dependencyID
+                }
+            }
+
+            if( $xmlSchemaDependencies.ContainsKey($ObjectID) )
+            {
+                foreach( $xmlSchemaID in $xmlSchemaDependencies[$ObjectID] )
+                {
+                    Export-XmlSchema -ID $xmlSchemaID
                 }
             }
         }
@@ -807,6 +842,11 @@ from
             Export-Schema -Name $object.schema_name
 
             Export-DependentObject -ObjectID $object.object_id
+
+            if( $exportedObjects.ContainsKey($object.object_id) )
+            {
+                continue
+            }
 
             if( $externalDependencies.ContainsKey($object.object_id) )
             {
@@ -1078,7 +1118,7 @@ from
         $schema = ConvertTo-SchemaParameter -SchemaName $Object.schema_name
         $synonym = $synonymsByID[$Object.object_id]
 
-        if( $synonym.target_object_id )
+        if( $synonym.target_object_id -and $synonym.target_object_id -ne $synonym.object_id )
         {
             Export-Object -ObjectID $synonym.target_object_id
         }
@@ -1298,6 +1338,42 @@ from
         }
         Push-PopOperation ('Remove-View{0} -Name ''{1}''' -f $schema,$Object.name)
         $exportedObjects[$Object.object_id] = $true
+    }
+
+    $xmlSchemaQuery = '
+select 
+    schema_name(schema_id) as schema_name,
+    name,
+	xml_collection_id,
+	XML_SCHEMA_NAMESPACE(schema_name(schema_id),sys.xml_schema_collections.name) as xml_schema
+from 
+	sys.xml_schema_collections
+where 
+	sys.xml_schema_collections.name != ''sys''
+'
+    function Export-XmlSchema
+    {
+        param(
+            [Parameter(Mandatory)]
+            [int]
+            $ID
+        )
+
+        if( $exportedXmlSchemas.ContainsKey($ID) )
+        {
+            return
+        }
+
+        $xmlSchema = $xmlSchemasByID[$ID]
+
+        '    Invoke-Ddl @'''
+        'create xml schema collection [{0}].[{1}] as' -f $xmlSchema.schema_name,$xmlSchema.name
+        'N'''
+        $xmlschema.xml_schema
+        ''''
+        '''@'
+        Push-PopOperation ('Invoke-Ddl ''drop xml schema collection [{0}].[{1}]''' -f $xmlSchema.schema_name,$xmlSchema.name)
+        $exportedXmlSchemas[$ID] = $true
     }
 
     function Push-PopOperation
@@ -1622,6 +1698,26 @@ where
 '
         $uniqueKeyColumns = Invoke-Query -Query $query # -Parameter @{ '@object_id' = $Object.object_id }
         $uniqueKeyColumns | Group-Object -Property 'object_id' | ForEach-Object { $uniqueKeyColumnsByObjectID[[int]$_.Name] = $_.Group }
+
+        $query = '
+select 
+	sys.columns.object_id,
+	sys.columns.xml_collection_id
+from 
+	sys.columns 
+		join
+	sys.types
+			on sys.columns.user_type_id=sys.types.user_type_id
+			and sys.columns.system_type_id=sys.types.system_type_id
+where 
+	sys.types.name = ''xml'' and
+	sys.columns.xml_collection_id != 0
+'
+        $objectsWithXmlSchemas = Invoke-Query -Query $query
+        $objectsWithXmlSchemas | Group-Object -Property 'object_id' | ForEach-Object { $xmlSchemaDependencies[[int]$_.Name] = $_.Group | Select-Object -ExpandProperty 'xml_collection_id' | Select-Object -Unique }
+
+        $xmlSchemas = Invoke-Query -Query $xmlSchemaQuery
+        $xmlSchemas | ForEach-Object { $xmlSchemasByID[$_.xml_collection_id] = $_ }
         #endregion
 
         $sysDatabases = @( 'master', 'model', 'msdb', 'tempdb' )

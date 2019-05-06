@@ -149,6 +149,7 @@ function Push-Migration
         binary 'BinSixteen' -Size 16
         time 'DefaultTime'
         time 'CustomTime' -Scale 5
+        xml 'DefaultXml'
     }
     Add-PrimaryKey -TableName 'Migrations' -ColumnName 'ID'
     Add-DefaultConstraint -TableName 'Migrations' -ColumnName 'AtUtc' -Expression '(getutcdate())'
@@ -161,6 +162,7 @@ function Push-Migration
 
 function Pop-Migration
 {
+    Invoke-Ddl 'drop xml schema collection EmptyXsd'
     Remove-Table 'Migrations'
     Remove-DataType 'CUI'
 }
@@ -197,6 +199,7 @@ function Pop-Migration
         binary 'BinSixteen' -Size 16
         time 'DefaultTime'
         time 'CustomTime' -Scale 5
+        xml 'DefaultXml'
     }
 '@
     ThenMigration -HasContent @'
@@ -255,6 +258,49 @@ function Pop-Migration
         int 'ID' -Identity -NotForReplication
     }
 '@
+}
+
+Describe 'Export-Migration.when XML column has a schema' {
+    Init
+    GivenMigration @'
+function Push-Migration
+{
+    Invoke-Ddl -Query '
+    create xml schema collection EmptyXsd as 
+    N''
+    <xsd:schema targetNamespace="http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelManuInstructions" 
+       xmlns          ="http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelManuInstructions" 
+       elementFormDefault="qualified" 
+       attributeFormDefault="unqualified"
+       xmlns:xsd="http://www.w3.org/2001/XMLSchema" >
+    
+        <xsd:element  name="root" />
+    
+    </xsd:schema>
+    ''
+'
+
+    Add-Table -Name 'Xml' -Column {
+        xml 'Content' -XmlSchemaCollection 'EmptyXsd'
+        Xml 'Document' -Document -XmlSchemaCollection 'EmptyXsd'
+    }
+}
+
+function Pop-Migration
+{
+    Remove-Table 'Xml'
+    Invoke-Ddl 'drop xml schema collection EmptyXsd'
+}
+'@
+    WhenExporting
+    ThenMigration -HasContent @'
+    Add-Table -Name 'Xml' -Column {
+        xml 'Content' -XmlSchemaCollection 'EmptyXsd'
+        Xml 'Document' -Document -XmlSchemaCollection 'EmptyXsd'
+    }
+'@
+    ThenMigration -HasContent 'create xml schema collection [dbo].[EmptyXsd]'
+    ThenMigration -HasContent 'drop xml schema collection [dbo].[EmptyXsd]'
 }
 
 Describe 'Export-Migration.when exporting with wildcards' {
