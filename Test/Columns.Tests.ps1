@@ -564,3 +564,78 @@ function Pop-Migration()
         Assert-Column -Name 'decimalidentity' 'decimal' -Size 5 -Seed 37 -Increment 41 -NotNull -NotForReplication  -TableName 'DecimalIdentity'
     }
 }
+
+function GivenMigration
+{
+    param(
+        [Parameter(Mandatory)]
+        [string]
+        $Content
+    )
+
+    $Content | New-TestMigration -Name 'Columns'
+}
+
+function Init
+{
+    Stop-RivetTest
+    Start-RivetTest
+}
+
+function WhenPushing
+{
+    Invoke-RTRivet -Push
+}
+
+Describe 'Columns.when adding generic columns' {
+    Init
+    GivenMigration @'
+function Push-Migration
+{
+    Add-Table 'CustomColumns' {
+        New-Column 'ID' 'int' -Identity -Seed 101 -Increment 11 -NotForReplication
+        New-Column 'one' 'varchar' -Collation 'Korean_100_CS_AS_KS_WS_SC' -Default '''fubar''' -Description 'snafu'
+        New-Column 'two' 'varchar' -Size 50 -NotNull
+        New-Column 'three' 'varchar' -Size 51 -Sparse
+        New-Column 'four' 'decimal' -Precision 4 -Scale 2 -NotNull
+        New-Column 'five' 'decimal' -Precision 3 -Scale 1 -Sparse
+        New-Column 'six' 'time' -Scale 4 -NotNull
+        New-Column 'seven' 'time' -Scale 3 -Sparse
+        New-Column 'eight' 'int' -NotNull
+        New-Column 'nine' 'money' -Sparse
+        New-Column 'ten' 'uniqueidentifier' -RowGuidCol
+        New-Column 'eleven' 'decimal(5,2)'
+        New-Column 'twelve' 'varchar' -Max -NotNull
+    }
+}
+function Pop-Migration
+{
+    Remove-Table 'CustomColumns'
+}
+'@
+    WhenPushing
+    try
+    {
+        It 'should create table with correct columns' {
+            Assert-Table 'CustomColumns'
+            Assert-Column -TableName 'CustomColumns' -Name 'ID' -DataType 'int' -NotNull -Seed 101 -Increment 11 -NotForReplication
+            Assert-Column -TableName 'CustomColumns' -Name 'one' -DataType 'varchar' -Size 1 -Collation 'Korean_100_CS_AS_KS_WS_SC' -Default 'fubar' -Description 'snafu'
+            Assert-Column -TableName 'CustomColumns' -Name 'two' -DataType 'varchar' -Size 50 -NotNull
+            Assert-Column -TableName 'CustomColumns' -Name 'three' -DataType 'varchar' -Size 51 -Sparse
+            Assert-Column -TableName 'CustomColumns' -Name 'four' -DataType 'decimal' -Precision 4 -Scale 2 -NotNull
+            Assert-Column -TableName 'CustomColumns' -Name 'five' -DataType 'decimal' -Precision 3 -Scale 1 -Sparse
+            Assert-Column -TableName 'CustomColumns' -Name 'six' -DataType 'time' -Scale 4 -NotNull
+            Assert-Column -TableName 'CustomColumns' -Name 'seven' -DataType 'time' -Scale 3 -Sparse
+            Assert-Column -TableName 'CustomColumns' -Name 'eight' -DataType 'int' -NotNull
+            Assert-Column -TableName 'CustomColumns' -Name 'nine' -DataType 'money' -Sparse
+            Assert-Column -TableName 'CustomColumns' -Name 'ten' -DataType 'uniqueidentifier' -RowGuidCol
+            Assert-Column -TableName 'CustomColumns' -Name 'eleven' -DataType 'decimal' -Precision 5 -Scale 2
+            Assert-Column -TableName 'CustomColumns' -Name 'twelve' -DataType 'varchar' -Max -NotNull
+        }
+    }
+    finally
+    {
+        Invoke-RTRivet -Pop
+        Stop-RivetTest
+    }
+}

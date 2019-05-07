@@ -827,12 +827,7 @@ namespace Rivet.Test
 			var sparseClause = ConvertToSparseClause(nullable);
 			var defaultClause = ConvertToDefaultClause(defaultExpression, "any", "any", false);
 
-			var dataTypeName = dataType.ToString().ToLowerInvariant();
-			if (dataType == DataType.SqlVariant)
-			{
-				dataTypeName = "sql_variant";
-			}
-			Assert.That(_column.GetColumnDefinition("any","any",false), Is.EqualTo(string.Format("[{0}] {1}{2}{3}{4}", name, dataTypeName, notNullClause, defaultClause, sparseClause)));
+			Assert.That(_column.GetColumnDefinition("any","any",false), Is.EqualTo(string.Format("[{0}] {1}{2}{3}{4}", name, dataType, notNullClause, defaultClause, sparseClause)));
 		}
 
 		private void ThenColumnShouldBe(string name, DataType dataType, ColumnSize size, bool filestream,
