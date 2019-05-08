@@ -252,7 +252,6 @@ from
 
     $columnsQuery = '
 -- COLUMNS
-
 select 
     sys.columns.object_id,
     sys.columns.is_nullable,
@@ -278,7 +277,8 @@ select
     sys.columns.column_id,
     sys.columns.is_xml_document,
     sys.columns.xml_collection_id,
-	sys.xml_schema_collections.name as xml_schema_name
+	sys.xml_schema_collections.name as xml_schema_name,
+    sys.types.max_length as default_max_length
 from 
 	sys.columns 
 		inner join 
@@ -312,19 +312,24 @@ from
                 $isBinaryVarColumn = $column.type_name -in @( 'varbinary', 'binary' )
                 if( $column.type_collation_name -or $isBinaryVarColumn )
                 {
-                    $maxLength = $column.max_length
-                    if( $maxLength -eq -1 )
+                    $isSizable = $column.type_name -in @( 'binary', 'char', 'nchar', 'nvarchar', 'varbinary', 'varchar' )
+                    if( $isSizable )
                     {
-                        '-Max'
-                    }
-                    else
-                    {
-                        if( $column.type_name -like 'n*' )
+                        $maxLength = $column.max_length
+                        if( $maxLength -eq -1 )
                         {
-                            $maxLength = $maxLength / 2
+                            '-Max'
                         }
-                        '-Size {0}' -f $maxLength
+                        else
+                        {
+                            if( $column.type_name -like 'n*' )
+                            {
+                                $maxLength = $maxLength / 2
+                            }
+                            '-Size {0}' -f $maxLength
+                        }
                     }
+
                     if( $column.collation_name -ne $column.default_collation_name -and -not $isBinaryVarColumn )
                     {
                         '-Collation'
@@ -420,11 +425,16 @@ from
             $Object
         )
 
+        if( $ExcludeType -contains 'DataType' )
+        {
+            return
+        }
+
         if( $PSCmdlet.ParameterSetName -eq 'All' )
         {
             foreach( $object in $dataTypes )
             {
-                if( (Test-SkipObject -SchemaName $object.schema_name -Name $object.name) -or $Exclude -contains 'DataType' )
+                if( (Test-SkipObject -SchemaName $object.schema_name -Name $object.name) )
                 {
                     continue
                 }
@@ -1420,7 +1430,11 @@ where
         }
     }
 
-    $objectTypesToExclude = $ExcludeType | ForEach-Object { $exclusionTypeMap[$_] }
+    $objectTypesToExclude = @()
+    if( $ExcludeType )
+    {
+        $objectTypesToExclude = $ExcludeType | ForEach-Object { $exclusionTypeMap[$_] }
+    }
     function Test-SkipObject
     {
         param(
@@ -1454,16 +1468,22 @@ where
 
         if( $Include )
         {
+            $skip = $true
             foreach( $filter in $Include )
             {
                 if( $fullName -like $filter )
                 {
-                    return $false
+                    $skip = $false
+                    break
                 }
+            }
+            if( $skip )
+            {
+                return $true
             }
         }
 
-        return $true
+        return $false
     }
 
     function Write-ExportingMessage

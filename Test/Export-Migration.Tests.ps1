@@ -126,7 +126,7 @@ Describe 'Export-Migration.when exporting a table' {
     GivenMigration @'
 function Push-Migration
 {
-    Add-DataType -Name 'CUI' -From 'char(8)'
+    Add-DataType -Name 'CID' -From 'char(8)'
     Add-Table -Name 'Migrations' -Description 'some table''s description' -Column {
         int 'ID' -Identity
         bigint 'BigID' -NotNull -Description 'some bigint column''s description'
@@ -147,7 +147,7 @@ function Push-Migration
         New-Column -DataType 'image' -Name 'imagecolumn'
         New-Column -DataType 'sysname' -Name 'sysnamecolumn' -NotNull 
         New-Column -DataType 'sql_variant' -Name 'sql_variantcolumn' -Sparse
-        New-Column -DataType 'CUI' -Name 'CUI' -NotNull
+        New-Column -DataType 'CID' -Name 'CID' -NotNull
         varbinary 'VarBinDefault' -Size 1
         varbinary 'VarBinLargest' -Size 8000
         varbinary 'VarBinCustom' -Size 101
@@ -157,6 +157,7 @@ function Push-Migration
         time 'DefaultTime'
         time 'CustomTime' -Scale 5
         xml 'DefaultXml'
+        varchar 'ExplicitMaxSize' -Size 8000
     }
     Add-PrimaryKey -TableName 'Migrations' -ColumnName 'ID'
     Add-DefaultConstraint -TableName 'Migrations' -ColumnName 'AtUtc' -Expression '(getutcdate())'
@@ -170,7 +171,7 @@ function Push-Migration
 function Pop-Migration
 {
     Remove-Table 'Migrations'
-    Remove-DataType 'CUI'
+    Remove-DataType 'CID'
 }
 '@
     WhenExporting
@@ -196,7 +197,7 @@ function Pop-Migration
         New-Column -DataType 'image' -Name 'imagecolumn'
         New-Column -DataType 'sysname' -Name 'sysnamecolumn' -NotNull
         New-Column -DataType 'sql_variant' -Name 'sql_variantcolumn' -Sparse
-        New-Column -DataType 'CUI' -Name 'CUI' -NotNull
+        New-Column -DataType 'CID' -Name 'CID' -NotNull
         varbinary 'VarBinDefault' -Size 1
         varbinary 'VarBinLargest' -Size 8000
         varbinary 'VarBinCustom' -Size 101
@@ -206,6 +207,7 @@ function Pop-Migration
         time 'DefaultTime'
         time 'CustomTime' -Scale 5
         xml 'DefaultXml'
+        varchar 'ExplicitMaxSize' -Size 8000
     }
 '@
     ThenMigration -HasContent @'
@@ -654,8 +656,8 @@ function Push-Migration
 {
     Add-Schema 'export'
     Add-DataType 'GUID' 'uniqueidentifier'
-    Add-DataType 'SUI' 'int'
-    Add-DataType 'CUI' 'char(8)'
+    Add-DataType 'SID' 'int'
+    Add-DataType 'CID' 'char(8)'
     Add-DataType 'mymoney' 'decimal(20,2) not null'
     Add-DataType 'lotsa' 'varchar(max)'
     Add-DataType -SchemaName 'export' 'GUID2' 'uniqueidentifier'
@@ -677,16 +679,16 @@ function Pop-Migration
     Remove-DataType -SchemaName 'export' 'GUID2'
     Remove-DataType 'lotsa'
     Remove-DataType 'mymoney'
-    Remove-DataType 'CUI'
-    Remove-DataType 'SUI'
+    Remove-DataType 'CID'
+    Remove-DataType 'SID'
     Remove-Datatype 'GUID'
     Remove-Schema 'export'
 }
 '@
     WhenExporting
     ThenMigration -HasContent 'Add-DataType -Name ''GUID'' -From ''uniqueidentifier'''
-    ThenMigration -HasContent 'Add-DataType -Name ''SUI'' -From ''int'''
-    ThenMigration -HasContent 'Add-DataType -Name ''CUI'' -From ''char(8)'''
+    ThenMigration -HasContent 'Add-DataType -Name ''SID'' -From ''int'''
+    ThenMigration -HasContent 'Add-DataType -Name ''CID'' -From ''char(8)'''
     ThenMigration -HasContent 'Add-DataType -Name ''mymoney'' -From ''decimal(20,2) not null'''
     ThenMigration -HasContent 'Add-DataType -Name ''lotsa'' -From ''varchar(max)'''
     ThenMigration -HasContent 'Add-DataType -SchemaName ''export'' -Name ''GUID2'' -From ''uniqueidentifier'''
