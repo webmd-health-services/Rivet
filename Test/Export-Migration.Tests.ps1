@@ -4,10 +4,12 @@ Set-StrictMode -Version 'Latest'
 & (Join-Path -Path $PSScriptRoot -ChildPath 'Initialize-Test.ps1' -Resolve)
 
 $migration = $null
+$originalMigration = $null
 
 function Init
 {
     $script:migration = $null
+    $script:originalMigration = $null
 }
 
 function GivenDatabase
@@ -29,7 +31,7 @@ function GivenMigration
         $Content
     )
 
-    $script:migration = $Content
+    $script:originalMigration = $Content
 }
 
 function ThenNoErrors
@@ -73,16 +75,19 @@ function WhenExporting
         $SkipVerification,
 
         [string[]]
-        $ExcludeType
+        $ExcludeType,
+
+        [string[]]
+        $Exclude
     )
 
     Start-RivetTest
     try
     {
         $migrationPath = ''
-        if( $migration )
+        if( $originalMigration )
         {
-            $migrationPath = $migration | New-TestMigration -Name 'ExportMigration'
+            $migrationPath = $originalMigration | New-TestMigration -Name 'ExportMigration'
         }
 
         Invoke-RTRivet -Push
@@ -95,6 +100,11 @@ function WhenExporting
         if( $PSBoundParameters.ContainsKey('ExcludeType') )
         {
             $optionalParams['ExcludeType'] = $ExcludeType
+        }
+
+        if( $PSBoundParameters.ContainsKey('Exclude') )
+        {
+            $optionalParams['Exclude'] = $Exclude
         }
 
         $Global:Error.Clear()
@@ -1165,3 +1175,65 @@ function Pop-Migration
 {
 }'
 }
+
+
+Describe 'Export-Migration.when excluding objects by name' {
+    Init
+    GivenMigration @'
+function Push-Migration
+{
+    Add-DataType 'SID' -From 'int'
+
+    Add-Table -Name 'Table1' -Column {
+        int 'ID' -NotNull
+        New-Column -DataType 'SID' -Name 'AnotherID' -NotNull
+    }
+    Add-PrimaryKey -TableName 'Table1' -ColumnName 'ID'
+    Add-CheckConstraint -TableName 'Table1' -Expression '[ID]<10' -Name 'CK_Table1_ID'
+    Add-DefaultConstraint -TableName 'Table1' -ColumnName 'ID' -Expression '1'
+    Add-Index -TableName 'Table1' -ColumnName 'AnotherID'
+
+    Add-Schema -Name 'export'
+    Add-UserDefinedFunction -SchemaName 'export' -Name 'CallSomething' -Definition '() returns tinyint as begin return 1 end'
+    
+    Add-Schema -Name 'export2'
+    Add-UserDefinedFunction -SchemaName 'export2' -Name 'CallInlineTable' -Definition '() returns table as return( select 1 as name )'
+
+    Add-UserDefinedFunction -Name 'CallTable' -Definition '() returns @Table TABLE ( ID int primary key ) as begin insert into @Table select 1 return end'
+    Add-StoredProcedure -Name 'DoSomething' -Definition 'as select 1'
+    Add-Synonym -Name 'Table2' -TargetObjectName 'Table1'
+    Add-Trigger -Name 'trgTable1' -Definition 'ON [dbo].[Table1] for insert as select 1'
+    Add-View -Name 'ViewSomething' -Definition 'as select 1 as one'
+}
+
+function Pop-Migration
+{
+    Remove-View 'ViewSomething'
+    Remove-Synonym 'Table2'
+    Remove-StoredProcedure 'DoSomething'
+    Remove-UserDefinedFunction 'CallTable'
+    Remove-UserDefinedFunction -SchemaName 'export2' 'CallInlineTable'
+    Remove-Schema 'export2'
+    Remove-UserDefinedFunction -SchemaName 'export' 'CallSomething'
+    Remove-Schema 'export'
+    Remove-Table 'Table1'
+    Remove-DataType 'SID'
+}
+'@
+    WhenExporting -Exclude 'export.*' -SkipVerification
+    ThenMigration -Not -HasContent '-SchemaName ''export'''
+    ThenMigration -Not -HasContent 'Add-Schema -Name ''export'''
+    ThenMigration -HasContent 'Add-Schema -Name ''export2'''
+    ThenMigration -HasContent 'Add-Table -Name ''Table1'''
+    ThenMigration -HasContent 'Add-DataType -Name ''SID'''
+    ThenMigration -HasContent 'Add-Index -TableName ''Table1'''
+
+    WhenExporting -Exclude '*.SID','*.Table1' -SkipVerification
+    ThenMigration -Not -HasContent 'Add-DataType'
+    ThenMigration -Not -HasContent 'Add-Table -TableName ''Table1'''
+    ThenMigration -HasContent 'Add-PrimaryKey'
+    ThenMigration -HasContent 'Add-CheckConstraint'
+    ThenMigration -HasContent 'Add-DefaultConstraint'
+    ThenMigration -HasContent 'Add-Index -TableName ''Table1'' -ColumnName ''AnotherID'''
+}
+

@@ -34,6 +34,10 @@ function Export-Migration
         $Include,
 
         [string[]]
+        # The names of any objects *not* to export. Matches the object name *and* its schema name, i.e. `schema.name`. Wildcards supported.
+        $Exclude,
+
+        [string[]]
         [ValidateSet('CheckConstraint','DataType','DefaultConstraint','ForeignKey','Function','Index','PrimaryKey','Schema','StoredProcedure','Synonym','Table','Trigger','UniqueKey','View','XmlSchema')]
         # Any object types to exclude.
         $ExcludeType,
@@ -1451,7 +1455,7 @@ where
             $Type
         )
 
-        if( -not $Include -and -not $ExcludeType )
+        if( -not $Include -and -not $ExcludeType -and -not $Exclude )
         {
             return $false
         }
@@ -1481,6 +1485,17 @@ where
             if( $skip )
             {
                 return $true
+            }
+        }
+
+        if( $Exclude )
+        {
+            foreach( $filter in $Exclude )
+            {
+                if( $fullName -like $filter )
+                {
+                    return $true
+                }
             }
         }
 
