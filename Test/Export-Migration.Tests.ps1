@@ -1176,7 +1176,6 @@ function Pop-Migration
 }'
 }
 
-
 Describe 'Export-Migration.when excluding objects by name' {
     Init
     GivenMigration @'

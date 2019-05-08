@@ -1161,7 +1161,14 @@ from
         {
             Export-Object -ObjectID $synonym.target_object_id
         }
-        
+
+        if( $synonym.database_name -and $synonym.database_name -ne $Database )
+        {
+            Write-Warning -Message ('Unable to export SYNONYM {0}.{1}: it depends on external object [{2}].[{3}].[{4}].' -f $Object.schema_name,$Object.name,$synonym.database_name,$synonym.schema_name,$synonym.object_name)
+            $exportedObjects[$Object.object_id] = $true
+            return
+        }
+
         $targetDBName = ''
         if( $synonym.database_name )
         {
@@ -1190,8 +1197,6 @@ from
 
         $schema = ConvertTo-SchemaParameter -SchemaName $Object.schema_name
 
-        Push-PopOperation ('Remove-Table{0} -Name ''{1}''' -f $schema,$object.object_name)
-
         $description = $Object.description
         if( $description )
         {
@@ -1211,6 +1216,9 @@ from
         Export-Index -TableID $Object.object_id -ForTable
         Export-UniqueKey -TableID $Object.object_id -ForTable
         Export-Trigger -TableID $Object.object_id -ForTable
+
+        # Do this last because table objects can reference other objects and those would need to get removed before the table
+        Push-PopOperation ('Remove-Table{0} -Name ''{1}''' -f $schema,$object.object_name)
     }
 
     function Export-Trigger
