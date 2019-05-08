@@ -607,9 +607,19 @@ function Push-Migration
         New-Column 'eleven' 'decimal(5,2)'
         New-Column 'twelve' 'varchar' -Max -NotNull
     }
+
+    Add-Table 'DefaultIdentity' {
+        New-Column 'ID' int -Identity
+    }
+
+    Add-Table 'NotForReplicationIdentity' {
+        New-Column 'ID' int -Identity -NotForReplication
+    }
 }
 function Pop-Migration
 {
+    Remove-Table 'NotForReplicationIdentity'
+    Remove-Table 'DefaultIdentity'
     Remove-Table 'CustomColumns'
 }
 '@
@@ -631,6 +641,10 @@ function Pop-Migration
             Assert-Column -TableName 'CustomColumns' -Name 'ten' -DataType 'uniqueidentifier' -RowGuidCol
             Assert-Column -TableName 'CustomColumns' -Name 'eleven' -DataType 'decimal' -Precision 5 -Scale 2
             Assert-Column -TableName 'CustomColumns' -Name 'twelve' -DataType 'varchar' -Max -NotNull
+            Assert-Table 'DefaultIdentity'
+            Assert-Column -TableName 'DefaultIdentity' -Name 'ID' -DataType 'int' -NotNull -Seed 1 -Increment 1
+            Assert-Table 'NotForReplicationIdentity'
+            Assert-Column -TableName 'NotForReplicationIdentity' -Name 'ID' -DataType 'int' -NotNull -Seed 1 -Increment 1 -NotForReplication
         }
     }
     finally

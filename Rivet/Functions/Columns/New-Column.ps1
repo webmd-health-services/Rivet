@@ -160,7 +160,7 @@ function New-Column
         [Switch]
         $Identity,
 
-        [Parameter(Mandatory,ParameterSetName='Identity')]
+        [Parameter(ParameterSetName='Identity')]
         [int]
         # The starting value for the identity column.
         $Seed,
@@ -234,7 +234,11 @@ function New-Column
 
     if( $PSCmdlet.ParameterSetName -eq 'Identity' )
     {
-        $identityParam = [Rivet.Identity]::new($Seed,$Increment,$NotForReplication)
+        [Rivet.Identity]$identityParam = [Rivet.Identity]::new($NotForReplication)
+        if( $Seed -or $Increment )
+        {
+            $identityParam = [Rivet.Identity]::new($Seed,$Increment,$NotForReplication)
+        }
         [Rivet.Column]::new($Name,$DataType,$sizeParam,$identityParam,$RowGuidCol,$Description,$FileStream)
     }
     else
