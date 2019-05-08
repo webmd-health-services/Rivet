@@ -33,6 +33,11 @@ function Export-Migration
         # The default behavior is to export all non-system objects.
         $Include,
 
+        [string[]]
+        [ValidateSet('CheckConstraint','DataType','DefaultConstraint','ForeignKey','Function','Index','PrimaryKey','Schema','StoredProcedure','Synonym','Table','Trigger','UniqueKey','View','XmlSchema')]
+        # Any object types to exclude.
+        $ExcludeType,
+
         [Switch]
         $NoProgress
     )
@@ -107,6 +112,21 @@ function Export-Migration
     $viewByID = @{}
     $xmlSchemaDependencies = @{ }
     $xmlSchemasByID = @{ }
+
+    $exclusionTypeMap = @{ 
+        'CheckConstraint' = 'CHECK_CONSTRAINT';
+        'DefaultConstraint' = 'DEFAULT_CONSTRAINT';
+        'ForeignKey' = 'FOREIGN_KEY_CONSTRAINT';
+        'Function' = @('SQL_INLINE_TABLE_VALUED_FUNCTION','SQL_SCALAR_FUNCTION','SQL_TABLE_VALUED_FUNCTION');
+        'PrimaryKey' = 'PRIMARY_KEY_CONSTRAINT';
+        'StoredProcedure' = 'SQL_STORED_PROCEDURE';
+        'Synonym' = 'SYNONYM';
+        'Table' = 'USER_TABLE';
+        'Trigger' = 'SQL_TRIGGER';
+        'UniqueKey' = 'UNIQUE_CONSTRAINT';
+        'View' = 'VIEW';
+    }
+
 
     function ConvertTo-SchemaParameter
     {
@@ -404,7 +424,7 @@ from
         {
             foreach( $object in $dataTypes )
             {
-                if( (Test-SkipObject -SchemaName $object.schema_name -Name $object.name) )
+                if( (Test-SkipObject -SchemaName $object.schema_name -Name $object.name) -or $Exclude -contains 'DataType' )
                 {
                     continue
                 }
@@ -711,7 +731,7 @@ from
         {
             foreach( $object in $indexes )
             {
-                if( (Test-SkipObject -SchemaName $Object.schema_name -Name $Object.name) )
+                if( (Test-SkipObject -SchemaName $Object.schema_name -Name $Object.name) -or $ExcludeType -contains 'Index' )
                 {
                     continue
                 }
@@ -821,7 +841,7 @@ from
                 continue
             }
 
-            if( (Test-SkipObject -SchemaName $object.schema_name -Name $object.object_name) )
+            if( (Test-SkipObject -SchemaName $object.schema_name -Name $object.object_name -Type $object.type_desc) )
             {
                 continue
             }
@@ -1368,6 +1388,11 @@ where
             return
         }
 
+        if( $ExcludeType -contains 'XmlSchema' )
+        {
+            return
+        }
+
         $xmlSchema = $xmlSchemasByID[$ID]
 
         Write-ExportingMessage -SchemaName $xmlSchema.schema_name -Name $xmlSchema.name -Type XmlSchema
@@ -1395,6 +1420,7 @@ where
         }
     }
 
+    $objectTypesToExclude = $ExcludeType | ForEach-Object { $exclusionTypeMap[$_] }
     function Test-SkipObject
     {
         param(
@@ -1404,24 +1430,39 @@ where
 
             [Parameter(Mandatory)]
             [string]
-            $Name
+            $Name,
+
+            [string]
+            $Type
         )
 
-        if( -not $Include )
+        if( -not $Include -and -not $ExcludeType )
         {
             return $false
         }
 
         $fullName = '{0}.{1}' -f $SchemaName,$Name
-        foreach( $filter in $Include )
+
+        if( $Type )
         {
-            if( $fullName -like $filter )
+            if( $objectTypesToExclude -contains $Type )
             {
-                return $false
+                Write-Debug ('Skipping   EXCLUDED TYPE      {0}  {1}' -f $fullName,$Type)
+                return $true
             }
         }
 
-        Write-Debug ('Skipping   NOT SELECTED      {0}' -f $fullName)
+        if( $Include )
+        {
+            foreach( $filter in $Include )
+            {
+                if( $fullName -like $filter )
+                {
+                    return $false
+                }
+            }
+        }
+
         return $true
     }
 

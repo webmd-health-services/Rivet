@@ -1,4 +1,3 @@
-
 #Requires -Version 5.1
 Set-StrictMode -Version 'Latest'
 
@@ -71,7 +70,10 @@ function WhenExporting
         $Include,
 
         [Switch]
-        $SkipVerification
+        $SkipVerification,
+
+        [string[]]
+        $ExcludeType
     )
 
     Start-RivetTest
@@ -88,6 +90,11 @@ function WhenExporting
         if( $PSBoundParameters.ContainsKey('Include') )
         {
             $optionalParams['Include'] = $Include
+        }
+
+        if( $PSBoundParameters.ContainsKey('ExcludeType') )
+        {
+            $optionalParams['ExcludeType'] = $ExcludeType
         }
 
         $Global:Error.Clear()
@@ -162,7 +169,6 @@ function Push-Migration
 
 function Pop-Migration
 {
-    Invoke-Ddl 'drop xml schema collection EmptyXsd'
     Remove-Table 'Migrations'
     Remove-DataType 'CUI'
 }
@@ -1081,4 +1087,79 @@ function Pop-Migration
     ThenMigration -HasContent 'int ''ID'' -Identity -Seed 101 -Increment 1'
     ThenMigration -HasContent 'int ''ID2'' -Identity -Seed 1 -Increment 101'
     ThenMigration -HasContent 'int ''ID3'' -Identity'
+}
+
+Describe 'Export-Migration.when excluding objects by type' {
+    Init
+    GivenMigration @'
+function Push-Migration
+{
+    Invoke-Ddl -Query '
+    create xml schema collection EmptyXsd as 
+    N''
+    <xsd:schema targetNamespace="http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelManuInstructions" 
+       xmlns          ="http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelManuInstructions" 
+       elementFormDefault="qualified" 
+       attributeFormDefault="unqualified"
+       xmlns:xsd="http://www.w3.org/2001/XMLSchema" >
+    
+        <xsd:element  name="root" />
+    
+    </xsd:schema>
+    ''
+'
+
+    Add-DataType 'SID' -From 'int'
+
+    Add-Table -Name 'Xml' -Column {
+        int 'ID' -NotNull
+        xml 'Content' -XmlSchemaCollection 'EmptyXsd'
+        Xml 'Document' -Document -XmlSchemaCollection 'EmptyXsd'
+        New-Column -DataType 'SID' -Name 'AnotherID' -NotNull
+    }
+    Add-PrimaryKey -TableName 'Xml' -ColumnName 'ID'
+    Add-CheckConstraint -TableName 'Xml' -Expression '[ID]<10' -Name 'CK_Xml_ID'
+    Add-DefaultConstraint -TableName 'Xml' -ColumnName 'ID' -Expression '1'
+    Add-Index -TableName 'Xml' -ColumnName 'AnotherID'
+
+    Add-Table -Name 'Xml2' -Column {
+        int 'ID' -NotNull
+        int 'XmlID' -NotNull
+    }
+    Add-UniqueKey -TableName 'Xml2' -ColumnName 'ID'
+    Add-ForeignKey -TableName 'Xml2' -ColumnName 'XmlID' -References 'Xml' -ReferencedColumn 'ID'
+
+    Add-Schema -Name 'export'
+    Add-UserDefinedFunction -SchemaName 'export' -Name 'CallSomething' -Definition '() returns tinyint as begin return 1 end'
+    Add-UserDefinedFunction -Name 'CallInlineTable' -Definition '() returns table as return( select 1 as name )'
+    Add-UserDefinedFunction -Name 'CallTable' -Definition '() returns @Table TABLE ( ID int primary key ) as begin insert into @Table select 1 return end'
+    Add-StoredProcedure -Name 'DoSomething' -Definition 'as select 1'
+    Add-Synonym -Name 'Xml3' -TargetObjectName 'Xml2'
+    Add-Trigger -Name 'trgXml' -Definition 'ON [dbo].[Xml] for insert as select 1'
+    Add-View -Name 'ViewSomething' -Definition 'as select 1 as one'
+}
+
+function Pop-Migration
+{
+    Remove-View 'ViewSomething'
+    Remove-Synonym 'Xml3'
+    Remove-StoredProcedure 'DoSomething'
+    Remove-UserDefinedFunction 'CallTable'
+    Remove-UserDefinedFunction 'CallInlineTable'
+    Remove-UserDefinedFunction -SchemaName 'export' 'CallSomething'
+    Remove-Schema 'export'
+    Remove-Table 'Xml2'
+    Remove-Table 'Xml'
+    Remove-DataType 'SID'
+    Invoke-Ddl 'drop xml schema collection [EmptyXsd]'
+}
+'@
+    WhenExporting -ExcludeType @('CheckConstraint','DataType','DefaultConstraint','ForeignKey','Function','Index','PrimaryKey','Schema','StoredProcedure','Synonym','Table','Trigger','UniqueKey','View','XmlSchema') `
+                  -SkipVerification
+    ThenMigration -HasContent 'function Push-Migration
+{
+}'
+    ThenMigration -HasContent 'function Pop-Migration
+{
+}'
 }
