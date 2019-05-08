@@ -420,6 +420,34 @@ from
         }
     }
 
+    $dataTypesQuery = '
+-- DATA TYPES
+select 
+    schema_name(sys.types.schema_id) as schema_name, 
+    sys.types.name, 
+    sys.types.max_length,
+    sys.types.precision,
+    sys.types.scale,
+    sys.types.collation_name,
+    sys.types.is_nullable,
+    systype.name as from_name, 
+    systype.max_length as from_max_length,
+    systype.precision as from_precision,
+    systype.scale as from_scale,
+    systype.collation_name as from_collation_name,
+    sys.types.is_table_type,
+    sys.table_types.type_table_object_id
+from 
+    sys.types 
+        left join 
+    sys.types systype 
+            on sys.types.system_type_id = systype.system_type_id 
+            and sys.types.system_type_id = systype.user_type_id 
+        left join
+    sys.table_types
+            on sys.types.user_type_id = sys.table_types.user_type_id
+where 
+    sys.types.is_user_defined = 1'
     function Export-DataType
     {
         [CmdletBinding(DefaultParameterSetName='All')]
@@ -620,6 +648,42 @@ from
         }
     }
 
+    $foreignKeysQuery = '
+-- FOREIGN KEYS
+select
+    sys.foreign_keys.object_id,
+    is_not_trusted,
+    is_not_for_replication,
+    delete_referential_action_desc,
+    update_referential_action_desc,
+    schema_name(sys.objects.schema_id) as references_schema_name,
+    sys.objects.name as references_table_name,
+    sys.foreign_keys.referenced_object_id,
+    is_disabled
+from
+    sys.foreign_keys
+        join
+    sys.objects
+        on sys.foreign_keys.referenced_object_id = sys.objects.object_id
+'
+    $foreignKeyColumnsQuery = '
+-- FOREIGN KEY COLUMNS
+select 
+    sys.foreign_key_columns.constraint_object_id,
+	sys.columns.name as name,
+	referenced_columns.name as referenced_name,
+    sys.foreign_key_columns.constraint_column_id
+from 
+	sys.foreign_key_columns
+		join
+	sys.columns
+			on sys.foreign_key_columns.parent_object_id = sys.columns.object_id
+			and sys.foreign_key_columns.parent_column_id = sys.columns.column_id
+		join
+	sys.columns as referenced_columns		
+			on sys.foreign_key_columns.referenced_object_id = referenced_columns.object_id
+			and sys.foreign_key_columns.referenced_column_id = referenced_columns.column_id
+'
     function Export-ForeignKey
     {
         param(
@@ -833,6 +897,34 @@ from
         $modulesByID[$ObjectID].definition
     }
 
+    $objectsQuery = '
+select 
+    sys.schemas.name as schema_name, 
+    sys.objects.name as object_name, 
+    sys.objects.name as name,
+    sys.schemas.name + ''.'' + sys.objects.name as full_name, 
+    sys.extended_properties.value as description,
+    parent_objects.name as parent_object_name,
+    sys.objects.object_id as object_id,
+    RTRIM(sys.objects.type) as type,
+    sys.objects.type_desc,
+    sys.objects.parent_object_id
+from 
+    sys.objects 
+        join 
+    sys.schemas 
+            on sys.objects.schema_id = sys.schemas.schema_id 
+        left join
+    sys.extended_properties
+            on sys.objects.object_id = sys.extended_properties.major_id 
+            and sys.extended_properties.minor_id = 0
+            and sys.extended_properties.name = ''MS_Description''
+        left join
+    sys.objects parent_objects
+        on sys.objects.parent_object_id = parent_objects.object_id
+where 
+    sys.objects.is_ms_shipped = 0 
+    and (parent_objects.is_ms_shipped is null or parent_objects.is_ms_shipped = 0) -- {0}{1}'
     function Export-Object
     {
         [CmdletBinding(DefaultParameterSetName='All')]
@@ -1065,6 +1157,16 @@ where
         $exportedObjects[$Object.object_id] = $true
     }
 
+    $schemasQuery = '
+-- SCHEMAS
+select 
+    sys.schemas.name, 
+    sys.sysusers.name as owner 
+from 
+    sys.schemas 
+        join 
+    sys.sysusers 
+        on sys.schemas.principal_id = sys.sysusers.uid'
     function Export-Schema
     {
         param(
@@ -1221,6 +1323,18 @@ from
         Push-PopOperation ('Remove-Table{0} -Name ''{1}''' -f $schema,$object.object_name)
     }
 
+    $triggersQuery = '
+-- TRIGGERS
+select
+    sys.triggers.name,
+    schema_name(sys.objects.schema_id) as schema_name,
+    sys.triggers.object_id,
+    sys.triggers.parent_id
+from
+    sys.triggers
+        join
+    sys.objects
+        on sys.triggers.object_id = sys.objects.object_id'
     function Export-Trigger
     {
         param(
@@ -1277,6 +1391,48 @@ from
         $exportedObjects[$Object.object_id] = $true
     }
 
+    $uniqueKeysQuery = '
+-- UNIQUE KEYS
+select
+    sys.key_constraints.name,
+    schema_name(sys.key_constraints.schema_id) as schema_name,
+    sys.key_constraints.object_id,
+    sys.tables.name as parent_object_name,
+    sys.key_constraints.parent_object_id,
+    sys.indexes.type_desc
+from
+    sys.key_constraints
+        join
+    sys.tables
+            on sys.key_constraints.parent_object_id = sys.tables.object_id
+        join
+    sys.indexes
+            on sys.indexes.object_id = sys.tables.object_id
+			and sys.key_constraints.unique_index_id = sys.indexes.index_id
+where
+    sys.key_constraints.type = ''UQ'''
+
+    $uniqueKeysColumnsQuery = '
+-- UNIQUE KEY COLUMNS
+select 
+    sys.key_constraints.object_id,
+    sys.columns.name
+from 
+	sys.key_constraints 
+		join
+	sys.indexes
+			on sys.key_constraints.parent_object_id = sys.indexes.object_id
+			and sys.key_constraints.unique_index_id = sys.indexes.index_id
+		join 
+	sys.index_columns 
+			on sys.indexes.object_id = sys.index_columns.object_id 
+			and sys.indexes.index_id = sys.index_columns.index_id 
+		join
+	sys.columns
+			on sys.indexes.object_id = sys.columns.object_id
+			and sys.index_columns.column_id = sys.columns.column_id
+where 
+    sys.key_constraints.type = ''UQ'''
     function Export-UniqueKey
     {
         param(
@@ -1396,8 +1552,7 @@ select
 from 
 	sys.xml_schema_collections
 where 
-	sys.xml_schema_collections.name != ''sys''
-'
+	sys.xml_schema_collections.name != ''sys'''
     function Export-XmlSchema
     {
         param(
@@ -1552,244 +1707,112 @@ where
     try
     {
         #region QUERIES
-        # CHECK CONSTRAINTS
-        $checkConstraints = Invoke-Query -Query $checkConstraintsQuery
-        $checkConstraints | ForEach-Object { $checkConstraintsByID[$_.object_id] = $_ }
-
-        # COLUMNS
-        $columns = Invoke-Query -Query $columnsQuery #-Parameter @{ '@object_id' = $TableID }        
-        $columns | Group-Object -Property 'object_id' | ForEach-Object { $columnsByTable[[int]$_.Name] = $_.Group }
-
-        # DATA TYPES
-        $query = '
--- DATA TYPES
-select 
-    schema_name(sys.types.schema_id) as schema_name, 
-    sys.types.name, 
-    sys.types.max_length,
-    sys.types.precision,
-    sys.types.scale,
-    sys.types.collation_name,
-    sys.types.is_nullable,
-    systype.name as from_name, 
-    systype.max_length as from_max_length,
-    systype.precision as from_precision,
-    systype.scale as from_scale,
-    systype.collation_name as from_collation_name,
-    sys.types.is_table_type,
-    sys.table_types.type_table_object_id
-from 
-    sys.types 
-        left join 
-    sys.types systype 
-            on sys.types.system_type_id = systype.system_type_id 
-            and sys.types.system_type_id = systype.user_type_id 
-        left join
-    sys.table_types
-            on sys.types.user_type_id = sys.table_types.user_type_id
-where 
-    sys.types.is_user_defined = 1'
-        $dataTypes = Invoke-Query -Query $query
-
-        # DEFAULT CONSTRAINTS
-        $defaultConstraints = Invoke-Query -Query $defaultConstraintsQuery #-Parameter @{ '@object_id' = $constraintObject.object_id }
-        $defaultConstraints | ForEach-Object { $defaultConstraintsByID[$_.object_id] = $_ }
-
-        # FOREIGN KEYS
-        $query = '
--- FOREIGN KEYS
-select
-    sys.foreign_keys.object_id,
-    is_not_trusted,
-    is_not_for_replication,
-    delete_referential_action_desc,
-    update_referential_action_desc,
-    schema_name(sys.objects.schema_id) as references_schema_name,
-    sys.objects.name as references_table_name,
-    sys.foreign_keys.referenced_object_id,
-    is_disabled
-from
-    sys.foreign_keys
-        join
-    sys.objects
-        on sys.foreign_keys.referenced_object_id = sys.objects.object_id
---where
---    sys.foreign_keys.object_id = @foreign_key_id
-'
-        $foreignKeys = Invoke-Query -Query $query #-Parameter @{ '@foreign_key_id' = $Object.object_id }
-        $foreignKeys | ForEach-Object { $foreignKeysByID[$_.object_id] = $_ }
-
-        # FOREIGN KEY COLUMNS
-        $query = '
--- FOREIGN KEY COLUMNS
-select 
-    sys.foreign_key_columns.constraint_object_id,
-	sys.columns.name as name,
-	referenced_columns.name as referenced_name,
-    sys.foreign_key_columns.constraint_column_id
-from 
-	sys.foreign_key_columns
-		join
-	sys.columns
-			on sys.foreign_key_columns.parent_object_id = sys.columns.object_id
-			and sys.foreign_key_columns.parent_column_id = sys.columns.column_id
-		join
-	sys.columns as referenced_columns		
-			on sys.foreign_key_columns.referenced_object_id = referenced_columns.object_id
-			and sys.foreign_key_columns.referenced_column_id = referenced_columns.column_id
---where
---	sys.foreign_key_columns.constraint_object_id = @foreign_key_id
-'
-        $foreignKeyColumns = Invoke-Query -Query $query #-Parameter @{ '@foreign_key_id' = $Object.object_id }
-        $foreignKeyColumns | Group-Object -Property 'constraint_object_id' | ForEach-Object { $foreignKeyColumnsByObjectID[[int]$_.Name] = $_.Group }
-
-        # INDEXES
-        $indexes = Invoke-Query -Query $indexesQuery
-        $indexes | Group-Object -Property 'object_id' | ForEach-Object { $indexesByObjectID[[int]$_.Name] = $_.Group }
-
-        # INDEX COLUMNS
-        $indexColumns = Invoke-Query -Query $indexesColumnsQuery
-        $indexColumns | Group-Object -Property 'object_id' | ForEach-Object { $indexColumnsByObjectID[[int]$_.Name] = $_.Group }
-
         # OBJECTS
-        $query = '
-select 
-    sys.schemas.name as schema_name, 
-    sys.objects.name as object_name, 
-    sys.objects.name as name,
-    sys.schemas.name + ''.'' + sys.objects.name as full_name, 
-    sys.extended_properties.value as description,
-    parent_objects.name as parent_object_name,
-    sys.objects.object_id as object_id,
-    RTRIM(sys.objects.type) as type,
-    sys.objects.type_desc,
-    sys.objects.parent_object_id
-from 
-    sys.objects 
-        join 
-    sys.schemas 
-            on sys.objects.schema_id = sys.schemas.schema_id 
-        left join
-    sys.extended_properties
-            on sys.objects.object_id = sys.extended_properties.major_id 
-            and sys.extended_properties.minor_id = 0
-            and sys.extended_properties.name = ''MS_Description''
-        left join
-    sys.objects parent_objects
-        on sys.objects.parent_object_id = parent_objects.object_id
-where 
-    sys.objects.is_ms_shipped = 0 
-    and (parent_objects.is_ms_shipped is null or parent_objects.is_ms_shipped = 0) -- {0}{1}' #-f $typeClause,$objectIDClause
-        $objects = Invoke-Query -Query $query #-Parameter $parameter) )
+        $objects = Invoke-Query -Query $objectsQuery
         $objects | ForEach-Object { $objectsByID[$_.object_id] = $_ }
         $objects | Group-Object -Property 'parent_object_id' | ForEach-Object { $objectsByParentID[[int]$_.Name] = $_.Group }
+        $objectTypes = $objects | Select-Object -ExpandProperty 'type_desc' | Select-Object -Unique
 
-        $primaryKeys = Invoke-Query -Query $primaryKeysQuery
-        $primaryKeys | ForEach-Object { $primaryKeysByID[$_.object_id] = $_ }
+        # CHECK CONSTRAINTS
+        if( $objectTypes -contains 'CHECK_CONSTRAINT' )
+        {
+            $checkConstraints = Invoke-Query -Query $checkConstraintsQuery
+            $checkConstraints | ForEach-Object { $checkConstraintsByID[$_.object_id] = $_ }
+        }
 
-        $primaryKeyColumns = Invoke-Query -Query $primaryKeyColumnsQuery
-        $primaryKeyColumns | Group-Object -Property 'object_id' | ForEach-Object { $primaryKeyColumnsByObjectID[[int]$_.Name] = $_.Group }
+        # DATA TYPES
+        $dataTypes = Invoke-Query -Query $dataTypesQuery
+
+        # COLUMNS
+        if( $objectTypes -contains 'USER_TABLE' -or $dataTypes )
+        {
+            $columns = Invoke-Query -Query $columnsQuery
+            $columns | Group-Object -Property 'object_id' | ForEach-Object { $columnsByTable[[int]$_.Name] = $_.Group }
+        }
+
+        # DEFAULT CONSTRAINTS
+        if( $objectTypes -contains 'DEFAULT_CONSTRAINT' )
+        {
+            $defaultConstraints = Invoke-Query -Query $defaultConstraintsQuery #-Parameter @{ '@object_id' = $constraintObject.object_id }
+            $defaultConstraints | ForEach-Object { $defaultConstraintsByID[$_.object_id] = $_ }
+        }
+
+        # FOREIGN KEYS
+        if( $objectTypes -contains 'FOREIGN_KEY_CONSTRAINT' )
+        {
+            $foreignKeys = Invoke-Query -Query $foreignKeysQuery
+            $foreignKeys | ForEach-Object { $foreignKeysByID[$_.object_id] = $_ }
+
+            # FOREIGN KEY COLUMNS
+            $foreignKeyColumns = Invoke-Query -Query $foreignKeyColumnsQuery
+            $foreignKeyColumns | Group-Object -Property 'constraint_object_id' | ForEach-Object { $foreignKeyColumnsByObjectID[[int]$_.Name] = $_.Group }
+        }
+
+        # INDEXES
+        if( $objectTypes -contains 'USER_TABLE' )
+        {
+            $indexes = Invoke-Query -Query $indexesQuery
+            $indexes | Group-Object -Property 'object_id' | ForEach-Object { $indexesByObjectID[[int]$_.Name] = $_.Group }
+
+            # INDEX COLUMNS
+            $indexColumns = Invoke-Query -Query $indexesColumnsQuery
+            $indexColumns | Group-Object -Property 'object_id' | ForEach-Object { $indexColumnsByObjectID[[int]$_.Name] = $_.Group }
+        }
+
+        if( $objectTypes -contains 'PRIMARY_KEY_CONSTRAINT' )
+        {
+            $primaryKeys = Invoke-Query -Query $primaryKeysQuery
+            $primaryKeys | ForEach-Object { $primaryKeysByID[$_.object_id] = $_ }
+
+            $primaryKeyColumns = Invoke-Query -Query $primaryKeyColumnsQuery
+            $primaryKeyColumns | Group-Object -Property 'object_id' | ForEach-Object { $primaryKeyColumnsByObjectID[[int]$_.Name] = $_.Group }
+        }
 
         # SCHEMAS
-        $query = '
--- SCHEMAS
-select 
-    sys.schemas.name, 
-    sys.sysusers.name as owner 
-from 
-    sys.schemas 
-        join 
-    sys.sysusers 
-        on sys.schemas.principal_id = sys.sysusers.uid 
---where 
---    sys.schemas.name = @schema_name'
-        $schemas = Invoke-Query -Query $query #-Parameter @{ '@schema_name' = $Name }
-        $schemas | ForEach-Object { $schemasByName[$_.name] = $_ }
+        if( $objects | Where-Object { $_.schema_name -ne 'dbo' } )
+        {
+            $schemas = Invoke-Query -Query $schemasQuery
+            $schemas | ForEach-Object { $schemasByName[$_.name] = $_ }
+        }
 
         # MODULES/PROGRAMMABILITY
-        $query = 'select object_id, definition from sys.sql_modules --where object_id = @object_id'
-        $modules = Invoke-Query -Query $query
-        $modules | ForEach-Object { $modulesByID[$_.object_id] = $_ }
+        if( $objectTypes -contains 'SQL_INLINE_TABLE_VALUED_FUNCTION' -or $objectTypes -contains 'SQL_SCALAR_FUNCTION' -or $objectTypes -contains 'SQL_STORED_PROCEDURE' -or $objectTypes -contains 'SQL_TABLE_VALUED_FUNCTION' -or $objectTypes -contains 'SQL_TRIGGER' -or $objectTypes -contains 'VIEW' )
+        {
+            $query = 'select object_id, definition from sys.sql_modules'
+            $modules = Invoke-Query -Query $query
+            $modules | ForEach-Object { $modulesByID[$_.object_id] = $_ }
+        }
 
         # SYNONYMS
-        $synonyms = Invoke-Query -Query $synonymsQuery
-        $synonyms | ForEach-Object { $synonymsByID[$_.object_id] = $_ }
+        if( $objectTypes -contains 'SYNONYM' )
+        {
+            $synonyms = Invoke-Query -Query $synonymsQuery
+            $synonyms | ForEach-Object { $synonymsByID[$_.object_id] = $_ }
+        }
 
         # TRIGGERS
-        $query = '
--- TRIGGERS
-select
-    sys.triggers.name,
-    schema_name(sys.objects.schema_id) as schema_name,
-    sys.triggers.object_id,
-    sys.triggers.parent_id
-from
-    sys.triggers
-        join
-    sys.objects
-        on sys.triggers.object_id = sys.objects.object_id
---where 
---    sys.triggers.parent_id = @table_id
-'
-        $triggers = Invoke-Query -Query $query #-Parameter @{ '@table_id' = $TableID }) )
-        $triggers | ForEach-Object { $triggersByID[$_.object_id] = $_ }        
-        $triggers | Group-Object -Property 'parent_id' | ForEach-Object { $triggersByTable[[int]$_.Name] = $_.Group }
+        if( $objectTypes -contains 'SQL_TRIGGER' )
+        {
+            $triggers = Invoke-Query -Query $triggersQuery
+            $triggers | ForEach-Object { $triggersByID[$_.object_id] = $_ }        
+            $triggers | Group-Object -Property 'parent_id' | ForEach-Object { $triggersByTable[[int]$_.Name] = $_.Group }
+        }
 
-        # UNIQUE KEYS
-        $query = '
--- UNIQUE KEYS
-select
-    sys.key_constraints.name,
-    schema_name(sys.key_constraints.schema_id) as schema_name,
-    sys.key_constraints.object_id,
-    sys.tables.name as parent_object_name,
-    sys.key_constraints.parent_object_id,
-    sys.indexes.type_desc
-from
-    sys.key_constraints
-        join
-    sys.tables
-            on sys.key_constraints.parent_object_id = sys.tables.object_id
-        join
-    sys.indexes
-            on sys.indexes.object_id = sys.tables.object_id
-			and sys.key_constraints.unique_index_id = sys.indexes.index_id
-where
-    sys.key_constraints.type = ''UQ''
---    and sys.key_constraints.parent_object_id = @table_id
-'
-        $uniqueKeys =  Invoke-Query -Query $query #-Parameter @{ '@table_id' = $TableID }) )        
-        $uniqueKeys | ForEach-Object { $uniqueKeysByID[$_.object_id] = $_ }
-        $uniqueKeys | Group-Object -Property 'parent_object_id' | ForEach-Object { $uniqueKeysByTable[[int]$_.Name] = $_.Group }
+        if( $objectTypes -contains 'UNIQUE_CONSTRAINT' )
+        {
+            # UNIQUE KEYS
+            $uniqueKeys =  Invoke-Query -Query $uniqueKeysQuery
+            $uniqueKeys | ForEach-Object { $uniqueKeysByID[$_.object_id] = $_ }
+            $uniqueKeys | Group-Object -Property 'parent_object_id' | ForEach-Object { $uniqueKeysByTable[[int]$_.Name] = $_.Group }
         
-        # UNIQUE KEY COLUMNS
-        $query = '
--- UNIQUE KEY COLUMNS
-select 
-    sys.key_constraints.object_id,
-    sys.columns.name
-from 
-	sys.key_constraints 
-		join
-	sys.indexes
-			on sys.key_constraints.parent_object_id = sys.indexes.object_id
-			and sys.key_constraints.unique_index_id = sys.indexes.index_id
-		join 
-	sys.index_columns 
-			on sys.indexes.object_id = sys.index_columns.object_id 
-			and sys.indexes.index_id = sys.index_columns.index_id 
-		join
-	sys.columns
-			on sys.indexes.object_id = sys.columns.object_id
-			and sys.index_columns.column_id = sys.columns.column_id
-where 
-    sys.key_constraints.type = ''UQ''
---    and sys.key_constraints.object_id = @object_id
-'
-        $uniqueKeyColumns = Invoke-Query -Query $query # -Parameter @{ '@object_id' = $Object.object_id }
-        $uniqueKeyColumns | Group-Object -Property 'object_id' | ForEach-Object { $uniqueKeyColumnsByObjectID[[int]$_.Name] = $_.Group }
+            # UNIQUE KEY COLUMNS
+            $uniqueKeyColumns = Invoke-Query -Query $uniqueKeysColumnsQuery
+            $uniqueKeyColumns | Group-Object -Property 'object_id' | ForEach-Object { $uniqueKeyColumnsByObjectID[[int]$_.Name] = $_.Group }
+        }
 
-        $query = '
+        if( $columns | Where-Object { $_.xml_collection_id } )
+        {
+            $query = '
 select 
 	sys.columns.object_id,
 	sys.columns.xml_collection_id
@@ -1803,11 +1826,12 @@ where
 	sys.types.name = ''xml'' and
 	sys.columns.xml_collection_id != 0
 '
-        $objectsWithXmlSchemas = Invoke-Query -Query $query
-        $objectsWithXmlSchemas | Group-Object -Property 'object_id' | ForEach-Object { $xmlSchemaDependencies[[int]$_.Name] = $_.Group | Select-Object -ExpandProperty 'xml_collection_id' | Select-Object -Unique }
+            $objectsWithXmlSchemas = Invoke-Query -Query $query
+            $objectsWithXmlSchemas | Group-Object -Property 'object_id' | ForEach-Object { $xmlSchemaDependencies[[int]$_.Name] = $_.Group | Select-Object -ExpandProperty 'xml_collection_id' | Select-Object -Unique }
 
-        $xmlSchemas = Invoke-Query -Query $xmlSchemaQuery
-        $xmlSchemas | ForEach-Object { $xmlSchemasByID[$_.xml_collection_id] = $_ }
+            $xmlSchemas = Invoke-Query -Query $xmlSchemaQuery
+            $xmlSchemas | ForEach-Object { $xmlSchemasByID[$_.xml_collection_id] = $_ }
+        }
         #endregion
 
         $sysDatabases = @( 'master', 'model', 'msdb', 'tempdb' )
