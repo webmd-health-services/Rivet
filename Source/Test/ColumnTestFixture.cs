@@ -5,11 +5,6 @@ namespace Rivet.Test
 	[TestFixture]
 	public sealed class ColumnTestFixture
 	{
-		private static readonly Identity DefaultIdentity = new Identity();
-		private static readonly Identity DefaultNotForReplicationIdentity = new Identity(true);
-		private static readonly Identity SeedIncrementIdentity = new Identity(3, 4);
-		private static readonly Identity SeedIncrementNotForReplicationIdentity = new Identity(3, 4);
-		private static readonly Identity[] Identities = new[] {DefaultIdentity, DefaultNotForReplicationIdentity, SeedIncrementIdentity, SeedIncrementNotForReplicationIdentity};
 
 		private static readonly PrecisionScale PrecisionNoScale = new PrecisionScale(4);
 		private static readonly PrecisionScale PrecisionWithScale = new PrecisionScale(4, 2);
@@ -43,17 +38,37 @@ namespace Rivet.Test
 			ThenColumnShouldBe(name, DataType.BigInt, nullable, defaultExpression, description);
 		}
 
-		[Test]
-		public void ShouldCreateBigIntIdentityColumn()
-		{
-			foreach (var identity in Identities)
-			{
-				GivenColumn(Column.BigInt("BigIntIdentity", identity, "big int identity"));
-				ThenColumnShouldBe("BigIntIdentity", DataType.BigInt, identity, "big int identity");
-			}
-		}
+        #endregion
 
-		#endregion
+        #region IDENTITIES
+        [Test]
+        public void ShouldCreateDefaultIdentityColumn()
+        {
+            GivenColumn(Column.BigInt("BigIntIdentity", new Identity(), "big int identity"));
+            ThenColumnShouldBe("[BigIntIdentity] bigint identity not null");
+        }
+
+        [Test]
+        public void ShouldCreateNotForReplicationIdentityColumn()
+        { 
+            GivenColumn(Column.BigInt("BigIntIdentity", new Identity(true), "big int identity"));
+            ThenColumnShouldBe("[BigIntIdentity] bigint identity not for replication not null");
+        }
+
+        [Test]
+        public void ShouldCreateIdentityWithCustomSeedColumn()
+        {
+            GivenColumn(Column.BigInt("BigIntIdentity", new Identity(101,103), "big int identity"));
+            ThenColumnShouldBe($"[BigIntIdentity] bigint identity (101,103) not null");
+        }
+
+        [Test]
+        public void ShouldCreateIdentityWithCustomSeedAndNotForReplicationColumn()
+        {
+            GivenColumn(Column.BigInt("BigIntIdentity", new Identity(105,107, true), "big int identity"));
+            ThenColumnShouldBe($"[BigIntIdentity] bigint identity (105,107) not for replication not null");
+        }
+        #endregion
 
 		#region Binary
 		[Test]
@@ -211,16 +226,6 @@ namespace Rivet.Test
 		}
 
 		[Test]
-		public void ShouldCreateDecimalIdentityColumn()
-		{
-			foreach (var identity in Identities)
-			{
-				GivenColumn(Column.Decimal("DecimalIdentity", null, identity, "decimal identity"));
-				ThenColumnShouldBe("DecimalIdentity", DataType.Decimal, identity, "decimal identity");
-			}
-		}
-
-		[Test]
 		public void ShouldCreateDecimalWithPrecisionAndScale(
 			[Values(Nullable.Null, Nullable.NotNull, Nullable.Sparse)]
 			Nullable nullable)
@@ -236,17 +241,10 @@ namespace Rivet.Test
 		[Test]
 		public void ShouldCreateDecimalIdentityWithPrecisionAndScale()
 		{
-			foreach (var identity in Identities)
-			{
-				foreach (var ps in Precisions)
-				{
-					var c = Column.Decimal("DecimalWithPrecision", ps, identity, "decimal identity");
-					GivenColumn(c);
-					ThenColumnShouldBe("DecimalWithPrecision", DataType.Decimal, ps, identity, "decimal identity");
-				}
-			}
+			var c = Column.Decimal("DecimalWithPrecision", new PrecisionScale(5,2), new Identity(), "decimal identity");
+			GivenColumn(c);
+			ThenColumnShouldBe("[DecimalWithPrecision] decimal(5,2) identity not null");
 		}
-
 		#endregion
 
 		#region Float
@@ -324,17 +322,6 @@ namespace Rivet.Test
 			GivenColumn(c);
 			ThenColumnShouldBe(name, DataType.Int, nullable, "(0)", "int collumn");
 		}
-
-		[Test]
-		public void ShouldCreateIntIdentityColumn()
-		{
-			foreach (var identity in Identities)
-			{
-				GivenColumn(Column.Int("IntIdentity", identity, "int identity"));
-				ThenColumnShouldBe("IntIdentity", DataType.Int, identity, "int identity");
-			}
-		}
-
 		#endregion
 
 		#region Money
@@ -489,17 +476,6 @@ namespace Rivet.Test
 			GivenColumn(c);
 			ThenColumnShouldBe(name, DataType.SmallInt, nullable, "(4)", "small int");
 		}
-
-		[Test]
-		public void ShouldCreateSmallIntIdentityColumn()
-		{
-			foreach (var identity in Identities)
-			{
-				GivenColumn(Column.SmallInt("SmallIntIdentity", identity, "small int identity"));
-				ThenColumnShouldBe("SmallIntIdentity", DataType.SmallInt, identity, "small int identity");
-			}
-		}
-
 		#endregion
 
 		#region SmallMoney
@@ -581,17 +557,6 @@ namespace Rivet.Test
 			GivenColumn(c);
 			ThenColumnShouldBe(name, DataType.TinyInt, nullable, "(6)", "tinyint");
 		}
-
-		[Test]
-		public void ShouldCreateTinyIntIdentityColumn()
-		{
-			foreach (var identity in Identities)
-			{
-				GivenColumn(Column.TinyInt("TinyIntIdentity", identity, "tinyint identity"));
-				ThenColumnShouldBe("TinyIntIdentity", DataType.TinyInt, identity, "tinyint identity");
-			}
-		}
-
 		#endregion
 
 		#region UniqueIdentifier
@@ -748,7 +713,12 @@ namespace Rivet.Test
 			_column = column;
 		}
 
-		private void ThenColumnShouldBe(string name, DataType dataType, bool rowGuidCol, Nullable nullable, string defaultExpression, string description)
+        private void ThenColumnShouldBe(string expectedValue)
+        {
+            Assert.That(_column.GetColumnDefinition("fubar", "snafu", false), Is.EqualTo(expectedValue));
+        }
+
+        private void ThenColumnShouldBe(string name, DataType dataType, bool rowGuidCol, Nullable nullable, string defaultExpression, string description)
 		{
 			ThenColumnShouldBe(name, dataType, defaultExpression, description);
 			Assert.That(_column.Nullable, Is.EqualTo(nullable));

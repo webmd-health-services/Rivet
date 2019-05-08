@@ -270,16 +270,22 @@
 				collateClause = string.Format(" collate {0}", Collation);
 			}
 
-			var identityClause = "";
 			var notNullClause = "";
-			if (Identity == null)
-			{
-				if (NotNull)
-				{
-					notNullClause = " not null";
-				}
-			}
-			else
+            var sparseClause = "";
+            if (NotNull)
+            {
+                notNullClause = " not null";
+            }
+            else
+            {
+                if (Sparse)
+                {
+                    sparseClause = " sparse";
+                }
+            }
+
+            var identityClause = "";
+            if (Identity != null)
 			{
 				identityClause = string.Format(" {0}", Identity);
 			}
@@ -302,13 +308,7 @@
 				rowGuidColClause = " rowguidcol";
 			}
 
-			var sparseClause = "";
-			if (Sparse)
-			{
-				sparseClause = " sparse";
-			}
-
-			return string.Format("[{0}] {1}{2}{3}{4}{5}{6}{7}{8}{9}", Name, DataType, Size, fileStreamClause, collateClause, notNullClause, defaultClause, identityClause, rowGuidColClause, sparseClause);
+			return string.Format("[{0}] {1}{2}{3}{4}{5}{6}{7}{8}{9}", Name, DataType, Size, fileStreamClause, collateClause, identityClause, notNullClause, defaultClause, rowGuidColClause, sparseClause);
 		}
 	}
 }

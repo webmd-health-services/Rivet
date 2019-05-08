@@ -264,7 +264,7 @@ from
 		inner join 
 	sys.types 
 			on columns.user_type_id = sys.types.user_type_id  
-		left join
+        left join
 	sys.extended_properties
 			on sys.columns.object_id = sys.extended_properties.major_id
 			and sys.columns.column_id = sys.extended_properties.minor_id
@@ -276,11 +276,7 @@ from
 		left join
 	sys.xml_schema_collections
 			on sys.columns.xml_collection_id=sys.xml_schema_collections.xml_collection_id
-		join
-	sys.objects
-		on sys.objects.object_id=sys.columns.object_id
-where 
-    sys.objects.is_ms_shipped=0'
+'
     function Export-Column
     {
         param(
@@ -377,23 +373,19 @@ where
                     '-Description ''{0}''' -f ($column.description -replace '''','''''')
                 }
             }
+
+            if( $parameters )
+            {
+                $parameters = $parameters -join ' '
+                $parameters = ' {0}' -f $parameters
+            }
+
             if( $rivetColumnTypes -contains $column.type_name )
             {
-                if( $parameters )
-                {
-                    $parameters = $parameters -join ' '
-                    $parameters = ' {0}' -f $parameters
-                }
                 '        {0} ''{1}''{2}' -f $column.type_name,$column.column_name,$parameters
             }
             else
             {
-                $parameters = $parameters | Where-Object { $_ -match ('^-(Sparse|NotNull|Description)') }
-                if( $parameters )
-                {
-                    $parameters = $parameters -join ' '
-                    $parameters = ' {0}' -f $parameters
-                }
                 '        New-Column -DataType ''{0}'' -Name ''{1}''{2}' -f $column.type_name,$column.column_name,$parameters
             }
         }
@@ -1076,20 +1068,32 @@ where
         $query = 'select definition from sys.sql_modules where object_id = @object_id'
         $definition = Get-ModuleDefinition -ObjectID $Object.object_id
 
-        $schema = ConvertTo-SchemaParameter -SchemaName $Object.schema_name
-        $createPreambleRegex = '^CREATE\s+procedure\s+\[{0}\]\.\[{1}\]\s+' -f [regex]::Escape($Object.schema_name),[regex]::Escape($Object.object_name)
-        Write-ExportingMessage -Schema $Object.schema_name -Name $Object.name -Type StoredProcedure
-        if( $definition -match $createPreambleRegex )
+        try
         {
-            $definition = $definition -replace $createPreambleRegex,''
-            '    Add-StoredProcedure{0} -Name ''{1}'' -Definition @''{2}{3}{2}''@' -f $schema,$Object.object_name,[Environment]::NewLine,$definition
+            if( -not $definition )
+            {
+                Write-Warning -Message ('Unable to export stored procedure [{0}].[{1}]: definition not readable.' -f $Object.schema_name,$Object.name)
+                return
+            }
+
+            $schema = ConvertTo-SchemaParameter -SchemaName $Object.schema_name
+            $createPreambleRegex = '^CREATE\s+procedure\s+\[{0}\]\.\[{1}\]\s+' -f [regex]::Escape($Object.schema_name),[regex]::Escape($Object.object_name)
+            Write-ExportingMessage -Schema $Object.schema_name -Name $Object.name -Type StoredProcedure
+            if( $definition -match $createPreambleRegex )
+            {
+                $definition = $definition -replace $createPreambleRegex,''
+                '    Add-StoredProcedure{0} -Name ''{1}'' -Definition @''{2}{3}{2}''@' -f $schema,$Object.object_name,[Environment]::NewLine,$definition
+            }
+            else
+            {
+                '    Invoke-Ddl -Query @''{0}{1}{0}''@' -f [Environment]::NewLine,$definition
+            }
+            Push-PopOperation ('Remove-StoredProcedure{0} -Name ''{1}''' -f $schema,$Object.object_name)
         }
-        else
+        finally
         {
-            '    Invoke-Ddl -Query @''{0}{1}{0}''@' -f [Environment]::NewLine,$definition
+            $exportedObjects[$Object.object_id] = $true
         }
-        Push-PopOperation ('Remove-StoredProcedure{0} -Name ''{1}''' -f $schema,$Object.object_name)
-        $exportedObjects[$Object.object_id] = $true
     }
 
     $synonymsQuery = '
@@ -1366,6 +1370,7 @@ where
 
         $xmlSchema = $xmlSchemasByID[$ID]
 
+        Write-ExportingMessage -SchemaName $xmlSchema.schema_name -Name $xmlSchema.name -Type XmlSchema
         '    Invoke-Ddl @'''
         'create xml schema collection [{0}].[{1}] as' -f $xmlSchema.schema_name,$xmlSchema.name
         'N'''
@@ -1433,7 +1438,7 @@ where
             $Name,
 
             [Parameter(Mandatory)]
-            [ValidateSet('Table','View','DefaultConstraint','StoredProcedure','Synonym','ForeignKey','CheckConstraint','PrimaryKey','Trigger','Function','Index','DataType','Schema','UniqueKey')]
+            [ValidateSet('Table','View','DefaultConstraint','StoredProcedure','Synonym','ForeignKey','CheckConstraint','PrimaryKey','Trigger','Function','Index','DataType','Schema','UniqueKey','XmlSchema')]
             [string]
             $Type
         )

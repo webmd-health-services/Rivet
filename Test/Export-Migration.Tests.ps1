@@ -260,6 +260,34 @@ function Pop-Migration
 '@
 }
 
+Describe 'Export-Migration.when table has a custom data type as its identity' {
+    Init
+    GivenMigration @'
+function Push-Migration
+{
+    Add-DataType -Name 'SID' -From 'int'
+    Add-Table -Name 'Migrations' -Description 'some table''s description' -Column {
+        New-Column 'SidColumn' 'SID' -Identity -Seed 300000000 -Increment 1 -NotForReplication
+    }
+    Add-PrimaryKey -TableName 'Migrations' -ColumnName 'SidColumn'
+}
+
+function Pop-Migration
+{
+    Remove-Table 'Migrations'
+    Remove-DataType 'SID'
+}
+'@
+    WhenExporting
+    ThenMigration -HasContent @'
+    Add-DataType -Name 'SID' -From 'int'
+    Add-Table -Name 'Migrations' -Description 'some table''s description' -Column {
+        New-Column -DataType 'SID' -Name 'SidColumn' -Identity -Seed 300000000 -Increment 1 -NotForReplication
+    }
+    Add-PrimaryKey -TableName 'Migrations' -ColumnName 'SidColumn'
+'@
+}
+
 Describe 'Export-Migration.when XML column has a schema' {
     Init
     GivenMigration @'
