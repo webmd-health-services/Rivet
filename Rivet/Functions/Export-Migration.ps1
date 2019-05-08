@@ -696,7 +696,8 @@ from
 where 
     is_primary_key = 0 and 
     sys.indexes.type != 0 and
-    sys.indexes.is_unique_constraint != 1'
+    sys.indexes.is_unique_constraint != 1 and
+    sys.tables.is_ms_shipped = 0'
 
     $indexesColumnsQuery = '
 -- INDEX COLUMNS
