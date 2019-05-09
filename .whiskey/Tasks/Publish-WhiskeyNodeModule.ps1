@@ -2,7 +2,7 @@
 function Publish-WhiskeyNodeModule
 {
     [Whiskey.Task("PublishNodeModule")]
-    [Whiskey.RequiresTool("Node", "NodePath",VersionParameterName='NodeVersion')]
+    [Whiskey.RequiresTool("Node", "NodePath", VersionParameterName='NodeVersion')]
     [CmdletBinding()]
     param(
         [Parameter(Mandatory=$true)]
@@ -32,6 +32,7 @@ function Publish-WhiskeyNodeModule
     - PublishNodeModule:
         NpmRegistryUri: https://registry.npmjs.org/
     '
+        return
     }
 
     if (!$TaskContext.Publish)
@@ -53,6 +54,7 @@ function Publish-WhiskeyNodeModule
     
     Use the `Add-WhiskeyCredential` function to add the credential to the build.
     ' -f $npmRegistryUri)
+        return
     }
     $credential = Get-WhiskeyCredential -Context $TaskContext -ID $credentialID -PropertyName 'CredentialID'
     $npmUserName = $credential.UserName
@@ -67,6 +69,7 @@ function Publish-WhiskeyNodeModule
         CredentialID: {1}
         EmailAddress: somebody@example.com
     ' -f $npmRegistryUri,$credentialID)
+        return
     }
     $npmCredPassword = $credential.GetNetworkCredential().Password
     $npmBytesPassword  = [System.Text.Encoding]::UTF8.GetBytes($npmCredPassword)
@@ -90,8 +93,8 @@ function Publish-WhiskeyNodeModule
             } |
             Write-WhiskeyVerbose -Context $TaskContext
 
-        Invoke-WhiskeyNpmCommand -Name 'prune' -ArgumentList '--production' -NodePath $TaskParameter['NodePath'] -ErrorAction Stop
-        Invoke-WhiskeyNpmCommand -Name 'publish' -NodePath $TaskParameter['NodePath'] -ErrorAction Stop
+        Invoke-WhiskeyNpmCommand -Name 'prune' -ArgumentList '--production' -BuildRootPath $TaskContext.BuildRoot -ErrorAction Stop
+        Invoke-WhiskeyNpmCommand -Name 'publish' -BuildRootPath $TaskContext.BuildRoot -ErrorAction Stop
     }
     finally
     {
