@@ -55,7 +55,7 @@ function Install-WhiskeyPowerShellModule
 
     $expectedPath = Join-Path -Path $modulesRoot -ChildPath $Name
 
-    if( (Test-Path -Path $expectedPath -PathType Container) )
+    if( (Test-Path -Path $expectedPath -PathType Container) -and (Get-ChildItem -Path $expectedPath -File -Filter ('{0}.psd1' -f $Name) -Recurse))
     {
         Resolve-Path -Path $expectedPath | Select-Object -ExpandProperty 'ProviderPath'
         return
@@ -67,6 +67,7 @@ function Install-WhiskeyPowerShellModule
         return
     }
 
+    Write-Verbose -Message ('Saving PowerShell module {0} {1} to "{2}" from repository {3}.' -f $Name,$module.Version,$modulesRoot,$module.Repository)
     Save-Module -Name $Name -RequiredVersion $module.Version -Repository $module.Repository -Path $modulesRoot
 
     if( -not (Test-Path -Path $expectedPath -PathType Container) )

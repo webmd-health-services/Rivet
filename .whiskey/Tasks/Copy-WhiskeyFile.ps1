@@ -36,32 +36,37 @@ Build:
     if(!$TaskParameter.ContainsKey('Path'))
     {
         Stop-WhiskeyTask -TaskContext $TaskContext -Message ($pathErrorMessage)
+        return
     }
 
     $sourceFiles = $TaskParameter['Path'] | Resolve-WhiskeyTaskPath -TaskContext $TaskContext -PropertyName 'Path'
     if(!$sourceFiles)
     {
         Stop-WhiskeyTask -TaskContext $TaskContext -Message ($pathErrorMessage)
+        return
     }
 
     if(!$TaskParameter.ContainsKey('DestinationDirectory'))
     {
         Stop-WhiskeyTask -TaskContext $TaskContext -Message ($destDirErrorMessage)
+        return
     }
-    
+
     if(!$TaskParameter['DestinationDirectory'])
     {
         Stop-WhiskeyTask -TaskContext $TaskContext -Message ($destDirErrorMessage)
+        return
     }
 
     foreach($sourceFile in $sourceFiles)
     {
         if((Test-Path -Path $sourceFile -PathType Container))
         {
-            Stop-WhiskeyTask -TaskContext $TaskContext -Message ('Path ''{0}'' is directory. The CopyFile task only copies files. Please remove this path from your ''Path'' property.' -f $sourceFile)
+            Stop-WhiskeyTask -TaskContext $TaskContext -Message ('Path "{0}" is directory. The CopyFile task only copies files. Please remove this path from your "Path" property.' -f $sourceFile)
+            return
         }
     }
-    
+
     $idx = 0
     $destinations = $TaskParameter['DestinationDirectory'] |
                         ForEach-Object {
@@ -78,7 +83,8 @@ Build:
                                 $path = Resolve-Path -Path $path -ErrorAction Ignore | Select-Object -ExpandProperty 'ProviderPath'
                                 if( -not $path )
                                 {
-                                    Stop-WhiskeyTask -TaskContext $TaskContext -Message ('DestinationDirectory[{0}]:  Wildcard pattern ''{1}'' doesn''t point to an existing directory.' -f $idx, $_)
+                                    Stop-WhiskeyTask -TaskContext $TaskContext -Message ('DestinationDirectory[{0}]:  Wildcard pattern "{1}" doesn''t point to an existing directory.' -f $idx, $_)
+                                    return
                                 }
                                 $path
                             }
@@ -86,7 +92,7 @@ Build:
                             {
                                 $path
                             }
-                            
+
                             $idx++
                         }
 
@@ -97,10 +103,11 @@ Build:
         {
             $null = New-Item -Path $destDir -ItemType 'Directory' -Force
         }
-        
+
         if(!(Test-Path -Path $destDir -PathType Container))
         {
-            Stop-WhiskeyTask -TaskContext $TaskContext -Message ('Failed to create destination directory ''{0}''. Make sure the current user, ''{1}\{2}'' has access to create directories in ''{0}''. If it is a file share, check that the share exists and the share''s permissions.' -f $destDir, $env:USERDOMAIN, $env:USERNAME)
+            Stop-WhiskeyTask -TaskContext $TaskContext -Message ('Failed to create destination directory "{0}". Make sure the current user, "{1}\{2}" has access to create directories in "{0}". If it is a file share, check that the share exists and the share"s permissions.' -f $destDir, [Environment]::UserDomainName, [Environment]::UserName)
+            return
         }
     }
 

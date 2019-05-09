@@ -29,7 +29,7 @@ function Invoke-WhiskeyNodeTask
     if( $TaskContext.ShouldClean )
     {
         Write-WhiskeyTiming -Message 'Cleaning'
-        $nodeModulesPath = Join-Path -path $TaskContext.BuildRoot -ChildPath 'node_modules'
+        $nodeModulesPath = Join-Path -Path $TaskContext.BuildRoot -ChildPath 'node_modules'
         Remove-WhiskeyFileSystemItem -Path $nodeModulesPath
         Write-WhiskeyTiming -Message 'COMPLETE'
         return
@@ -61,14 +61,13 @@ function Invoke-WhiskeyNodeTask
 
     try
     {
-        $nodePath = Assert-WhiskeyNodePath -Path $TaskParameter['NodePath'] -ErrorAction Stop
-        $nodeRoot = $nodePath | Split-Path
-
-        Set-Item -Path 'env:PATH' -Value ('{0};{1}' -f $nodeRoot,$env:Path)
+	$nodePath = Resolve-WhiskeyNodePath -BuildRoot $TaskContext.BuildRoot
+	
+        Set-Item -Path 'env:PATH' -Value ('{0}{1}{2}' -f ($nodePath | Split-Path),[IO.Path]::PathSeparator,$env:PATH)
 
         Update-Progress -Status ('Installing NPM packages') -Step ($stepNum++)
         Write-WhiskeyTiming -Message ('npm install')
-        Invoke-WhiskeyNpmCommand -Name 'install' -ArgumentList '--production=false' -NodePath $nodePath -ForDeveloper:$TaskContext.ByDeveloper -ErrorAction Stop
+        Invoke-WhiskeyNpmCommand -Name 'install' -ArgumentList '--production=false' -BuildRootPath $TaskContext.BuildRoot -ForDeveloper:$TaskContext.ByDeveloper -ErrorAction Stop
         Write-WhiskeyTiming -Message ('COMPLETE')
 
         if( $TaskContext.ShouldInitialize )
@@ -86,7 +85,7 @@ Build:
 - Node:
   NpmScript:
   - build
-  - test           
+  - test
 '@)
         }
 
@@ -94,9 +93,11 @@ Build:
         {
             Update-Progress -Status ('npm run {0}' -f $script) -Step ($stepNum++)
             Write-WhiskeyTiming -Message ('Running script ''{0}''.' -f $script)
-            Invoke-WhiskeyNpmCommand -Name 'run-script' -ArgumentList $script -NodePath $nodePath -ForDeveloper:$TaskContext.ByDeveloper -ErrorAction Stop
+            Invoke-WhiskeyNpmCommand -Name 'run-script' -ArgumentList $script -BuildRootPath $TaskContext.BuildRoot -ForDeveloper:$TaskContext.ByDeveloper -ErrorAction Stop
             Write-WhiskeyTiming -Message ('COMPLETE')
         }
+
+        $nodePath = Resolve-WhiskeyNodePath -BuildRootPath $TaskContext.BuildRoot
 
         Update-Progress -Status ('nsp check') -Step ($stepNum++)
         Write-WhiskeyTiming -Message ('Running NSP security check.')
@@ -109,6 +110,7 @@ Build:
         {
             $summary = $results | Format-List | Out-String
             Stop-WhiskeyTask -TaskContext $TaskContext -Message ('NSP, the Node Security Platform, found the following security vulnerabilities in your dependencies (exit code: {0}):{1}{2}' -f $LASTEXITCODE,[Environment]::NewLine,$summary)
+            return
         }
 
         Update-Progress -Status ('license-checker') -Step ($stepNum++)
@@ -122,14 +124,15 @@ Build:
         if( -not $report )
         {
             Stop-WhiskeyTask -TaskContext $TaskContext -Message ('License Checker failed to output a valid JSON report.')
+            return
         }
 
         Write-WhiskeyTiming -Message ('Converting license report.')
         # The default license checker report has a crazy format. It is an object with properties for each module.
         # Let's transform it to a more sane format: an array of objects.
-        [object[]]$newReport = $report | 
-                                    Get-Member -MemberType NoteProperty | 
-                                    Select-Object -ExpandProperty 'Name' | 
+        [object[]]$newReport = $report |
+                                    Get-Member -MemberType NoteProperty |
+                                    Select-Object -ExpandProperty 'Name' |
                                     ForEach-Object { $report.$_ | Add-Member -MemberType NoteProperty -Name 'name' -Value $_ -PassThru }
 
         # show the report
