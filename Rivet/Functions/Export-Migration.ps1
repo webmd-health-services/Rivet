@@ -48,7 +48,7 @@ function Export-Migration
 
     Set-StrictMode -Version 'Latest'
     Use-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-    
+
     $pops = New-Object 'Collections.Generic.Stack[string]'
     $popsHash = @{}
     $exportedObjects = @{ }
@@ -72,47 +72,47 @@ function Export-Migration
 
     $timer = New-Object 'Timers.Timer' 100
 
-    $checkConstraints = $null
+    $checkConstraints = @()
     $checkConstraintsByID = @{}
-    $columns = $null
+    $columns = @()
     $columnsByTable = @{}
-    $dataTypes = $null
-    $defaultConstraints = $null
+    $dataTypes = @()
+    $defaultConstraints = @()
     $defaultConstraintsByID = @{}
-    $foreignKeys = $null
+    $foreignKeys = @()
     $foreignKeysByID = @{}
-    $foreignKeyColumns = $null
+    $foreignKeyColumns = @()
     $foreignKeyColumnsByObjectID = @{}
-    $indexes = $null
+    $indexes = @()
     $indexesByObjectID = @{}
-    $indexColumns = $null
+    $indexColumns = @()
     $indexColumnsByObjectID = @{}
-    $objects = $null
+    $objects = @()
     $objectsByID = @{}
     $objectsByParentID = @{}
-    $primaryKeys = $null
+    $primaryKeys = @()
     $primaryKeysByID = @{}
-    $primaryKeyColumns = $null
+    $primaryKeyColumns = @()
     $primaryKeyColumnsByObjectID = @{}
-    $schemas = $null
+    $schemas = @()
     $schemasByName = @{}
-    $modules = $null
+    $modules = @()
     $modulesByID = @{}
-    $storedProcedures = $null
+    $storedProcedures = @()
     $storedProceduresByID = @{}
-    $synonyms = $null
+    $synonyms = @()
     $synonymsByID = @{}
-    $triggers = $null
+    $triggers = @()
     $triggersByID = @{}
     $triggersByTable = @{}
-    $uniqueKeys = $null
+    $uniqueKeys = @()
     $uniqueKeysByID = @{}
     $uniqueKeysByTable = @{}
-    $uniqueKeyColumnsByObjectID = $null
+    $uniqueKeyColumnsByObjectID = @()
     $uniqueKeyColumnsByObjectID = @{}
-    $functions = $null
+    $functions = @()
     $functionsByID = @{}
-    $views = $null
+    $views = @()
     $viewByID = @{}
     $xmlSchemaDependencies = @{ }
     $xmlSchemasByID = @{ }
@@ -898,6 +898,7 @@ from
     }
 
     $objectsQuery = '
+-- OBJECTS
 select 
     sys.schemas.name as schema_name, 
     sys.objects.name as object_name, 
@@ -923,8 +924,9 @@ from
     sys.objects parent_objects
         on sys.objects.parent_object_id = parent_objects.object_id
 where 
-    sys.objects.is_ms_shipped = 0 
-    and (parent_objects.is_ms_shipped is null or parent_objects.is_ms_shipped = 0) -- {0}{1}'
+    sys.objects.is_ms_shipped = 0 and
+    (parent_objects.is_ms_shipped is null or parent_objects.is_ms_shipped = 0) and
+    sys.schemas.name != ''rivet'''
     function Export-Object
     {
         [CmdletBinding(DefaultParameterSetName='All')]
@@ -1769,7 +1771,7 @@ where
         }
 
         # SCHEMAS
-        if( $objects | Where-Object { $_.schema_name -ne 'dbo' } )
+        if( ($objects | Where-Object { $_.schema_name -ne 'dbo' }) -or ($dataTypes | Where-Object { $_.schema_name -ne 'dbo' }) )
         {
             $schemas = Invoke-Query -Query $schemasQuery
             $schemas | ForEach-Object { $schemasByName[$_.name] = $_ }
