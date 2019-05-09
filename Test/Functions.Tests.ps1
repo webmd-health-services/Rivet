@@ -25,6 +25,7 @@ Describe 'Rivet' {
                                 'Test-Schema' = $true;
                                 'Test-Table' = $true;
                                 'Update-Database' = $true;
+                                'Use-CallerPreference' = $true;
                                 'Write-RivetError' = $true;
                              }
     
