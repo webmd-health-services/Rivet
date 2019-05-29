@@ -74,7 +74,7 @@ namespace Rivet.Test.Operations
 		{
 			var op = new AddDataTypeOperation(SchemaName, Name, AsTable, TableConstraint);
 			var expectedQuery =
-				"create type [schemaName].[name] as table ([name] varchar(50) not null constraint [DF_schemaName_name_name] default '', [int column] int identity constraint1, constraint2)";
+				"create type [schemaName].[name] as table ([name] varchar(50) not null constraint [DF_schemaName_name_name] default '', [int column] int identity not null constraint1, constraint2)";
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}
 

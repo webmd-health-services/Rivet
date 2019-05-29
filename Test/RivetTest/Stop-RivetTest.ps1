@@ -1,10 +1,15 @@
 
 function Stop-RivetTest
 {
-
     Set-StrictMode -Version 'Latest'
 
-    Clear-TestDatabase -Name $RTDatabaseName
+    if( $RTDatabaseName )
+    {
+        Clear-TestDatabase -Name $RTDatabaseName
+    }
 
-    Remove-Item -Path $RTDatabasesRoot -Recurse
+    if( $RTDatabasesRoot -and (Test-Path -Path $RTDatabasesRoot) )
+    {
+        Remove-Item -Path $RTDatabasesRoot -Recurse
+    }
 }

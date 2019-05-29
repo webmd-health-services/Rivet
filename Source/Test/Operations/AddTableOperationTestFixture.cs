@@ -80,7 +80,7 @@ namespace Rivet.Test.Operations
 			var description = "description";
 
 			var op = new AddTableOperation(schemaName, tableName, columnlist, fileTable, fileGroup, textImageFileGroup, fileStremFileGroup, options, description);
-			var expectedQuery = String.Format(@"create table [schemaName].[tableName] ({0}    [name] varchar(50) not null constraint [DF_schemaName_tableName_name] default '',{0}    [int column] int identity{0}){0}on fileGroup{0}textimage_on textImageFileGroup{0}filestream_on fileGroup{0}with ( option1, option2 )", Environment.NewLine);
+			var expectedQuery = String.Format(@"create table [schemaName].[tableName] ({0}    [name] varchar(50) not null constraint [DF_schemaName_tableName_name] default '',{0}    [int column] int identity not null{0}){0}on fileGroup{0}textimage_on textImageFileGroup{0}filestream_on fileGroup{0}with ( option1, option2 )", Environment.NewLine);
 
 			Assert.That(op.ToQuery(), Is.EqualTo(expectedQuery));
 		}
