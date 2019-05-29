@@ -182,7 +182,7 @@ function New-Column
 
         [Parameter(ParameterSetName='NotNull')]
         [Switch]
-        # Makes the column not nullable.  Cannor be used with the `Sparse` switch.
+        # Makes the column not nullable.  Cannot be used with the `Sparse` switch.
         $NotNull,
 
         [Parameter(ParameterSetName='Nullable')]
