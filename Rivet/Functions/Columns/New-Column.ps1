@@ -134,25 +134,25 @@ function New-Column
         [Parameter(ParameterSetName='Nullable')]
         [Parameter(ParameterSetName='NotNull')]
         [Switch]
-        # The size/length of the column.
+        # Allow the column to be its maximum size. Sets the columnn's size clause to `(max)`. Only use this with columns whose underlying type supports it. If you supply this argument, the `Size`, `Precision`, and `Scale` parameters are ignored.
         $Max,
 
         [Parameter(ParameterSetName='Nullable')]
         [Parameter(ParameterSetName='NotNull')]
         [int]
-        # The size/length of the column.
+        # The size/length of the column. Sets the column's size clause to `($Size)`. Ignored if `Max` parameter is used. If provided, the `Precision` and `Scale` parameters are ignored.
         $Size,
 
         [Parameter(ParameterSetName='Nullable')]
         [Parameter(ParameterSetName='NotNull')]
         [int]
-        # The precision of the column.
+        # The precision of the column. Set's the columns size clause to `($Precision)`. If `Scale` is also given, the size clause is set to `($Precision,$Scale)`. Ignored if the `Max` or `Size` parameters are used.
         $Precision,
 
         [Parameter(ParameterSetName='Nullable')]
         [Parameter(ParameterSetName='NotNull')]
         [int]
-        # The scale of the column.
+        # The scale of the column. Set's the column's size clause to `($Scale)`. If `Precision` is also given, the size clause is set to `($Precision,$Scale)`. Ignored if the `Max` or `Size` parameters are used.
         $Scale,
 
         [Parameter(Mandatory,ParameterSetName='Identity')]
