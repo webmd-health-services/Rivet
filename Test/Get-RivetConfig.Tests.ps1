@@ -4,9 +4,9 @@ $rivetConfigPath = $null
 $databasesRootPath = $null
 $minConfig = @'
 {
-    SqlServerName: '.\\Test',
-    DatabasesRoot: 'Databases',
-    PluginsRoot: 'Plugins'
+    "SqlServerName": ".\\Test",
+    "DatabasesRoot": "Databases",
+    "PluginPaths": "Plugins"
 }
 '@
 
@@ -33,6 +33,15 @@ function GivenDatabase
     {
         New-Item -Path (Join-Path -Path $databasesRootPath -ChildPath $dbName) -ItemType 'Directory'
     }
+}
+
+function GivenDirectory
+{
+    param(
+        $Name
+    )
+
+     New-Item -Path (Join-Path -Path ($rivetConfigPath | Split-Path -Parent) -ChildPath $Name) -ItemType 'Directory' -Force
 }
 
 function Init
@@ -119,8 +128,8 @@ Describe 'Get-RivetConfig' {
         try
         {
             $config = Get-RivetConfig -Path ('..\{0}\rivet.json' -f $tempDir2Name)
-            $config | Should Not BeNullOrEmpty
-            $config.DatabasesRoot | Should Be (Join-Path -Path $tempDir -ChildPath 'Databases')
+            $config | Should -Not -BeNullOrEmpty
+            $config.DatabasesRoot | Should -Be (Join-Path -Path $tempDir -ChildPath 'Databases')
         }
         finally
         {
@@ -135,35 +144,35 @@ Describe 'Get-RivetConfig' {
     
         $config = Get-RivetConfig -Path $rivetConfigPath
     
-        $config | Should Not BeNullOrEmpty
-        $config.SqlServerName | Should Be '.\Test'
-        $config.ConnectionTimeout | Should Be 15
-        $config.CommandTimeout | Should Be 30
-        ($config.Databases -is 'Collections.Generic.List[Rivet.Configuration.Database]') | Should Be $true
-        $config.Databases.Count | Should Be 1
-        $config.Databases[0].Name | Should Be $dbName
-        $config.Databases[0].Root | Should Be (Join-Path -Path $tempDir -ChildPath "Databases\$dbName")
-        $config.Databases[0].MigrationsRoot | Should Be (Join-Path -Path $tempDir -ChildPath "Databases\$dbName\Migrations")
-        ($config.PluginsRoot -is 'string') | Should Be $true
-        $config.PluginsRoot | Should Be (Join-Path -Path $tempDir -ChildPath "Plugins")
+        $config | Should -Not -BeNullOrEmpty
+        $config.SqlServerName | Should -Be '.\Test'
+        $config.ConnectionTimeout | Should -Be 15
+        $config.CommandTimeout | Should -Be 30
+        ($config.Databases -is 'Collections.Generic.List[Rivet.Configuration.Database]') | Should -BeTrue
+        $config.Databases.Count | Should -Be 1
+        $config.Databases[0].Name | Should -Be $dbName
+        $config.Databases[0].Root | Should -Be (Join-Path -Path $tempDir -ChildPath "Databases\$dbName")
+        $config.Databases[0].MigrationsRoot | Should -Be (Join-Path -Path $tempDir -ChildPath "Databases\$dbName\Migrations")
+        ,$config.PluginPaths | Should -BeOfType ([string[]])
+        $config.PluginPaths[0] | Should -Be (Join-Path -Path $tempDir -ChildPath "Plugins")
     }
     
     It 'should validate databases directory exists' {
         Remove-Item -Path (Join-Path -Path $tempDir -ChildPath 'Databases') -Recurse
     
         $config = Get-RivetConfig -Path $rivetConfigPath -ErrorAction SilentlyContinue
-        $config | Should BeNullOrEmpty
-        $Global:Error.Count | Should BeGreaterThan 0
-        $Global:Error[0] | Should Match 'not found'
+        $config | Should -BeNullOrEmpty
+        $Global:Error.Count | Should -BeGreaterThan 0
+        $Global:Error[0] | Should -Match 'not found'
     }
     
     It 'should validate plugin directory exists' {
         Remove-Item -Path (Join-Path -Path $tempDir -ChildPath 'Plugins') -Recurse
     
         $config = Get-RivetConfig -Path $rivetConfigPath -ErrorAction SilentlyContinue
-        $config | Should BeNullOrEmpty
-        $Global:Error.Count | Should BeGreaterThan 0
-        $Global:Error[0] | Should Match 'not found'
+        $config | Should -BeNullOrEmpty
+        $Global:Error.Count | Should -BeGreaterThan 0
+        $Global:Error[0] | Should -Match 'not found'
     }
     
     It 'should require database scripts root' {
@@ -174,9 +183,9 @@ Describe 'Get-RivetConfig' {
 '@ | Set-RivetConfig
     
         $config = Get-RivetConfig -Path $rivetConfigPath -ErrorAction SilentlyContinue
-        $config | Should BeNullOrEmpty
-        $Global:Error.Count | Should BeGreaterThan 0
-        $Global:Error[0] | Should Match 'missing'
+        $config | Should -BeNullOrEmpty
+        $Global:Error.Count | Should -BeGreaterThan 0
+        $Global:Error[0] | Should -Match 'missing'
     }
     
     It 'should require sql server name' {
@@ -187,9 +196,9 @@ Describe 'Get-RivetConfig' {
 '@ | Set-RivetConfig
     
         $config = Get-RivetConfig -Path $rivetConfigPath -ErrorAction SilentlyContinue
-        $config | Should BeNullOrEmpty
-        $Global:Error.Count | Should BeGreaterThan 0
-        $Global:Error[0] | Should Match 'missing'
+        $config | Should -BeNullOrEmpty
+        $Global:Error.Count | Should -BeGreaterThan 0
+        $Global:Error[0] | Should -Match 'missing'
     }
     
     It 'should parse sql server name' {
@@ -202,8 +211,8 @@ Describe 'Get-RivetConfig' {
 "@ | Set-RivetConfig
     
         $config = Get-RivetConfig -Path $rivetConfigPath
-        $config | Should Not BeNullOrEmpty
-        $config.SqlServerName | Should Be $sqlServerName
+        $config | Should -Not -BeNullOrEmpty
+        $config.SqlServerName | Should -Be $sqlServerName
     }
     
     It 'should parse connection timeout' {
@@ -216,8 +225,8 @@ Describe 'Get-RivetConfig' {
 "@ | Set-RivetConfig
     
         $config = Get-RivetConfig -Path $rivetConfigPath
-        $config | Should Not BeNullOrEmpty
-        $config.ConnectionTimeout | Should Be 300
+        $config | Should -Not -BeNullOrEmpty
+        $config.ConnectionTimeout | Should -Be 300
     }
     
     It 'should validate connection timeout' {
@@ -230,9 +239,9 @@ Describe 'Get-RivetConfig' {
 "@ | Set-RivetConfig
     
         $config = Get-RivetConfig -Path $rivetConfigPath -ErrorAction SilentlyContinue
-        $config | Should BeNullOrEmpty
-        $Global:Error.Count | Should BeGreaterThan 0
-        $Global:Error[0] | Should Match 'invalid'
+        $config | Should -BeNullOrEmpty
+        $Global:Error.Count | Should -BeGreaterThan 0
+        $Global:Error[0] | Should -Match 'invalid'
     }
     
     It 'should parse command timeout' {
@@ -245,8 +254,8 @@ Describe 'Get-RivetConfig' {
 "@ | Set-RivetConfig
     
         $config = Get-RivetConfig -Path $rivetConfigPath
-        $config | Should Not BeNullOrEmpty
-        $config.CommandTimeout | Should Be 300
+        $config | Should -Not -BeNullOrEmpty
+        $config.CommandTimeout | Should -Be 300
     }
     
     It 'should validate command timeout' {
@@ -259,9 +268,9 @@ Describe 'Get-RivetConfig' {
 "@ | Set-RivetConfig
     
         $config = Get-RivetConfig -Path $rivetConfigPath -ErrorAction SilentlyContinue
-        $config | Should BeNullOrEmpty
-        $Global:Error.Count | Should BeGreaterThan 0
-        $Global:Error[0] | Should Match 'invalid'
+        $config | Should -BeNullOrEmpty
+        $Global:Error.Count | Should -BeGreaterThan 0
+        $Global:Error[0] | Should -Match 'invalid'
     }
     
     It 'should parse rivet config in current directory' {
@@ -276,8 +285,8 @@ Describe 'Get-RivetConfig' {
         try
         {
             $config = Get-RivetConfig
-            $config | Should Not BeNullOrEmpty
-            $config.DatabasesRoot | Should Be "$tempDir\Databases"
+            $config | Should -Not -BeNullOrEmpty
+            $config.DatabasesRoot | Should -Be "$tempDir\Databases"
         }
         finally
         {
@@ -290,13 +299,13 @@ Describe 'Get-RivetConfig' {
         $dbNames | New-DatabaseDirectory
     
         $config = Get-RivetConfig -Path $rivetConfigPath
-        $config | Should Not BeNullOrEmpty
-        $config.Databases.Count | Should Be 3
+        $config | Should -Not -BeNullOrEmpty
+        $config.Databases.Count | Should -Be 3
         
         $idx = 0
         $dbNames | ForEach-Object {
-            $config.Databases[$idx].Name | Should Be $_
-            $config.Databases[$idx].Root | Should Be (Join-Path -Path $tempDir -ChildPath "Databases\$_")
+            $config.Databases[$idx].Name | Should -Be $_
+            $config.Databases[$idx].Root | Should -Be (Join-Path -Path $tempDir -ChildPath "Databases\$_")
             $idx += 1
         }
     }
@@ -314,9 +323,9 @@ Describe 'Get-RivetConfig' {
 '@ | Set-RivetConfig
     
         $config = Get-RivetConfig -Path $rivetConfigPath
-        $config | Should Not BeNullOrEmpty
-        $config.Databases.Count | Should Be 1
-        $config.Databases[0].Name | Should Be 'One'
+        $config | Should -Not -BeNullOrEmpty
+        $config.Databases.Count | Should -Be 1
+        $config.Databases[0].Name | Should -Be 'One'
     }
     
     It 'should handle one ignore rule' {
@@ -331,8 +340,8 @@ Describe 'Get-RivetConfig' {
 '@ | Set-RivetConfig
     
         $config = Get-RivetConfig -Path $rivetConfigPath
-        $config | Should Not BeNullOrEmpty
-        $config.Databases.Count | Should Be 0
+        $config | Should -Not -BeNullOrEmpty
+        $config.Databases.Count | Should -Be 0
     }
     
     It 'should override settings from environment' {
@@ -362,31 +371,31 @@ Describe 'Get-RivetConfig' {
         $defaultConfig = Get-RivetConfig -Path $rivetConfigPath
         $uatConfig = Get-RivetConfig -Path $rivetConfigPath -Environment 'UAT'
         $prodConfig = Get-RivetConfig -Path $rivetConfigPath -Environment 'Prod'
-        $defaultConfig.SqlServerName | Should Be '.\Rivet'
-        $defaultConfig.DatabasesRoot | Should Be $databasesRootPath
-        $defaultConfig.ConnectionTimeout | Should Be 15
-        $defaultConfig.Databases.Count | Should Be 0
+        $defaultConfig.SqlServerName | Should -Be '.\Rivet'
+        $defaultConfig.DatabasesRoot | Should -Be $databasesRootPath
+        $defaultConfig.ConnectionTimeout | Should -Be 15
+        $defaultConfig.Databases.Count | Should -Be 0
     
-        $uatConfig.SqlServerName | Should Be 'uatdb\Rivet'
-        $uatConfig.DatabasesRoot | Should Be $uatDatabasesPath
-        $uatConfig.ConnectionTimeout | Should Be 999
-        $uatConfig.Databases.Count | Should Be 1
-        $uatConfig.Databases[0].Name | Should Be 'UatDatabase'
+        $uatConfig.SqlServerName | Should -Be 'uatdb\Rivet'
+        $uatConfig.DatabasesRoot | Should -Be $uatDatabasesPath
+        $uatConfig.ConnectionTimeout | Should -Be 999
+        $uatConfig.Databases.Count | Should -Be 1
+        $uatConfig.Databases[0].Name | Should -Be 'UatDatabase'
     
-        $prodConfig.SqlServerName | Should Be 'proddb\Rivet'
-        $prodConfig.DatabasesRoot | Should Be $databasesRootPath
-        $prodConfig.ConnectionTimeout | Should Be 15
-        $prodConfig.Databases.Count | Should Be 0
+        $prodConfig.SqlServerName | Should -Be 'proddb\Rivet'
+        $prodConfig.DatabasesRoot | Should -Be $databasesRootPath
+        $prodConfig.ConnectionTimeout | Should -Be 15
+        $prodConfig.Databases.Count | Should -Be 0
     }
     
     It 'should return explicit databases' {
         $config = Get-RivetConfig -Path $rivetConfigPath -Database 'one','two'
-        $config | Should Not BeNullOrEmpty
-        $config.Databases.Count | Should Be 2
-        $config.Databases[0].Name | Should Be 'one'
-        $config.Databases[0].Root | Should Be (Join-Path -Path $tempDir -ChildPath "Databases\one")
-        $config.Databases[1].Name | Should Be 'two'
-        $config.Databases[1].Root | Should Be (Join-Path -Path $tempDir -ChildPath "Databases\two")
+        $config | Should -Not -BeNullOrEmpty
+        $config.Databases.Count | Should -Be 2
+        $config.Databases[0].Name | Should -Be 'one'
+        $config.Databases[0].Root | Should -Be (Join-Path -Path $tempDir -ChildPath "Databases\one")
+        $config.Databases[1].Name | Should -Be 'two'
+        $config.Databases[1].Root | Should -Be (Join-Path -Path $tempDir -ChildPath "Databases\two")
     }
     
     It 'should return unique databases' {
@@ -394,10 +403,10 @@ Describe 'Get-RivetConfig' {
         $db | New-DatabaseDirectory
     
         $config = Get-RivetConfig -Path $rivetConfigPath -Database $db
-        $config | Should Not BeNullOrEmpty
-        $config.Databases.Count | Should Be 1
-        $config.Databases[0].Name | Should Be $db
-        $config.Databases[0].Root | Should Be (Join-Path -Path $tempDir -ChildPath "Databases\$db")
+        $config | Should -Not -BeNullOrEmpty
+        $config.Databases.Count | Should -Be 1
+        $config.Databases[0].Name | Should -Be $db
+        $config.Databases[0].Root | Should -Be (Join-Path -Path $tempDir -ChildPath "Databases\$db")
     }
     
     It 'should only return explicit databases' {
@@ -405,10 +414,10 @@ Describe 'Get-RivetConfig' {
         $db | New-DatabaseDirectory
     
         $config = Get-RivetConfig -Path $rivetConfigPath -Database 'one'
-        $config | Should Not BeNullOrEmpty
-        $config.Databases.Count | Should Be 1
-        $config.Databases[0].Name | Should Be 'one'
-        $config.Databases[0].Root | Should Be (Join-Path -Path $tempDir -ChildPath "Databases\one")
+        $config | Should -Not -BeNullOrEmpty
+        $config.Databases.Count | Should -Be 1
+        $config.Databases[0].Name | Should -Be 'one'
+        $config.Databases[0].Root | Should -Be (Join-Path -Path $tempDir -ChildPath "Databases\one")
     }
     
     It 'should fail if environment missing' {
@@ -416,9 +425,9 @@ Describe 'Get-RivetConfig' {
         $dbName | New-DatabaseDirectory
     
         $config = Get-RivetConfig -Path $rivetConfigPath -Environment 'IDoNotExist' -ErrorAction SilentlyContinue
-        $config | Should BeNullOrEmpty
-        $Global:Error.Count | Should BeGreaterThan 0
-        $Global:Error[0] | Should Match 'Environment ''IDoNotExist'' not found'
+        $config | Should -BeNullOrEmpty
+        $Global:Error.Count | Should -BeGreaterThan 0
+        $Global:Error[0] | Should -Match 'Environment ''IDoNotExist'' not found'
     }
     
     
@@ -438,26 +447,26 @@ Describe 'Get-RivetConfig' {
 '@ | Set-RivetConfig
     
         $defaultConfig = Get-RivetConfig -Path $rivetConfigPath
-        ($defaultConfig.Databases | Where-Object { $_.Name -eq 'UatDatabase' }) | Should BeNullOrEmpty
+        ($defaultConfig.Databases | Where-Object { $_.Name -eq 'UatDatabase' }) | Should -BeNullOrEmpty
     
         $db2 = $defaultConfig.Databases | Where-Object { $_.Name -eq 'DB2' }
-        $db2 | Should Not BeNullOrEmpty
-        $db2.Name | Should Be 'DB2'
-        $db2.Root | Should Be (Join-Path -Path $uatDatabasesPath -ChildPath 'UatDatabase')
-        $db2.MigrationsRoot | Should Be (Join-Path -Path $uatDatabasesPath -ChildPath 'UatDatabase\Migrations')
+        $db2 | Should -Not -BeNullOrEmpty
+        $db2.Name | Should -Be 'DB2'
+        $db2.Root | Should -Be (Join-Path -Path $uatDatabasesPath -ChildPath 'UatDatabase')
+        $db2.MigrationsRoot | Should -Be (Join-Path -Path $uatDatabasesPath -ChildPath 'UatDatabase\Migrations')
     
         $db3 = $defaultConfig.Databases | Where-Object { $_.Name -eq 'db3' }
-        $db3 | Should Not BeNullOrEmpty
-        $db3.Name | Should Be 'db3'
-        $db3.Root | Should Be (Join-Path -Path $uatDatabasesPath -ChildPath 'UatDatabase')
-        $db3.MigrationsRoot | Should Be (Join-Path -Path $uatDatabasesPath -ChildPath 'UatDatabase\Migrations')
+        $db3 | Should -Not -BeNullOrEmpty
+        $db3.Name | Should -Be 'db3'
+        $db3.Root | Should -Be (Join-Path -Path $uatDatabasesPath -ChildPath 'UatDatabase')
+        $db3.MigrationsRoot | Should -Be (Join-Path -Path $uatDatabasesPath -ChildPath 'UatDatabase\Migrations')
     }
     
     It 'should ignore errors from outside' {
         # REGRESSION TEST: If an error from outside exists, fails to return anything
         Write-Error 'fubar!' -ErrorAction SilentlyContinue
         $config = Get-RivetConfig -Path $rivetConfigPath
-        $config | Should Not BeNullOrEmpty
+        $config | Should -Not -BeNullOrEmpty
     }
     
 }
@@ -479,5 +488,25 @@ Describe 'Get-RivetConfig.when databases have a custom order' {
         $config.Databases[1].Name | Should -Be 'BBB'
         $config.Databases[2].Name | Should -Be 'AAA'
         $config.Databases[3].Name | Should -Be 'DDD'
+    }
+}
+
+Describe 'Get-RivetConfig.when there are multiple plugin paths' {
+    It 'should set PluginPaths property to list of paths' {
+        Init
+        GivenDirectory 'PluginOne'
+        GivenDirectory 'PluginTwo'
+        GivenConfig @'
+{
+    "SqlServerName": ".\\Rivet",
+    "DatabasesRoot": "Databases",
+    "PluginPaths": [ "PluginOne", "PluginTwo" ]  
+}
+'@
+        $config = WhenGettingConfig
+        $config.PluginPaths.Count | Should -Be 2
+        $root = $rivetConfigPath | Split-Path -Parent
+        $config.PluginPaths[0] | Should -Be (Join-Path -Path $root -ChildPath 'PluginOne')
+        $config.PluginPaths[1] | Should -Be (Join-Path -Path $root -ChildPath 'PluginTwo')
     }
 }

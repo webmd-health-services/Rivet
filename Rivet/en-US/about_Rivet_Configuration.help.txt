@@ -103,17 +103,19 @@ LONG DESCRIPTION
     scripts.  Wildcards are allowed, e.g. `Shared*` would exclude all directories 
     under `DatabasesRoot` that begin with the word `Shared`.
     
-    ### PluginsRoot
+    ### PluginPaths
     
-    This should point to the directory which contains the directory for which plugins 
-    should be stored.  For example, given this directory structure:
-    
-    	* rivet.json
-    	+Databases
-    	+Plugins
-    
-    PluginsRoot should point to the "Plugins" directory
-    
+    A list of directories/files to PowerShell modules that export Rivet plugins. Rivet 
+    runs `Import-Module -Force` on each of these paths. Each path should be relative to
+    the rivet.json file. Wildcards in the path are allowed. Plugins are loaded in the
+    order defined. If a wildcard matches multiple items, they are loaded in the order
+    returned by PowerShell's `Resolve-Path` cmdlet. These paths *must* exist or you'll
+    get an error.
+
+        {
+            "PluginPaths": [ "MyRivetExtensions", "SomebodyElsesRivetExtensions" ]
+        }
+     
     ### SqlServerName
     
     The name of the SQL Server to connect to.
