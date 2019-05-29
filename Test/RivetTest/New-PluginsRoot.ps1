@@ -8,7 +8,14 @@ function New-PluginsRoot
 
     Set-StrictMode -Version 'Latest'
 
-    $tempDir = New-TempDirectory -Prefix $Prefix
+    if( (Test-Path -Path 'TestDrive:') )
+    {
+        $tempDir = $TestDrive
+    }
+    else
+    {
+        $tempDir = New-TempDirectory -Prefix $Prefix
+    }
 
     $rivetJson = Get-Content -Path $RTConfigFilePath -Raw | ConvertFrom-Json
     if( -not $rivetJson )
