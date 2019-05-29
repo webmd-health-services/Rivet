@@ -1,6 +1,7 @@
 
 #Requires -Version 5.1
 Set-StrictMode -Version 'Latest'
+
 & (Join-Path -Path $PSScriptRoot -ChildPath 'Initialize-Test.ps1' -Resolve)
 
 function Assert-OperationsReturned
@@ -9,7 +10,7 @@ function Assert-OperationsReturned
         [object[]]
         $Operation
     )
-    ps
+    
     $Operation | Should -Not -BeNullOrEmpty
 }
 
@@ -198,3 +199,104 @@ Describe 'Invoke-Rivet' {
         $result[1].Migration.Name | Should -Be 'One'
     }
 }
+
+function GivenFile
+{
+    param(
+        $Name,
+        $Content
+    )
+
+    $path = Join-Path -Path $TestDrive.FullName -ChildPath $Name
+    $directoryPath = $path | Split-Path
+    if( -not (Test-Path -Path $directoryPath -PathType Container) )
+    {
+        New-Item -Path $directoryPath -ItemType 'Directory' | Out-Null
+    }
+    $Content | Set-Content -Path $path
+}
+
+function Init
+{
+    param(
+        $PluginPath
+    )
+
+    Start-RivetTest -PluginPath $PluginPath
+    $Global:Error.Clear()
+}
+
+function Reset
+{
+    param(
+        [string[]]
+        $Plugin
+    )
+
+    Stop-RivetTest
+    #Clear-TestDatabase
+    Remove-Module -Name $Plugin
+}
+
+Describe 'Invoke-Rivet.when there is a plugin' {
+    BeforeEach { Init -PluginPath 'InvokeRivetTestPlugin' }
+    AfterEach { Reset -Plugin 'InvokeRivetTestPlugin' }
+    It 'should load the plugin' {
+        GivenFile 'InvokeRivetTestPlugin\InvokeRivetTestPlugin.psm1' @'
+function MyPlugin
+{
+}
+'@
+        Invoke-RTRivet -Push
+        Get-Module -Name 'InvokeRivetTestPlugin' | Should -Not -BeNullOrEmpty
+    }
+}
+
+Describe 'Invoke-Rivet.when there are multiple plugins' {
+    BeforeEach { Init -PluginPath 'InvokeRivetTestPlugin','InvokeRivetTestPlugin2' }
+    AfterEach { Reset -Plugin 'InvokeRivetTestPlugin','InvokeRivetTestPlugin2' }
+    It 'should load the plugin' {
+        GivenFile 'InvokeRivetTestPlugin\InvokeRivetTestPlugin.psm1' @'
+function MyPlugin
+{
+}
+'@
+        GivenFile 'InvokeRivetTestPlugin2\InvokeRivetTestPlugin2.psm1' @'
+function MyPlugin2
+{
+}
+'@
+        Invoke-RTRivet -Push
+        Get-Module -Name 'InvokeRivetTestPlugin' | Should -Not -BeNullOrEmpty
+        Get-Module -Name 'InvokeRivetTestPlugin2' | Should -Not -BeNullOrEmpty
+    }
+}
+
+
+Describe 'Invoke-Rivet.when a plugin is already loaded' {
+    BeforeEach { Init -PluginPath 'InvokeRivetTestPlugin' }
+    AfterEach { Reset -Plugin 'InvokeRivetTestPlugin' }
+    It 'should reload the plugin' {
+        GivenFile 'InvokeRivetTestPlugin\InvokeRivetTestPlugin.psm1' @'
+function MyPlugin
+{
+}
+'@
+        Invoke-RTRivet -Push
+        Get-Module -Name 'InvokeRivetTestPlugin' | Should -Not -BeNullOrEmpty
+        Get-Command -Name 'MyPlugin' | Should -Not -BeNullOrEmpty
+
+        # Now, change the module.
+        GivenFile 'InvokeRivetTestPlugin\InvokeRivetTestPlugin.psm1' @'
+function NewMyPlugin
+{
+}
+'@
+        Invoke-RTRivet -Push
+        Get-Module -Name 'InvokeRivetTestPlugin' | Should -Not -BeNullOrEmpty
+        Get-Command -Name 'MyPlugin' -ErrorAction Ignore | Should -BeNullOrEmpty
+        Get-Command -Name 'NewMyPlugin' | Should -Not -BeNullOrEmpty
+
+    }
+}
+

@@ -101,6 +101,11 @@ Found no databases to migrate. This can be a few things:
         return
     }
 
+    foreach( $pluginPath in $settings.PluginPaths )
+    {
+        Import-Module -Name $pluginPath -Global -Force
+    }
+
     try
     {
         if( $PSCmdlet.ParameterSetName -eq 'New' )
