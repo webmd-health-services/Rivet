@@ -25,7 +25,7 @@
     CompatiblePSEditions = @( 'Desktop', 'Core' )
 
     # Copyright statement for this module
-    Copyright = 'Copyright 2013 - 2018 WebMD Health Services.'
+    Copyright = 'Copyright 2013 - 2019 WebMD Health Services.'
 
     # Description of the functionality provided by this module
     Description = @'
@@ -200,7 +200,7 @@ Rivet is a database migration/change management/versioning tool inspired by Ruby
             ReleaseNotes = @'
 * Created `Export-Migration` function for exporting database objects as Rivet migrations.
 * Rivet can now add XML columns that don't have schema associated with them.
-* New-Column can now be used to create columns on tables that have custom size specifications, are rowguidcol, are identities, custom collations, and are file stream.
+* `New-Column` can now be used to create columns on tables that have custom size specifications, are rowguidcol, are identities, custom collations, and are file stream.
 '@
         } # End of PSData hashtable
 
