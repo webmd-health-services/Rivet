@@ -68,6 +68,6 @@ function Invoke-RTRivet
     Write-Host -Foregroundcolor green @customParams
     #>
 
-    & $RTRivetPath @PSBoundParameters @customParams
+    Invoke-Rivet @PSBoundParameters @customParams
 
 }

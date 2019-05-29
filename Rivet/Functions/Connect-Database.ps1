@@ -39,7 +39,7 @@ function Connect-Database
                 $ex = $ex.InnerException
             }
 
-            Write-Error ('Failed to connect to SQL Server ''{0}'' (connection string: {1}). Does this database server exist? ({2})' -f $SqlServerName,$connString,$ex.Message)
+            Write-Error ('Failed to connect to SQL Server "{0}" (connection string: {1}). Does this database server exist? ({2})' -f $SqlServerName,$connString,$ex.Message)
             return $false
         }
     }

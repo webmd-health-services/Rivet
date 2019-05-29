@@ -5,14 +5,9 @@ namespace Rivet.Test
 	[TestFixture]
 	public sealed class ColumnTestFixture
 	{
-		private static readonly Identity DefaultIdentity = new Identity();
-		private static readonly Identity DefaultNotForReplicationIdentity = new Identity(true);
-		private static readonly Identity SeedIncrementIdentity = new Identity(3, 4);
-		private static readonly Identity SeedIncrementNotForReplicationIdentity = new Identity(3, 4);
-		private static readonly Identity[] Identities = new[] {DefaultIdentity, DefaultNotForReplicationIdentity, SeedIncrementIdentity, SeedIncrementNotForReplicationIdentity};
 
-		private static readonly PrecisionScale PrecisionNoScale = new PrecisionScale(1);
-		private static readonly PrecisionScale PrecisionWithScale = new PrecisionScale(2, 1);
+		private static readonly PrecisionScale PrecisionNoScale = new PrecisionScale(4);
+		private static readonly PrecisionScale PrecisionWithScale = new PrecisionScale(4, 2);
 		private static readonly PrecisionScale[] Precisions = new [] { PrecisionNoScale, PrecisionWithScale};
 
 		private Column _column;
@@ -43,17 +38,37 @@ namespace Rivet.Test
 			ThenColumnShouldBe(name, DataType.BigInt, nullable, defaultExpression, description);
 		}
 
-		[Test]
-		public void ShouldCreateBigIntIdentityColumn()
-		{
-			foreach (var identity in Identities)
-			{
-				GivenColumn(Column.BigInt("BigIntIdentity", identity, "big int identity"));
-				ThenColumnShouldBe("BigIntIdentity", DataType.BigInt, identity, "big int identity");
-			}
-		}
+        #endregion
 
-		#endregion
+        #region IDENTITIES
+        [Test]
+        public void ShouldCreateDefaultIdentityColumn()
+        {
+            GivenColumn(Column.BigInt("BigIntIdentity", new Identity(), "big int identity"));
+            ThenColumnShouldBe("[BigIntIdentity] bigint identity not null");
+        }
+
+        [Test]
+        public void ShouldCreateNotForReplicationIdentityColumn()
+        { 
+            GivenColumn(Column.BigInt("BigIntIdentity", new Identity(true), "big int identity"));
+            ThenColumnShouldBe("[BigIntIdentity] bigint identity not for replication not null");
+        }
+
+        [Test]
+        public void ShouldCreateIdentityWithCustomSeedColumn()
+        {
+            GivenColumn(Column.BigInt("BigIntIdentity", new Identity(101,103), "big int identity"));
+            ThenColumnShouldBe($"[BigIntIdentity] bigint identity (101,103) not null");
+        }
+
+        [Test]
+        public void ShouldCreateIdentityWithCustomSeedAndNotForReplicationColumn()
+        {
+            GivenColumn(Column.BigInt("BigIntIdentity", new Identity(105,107, true), "big int identity"));
+            ThenColumnShouldBe($"[BigIntIdentity] bigint identity (105,107) not for replication not null");
+        }
+        #endregion
 
 		#region Binary
 		[Test]
@@ -155,7 +170,7 @@ namespace Rivet.Test
 			string name,
 			
 			[Values(7, null)]
-			int? precision,
+			int? scale,
 
 			[Values(Nullable.Null, Nullable.NotNull, Nullable.Sparse)]
 			Nullable nullable,
@@ -166,7 +181,7 @@ namespace Rivet.Test
 			[Values("datetime2 column", null)]
 			string description)
 		{
-			var size = (precision == null) ? null : new PrecisionScale(precision.Value);
+			var size = (scale == null) ? null : new Scale(scale.Value);
 			GivenColumn(Column.DateTime2(name, size, nullable, defaultExpression, description));
 			ThenColumnShouldBe(name, DataType.DateTime2,  size, nullable, defaultExpression, description);
 		}
@@ -179,7 +194,7 @@ namespace Rivet.Test
 			string name,
 
 			[Values(7, null)]
-			int? precision,
+			int? scale,
 
 			[Values(Nullable.Null, Nullable.NotNull, Nullable.Sparse)]
 			Nullable nullable,
@@ -190,7 +205,7 @@ namespace Rivet.Test
 			[Values("datetimeoffset column", null)]
 			string description)
 		{
-			var size = (precision == null) ? null : new PrecisionScale(precision.Value);
+			var size = (scale == null) ? null : new Scale(scale.Value);
 			GivenColumn(Column.DateTimeOffset(name, size, nullable, defaultExpression, description));
 			ThenColumnShouldBe(name, DataType.DateTimeOffset, size, nullable, defaultExpression, description);
 		}
@@ -201,22 +216,13 @@ namespace Rivet.Test
 		public void ShouldCreateDecimalColumn(
 			[Values("Decimal")]
 			string name,
+
 			[Values(Nullable.Null, Nullable.NotNull, Nullable.Sparse)]
 			Nullable nullable)
 		{
 			var c = Column.Decimal(name, null, nullable, "1.0", "decimal");
 			GivenColumn(c);
 			ThenColumnShouldBe(name, DataType.Decimal, nullable, "1.0", "decimal");
-		}
-
-		[Test]
-		public void ShouldCreateDecimalIdentityColumn()
-		{
-			foreach (var identity in Identities)
-			{
-				GivenColumn(Column.Decimal("DecimalIdentity", null, identity, "decimal identity"));
-				ThenColumnShouldBe("DecimalIdentity", DataType.Decimal, identity, "decimal identity");
-			}
 		}
 
 		[Test]
@@ -235,17 +241,10 @@ namespace Rivet.Test
 		[Test]
 		public void ShouldCreateDecimalIdentityWithPrecisionAndScale()
 		{
-			foreach (var identity in Identities)
-			{
-				foreach (var ps in Precisions)
-				{
-					var c = Column.Decimal("DecimalWithPrecision", ps, identity, "decimal identity");
-					GivenColumn(c);
-					ThenColumnShouldBe("DecimalWithPrecision", DataType.Decimal, ps, identity, "decimal identity");
-				}
-			}
+			var c = Column.Decimal("DecimalWithPrecision", new PrecisionScale(5,2), new Identity(), "decimal identity");
+			GivenColumn(c);
+			ThenColumnShouldBe("[DecimalWithPrecision] decimal(5,2) identity not null");
 		}
-
 		#endregion
 
 		#region Float
@@ -269,7 +268,7 @@ namespace Rivet.Test
 			[Values("float column", null)]
 			string description)
 		{
-			PrecisionScale size = null;
+            PrecisionScale size = null;
 			if (precision == null && scale == null)
 			{
 			}
@@ -323,17 +322,6 @@ namespace Rivet.Test
 			GivenColumn(c);
 			ThenColumnShouldBe(name, DataType.Int, nullable, "(0)", "int collumn");
 		}
-
-		[Test]
-		public void ShouldCreateIntIdentityColumn()
-		{
-			foreach (var identity in Identities)
-			{
-				GivenColumn(Column.Int("IntIdentity", identity, "int identity"));
-				ThenColumnShouldBe("IntIdentity", DataType.Int, identity, "int identity");
-			}
-		}
-
 		#endregion
 
 		#region Money
@@ -488,17 +476,6 @@ namespace Rivet.Test
 			GivenColumn(c);
 			ThenColumnShouldBe(name, DataType.SmallInt, nullable, "(4)", "small int");
 		}
-
-		[Test]
-		public void ShouldCreateSmallIntIdentityColumn()
-		{
-			foreach (var identity in Identities)
-			{
-				GivenColumn(Column.SmallInt("SmallIntIdentity", identity, "small int identity"));
-				ThenColumnShouldBe("SmallIntIdentity", DataType.SmallInt, identity, "small int identity");
-			}
-		}
-
 		#endregion
 
 		#region SmallMoney
@@ -550,7 +527,7 @@ namespace Rivet.Test
 			string name,
 
 			[Values(7, null)]
-			int? precision,
+			int? scale,
 
 			[Values(Nullable.Null, Nullable.NotNull, Nullable.Sparse)]
 			Nullable nullable,
@@ -561,7 +538,7 @@ namespace Rivet.Test
 			[Values("time column", null)]
 			string description)
 		{
-			var size = (precision == null) ? null : new PrecisionScale(precision.Value);
+			var size = (scale == null) ? null : new Scale(scale.Value);
 			GivenColumn(Column.Time(name, size, nullable, defaultExpression, description));
 			ThenColumnShouldBe(name, DataType.Time, size, nullable, defaultExpression, description);
 		}
@@ -580,17 +557,6 @@ namespace Rivet.Test
 			GivenColumn(c);
 			ThenColumnShouldBe(name, DataType.TinyInt, nullable, "(6)", "tinyint");
 		}
-
-		[Test]
-		public void ShouldCreateTinyIntIdentityColumn()
-		{
-			foreach (var identity in Identities)
-			{
-				GivenColumn(Column.TinyInt("TinyIntIdentity", identity, "tinyint identity"));
-				ThenColumnShouldBe("TinyIntIdentity", DataType.TinyInt, identity, "tinyint identity");
-			}
-		}
-
 		#endregion
 
 		#region UniqueIdentifier
@@ -747,7 +713,12 @@ namespace Rivet.Test
 			_column = column;
 		}
 
-		private void ThenColumnShouldBe(string name, DataType dataType, bool rowGuidCol, Nullable nullable, string defaultExpression, string description)
+        private void ThenColumnShouldBe(string expectedValue)
+        {
+            Assert.That(_column.GetColumnDefinition("fubar", "snafu", false), Is.EqualTo(expectedValue));
+        }
+
+        private void ThenColumnShouldBe(string name, DataType dataType, bool rowGuidCol, Nullable nullable, string defaultExpression, string description)
 		{
 			ThenColumnShouldBe(name, dataType, defaultExpression, description);
 			Assert.That(_column.Nullable, Is.EqualTo(nullable));
@@ -777,7 +748,7 @@ namespace Rivet.Test
 				if (dataType.ToString().Contains("Var"))
 				{
 					Assert.That(_column.Size, Is.Not.Null);
-					Assert.That(_column.Size.Precision, Is.EqualTo(0));
+					Assert.That(_column.Size.Value, Is.EqualTo(CharacterLength.Max));
 					Assert.That(((CharacterLength)_column.Size).IsMax, Is.True);
 					Assert.That(_column.Size.ToString(), Is.EqualTo("(max)"));
 				}
@@ -789,8 +760,8 @@ namespace Rivet.Test
 			}
 			else
 			{
-				Assert.That(_column.Size.Precision, Is.EqualTo(size.Precision));
-				sizeClause = string.Format("({0})", _column.Size.Precision);
+				Assert.That(_column.Size.Value, Is.EqualTo(size.Value));
+				sizeClause = string.Format("({0})", _column.Size.Value);
 			}
 			Assert.That(_column.Collation, Is.EqualTo(collation));
 
@@ -826,22 +797,17 @@ namespace Rivet.Test
 			var sparseClause = ConvertToSparseClause(nullable);
 			var defaultClause = ConvertToDefaultClause(defaultExpression, "any", "any", false);
 
-			var dataTypeName = dataType.ToString().ToLowerInvariant();
-			if (dataType == DataType.SqlVariant)
-			{
-				dataTypeName = "sql_variant";
-			}
-			Assert.That(_column.GetColumnDefinition("any","any",false), Is.EqualTo(string.Format("[{0}] {1}{2}{3}{4}", name, dataTypeName, notNullClause, defaultClause, sparseClause)));
+			Assert.That(_column.GetColumnDefinition("any","any",false), Is.EqualTo(string.Format("[{0}] {1}{2}{3}{4}", name, dataType, notNullClause, defaultClause, sparseClause)));
 		}
 
-		private void ThenColumnShouldBe(string name, DataType dataType, PrecisionScale size, bool filestream,
+		private void ThenColumnShouldBe(string name, DataType dataType, ColumnSize size, bool filestream,
 		                                Nullable nullable, string defaultExpression, string description)
 		{
 			Assert.That(_column.FileStream, Is.EqualTo(filestream));
 			ThenColumnShouldBe(name, dataType, size, nullable, defaultExpression, description);
 		}
 
-		private void ThenColumnShouldBe(string name, DataType dataType, PrecisionScale size, Nullable nullable, string defaultExpression, string description)
+		private void ThenColumnShouldBe(string name, DataType dataType, ColumnSize size, Nullable nullable, string defaultExpression, string description)
 		{
 			ThenColumnShouldBe(name, dataType, defaultExpression, description);
 			var sizeClause = "";
@@ -851,7 +817,7 @@ namespace Rivet.Test
 				{
 					Assert.That(_column.Size, Is.Not.Null);
 					Assert.That(_column.Size.GetType(), Is.EqualTo(typeof (CharacterLength)));
-					Assert.That(_column.Size.Precision, Is.EqualTo(0));
+					Assert.That(_column.Size.Value, Is.EqualTo(CharacterLength.Max));
 					Assert.That(_column.Size.ToString(), Is.EqualTo("(max)"));
 					sizeClause = "(max)";
 				}
@@ -863,8 +829,7 @@ namespace Rivet.Test
 			else
 			{
 				Assert.That(_column.Size, Is.Not.Null);
-				Assert.That(_column.Size.Precision, Is.EqualTo(size.Precision));
-				Assert.That(_column.Size.Scale, Is.EqualTo(size.Scale));
+				Assert.That(_column.Size.Value, Is.EqualTo(size.Value));
 				Assert.That(_column.Size.ToString(), Is.EqualTo(size.ToString()));
 				sizeClause = size.ToString();
 			}
@@ -898,12 +863,10 @@ namespace Rivet.Test
 			Assert.That(_column.GetColumnDefinition("identity", "id", false), Is.EqualTo(expectedDefinition));
 		}
 
-		private void ThenColumnShouldBe(string name, DataType dataType, PrecisionScale size, Identity identity, string description)
+		private void ThenColumnShouldBe(string name, DataType dataType, ColumnSize size, Identity identity, string description)
 		{
 			ThenColumnShouldBe(name, dataType, (string)null, description);
 			Assert.That(_column.Size, Is.Not.Null);
-			Assert.That(_column.Size.Precision, Is.EqualTo(size.Precision));
-			Assert.That(_column.Size.Scale, Is.EqualTo(size.Scale));
 			Assert.That(_column.Size.ToString(), Is.EqualTo(size.ToString()));
 			Assert.That(_column.Identity.Seed, Is.EqualTo(identity.Seed));
 			Assert.That(_column.Identity.Increment, Is.EqualTo(identity.Increment));

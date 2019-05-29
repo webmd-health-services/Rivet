@@ -36,3 +36,4 @@ if( $LastBladeResult.Failures -or $LastBladeResult.Errors )
     exit 1
 }
 
+exit 0

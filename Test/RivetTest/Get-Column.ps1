@@ -17,7 +17,14 @@ function Get-Column
 
     $query = @'
     select 
-        ty.name type_name, c.*, ex.value MSDescription, dc.name default_constraint_name, dc.definition default_constraint, ic.seed_value, ic.increment_value, ic.is_not_for_replication
+        ty.name type_name, 
+        c.*, 
+        ex.value MSDescription, 
+        dc.name default_constraint_name, 
+        dc.definition default_constraint, 
+        ic.seed_value, 
+        ic.increment_value, 
+        ic.is_not_for_replication
     from sys.columns c join 
         sys.tables t on c.object_id = t.object_id join 
         sys.schemas s on t.schema_id = s.schema_id join
