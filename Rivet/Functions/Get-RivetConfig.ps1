@@ -66,13 +66,13 @@ function Get-RivetConfig
 
             if( $Resolve )
             {
-                $ConfigPath = Resolve-Path -Path $ConfigPath | Select-Object -ExpandProperty 'Path'
-                if( ($ConfigPath | Measure-Object).Count -gt 1 )
+                $resolvedPath = Resolve-Path -Path $ConfigPath | Select-Object -ExpandProperty 'Path'
+                if( ($resolvedPath | Measure-Object).Count -gt 1 )
                 {
-                    Write-ValidationError -Message ('path "{0}" resolves to multiple items: "{1}". Please update the path so that it resolves to only one item, or remove items so that only one remains.' -f $originalPath,($ConfigPath -join '", "'))
+                    Write-ValidationError -Message ('path "{0}" resolves to multiple items: "{1}". Please update the path so that it resolves to only one item, or remove items so that only one remains.' -f $originalPath,($resolvedPath -join '", "'))
                     return
                 }
-                return $ConfigPath
+                return $resolvedPath
             }
             else
             {
