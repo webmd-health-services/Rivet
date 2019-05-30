@@ -106,7 +106,7 @@ LONG DESCRIPTION
     ### PluginsRoot
     
     This should point to the directory which contains the directory for which plugins 
-    should be stored.  For example, given this directory structure:
+    should be stored. Wildcards supported. For example, given this directory structure:
     
     	* rivet.json
     	+Databases

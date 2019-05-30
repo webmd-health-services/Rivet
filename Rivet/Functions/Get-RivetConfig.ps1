@@ -40,27 +40,48 @@ function Get-RivetConfig
     )
 
     Set-StrictMode -Version 'Latest'
+    Use-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
     function Resolve-RivetConfigPath
     {
         [CmdletBinding()]
         param(
-            [Parameter(Mandatory=$true,ValueFromPipeline=$true)]
+            [Parameter(Mandatory,ValueFromPipeline)]
             [string]
             # The path from the rivet config file to resolve.
-            $Path
+            $ConfigPath,
+
+            [Switch]
+            # The path *must* exist, so resolve it.
+            $Resolve
         )
+
         process
         {
-            if( [IO.Path]::IsPathRooted( $Path ) )
+            $originalPath = $ConfigPath
+            if( -not [IO.Path]::IsPathRooted( $ConfigPath ) )
             {
-                return [IO.Path]::GetFullPath( $Path )
+                $ConfigPath = Join-Path -Path $configRoot -ChildPath $ConfigPath
             }
 
-            $Path = Join-Path -Path $configRoot -ChildPath $Path
-            return [IO.Path]::GetFullPath( $Path )
+            if( $Resolve )
+            {
+                $resolvedPath = Resolve-Path -Path $ConfigPath | Select-Object -ExpandProperty 'Path'
+                if( ($resolvedPath | Measure-Object).Count -gt 1 )
+                {
+                    Write-ValidationError -Message ('path "{0}" resolves to multiple items: "{1}". Please update the path so that it resolves to only one item, or remove items so that only one remains.' -f $originalPath,($resolvedPath -join '", "'))
+                    return
+                }
+                return $resolvedPath
+            }
+            else
+            {
+                return [IO.Path]::GetFullPath( $ConfigPath )
+            }
         }
     }
+
+    $currentPropertyName = $null
 
     filter Get-ConfigProperty
     {
@@ -75,33 +96,39 @@ function Get-RivetConfig
             # The configuration value is required.
             $Required,
 
-            [Parameter(Mandatory=$true,ParameterSetName='AsInt')]
+            [Parameter(Mandatory,ParameterSetName='AsInt')]
             [Switch]
             # Set the configuration value as an integer.
             $AsInt,
 
-            [Parameter(Mandatory=$true,ParameterSetName='AsList')]
+            [Parameter(Mandatory,ParameterSetName='AsList')]
             [Switch]
             # Set the configuration value as a list of strings.
             $AsList,
 
-            [Parameter(Mandatory=$true,ParameterSetName='AsPath')]
+            [Parameter(Mandatory,ParameterSetName='AsPath')]
             [Switch]
             # Set the configuration value as a path.
             $AsPath,
 
-            [Parameter(Mandatory=$true,ParameterSetName='AsString')]
+            [Parameter(ParameterSetName='AsPath')]
+            [Switch]
+            # Resolves the path to an actual path. 
+            $Resolve,
+
+            [Parameter(Mandatory,ParameterSetName='AsString')]
             [Switch]
             # Set the configuration value as a string.
             $AsString,
 
-            [Parameter(Mandatory=$true,ParameterSetName='AsHashtable')]
+            [Parameter(Mandatory,ParameterSetName='AsHashtable')]
             [Switch]
             # Set the configuration value as a hashtable.
             $AsHashtable
         )
         
         $value = $null
+        $currentPropertyName = $Name
 
         if( $rawConfig | Get-Member -Name $Name )
         {
@@ -118,7 +145,7 @@ function Get-RivetConfig
         {
             if( $Required )
             {
-                Write-ValidationError ('setting ''{0}'' is missing.' -f $Name)
+                Write-ValidationError ('is required.')
             }
             return
         }
@@ -129,7 +156,7 @@ function Get-RivetConfig
             {
                 if( -not ($value -is [int] -or $value -is [int64]) )
                 {
-                    Write-ValidationError -Message ('Setting "{0}" is invalid. It should be an integer but we found a "{1}".' -f $Name,$value.GetType().FullName)
+                    Write-ValidationError -Message ('is invalid. It should be an integer but we found a "{0}".' -f $value.GetType().FullName)
                     return
                 }
                 return $value
@@ -140,13 +167,17 @@ function Get-RivetConfig
             }
             'AsPath'
             {
-                $path = $value  | Resolve-RivetConfigPath
-                if( -not (Test-Path -Path $path -PathType Container) )
+                $configPath = $value | Resolve-RivetConfigPath -Resolve:$Resolve
+                if( -not $configPath )
                 {
-                    Write-ValidationError ('path {0} ''{1}'' not found.' -f $Name,$path)
                     return
                 }
-                return $path
+                if( -not (Test-Path -Path $configPath -PathType Container) )
+                {
+                    Write-ValidationError ('path "{0}" not found.' -f $configPath)
+                    return
+                }
+                return $configPath
             }
             'AsString'
             {
@@ -173,9 +204,14 @@ function Get-RivetConfig
         $envMsg = ''
         if( $Environment )
         {
-            $envMsg = 'environment ''{0}'': ' -f $Environment
+            $envMsg = 'environment "{0}": ' -f $Environment
         }
-        Write-Error -Message ('Invalid Rivet configuration file ''{0}'': {1}{2} See about_Rivet_Configuration for more information.' -f $Path,$envMsg,$Message)
+        $nameMsg = ''
+        if( $currentPropertyName )
+        {
+            $nameMsg = 'property "{0}": ' -f $currentPropertyName
+        }
+        Write-Error -Message ('Invalid Rivet configuration file "{0}": {1}{2}{3} See about_Rivet_Configuration for more information.' -f $Path,$envMsg,$nameMsg,$Message)
     }
 
 
@@ -208,7 +244,7 @@ function Get-RivetConfig
     ## Check for existence of rivet.json
     if( -not (Test-Path -Path $Path -PathType Leaf) )
     {
-        Write-Error ('Rivet configuration file ''{0}'' not found.' -f $Path)
+        Write-Error ('Rivet configuration file "{0}" not found.' -f $Path)
         return
     }
 
@@ -217,13 +253,13 @@ function Get-RivetConfig
     $rawConfig = Get-Content -Raw -Path $Path | ConvertFrom-Json
     if( -not $rawConfig )
     {
-        Write-Error -Message ('Rivet configuration file ''{0}'' contains invalid JSON.' -f $Path)
+        Write-Error -Message ('Rivet configuration file "{0}" contains invalid JSON.' -f $Path)
         return
     }
 
     if( $Environment -and -not (Get-Environment) )
     {
-        Write-Error ('Environment ''{0}'' not found in ''{1}''.' -f $Environment,$Path)
+        Write-Error ('Environment "{0}" not found in "{1}".' -f $Environment,$Path)
         return
     }
 
@@ -242,7 +278,7 @@ function Get-RivetConfig
     {
         $commandTimeout = 30
     }
-    $pluginsRoot = Get-ConfigProperty -Name 'PluginsRoot' -AsPath
+    $pluginsRoot = Get-ConfigProperty -Name 'PluginsRoot' -AsPath -Resolve
 
     $ignoredDatabases = Get-ConfigProperty -Name 'IgnoreDatabases' -AsList
     $targetDatabases = Get-ConfigProperty -Name 'TargetDatabases' -AsHashtable
