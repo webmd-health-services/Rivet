@@ -64,7 +64,6 @@ $privateFunctions = @{
                         'Disconnect-Database' = $true;
                         'Enable-ForeignKey' = $true;
                         'Get-MigrationFile' = $true;
-                        'Import-Plugin' = $true;
                         'Initialize-Database' = $true;
                         'Invoke-MigrationOperation' = $true;
                         'Invoke-Query' = $true;

@@ -15,7 +15,7 @@ function Convert-FileInfoToMigration
 
         [Parameter(Mandatory=$true,ValueFromPipeline=$true)]
         [IO.FileInfo]
-        # The database whose migrations to get.np
+        # The database whose migrations to get.
         $InputObject
     )
 
@@ -31,10 +31,6 @@ function Convert-FileInfoToMigration
         }
 
         Clear-Migration
-        if( $Configuration.PluginsRoot )
-        {
-            Import-Plugin -Path $Configuration.PluginsRoot
-        }
     }
 
     process
