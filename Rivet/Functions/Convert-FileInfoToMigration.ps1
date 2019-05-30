@@ -63,20 +63,19 @@ function Convert-FileInfoToMigration
 
                     Set-StrictMode -Version 'Latest'
 
+
                     $Operation |
                         Where-Object { $_ -is [Rivet.Operation] } |
                         ForEach-Object {
-                            if( (Test-Path -Path 'function:Start-MigrationOperation') )
-                            {
-                                Start-MigrationOperation -Migration $m -Operation $_
-                            }
+
+                            $pluginParameter = @{ Migration = $m ; Operation = $_ }
+
+                            Invoke-RivetPlugin -Event ([Rivet.Events]::BeforeOperationAdd) -Parameter $pluginParameter
 
                             $_
 
-                            if( (Test-Path -Path 'function:Complete-MigrationOperation') )
-                            {
-                                Complete-MigrationOperation -Migration $m -Operation $_
-                            }
+                            Invoke-RivetPlugin -Event ([Rivet.Events]::AfterOperationAdd) -Parameter $pluginParameter
+
                         } |
                         Where-Object { $_ -is [Rivet.Operation] } |
                         ForEach-Object { $OperationsList.Add( $_ ) } |

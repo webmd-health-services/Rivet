@@ -87,7 +87,8 @@ function Get-Migration
     )
 
     Set-StrictMode -Version 'Latest'
-
+    Use-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+    
     function Clear-Migration
     {
         ('function:Push-Migration','function:Pop-Migration') |
@@ -118,6 +119,8 @@ function Get-Migration
     {
         return
     }
+
+    Import-RivetPlugin -Path $Configuration.PluginPaths
 
     $getMigrationFileParams = @{}
     @( 'Include', 'Exclude' ) | ForEach-Object {

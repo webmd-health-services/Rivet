@@ -12,7 +12,7 @@ namespace Rivet.Configuration
 			DatabasesRoot = databasesRoot;
 			ConnectionTimeout = connectionTimeout;
 			CommandTimeout = commandTimeout;
-            PluginPaths = pluginPaths;
+            PluginPaths = pluginPaths ?? new string[0];
 
 			Databases = new List<Database>();
 		}
