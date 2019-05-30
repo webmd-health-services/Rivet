@@ -14,10 +14,6 @@ Describe 'Update-Database' {
     
     AfterEach {
         Stop-RivetTest
-        if( $pluginsRoot -and (Test-Path -Path $pluginsRoot -PathType Container) )
-        {
-            $pluginsRoot | Remove-Item -Recurse
-        }
     }
     
     It 'should allow long migration names' {
@@ -44,66 +40,5 @@ Describe 'Update-Database' {
         $Global:Error.Count | Should -Be 0
         (Test-Table 'Foobar') | Should -Be $true
     }
-    
-    It 'should not run plugins on already applied migrations' {
-        @'
-    function Push-Migration
-    {
-        Add-Table 'ShouldNotValidateAlreadyAppliedMigrations' {
-            int 'ID'
-        }
-    }
-    
-    function Pop-Migration
-    {
-        Remove-Table 'ShouldNotValidateAlreadyAppliedMigrations'
-    }
-'@ | New-TestMigration -Name 'Original'
-    
-        Invoke-RTRivet -Push
-    
-        $pluginsRoot = New-PluginsRoot -Prefix $PSCommandPath
-    
-        $startMigrationOperationPath = Join-Path -Path $pluginsRoot -ChildPath 'Start-MigrationOperation.ps1'
-        @'
-    function Start-MigrationOperation
-    {
-        [CmdletBinding()]
-        param(
-            $Migration,
-            $Operation
-        )
-    
-        Set-StrictMode -Version 'Latest'
-    
-        if( $Operation -is [Rivet.Operations.AddTableOperation] )
-        {
-            throw 'BOOM!'
-        }
-    }
-'@ | Set-Content -Path $startMigrationOperationPath
-    
-        try
-        {
-            @'
-    function Push-Migration
-    {
-        Add-Schema 'ShouldNotValidateAlreadyAppliedMigrations'
-    }
-    
-    function Pop-Migration
-    {
-        Remove-Schema 'ShouldNotValidateAlreadyAppliedMigrations'
-    }
-'@ | New-TestMigration -Name 'Second'
-    
-            Invoke-RTRivet -Push
-            $Global:Error.Count | Should -Be 0
-            Assert-Schema 'ShouldNotValidateAlreadyAppliedMigrations'
-        }
-        finally
-        {
-            Remove-Item -Path $startMigrationOperationPath
-        }
-    }
+
 }
