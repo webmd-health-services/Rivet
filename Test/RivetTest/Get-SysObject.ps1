@@ -17,7 +17,10 @@ function Get-SysObject
 
         [string]
         # The type of the object.
-        $Type
+        $Type,
+
+        [string]
+        $DatabaseName
     )
     
     Set-StrictMode -Version Latest
@@ -40,6 +43,6 @@ function Get-SysObject
             o.name = '{1}'{2}
 '@ -f $SchemaName,$Name,$typeClause
 
-    Invoke-RivetTestQuery -Query $query
+    Invoke-RivetTestQuery -Query $query -DatabaseName $DatabaseName
 
 }

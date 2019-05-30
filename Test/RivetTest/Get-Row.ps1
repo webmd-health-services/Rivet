@@ -15,7 +15,15 @@ function Get-Row
     Set-StrictMode -Version Latest
 
     $table = Get-Table -Name $TableName -SchemaName $SchemaName
-    Assert-NotNull $table ('table {0} not found' -f $TableName) 
+
+    if( (Test-Pester) )
+    {
+        $table | Should -Not -BeNullOrEmpty ('table {0} not found' -f $TableName) 
+    }
+    else
+    {
+        Assert-NotNull $table ('table {0} not found' -f $TableName) 
+    }
 
     $whereClause = ''
     if( $PSBoundParameters.ContainsKey('Where') )

@@ -19,11 +19,23 @@ function Assert-Synonym
     Set-StrictMode -Version 'Latest'
 
     $synonym = Get-Synonym -SchemaName $SchemaName -Name $Name
-    Assert-NotNull $synonym ('Synonym ''{0}.{1}'' not found.' -f $SchemaName,$Name)
 
-    if( $PSBoundParameters.ContainsKey('TargetObjectName') )
+    if( (Test-Pester) )
     {
-        Assert-Equal $TargetObjectName $synonym.base_object_name ('Synonym {0}.{1}.base_object_name' -f $SchemaName,$Name)
+        $synonym | Should -Not -BeNullOrEmpty -Because ('Synonym ''{0}.{1}'' not found.' -f $SchemaName,$Name)
+
+        if( $PSBoundParameters.ContainsKey('TargetObjectName') )
+        {
+            $synonym.base_object_name | Should -Be $TargetObjectName -Because ('Synonym {0}.{1}.base_object_name' -f $SchemaName,$Name)
+        }
     }
-    
+    else
+    {
+        Assert-NotNull $synonym ('Synonym ''{0}.{1}'' not found.' -f $SchemaName,$Name)
+
+        if( $PSBoundParameters.ContainsKey('TargetObjectName') )
+        {
+            Assert-Equal $TargetObjectName $synonym.base_object_name ('Synonym {0}.{1}.base_object_name' -f $SchemaName,$Name)
+        }
+    }    
 }

@@ -8,7 +8,10 @@ function Start-RivetTest
         $PluginPath,
 
         [string[]]
-        $IgnoredDatabase
+        $IgnoredDatabase,
+
+        [string[]]
+        $DatabaseName = $RTDatabaseName
     )
     
     Set-StrictMode -Version Latest
@@ -23,10 +26,12 @@ function Start-RivetTest
     }
 
     $script:RTDatabasesRoot = Join-Path -Path $tempDir -ChildPath 'Databases'
-    $script:RTDatabaseRoot = Join-Path $RTDatabasesRoot $RTDatabaseName
-    $script:RTDatabaseMigrationRoot = Join-Path -Path $RTDatabaseRoot -ChildPath 'Migrations'
-
-    $null = New-Item -Path $RTDatabaseMigrationRoot -ItemType Container -Force
+    foreach( $name in $DatabaseName )
+    {
+        $script:RTDatabaseRoot = Join-Path $RTDatabasesRoot $name
+        $script:RTDatabaseMigrationRoot = Join-Path -Path $RTDatabaseRoot -ChildPath 'Migrations'
+        $null = New-Item -Path $RTDatabaseMigrationRoot -ItemType Container -Force
+    }
     
     $script:RTConfigFilePath = Join-Path -Path $tempDir -ChildPath 'rivet.json'
 

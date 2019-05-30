@@ -31,25 +31,24 @@ function Invoke-RivetTestQuery
     {
         $DatabaseName = $RTDatabaseName
     }
-    
-    if( -not $RTDatabaseConnection -or $RTDatabaseConnection.State -ne [Data.ConnectionState]::Open )
+
+    if( $Master )
     {
-        $script:RTDatabaseConnection = New-SqlConnection -Database $DatabaseName
+        $DatabaseName = 'master'
+    }
+    
+    if( -not $connection -or $connection.State -ne [Data.ConnectionState]::Open )
+    {
+        $Connection = New-SqlConnection -Database $DatabaseName
+        Write-Verbose -Message ('                {0}' -f $Connection.ConnectionString)
     }
 
     if( -not $PSBoundParameters.ContainsKey('Connection') )
     {
-        $Connection = $RTDatabaseConnection
-        if( $Master )
-        {
-            if( $Connection.Database -ne 'Master' )
-            {
-                $Connection.ChangeDatabase( 'Master' )
-            }
-        }
-        elseif( $Connection.Database -ne $DatabaseName )
+        if( $Connection.Database -ne $DatabaseName )
         {
             $Connection.ChangeDatabase( $DatabaseName )
+            Write-Verbose -Message ('                {0}' -f $Connection.ConnectionString)
         }
     }
 

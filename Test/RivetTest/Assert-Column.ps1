@@ -65,7 +65,7 @@ function Assert-Column
 
     $column = Get-Column -SchemaName $SchemaName -TableName $TableName -Name $Name
 
-    if( (Test-Path -Path 'variable:TestDrive') )
+    if( (Test-Pester) )
     {
         $column | Should -Not -BeNullOrEmpty
 
