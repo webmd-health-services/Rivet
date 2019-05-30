@@ -13,7 +13,7 @@ function Assert-Schema
     Set-StrictMode -Version 'Latest'
 
     $schema = Get-Schema -Name $Name -DatabaseName $DatabaseName
-    if( (Test-Path -Path 'TestDrive:') )
+    if( (Test-Pester) )
     {
         $schema | Should -Not -BeNullOrEmpty
     }

@@ -29,9 +29,21 @@ function Assert-Row
     Set-StrictMode -Version Latest
 
     $row = Get-Row -SchemaName $SchemaName -TableName $TableName -Where $Where
-    Assert-NotNull $row
 
-    $Column.Keys | ForEach-Object {
-        Assert-Equal $row.$_ $Column.$_
+    if( (Test-Pester) )
+    {
+        $row | Should -Not -BeNullOrEmpty
+
+        $Column.Keys | ForEach-Object {
+            $Column.$_ | Should -Be $row.$_
+        }
+    }
+    else
+    {
+        Assert-NotNull $row
+
+        $Column.Keys | ForEach-Object {
+            Assert-Equal $row.$_ $Column.$_
+        }
     }
 }
