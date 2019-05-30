@@ -44,8 +44,18 @@ function GivenDirectory
      New-Item -Path (Join-Path -Path ($rivetConfigPath | Split-Path -Parent) -ChildPath $Name) -ItemType 'Directory' -Force
 }
 
+function GivenDirectory
+{
+    param(
+        $Name
+    )
+
+    New-Item -Path (Join-Path -Path ($rivetConfigPath | Split-Path -Parent) -ChildPath $Name) -ItemType 'Directory' -Force
+}
+
 function Init
 {
+    $Global:Error.Clear()
     $script:tempDir = $TestDrive.FullName 
     $script:databasesRootPath = Join-Path -Path $tempDir -ChildPath 'Databases'
     New-Item -Path $script:databasesRootPath -ItemType 'Directory'
@@ -97,6 +107,10 @@ filter New-DatabaseDirectory
 
 function WhenGettingConfig
 {
+    [CmdletBinding()]
+    param(
+    )
+    
     Get-RivetConfig -Path $rivetConfigPath
 }
 
@@ -172,7 +186,7 @@ Describe 'Get-RivetConfig' {
         $config = Get-RivetConfig -Path $rivetConfigPath -ErrorAction SilentlyContinue
         $config | Should -BeNullOrEmpty
         $Global:Error.Count | Should -BeGreaterThan 0
-        $Global:Error[0] | Should -Match 'not found'
+        $Global:Error[0] | Should -Match 'does\ not\ exist'
     }
     
     It 'should require database scripts root' {
@@ -185,7 +199,7 @@ Describe 'Get-RivetConfig' {
         $config = Get-RivetConfig -Path $rivetConfigPath -ErrorAction SilentlyContinue
         $config | Should -BeNullOrEmpty
         $Global:Error.Count | Should -BeGreaterThan 0
-        $Global:Error[0] | Should -Match 'missing'
+        $Global:Error[0] | Should -Match 'required'
     }
     
     It 'should require sql server name' {
@@ -198,7 +212,7 @@ Describe 'Get-RivetConfig' {
         $config = Get-RivetConfig -Path $rivetConfigPath -ErrorAction SilentlyContinue
         $config | Should -BeNullOrEmpty
         $Global:Error.Count | Should -BeGreaterThan 0
-        $Global:Error[0] | Should -Match 'missing'
+        $Global:Error[0] | Should -Match 'required'
     }
     
     It 'should parse sql server name' {
@@ -427,7 +441,7 @@ Describe 'Get-RivetConfig' {
         $config = Get-RivetConfig -Path $rivetConfigPath -Environment 'IDoNotExist' -ErrorAction SilentlyContinue
         $config | Should -BeNullOrEmpty
         $Global:Error.Count | Should -BeGreaterThan 0
-        $Global:Error[0] | Should -Match 'Environment ''IDoNotExist'' not found'
+        $Global:Error[0] | Should -Match 'Environment "IDoNotExist" not found'
     }
     
     
@@ -488,6 +502,43 @@ Describe 'Get-RivetConfig.when databases have a custom order' {
         $config.Databases[1].Name | Should -Be 'BBB'
         $config.Databases[2].Name | Should -Be 'AAA'
         $config.Databases[3].Name | Should -Be 'DDD'
+    }
+}
+
+Describe 'Get-RivetConfig.when plugins root has a wildcard' {
+    It 'should resolve to actual path' {
+        Init
+        GivenDatabase 'Config'
+        GivenDirectory 'Extensions\0.1.0\Plugins'
+        GivenConfig @'
+{
+    "SqlServerName": ".\\Rivet",
+    "DatabasesRoot": "Databases",
+    "PluginPaths": "Extensions\\*\\Plugins"
+}
+'@
+        $config = WhenGettingConfig
+        $config.PluginPaths | Should -Be (Join-Path -Path $TestDrive.FullName -ChildPath 'Extensions\0.1.0\Plugins')
+    }
+}
+
+Describe 'Get-RivetConfig.when plugins root has a wildcard that points to multiple paths' {
+    It 'should fail and not resolve' {
+        Init
+        GivenDatabase 'Config'
+        GivenDirectory 'Extensions\0.1.0\Plugins'
+        GivenDirectory 'Extensions\0.2.0\Plugins'
+        GivenConfig @'
+{
+    "SqlServerName": ".\\Rivet",
+    "DatabasesRoot": "Databases",
+    "PluginPaths": "Extensions\\*\\Plugins"
+}
+'@
+        $config = WhenGettingConfig -ErrorAction SilentlyContinue
+        $config | Should -BeNullOrEmpty
+        $Global:Error | Should -Not -BeNullOrEmpty
+        $Global:Error | Should -Match 'resolves\ to\ multiple\ items'
     }
 }
 
