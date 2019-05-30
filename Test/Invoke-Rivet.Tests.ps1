@@ -9,7 +9,7 @@ function Assert-OperationsReturned
         [object[]]
         $Operation
     )
-    ps
+
     $Operation | Should -Not -BeNullOrEmpty
 }
 
