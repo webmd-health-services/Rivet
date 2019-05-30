@@ -30,6 +30,7 @@ Build:
     Path: Test\*.Tests.ps1
 
 - PowerShell:
+    OnlyDuring: Build
     Path: test.ps1
 
 - Zip:
