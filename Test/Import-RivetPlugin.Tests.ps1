@@ -75,7 +75,7 @@ Describe 'Import-RivetPlugin.when plugin in a .psm1 file' {
     function Remove-MyTable
     {
         [CmdletBinding()]
-        [Rivet.Plugin([Rivet.Events]::BeforeOperationAdd)]
+        [Rivet.Plugin([Rivet.Events]::BeforeOperationLoad)]
         param(
             $Migration,
             $Operation

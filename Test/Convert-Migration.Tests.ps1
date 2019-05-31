@@ -13,7 +13,7 @@ $testsRun = 0
 function Global:Watch-Operation
 {
     [CmdletBinding()]
-    [Rivet.Plugin([Rivet.Events]::BeforeOperationAdd)]
+    [Rivet.Plugin([Rivet.Events]::BeforeOperationLoad)]
     param(
         $Migration,
         $Operation

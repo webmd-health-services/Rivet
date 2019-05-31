@@ -410,14 +410,14 @@ function WhenGettingMigrations
     $script:migrations = Get-Migration -ConfigFilePath $RTConfigFilePath
 }
 
-Describe 'Get-Migration.when there is a BeforeOperationAdd plugin' {
+Describe 'Get-Migration.when there is a BeforeOperationLoad plugin' {
     BeforeEach { Init }
     AfterEach { Reset }
     It ('should run the plugin') {
         GivenFile $pluginModulePath @'
 function OnAdd
 {
-    [Rivet.Plugin([Rivet.Events]::BeforeOperationAdd)]
+    [Rivet.Plugin([Rivet.Events]::BeforeOperationLoad)]
     param(
         $Migration,
         $Operation
@@ -445,14 +445,14 @@ function Pop-Migration
     }
 }
 
-Describe 'Get-Migration.when there are multiple BeforeOperationAdd plugins' {
+Describe 'Get-Migration.when there are multiple BeforeOperationLoad plugins' {
     BeforeEach { Init }
     AfterEach { Reset }
     It ('should run all the plugins') {
         GivenFile $pluginModulePath @'
 function OnAdd
 {
-    [Rivet.Plugin([Rivet.Events]::BeforeOperationAdd)]
+    [Rivet.Plugin([Rivet.Events]::BeforeOperationLoad)]
     param(
         $Migration,
         $Operation
@@ -463,7 +463,7 @@ function OnAdd
 
 function AnotherOnAdd
 {
-    [Rivet.Plugin([Rivet.Events]::BeforeOperationAdd)]
+    [Rivet.Plugin([Rivet.Events]::BeforeOperationLoad)]
     param(
         $Migration,
         $Operation
@@ -489,14 +489,14 @@ function Pop-Migration
     }
 }
 
-Describe 'Get-Migration.when BeforeOperationAdd plugin missing Migration parameter' {
+Describe 'Get-Migration.when BeforeOperationLoad plugin missing Migration parameter' {
     BeforeEach { Init }
     AfterEach { Reset }
     It ('should fail') {
         GivenFile $pluginModulePath @'
 function OnAdd
 {
-    [Rivet.Plugin([Rivet.Events]::BeforeOperationAdd)]
+    [Rivet.Plugin([Rivet.Events]::BeforeOperationLoad)]
     param(
         $Operation
     )
@@ -516,19 +516,19 @@ function Pop-Migration
 '@ | New-TestMigration -Name 'One'
         WhenGettingMigrations -ErrorAction SilentlyContinue
         $migrations | Should -BeNullOrEmpty
-        $Global:Error | Should -Match '"BeforeOperationAdd"\ event\ must\ have\ a\ named\ "Migration"\ parameter'
+        $Global:Error | Should -Match '"BeforeOperationLoad"\ event\ must\ have\ a\ named\ "Migration"\ parameter'
     }
 }
 
 
-Describe 'Get-Migration.when BeforeOperationAdd plugin missing Operation parameter' {
+Describe 'Get-Migration.when BeforeOperationLoad plugin missing Operation parameter' {
     BeforeEach { Init }
     AfterEach { Reset }
     It ('should fail') {
         GivenFile $pluginModulePath @'
 function OnAdd
 {
-    [Rivet.Plugin([Rivet.Events]::BeforeOperationAdd)]
+    [Rivet.Plugin([Rivet.Events]::BeforeOperationLoad)]
     param(
         $Migration
     )
@@ -548,18 +548,18 @@ function Pop-Migration
 '@ | New-TestMigration -Name 'One'
         WhenGettingMigrations -ErrorAction SilentlyContinue
         $migrations | Should -BeNullOrEmpty
-        $Global:Error | Should -Match '"BeforeOperationAdd"\ event\ must\ have\ a\ named\ "Operation"\ parameter'
+        $Global:Error | Should -Match '"BeforeOperationLoad"\ event\ must\ have\ a\ named\ "Operation"\ parameter'
     }
 }
 
-Describe 'Get-Migration.when there is an AfterOperationAdd plugin' {
+Describe 'Get-Migration.when there is an AfterOperationLoad plugin' {
     BeforeEach { Init }
     AfterEach { Reset }
     It ('should run the plugin') {
         GivenFile $pluginModulePath @'
 function OnAdd
 {
-    [Rivet.Plugin([Rivet.Events]::AfterOperationAdd)]
+    [Rivet.Plugin([Rivet.Events]::AfterOperationLoad)]
     param(
         $Migration,
         $Operation
@@ -587,14 +587,14 @@ function Pop-Migration
     }
 }
 
-Describe 'Get-Migration.when there are multiple AfterOperationAdd plugins' {
+Describe 'Get-Migration.when there are multiple AfterOperationLoad plugins' {
     BeforeEach { Init }
     AfterEach { Reset }
     It ('should run all the plugins') {
         GivenFile $pluginModulePath @'
 function OnAdd
 {
-    [Rivet.Plugin([Rivet.Events]::AfterOperationAdd)]
+    [Rivet.Plugin([Rivet.Events]::AfterOperationLoad)]
     param(
         $Migration,
         $Operation
@@ -605,7 +605,7 @@ function OnAdd
 
 function AnotherOnAdd
 {
-    [Rivet.Plugin([Rivet.Events]::AfterOperationAdd)]
+    [Rivet.Plugin([Rivet.Events]::AfterOperationLoad)]
     param(
         $Migration,
         $Operation
@@ -631,14 +631,14 @@ function Pop-Migration
     }
 }
 
-Describe 'Get-Migration.when AfterOperationAdd plugin missing Migration parameter' {
+Describe 'Get-Migration.when AfterOperationLoad plugin missing Migration parameter' {
     BeforeEach { Init }
     AfterEach { Reset }
     It ('should fail') {
         GivenFile $pluginModulePath @'
 function OnAdd
 {
-    [Rivet.Plugin([Rivet.Events]::AfterOperationAdd)]
+    [Rivet.Plugin([Rivet.Events]::AfterOperationLoad)]
     param(
         $Operation
     )
@@ -658,19 +658,19 @@ function Pop-Migration
 '@ | New-TestMigration -Name 'One'
         WhenGettingMigrations -ErrorAction SilentlyContinue
         $migrations | Should -BeNullOrEmpty
-        $Global:Error | Should -Match '"AfterOperationAdd"\ event\ must\ have\ a\ named\ "Migration"\ parameter'
+        $Global:Error | Should -Match '"AfterOperationLoad"\ event\ must\ have\ a\ named\ "Migration"\ parameter'
     }
 }
 
 
-Describe 'Get-Migration.when AfterOperationAdd plugin missing Operation parameter' {
+Describe 'Get-Migration.when AfterOperationLoad plugin missing Operation parameter' {
     BeforeEach { Init }
     AfterEach { Reset }
     It ('should fail') {
         GivenFile $pluginModulePath @'
 function OnAdd
 {
-    [Rivet.Plugin([Rivet.Events]::AfterOperationAdd)]
+    [Rivet.Plugin([Rivet.Events]::AfterOperationLoad)]
     param(
         $Migration
     )
@@ -690,7 +690,7 @@ function Pop-Migration
 '@ | New-TestMigration -Name 'One'
         WhenGettingMigrations -ErrorAction SilentlyContinue
         $migrations | Should -BeNullOrEmpty
-        $Global:Error | Should -Match '"AfterOperationAdd"\ event\ must\ have\ a\ named\ "Operation"\ parameter'
+        $Global:Error | Should -Match '"AfterOperationLoad"\ event\ must\ have\ a\ named\ "Operation"\ parameter'
     }
 }
 
@@ -701,7 +701,7 @@ Describe 'Get-Migration.when a plugin returns a non-operation' {
         GivenFile $pluginModulePath @'
 function OnAdd
 {
-    [Rivet.Plugin([Rivet.Events]::AfterOperationAdd)]
+    [Rivet.Plugin([Rivet.Events]::AfterOperationLoad)]
     param(
         $Migration,
         $Operation

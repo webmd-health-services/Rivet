@@ -72,11 +72,11 @@ function Convert-FileInfoToMigration
 
                             $pluginParameter = @{ Migration = $m ; Operation = $_ }
 
-                            Invoke-RivetPlugin -Event ([Rivet.Events]::BeforeOperationAdd) -Parameter $pluginParameter
+                            Invoke-RivetPlugin -Event ([Rivet.Events]::BeforeOperationLoad) -Parameter $pluginParameter
 
                             $_
 
-                            Invoke-RivetPlugin -Event ([Rivet.Events]::AfterOperationAdd) -Parameter $pluginParameter
+                            Invoke-RivetPlugin -Event ([Rivet.Events]::AfterOperationLoad) -Parameter $pluginParameter
 
                         } |
                         Where-Object { $_ -is [Rivet.Operation] } |

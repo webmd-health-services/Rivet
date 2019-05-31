@@ -2,8 +2,8 @@
 {
     public enum Events
     {
-        Nothing = 0,
-        BeforeOperationAdd,
-        AfterOperationAdd
+        None = 0,
+        BeforeOperationLoad,
+        AfterOperationLoad
     }
 }

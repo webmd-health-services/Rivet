@@ -2,7 +2,7 @@
 function Start-MigrationOperation
 {
     [CmdletBinding()]
-    [Rivet.Plugin([Rivet.Events]::BeforeOperationAdd)]
+    [Rivet.Plugin([Rivet.Events]::BeforeOperationLoad)]
     param(
         [Parameter(Mandatory=$true)]
         [Rivet.Migration]
