@@ -6,19 +6,11 @@ Set-StrictMode -Version 'Latest'
 
 Describe 'Invoke-MigrationOperation' {
     BeforeEach {
-        $tempPluginsPath = Join-Path -Path $TestDrive.FullName -ChildPath 'InvokeMigrationOperationPlugins'
-        New-Item -Path $tempPluginsPath -ItemType 'Directory'
-        $pluginPath = Join-Path -Path $PSScriptRoot -ChildPath '..\Rivet\Extras\*-MigrationOperation.ps1' -Resolve
-        Copy-Item -Path $pluginPath -Destination $tempPluginsPath
-        Start-RivetTest -PluginPath $tempPluginsPath
+        Start-RivetTest -PluginPath (Join-Path -Path $PSScriptRoot -ChildPath '..\Rivet\RivetSamples')
     }
     
     AfterEach {
         Stop-RivetTest
-        if( (Test-Path -Path $tempPluginsPath -PathType Container) )
-        {
-            Remove-Item -Path $tempPluginsPath -Recurse
-        }
     }
     
     It 'should run plugins' {
@@ -98,7 +90,7 @@ Describe 'Invoke-MigrationOperation' {
         {
             Invoke-RTRivet -Push 'ValidateMigrations' -ErrorAction SilentlyContinue
             (Test-Trigger -Name 'trFoobar_Nothing') | Should Be $false
-            $Global:Error.Count | Should BeGreaterThan 0
+            $Global:Error.Count | Should -BeGreaterThan 0
         }
         finally
         {
@@ -124,7 +116,7 @@ Describe 'Invoke-MigrationOperation' {
         try
         {
             Invoke-RTRivet -Push 'ValidateMigrations' -ErrorAction SilentlyContinue
-            $Global:Error.Count | Should BeGreaterThan 0
+            $Global:Error.Count | Should -BeGreaterThan 0
         }
         finally
         {
@@ -150,7 +142,7 @@ Describe 'Invoke-MigrationOperation' {
         try
         {
             Invoke-RTRivet -Push 'ValidateMigrations' -ErrorAction SilentlyContinue
-            $Global:Error.Count | Should BeGreaterThan 0
+            $Global:Error.Count | Should -BeGreaterThan 0
         }
         finally
         {
@@ -176,7 +168,7 @@ Describe 'Invoke-MigrationOperation' {
         try
         {
             Invoke-RTRivet -Push 'ValidateMigrations' -ErrorAction SilentlyContinue
-            $Global:Error.Count | Should BeGreaterThan 0
+            $Global:Error.Count | Should -BeGreaterThan 0
         }
         finally
         {
@@ -280,7 +272,7 @@ Describe 'Invoke-MigrationOperation' {
         {
             Invoke-RTRivet -Push 'ValidateMigrations' -ErrorAction SilentlyContinue
     
-            $Global:Error.Count | Should BeGreaterThan 0
+            $Global:Error.Count | Should -BeGreaterThan 0
     
             (Test-Table 'Foo') | Should Be $false
         }
@@ -309,7 +301,7 @@ Describe 'Invoke-MigrationOperation' {
         {
             Invoke-RTRivet -Push 'ValidateMigrations' -ErrorAction SilentlyContinue
     
-            $Global:Error.Count | Should BeGreaterThan 0
+            $Global:Error.Count | Should -BeGreaterThan 0
     
             (Test-Table 'Foo') | Should Be $false
         }
@@ -342,7 +334,7 @@ Describe 'Invoke-MigrationOperation' {
         {
             Invoke-RTRivet -Push 'ValidateMigrations' -ErrorAction SilentlyContinue
     
-            $Global:Error.Count | Should BeGreaterThan 0
+            $Global:Error.Count | Should -BeGreaterThan 0
     
             (Test-Table 'Foo') | Should Be $false
         }

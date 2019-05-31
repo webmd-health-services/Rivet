@@ -83,7 +83,7 @@ LONG DESCRIPTION
             # Your plug-in logic goes here.
         }
         
-    Rivet ships with some sample plug-ins. Look in the `Extras` directory.
+    Rivet ships with some sample plug-ins. Look in the `RivetSamples` directory.
 
     Each plug-in should have two parameters: the first is a `Rivet.Migration` 
     object representing the migration getting run. The second is a 
@@ -95,7 +95,7 @@ LONG DESCRIPTION
     can modify. You can't remove operations from being run. Instead, throw an 
     exception to reject the operation. You are allowed to run additional operations 
     and/or return additional C# operation objects. See the sample plug-ins in the 
-    Extras directory that ships with Rivet.
+    `RivetSamples` directory that ships with Rivet.
 
     
 SEE ALSO

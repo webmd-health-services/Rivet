@@ -2,6 +2,7 @@
 function Start-MigrationOperation
 {
     [CmdletBinding()]
+    [Rivet.Plugin([Rivet.Events]::BeforeOperationAdd)]
     param(
         [Parameter(Mandatory=$true)]
         [Rivet.Migration]
@@ -15,7 +16,8 @@ function Start-MigrationOperation
     )
 
     Set-StrictMode -Version 'Latest'
-
+    Use-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+    
     $problems = $false
     if( ($Operation -is [Rivet.Operations.AddTableOperation]) )
     {
