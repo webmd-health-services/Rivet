@@ -1,9 +1,12 @@
 PublishOn:
- - master
+- develop
+- master
  
 Build:
 - Version:
     Path: Rivet\Rivet.psd1
+    Prerelease:
+    - develop: beta$(WHISKEY_BUILD_NUMBER)
 
 - DotNet:
     Command: build
@@ -59,6 +62,7 @@ Publish:
 
 - GitHubRelease:
     UnlessExists: env:APPVEYOR_PULL_REQUEST_NUMBER
+    OnlyOnBranch: master
     RepositoryName: webmd-health-services/Rivet
     ApiKeyID: github.com
     Tag: $(WHISKEY_SEMVER2_NO_BUILD_METADATA)
