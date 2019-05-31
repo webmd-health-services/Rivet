@@ -30,7 +30,7 @@ function Assert-StoredProcedure
 
     $expectedDefinition = "CREATE procedure [{0}].[{1}] {2}" -f $SchemaName, $Name, $Definition
 
-    if( (Test-Path -Path 'TestDrive:') )
+    if( (Test-Pester) )
     {
         $sp | Should -Not -BeNullOrEmpty
 
