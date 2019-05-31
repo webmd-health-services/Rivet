@@ -59,7 +59,7 @@ Describe 'Invoke-MigrationOperation' {
         Invoke-RTRivet -Push 'SkipRowGuid'
     
         Assert-Column -Name guid -DataType uniqueidentifier -RowGuidCol -TableName "Foobar"
-        (Test-Column -TableName 'Foobar' -Name 'rowguid') | Should Be $false
+        (Test-Column -TableName 'Foobar' -Name 'rowguid') | Should -BeFalse
     }
     
     It 'should reject triggers without not for replication' {
@@ -89,7 +89,7 @@ Describe 'Invoke-MigrationOperation' {
         try
         {
             Invoke-RTRivet -Push 'ValidateMigrations' -ErrorAction SilentlyContinue
-            (Test-Trigger -Name 'trFoobar_Nothing') | Should Be $false
+            (Test-Trigger -Name 'trFoobar_Nothing') | Should -BeFalse
             $Global:Error.Count | Should -BeGreaterThan 0
         }
         finally
@@ -274,7 +274,7 @@ Describe 'Invoke-MigrationOperation' {
     
             $Global:Error.Count | Should -BeGreaterThan 0
     
-            (Test-Table 'Foo') | Should Be $false
+            (Test-Table 'Foo') | Should -BeFalse
         }
         finally
         {
@@ -303,7 +303,7 @@ Describe 'Invoke-MigrationOperation' {
     
             $Global:Error.Count | Should -BeGreaterThan 0
     
-            (Test-Table 'Foo') | Should Be $false
+            (Test-Table 'Foo') | Should -BeFalse
         }
         finally
         {
@@ -336,7 +336,7 @@ Describe 'Invoke-MigrationOperation' {
     
             $Global:Error.Count | Should -BeGreaterThan 0
     
-            (Test-Table 'Foo') | Should Be $false
+            (Test-Table 'Foo') | Should -BeFalse
         }
         finally
         {

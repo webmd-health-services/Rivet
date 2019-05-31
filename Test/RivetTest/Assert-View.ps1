@@ -28,7 +28,7 @@ function Assert-View
     $view = Get-View -SchemaName $SchemaName -Name $Name
 
     $expectedDefinition = "create view [{0}].[{1}] {2}" -f $SchemaName, $Name, $Definition
-    if( (Test-Path -Path 'TestDrive:') )
+    if( (Test-Pester) )
     {
         $view | Should -Not -BeNullOrEmpty
         if( $PSBoundParameters.ContainsKey('Definition') )
