@@ -122,7 +122,7 @@ Get-Migration @getMigrationParams |
                         break
                     }
 
-                    '(Add|Remove|Update)Table'
+                    '(Add|Remove|Update)(Table|RowGuidCol)'
                     {
                         $schemaScriptPath
                         break

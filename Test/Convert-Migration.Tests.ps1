@@ -1375,21 +1375,81 @@ Describe 'Convert-Migration.when a column is removed then added' {
     }
 }
 
+Describe 'Convert-Migration.when migrations add/remove rowguidcol' {
+    BeforeEach { Init }
+    AfterEach { Reset }
+    It 'should export correct scripts' {
+        @'
+function Push-Migration
+{
+    Add-Table 'AddMyRowGuidCol' {
+        uniqueidentifier 'future_rowguidcol'
+    }
+
+    Add-Table 'RemoveMyRowGuidCol' {
+        uniqueidentifier 'bye_bye_rowguidcol' -RowGuidCol
+    }
+}
+function Pop-Migration
+{
+    Remove-Table 'RemoveMyRowGuidCol'
+    Remove-Table 'AddMyRowGuidCol'
+}
+'@ | New-TestMigration -Name 'BaseTables'
+
+        Invoke-RTRivet -Push
+
+        @'
+function Push-Migration
+{
+    Add-RowGuidCol -TableName 'AddMyRowGuidCol' -ColumnName  'future_rowguidcol'
+    Remove-RowGuidCol -TableName 'RemoveMyRowGuidCol' -ColumnName 'bye_bye_rowguidcol'
+
+    Add-Table 'AddInThisMigration' {
+        uniqueidentifier 'add_rowguidcol'
+    }
+
+    Add-RowGuidCol -TableName 'AddInThisMigration' -ColumnName 'add_rowguidcol'
+
+    Add-Table 'RemoveInThisMigration' {
+        uniqueidentifier 'remove_rowguidcol' -RowGuidCol
+    }
+
+    Remove-RowGuidCol -TableName 'RemoveInThisMigration' -ColumnName 'remove_rowguidcol'
+}
+function Pop-Migration
+{
+    Remove-Table -Name 'RemoveInThisMigration'
+    Remove-Table -Name 'AddInThisMigration'
+    Remove-RowGuidCol -TableName 'AddMyRowGuidCol' -ColumnName  'future_rowguidcol'
+    Add-RowGuidCol -TableName 'RemoveMyRowGuidCol' -ColumnName 'bye_bye_rowguidcol'
+}
+'@ | New-TestMigration -Name 'TestMe'
+
+        Assert-ConvertMigration -Schema -Include 'TestMe'
+        Assert-Column -Name 'remove_rowguidcol' -TableName 'RemoveInThisMigration' -DataType 'uniqueidentifier'
+        Assert-Column -Name 'add_rowguidcol' -TableName 'AddInThisMigration' -DataType 'uniqueidentifier' -RowGuidCol
+        Assert-Column -Name 'bye_bye_rowguidcol' -TableName 'RemoveMyRowGuidCol' -DataType 'uniqueidentifier'
+        Assert-Column -Name 'future_rowguidcol' -TableName 'AddMyRowGuidCol' -DataType 'uniqueidentifier' -RowGuidCol
+    }
+}
+
 # This one must be last!
 Describe 'Convert-Migration.test fixture' {
     It 'should cover all operations' {
+        $opsToSkip = @{
+                        [Rivet.Operations.IrreversibleOperation] = $true;
+                     }
         $missingOps = [Reflection.Assembly]::GetAssembly( [Rivet.Operation] ) |
-                        ForEach-Object { $_.GetTypes() } | 
-                        Where-Object { $_.IsClass } |
-                        Where-Object { $_.Namespace -eq 'Rivet.Operations' } |
-                        Where-Object { -not $_.IsAbstract } |
-                        Where-Object { -not $testedOperations.ContainsKey( $_ ) } |
-                        Select-Object -ExpandProperty 'Name' |
-                        Sort-Object
+                            ForEach-Object { $_.GetTypes() } | 
+                            Where-Object { $_.IsClass } |
+                            Where-Object { $_.Namespace -eq 'Rivet.Operations' } |
+                            Where-Object { -not $_.IsAbstract } |
+                            Where-Object { -not $testedOperations.ContainsKey( $_ ) } |
+                            Where-Object { -not $opsToSkip.ContainsKey($_) } |
+                            Select-Object -ExpandProperty 'Name' |
+                            Sort-Object
     
-        if( $testsRun -gt 1 )
-        {
-            $missingOps | Should -BeNullOrEmpty
-        }
+        $missingOps | Should -BeNullOrEmpty
     }
 }
