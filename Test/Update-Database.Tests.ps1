@@ -4,8 +4,6 @@ Set-StrictMode -Version 'Latest'
 
 & (Join-Path -Path $PSScriptRoot -ChildPath 'Initialize-Test.ps1' -Resolve)
 
-$pluginsRoot = $null
-
 Describe 'Update-Database' {
     BeforeEach {
         $Global:Error.Clear()

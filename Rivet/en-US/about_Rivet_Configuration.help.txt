@@ -115,6 +115,8 @@ LONG DESCRIPTION
         {
             "PluginPaths": [ "MyRivetExtensions", "SomebodyElsesRivetExtensions" ]
         }
+
+    See `about_Rivet_Plugins` for more information on writing Rivet plugins.
      
     ### SqlServerName
     

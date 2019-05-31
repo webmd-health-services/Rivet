@@ -198,11 +198,25 @@ Rivet is a database migration/change management/versioning tool inspired by Ruby
 
             # ReleaseNotes of this module
             ReleaseNotes = @'
+## Upgrade Instructions
+
+This version of Rivet is backwards-incompatible. It changes the way plug-ins work. In order to upgrade to this version, you'll need to update your plugins and your rivet.json file.
+
+1. Package your plugins into a PowerShell module. Make sure your plug-in functions are exported by your module.
+2. Add the attribute `[Rivet.Plugin([Rivet.Event]::BeforeOperationLoad)]` to any existing `Start-MigrationOperation` functions.
+3. Add the attribute `[Rivet.Plugin([Rivet.Event]::AfterOperationLoad)]` to any existing `Complete-MigrationOperation` functions.
+4. Change the `PluginsRoot` setting in your rivet.json file to `PluginPaths`. Change its value to the path to the module you created in step 1.
+
+See `about_Rivet_Plugins` for more information.
+
+## Changes
+
 * Created `Export-Migration` function for exporting database objects as Rivet migrations.
 * Rivet can now add XML columns that don't have schema associated with them.
 * `New-Column` can now be used to create columns on tables that have custom size specifications, are rowguidcol, are identities, custom collations, and are file stream.
-* The "PluginsRoot" configuration setting is now allowed to have wildcards.
 * Fixed: `Merge-Migration` doesn't merge `Add-RowGuidCol` and `Remove-RowGuidCol` operations into `Add-Table`/`Update-Table` operations.
+* ***Breaking Change***: Rivet plug-ins must now be packaged as/in PowerShell modules. The `PluginsRoot` configuration option has been renamed to `PluginPaths` and should be a list of paths were Rivet can find the PowerShell modules containing your plug-ins. These paths are imported using the `Import-Module` command. See `about_Rivet_Plugins` for more information.
+* The `PluginsPath` (fka `PluginsRoot`) configuration setting is now allowed to have wildcards.
 '@
         } # End of PSData hashtable
 
