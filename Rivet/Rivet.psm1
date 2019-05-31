@@ -6,6 +6,60 @@ $RivetMigrationsTableName = 'Migrations'
 $RivetMigrationsTableFullName = '{0}.{1}' -f $RivetSchemaName,$RivetMigrationsTableName
 $RivetActivityTableName = 'Activity'
 
+$timer = New-Object 'Diagnostics.Stopwatch'
+$timerForWrites = New-Object 'Diagnostics.Stopwatch'
+$timingLevel = 0
+
+$plugins = @()
+
+function Write-Timing
+{
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [string]
+        $Message,
+
+        [Switch]
+        $Indent,
+
+        [Switch]
+        $Outdent
+    )
+            
+    if( -not $timer.IsRunning )
+    {
+        $timer.Start()
+    }
+
+    if( -not $timerForWrites.IsRunning )
+    {
+        $timerForWrites.Start()
+    }
+
+    if( $Outdent )
+    {
+        $script:timingLevel -= 1
+    }
+
+    $prefix = ' ' * ($timingLevel * 2)
+    
+    #$DebugPreference = 'Continue'
+    Write-Debug -Message ('{0}  {1}  {2}{3}' -f $timer.Elapsed,$timerForWrites.Elapsed,$prefix,$Message)
+    $timerForWrites.Restart()
+
+    if( $Indent )
+    {
+        $script:timingLevel += 1
+    }
+
+    if( $timingLevel -lt 0 )
+    {
+        $timingLevel = 0
+    }
+
+}
+
 function Test-TypeDataMember
 {
     [CmdletBinding()]

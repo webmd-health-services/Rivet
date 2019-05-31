@@ -1,4 +1,3 @@
-
 function Merge-Migration
 {
     <#
@@ -119,6 +118,7 @@ function Merge-Migration
             return $false
         }
 
+        Write-Timing -Message 'Merge-Migration  BEGIN' -Indent
         $databaseName = $null
         $migrations = New-Object 'Collections.Generic.List[Rivet.Migration]'
         [Collections.Generic.Hashset[string]]$preExistingObjects = $null
@@ -132,6 +132,7 @@ function Merge-Migration
             Set-Variable -Name 'operations' -Scope 1 -Value (New-Object 'Collections.ArrayList')
             Set-Variable -Name 'preExistingObjects' -Scope 1 -Value (New-Object 'Collections.Generic.Hashset[string]')
         }
+
     }
 
     process
@@ -489,5 +490,6 @@ function Merge-Migration
     end
     {
         $migrations.ToArray()
+        Write-Timing 'Merge-Migration  END' -Outdent
     }
 }

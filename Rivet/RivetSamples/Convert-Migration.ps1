@@ -47,9 +47,38 @@ param(
     $After
 )
 
+$timer = New-Object 'Diagnostics.Stopwatch'
+$timerForWrites = New-Object 'Diagnostics.Stopwatch'
+
+function Write-Timing
+{
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [string]
+        $Message
+    )
+            
+    if( -not $timer.IsRunning )
+    {
+        $timer.Start()
+    }
+    if( -not $timerForWrites.IsRunning )
+    {
+        $timerForWrites.Start()
+    }
+            
+    Write-Debug -Message ('Convert-Migration  {0}  {1}  {2}' -f $timer.Elapsed,$timerForWrites.Elapsed,$Message)
+    $timerForWrites.Restart()
+}
+
+#Requires -Version 5.1
 Set-StrictMode -Version 'Latest'
 
+Write-Timing -Message ('BEGIN')
+
 & (Join-Path -Path $PSScriptRoot -ChildPath '..\Import-Rivet.ps1' -Resolve)
+Write-Timing -Message ('  Import-Rivet.ps1')
 
 if( -not (Test-Path -Path $OutputPath -PathType Container) )
 {
@@ -69,15 +98,21 @@ $operations = New-Object 'Collections.ArrayList'
 $newTables = New-Object 'Collections.Generic.HashSet[string]'
 $opIdx = @{ }
 
-Get-Migration @getMigrationParams |
-    Merge-Migration |
+$migrations = Get-Migration @getMigrationParams
+
+$mergedMigrations = $migrations | Merge-Migration
+
+$mergedMigrations |
     ForEach-Object {
-        $migration = $_
+        [Rivet.Migration]$migration = $_
+        Write-Timing -Message ('    {0}' -f $migration.FullName)
         $migration.PushOperations | 
             Where-Object { $_ } | 
             ForEach-Object {
 
-                $op = $_
+                [Rivet.Operation]$op = $_
+
+                Write-Timing -Message ('      {0}' -f $op.GetType().FullName)
 
                 $schemasScriptPath = Join-Path -Path $OutputPath -ChildPath ('{0}.Schemas.sql' -f $migration.Database)
                 $schemaScriptPath = Join-Path -Path $OutputPath -ChildPath ('{0}.Schema.sql' -f $migration.Database)
@@ -212,3 +247,5 @@ Get-Migration @getMigrationParams |
                 ("GO{0}" -f [Environment]::NewLine) | Add-Content -Path $path
             }
     }
+
+Write-Timing -Message ('END')

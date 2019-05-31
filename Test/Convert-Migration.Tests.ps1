@@ -10,6 +10,17 @@ $outputDir = $null
 $testedOperations = @{ }
 $testsRun = 0
 
+function Global:Watch-Operation
+{
+    [CmdletBinding()]
+    [Rivet.Plugin([Rivet.Events]::BeforeOperationAdd)]
+    param(
+        $Migration,
+        $Operation
+    )
+    $testedOperations[$Operation.GetType()] = $true
+}
+
 function Assert-ConvertMigration
 {
     [CmdletBinding()]
@@ -80,7 +91,7 @@ function Assert-ConvertMigration
     $timer.Start()
     & $convertRivetMigration -ConfigFilePath $RTConfigFilePath -OutputPath $outputDir @convertRivetMigrationParams -Verbose:$VerbosePreference
     $timer.Stop()
-    Write-Verbose ('{0}  {1}' -f $timer.Elapsed,$convertRivetMigration) -Verbose
+    Write-Verbose ('{0}  {1}' -f $timer.Elapsed,$convertRivetMigration)
     
     $receivedParameters = $PSBoundParameters
     ('Schemas','Schema','DependentObject','ExtendedProperty','CodeObject','Data','Unknown','Trigger','Constraint','ForeignKey','Type') | ForEach-Object {
@@ -204,7 +215,7 @@ function Init
     & (Join-Path -Path $PSScriptRoot -ChildPath '..\Rivet\Import-Rivet.ps1' -Resolve)
 
     $timer.Stop()
-    Write-Verbose -Message ('{0}  Init' -f $timer.Elapsed) -Verbose
+    Write-Verbose -Message ('{0}  Init' -f $timer.Elapsed)
 }
 
 function Invoke-ConvertedScripts
@@ -271,28 +282,25 @@ function Reset
     $timer = New-Object 'Diagnostics.Stopwatch'
     $timer.Start()
 
-    Get-Migration -ConfigFilePath $RTConfigFilePath |
-        Select-Object -ExpandProperty PushOperations |
-        ForEach-Object { $testedOperations[$_.GetType()] = $true }
-    
-    Get-ChildItem -Path $RTDatabaseMigrationRoot -Filter '*.off' |
-        Rename-Item -NewName { $_.BaseName }
     try
     {
         Stop-RivetTest -DatabaseName $RTDatabaseName,$RTDatabase2Name
+        Write-Verbose ('{0}  Reset  Successfully cleaned up.' -f $timer.Elapsed)
     }
     catch
     {
+        Write-Verbose ('{0}  Reset  Failures cleaning up.' -f $timer.Elapsed)
         # These tests sometimes don't use migrations to muck about with the database, so ignore any errors.
     }
 
     if( (Get-Module 'RivetSamples') )
     {
         Remove-Module 'RivetSamples' -Force
+        Write-Verbose ('{0}  Reset  Removed RivetSamples' -f $timer.Elapsed)
     }
 
     $timer.Stop()
-    Write-Verbose -Message ('{0}  Reset' -f $timer.Elapsed) -Verbose
+    Write-Verbose -Message ('{0}  Reset' -f $timer.Elapsed)
 }
 
 Describe 'Convert-Migration.when output path doesn''t exist' {
@@ -1453,3 +1461,5 @@ Describe 'Convert-Migration.test fixture' {
         $missingOps | Should -BeNullOrEmpty
     }
 }
+
+Remove-Item -Path 'function:Watch-Operation'

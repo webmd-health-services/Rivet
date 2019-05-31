@@ -88,6 +88,8 @@ function Get-Migration
 
     Set-StrictMode -Version 'Latest'
     Use-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+
+    Write-Timing -Message 'Get-Migration  BEGIN' -Indent
     
     function Clear-Migration
     {
@@ -97,6 +99,7 @@ function Get-Migration
     }
 
     Clear-Migration
+    Write-Timing -Message 'Get-Migration  Clear-Migration'
 
     $getRivetConfigParams = @{ }
     if( $Database )
@@ -121,6 +124,7 @@ function Get-Migration
     }
 
     Import-RivetPlugin -Path $Configuration.PluginPaths
+    Write-Timing -Message 'Get-Migration  Import-RivetPlugin'
 
     $getMigrationFileParams = @{}
     @( 'Include', 'Exclude' ) | ForEach-Object {
@@ -152,4 +156,6 @@ function Get-Migration
             return $true
         } |
         Convert-FileInfoToMigration -Configuration $Configuration
+
+    Write-Timing -Message 'Get-Migration  END' -Outdent
 }

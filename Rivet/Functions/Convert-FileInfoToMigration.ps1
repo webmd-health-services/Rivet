@@ -23,6 +23,7 @@ function Convert-FileInfoToMigration
     {
         Set-StrictMode -Version 'Latest'
 
+        Write-Timing -Message 'Convert-FileInfoToMigration  BEGIN' -Indent
         function Clear-Migration
         {
             ('function:Push-Migration','function:Pop-Migration') |
@@ -42,6 +43,7 @@ function Convert-FileInfoToMigration
                 $dbName = Split-Path -Leaf -Path $dbName
 
                 $m = New-Object 'Rivet.Migration' $_.MigrationID,$_.MigrationName,$_.FullName,$dbName
+                Write-Timing -Message ('Convert-FileInfoToMigration  {0}' -f $m.FullName)
 
                 filter Add-Operation
                 {
@@ -163,5 +165,6 @@ Pop-Migration function is empty and contains no operations. Maybe you''d like to
 
     end
     {
+        Write-Timing -Message 'Convert-FileInfoToMigration  BEGIN' -Outdent
     }
 }

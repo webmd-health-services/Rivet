@@ -13,22 +13,35 @@ function Invoke-RivetPlugin
     Set-StrictMode -Version 'Latest'
     Use-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
-    $plugins = Get-Command -CommandType Function |
-                    Where-Object {
-                        $_.ScriptBlock.Attributes | 
-                            Where-Object { $_ -is [Rivet.PluginAttribute] -and $_.RespondsTo -eq $Event }
-                    }
+    Write-Timing -Message 'Invoke-RivetPlugin  BEGIN' -Indent
 
-    foreach( $plugin in $plugins )
+    $responders = $plugins |
+                        Where-Object {
+                            $_.ScriptBlock.Attributes | Where-Object { $_ -is [Rivet.PluginAttribute] -and $_.RespondsTo -eq $Event }
+                        }
+    try
     {
-        foreach( $parameterName in $Parameter.Keys )
+        if( -not $responders )
         {
-            if( -not $plugin.Parameters.ContainsKey($parameterName) )
-            {
-                Write-Error -Message ('The function "{0}" that responds to Rivet''s "{1}" event must have a named "{2}" parameter. Please update this function''s definition.' -f $plugin.Name,$Event,$parameterName) -ErrorAction Stop
-            }
+            return
         }
 
-        & $plugin.Name @Parameter
+        foreach( $plugin in $responders )
+        {
+            foreach( $parameterName in $Parameter.Keys )
+            {
+                if( -not $plugin.Parameters.ContainsKey($parameterName) )
+                {
+                    Write-Error -Message ('The function "{0}" that responds to Rivet''s "{1}" event must have a named "{2}" parameter. Please update this function''s definition.' -f $plugin.Name,$Event,$parameterName) -ErrorAction Stop
+                }
+            }
+
+            & $plugin.Name @Parameter
+            Write-Timing -Message ('                     {0}' -f $plugin.Name)
+        }
+    }
+    finally
+    {
+        Write-Timing -Message 'Invoke-RivetPlugin  END' -Outdent
     }
 }
