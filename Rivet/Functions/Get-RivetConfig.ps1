@@ -172,7 +172,7 @@ function Get-RivetConfig
                 {
                     return
                 }
-                if( -not (Test-Path -Path $configPath -PathType Container) )
+                if( -not (Test-Path -Path $configPath) )
                 {
                     Write-ValidationError ('path "{0}" not found.' -f $configPath)
                     return

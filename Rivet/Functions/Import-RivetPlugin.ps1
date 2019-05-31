@@ -16,6 +16,11 @@ function Import-RivetPlugin
 
     foreach( $pluginPath in $Path )
     {
+        if( [IO.Path]::GetExtension($pluginPath) -eq '.ps1' )
+        {
+            Write-Error -Message ('Unable to import Rivet plugin "{0}": invalid plugin file extension. A Rivet plugin must be a PowerShell module. The path to your plugin must be to a directory that is importable by the `Import-Module` command, or to a .psd1 or .psm1 file.' -f $pluginPath) -ErrorAction $ErrorActionPreference
+            continue
+        }
         Import-Module -Name $pluginPath -Global -Force
         Write-Timing -Message ('                    {0}' -f $pluginPath) -Indent
     }

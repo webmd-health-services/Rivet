@@ -3,37 +3,86 @@
 Set-StrictMode -Version 'Latest'
 
 & (Join-Path -Path $PSScriptRoot -ChildPath 'Initialize-Test.ps1' -Resolve)
-$pluginsPath = $null
 
-Describe 'Import-RivetPlugin' {
-    BeforeEach {
-        $pluginsPath = Join-Path -Path $TestDrive.FullName -ChildPath 'ImportPlugin'
-        New-Item -Path $pluginsPath -ItemType 'Directory' | Out-Null
-        @'
+function GivenFile
+{
+    param(
+        $Path,
+        $Content
+    )
+
+    $Path = Join-Path -Path $TestDrive.FullName -ChildPath $Path
+    $parentPath = $Path | Split-Path
+    if( -not (Test-Path -Path $parentPath -PathType Container) )
+    {
+        New-Item -Path $parentPath -ItemType 'Directory'
+    }
+
+    @'
     function Add-MyTable
     {
         Add-Table 'MyTable' {
             int 'ID' -Identity
         }
     }
-'@ | Set-Content -Path (Join-Path -Path $pluginsPath -ChildPath 'Add-MyTable.ps1')
-    
-        @'
+
     function Remove-MyTable
     {
-        Remove-Table 'MyTable' 
+        [CmdletBinding()]
+        [Rivet.Plugin([Rivet.Events]::BeforePluginAdd)]
+        param(
+            $Migration,
+            $Operation
+        )
+        New-Item -Path (Join-Path -Path $PSScriptRoot -ChildPath '..\pluginran')
     }
-'@ | Set-Content -Path (Join-Path -Path $pluginsPath -ChildPath 'Remove-MyTable.ps1')
-    
-        Start-RivetTest -PluginPath $pluginsPath
+'@ | Set-Content -Path $Path
+}
+
+function Init
+{
+    $Global:Error.Clear()
+    Start-RivetTest
+}
+
+function Reset
+{
+    param(
+        [string[]]
+        $ModuleName
+    )
+
+    Stop-RivetTest -ErrorAction Ignore
+
+    if( $ModuleName )
+    {
+        $ModuleName | Where-Object { Get-Module -Name $_ } | ForEach-Object { Remove-Module -Name $_ -Force }
     }
-    
-    AfterEach {
-        Stop-RivetTest
-        Remove-Item -Path $pluginsPath -Recurse
-    }
-    
+}
+
+Describe 'Import-RivetPlugin.when plugin in a .psm1 file' {
+    BeforeEach { Init }
+    AfterEach { Reset -ModuleName 'ImportRivetPluginPlugins' }
     It 'should load plugins' {
+        GivenFile 'ImportRivetPluginPlugins\ImportRivetPluginPlugins.psm1' @'
+    function Add-MyTable
+    {
+        Add-Table 'MyTable' {
+            int 'ID' -Identity
+        }
+    }
+
+    function Remove-MyTable
+    {
+        [CmdletBinding()]
+        [Rivet.Plugin([Rivet.Events]::BeforeOperationAdd)]
+        param(
+            $Migration,
+            $Operation
+        )
+        '' | Set-Content -Path (Join-Path -Path $PSScriptRoot -ChildPath '..\pluginran')
+    }
+'@
         @'
     function Push-Migration
     {
@@ -42,22 +91,30 @@ Describe 'Import-RivetPlugin' {
     
     function Pop-Migration
     {
-        Remove-MyTable
+        Remove-Table -Name 'MyTable'
     }
 '@ | New-TestMigration -Name 'AddMyTable'
+
+        Set-PluginPath -PluginPath 'ImportRivetPluginPlugins'
     
         Invoke-RTRivet -Push
     
+        (Join-Path -Path $TestDrive.FullName -ChildPath 'pluginran') | Should -Exist
         Assert-Table 'MyTable'
+        Get-Module -Name 'ImportRivetPluginPlugins' | Should -Not -BeNullOrEmpty
     }
+}
     
-    It 'should validate plugins' {
-        $badPluginPath = Join-Path -Path $pluginsPath -ChildPath 'Add-MyFeature.ps1'
-        @'
+Describe 'Import-RivetPlugin.when plugin is not a module' {
+    BeforeEach { Init }
+    AfterEach { Reset }
+    It 'should fail' {
+        GivenFile 'Add-MyFeature.ps1' @'
     function BadPlugin
     {
     }
-'@ | Set-Content -Path $badPluginPath
+'@
+        Set-PluginPath -PluginPath 'Add-MyFeature.ps1'
     
         @'
     function Push-Migration
@@ -73,17 +130,8 @@ Describe 'Import-RivetPlugin' {
     }
 '@ | New-TestMigration -Name 'AddMyTable'
     
-        try
-        {
-            Invoke-RTRivet -Push -ErrorAction SilentlyContinue
-            $Global:Error.Count | Should -BeGreaterThan 0
-            $Global:Error[0] | Should -Match 'not found'
-        }
-        finally
-        {
-            Remove-Item $badPluginPath
-        }
-    
+        Invoke-RTRivet -Push -ErrorAction SilentlyContinue
+        $Global:Error.Count | Should -BeGreaterThan 0
+        $Global:Error[0] | Should -Match 'invalid\ plugin\ file'
     }
-    
 }
