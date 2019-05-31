@@ -1,86 +1,89 @@
 
-& (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
+#Requires -Version 5.1
+Set-StrictMode -Version 'Latest'
+
+& (Join-Path -Path $PSScriptRoot -ChildPath 'Initialize-Test.ps1' -Resolve)
 $pluginsPath = $null
 
-function Start-Test
-{
-    $pluginsPath = New-TempDir -Prefix 'ImportPlugin'
-    @'
-function Add-MyTable
-{
-    Add-Table 'MyTable' {
-        int 'ID' -Identity
+Describe 'Import-RivetPlugin' {
+    BeforeEach {
+        $pluginsPath = Join-Path -Path $TestDrive.FullName -ChildPath 'ImportPlugin'
+        New-Item -Path $pluginsPath -ItemType 'Directory' | Out-Null
+        @'
+    function Add-MyTable
+    {
+        Add-Table 'MyTable' {
+            int 'ID' -Identity
+        }
     }
-}
 '@ | Set-Content -Path (Join-Path -Path $pluginsPath -ChildPath 'Add-MyTable.ps1')
-
-    @'
-function Remove-MyTable
-{
-    Remove-Table 'MyTable' 
-}
+    
+        @'
+    function Remove-MyTable
+    {
+        Remove-Table 'MyTable' 
+    }
 '@ | Set-Content -Path (Join-Path -Path $pluginsPath -ChildPath 'Remove-MyTable.ps1')
-
-    Start-RivetTest -PluginPath $pluginsPath
-}
-
-function Stop-Test
-{
-    Stop-RivetTest
-    Remove-Item -Path $pluginsPath -Recurse
-}
-
-function Test-ShouldLoadPlugins
-{
-    @'
-function Push-Migration
-{
-    Add-MyTable
-}
-
-function Pop-Migration
-{
-    Remove-MyTable
-}
+    
+        Start-RivetTest -PluginPath $pluginsPath
+    }
+    
+    AfterEach {
+        Stop-RivetTest
+        Remove-Item -Path $pluginsPath -Recurse
+    }
+    
+    It 'should load plugins' {
+        @'
+    function Push-Migration
+    {
+        Add-MyTable
+    }
+    
+    function Pop-Migration
+    {
+        Remove-MyTable
+    }
 '@ | New-TestMigration -Name 'AddMyTable'
-
-    Invoke-RTRivet -Push
-
-    Assert-Table 'MyTable'
-}
-
-function Test-ShouldValidatePlugins
-{
-    $badPluginPath = Join-Path -Path $pluginsPath -ChildPath 'Add-MyFeature.ps1'
-    @'
-function BadPlugin
-{
-}
+    
+        Invoke-RTRivet -Push
+    
+        Assert-Table 'MyTable'
+    }
+    
+    It 'should validate plugins' {
+        $badPluginPath = Join-Path -Path $pluginsPath -ChildPath 'Add-MyFeature.ps1'
+        @'
+    function BadPlugin
+    {
+    }
 '@ | Set-Content -Path $badPluginPath
-
-    @'
-function Push-Migration
-{
-    Add-Table 'MyTable' {
-        int 'ID' -Identity
+    
+        @'
+    function Push-Migration
+    {
+        Add-Table 'MyTable' {
+            int 'ID' -Identity
+        }
     }
-}
-
-function Pop-Migration
-{
-    Remove-Table 'MyTable'
-}
+    
+    function Pop-Migration
+    {
+        Remove-Table 'MyTable'
+    }
 '@ | New-TestMigration -Name 'AddMyTable'
-
-    try
-    {
-        Invoke-RTRivet -Push -ErrorAction SilentlyContinue
-        Assert-Error -Last 'not found'
+    
+        try
+        {
+            Invoke-RTRivet -Push -ErrorAction SilentlyContinue
+            $Global:Error.Count | Should -BeGreaterThan 0
+            $Global:Error[0] | Should -Match 'not found'
+        }
+        finally
+        {
+            Remove-Item $badPluginPath
+        }
+    
     }
-    finally
-    {
-        Remove-Item $badPluginPath
-    }
-
+    
 }
-
