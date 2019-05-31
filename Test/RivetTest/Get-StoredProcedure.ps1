@@ -13,7 +13,10 @@ function Get-StoredProcedure
         [Parameter(Mandatory=$true)]
         [string]
         # The name of the stored procedure.
-        $Name
+        $Name,
+
+        [string]
+        $DatabaseName
     )
     
     Set-StrictMode -Version Latest

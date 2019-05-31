@@ -18,12 +18,26 @@ function Assert-Trigger
 
     Set-StrictMode -Version 'Latest'
 
-    $trigger = Get-Trigger -SchemaName $SchemaName -Name $Name 
-    Assert-NotNull $trigger ('Trigger ''{0}.{1}'' not found.' -f $SchemaName,$Name)
+    $trigger = Get-Trigger -SchemaName $SchemaName -Name $Name
 
-    if( $PSBoundParameters.ContainsKey('Definition') )
+    $expectedDefinition = $Definition
+
+    if( (Test-Pester) )
     {
-        $expectedDefinition = $Definition
-        Assert-Match $trigger.definition ([Text.RegularExpressions.Regex]::Escape($expectedDefinition))
+        $trigger | Should -Not -BeNullOrEmpty -Because ('Trigger ''{0}.{1}'' not found.' -f $SchemaName,$Name)
+
+        if( $PSBoundParameters.ContainsKey('Definition') )
+        {
+            $trigger.definition | Should -Match ([Text.RegularExpressions.Regex]::Escape($expectedDefinition))
+        }
+    }
+    else
+    {
+        Assert-NotNull $trigger ('Trigger ''{0}.{1}'' not found.' -f $SchemaName,$Name)
+
+        if( $PSBoundParameters.ContainsKey('Definition') )
+        {
+            Assert-Match $trigger.definition ([Text.RegularExpressions.Regex]::Escape($expectedDefinition))
+        }
     }
 }

@@ -10,6 +10,16 @@ function Assert-Schema
         $DatabaseName
     )
 
-    Assert-NotNull (Get-Schema -Name $Name -DatabaseName $DatabaseName)
+    Set-StrictMode -Version 'Latest'
+
+    $schema = Get-Schema -Name $Name -DatabaseName $DatabaseName
+    if( (Test-Pester) )
+    {
+        $schema | Should -Not -BeNullOrEmpty
+    }
+    else
+    {
+        Assert-NotNull $schema
+    }
 }
 

@@ -17,7 +17,7 @@ function Assert-Table
 
     $table = Get-Table -Name $Name -SchemaName $SchemaName
 
-    if( (Test-Path -Path 'variable:TestDrive') )
+    if( (Test-Pester) )
     {
         $table | Should -Not -BeNullOrEmpty
         if( $PSBoundParameters.ContainsKey('Description') )

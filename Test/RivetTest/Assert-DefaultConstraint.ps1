@@ -38,10 +38,23 @@ function Assert-DefaultConstraint
     }
 
     $constraint = Get-DefaultConstraint -Name $Name
-    Assert-NotNull $constraint ('Default constraint ''{0}'' not found.' -f $Name)
 
-    if( $PSBoundParameters.ContainsKey('Expression') )
+    if( (Test-Pester) )
     {
-        Assert-Equal $Definition $constraint.definition
+        $constraint | Should -Not -BeNullOrEmpty -Because ('Default constraint ''{0}'' not found.' -f $Name)
+
+        if( $PSBoundParameters.ContainsKey('Expression') )
+        {
+            $constraint.definition | Should -Be $Definition 
+        }
+    }
+    else
+    {
+        Assert-NotNull $constraint ('Default constraint ''{0}'' not found.' -f $Name)
+
+        if( $PSBoundParameters.ContainsKey('Expression') )
+        {
+            Assert-Equal $Definition $constraint.definition
+        }
     }
 }

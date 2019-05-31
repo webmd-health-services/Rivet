@@ -13,7 +13,6 @@ $RTConfigFilePath =
     $RTRivetPath = 
     $RTRivetSchemaName = 
     $RTDatabaseName =
-    $RTDatabaseConnection = 
     $RTRivetRoot = $null
 
 $RTTimestamp = 20150101000000
@@ -35,7 +34,7 @@ $serverFilePath = $serverFileDirs |
                       Select-Object -First 1
 if( -not $serverFilePath )
 {
-    throw ('File ''Server.txt'' not found. Please create this file. It should contain the name of the SQL Server instance tests should use. It should be in one of these directories:{0} * {1}' -f [Environment]::NewLine,($serverFileDirs -join ('{0} * ' -f[Environment]::NewLine)))
+    throw ('File "Server.txt" not found. Please create this file. It should contain the name of the SQL Server instance tests should use. It should be in one of these directories:{0} * {1}' -f [Environment]::NewLine,($serverFileDirs -join ('{0} * ' -f[Environment]::NewLine)))
 }
 else
 {
@@ -43,7 +42,7 @@ else
     $RTServer = Get-Content $serverFilePath -TotalCount 1
     if( -not $RTServer )
     {
-        throw ('Database server not found. Please update ''{0}'' with the name of the SQL Server instance tests should use.' -f $serverFilePath)
+        throw ('Database server not found. Please update "{0}" with the name of the SQL Server instance tests should use.' -f $serverFilePath)
     }
 }
 
@@ -53,12 +52,14 @@ dir $PSScriptRoot *-*.ps1 |
     Where-Object { $_.BaseName -ne 'Import-RivetTest' } |
     ForEach-Object { . $_.FullName }
 
-if( -not $RTDatabaseConnection -or $RTDatabaseConnection.State -ne [Data.ConnectionSTate]::Open )
+$connection = $null
+if( -not $connection -or $connection.State -ne [Data.ConnectionState]::Open )
 {
-    $RTDatabaseConnection = New-SqlConnection -Database 'master'
+    $connection = New-SqlConnection -Database 'master'
 }
 
 . (Join-Path $PSScriptRoot '..\..\Test\RivetTest\New-ConstraintName.ps1')
 . (Join-Path $PSScriptRoot '..\..\Test\RivetTest\New-ForeignKeyConstraintName.ps1')
+. (Join-Path $PSScriptRoot '..\..\Rivet\Functions\Use-CallerPreference.ps1')
     
-Export-ModuleMember -Function * -Alias * -Variable *
+Export-ModuleMember -Function * -Alias * -Variable (Get-Variable -Name 'RT*' | Select-Object -ExpandProperty 'Name')
