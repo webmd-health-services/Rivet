@@ -88,7 +88,7 @@ function New-MigrationObject
     return $migration
 }
 
-Describe 'Merge-Migration when adding a table then adding a column' {
+Describe 'Merge-Migration.when adding a table then adding a column' {
     $result = Invoke-MergeMigration {
         New-MigrationObject 'AddTable' {
             Add-Table 'snafu' {
@@ -115,7 +115,7 @@ Describe 'Merge-Migration when adding a table then adding a column' {
     Assert-MigrationHasNoOperations $result[1]
 }
 
-Describe 'Merge-Migration when adding a table then updating a column' {
+Describe 'Merge-Migration.when adding a table then updating a column' {
     $result = Invoke-MergeMigration {
         New-MigrationObject 'AddTable' {
             Add-Table 'snafu' {
@@ -145,7 +145,7 @@ Describe 'Merge-Migration when adding a table then updating a column' {
     Assert-MigrationHasNoOperations $result[1]
 }
 
-Describe 'Merge-Migration when adding a table then updating a column' {
+Describe 'Merge-Migration.when adding a table then updating a column' {
     $result = Invoke-MergeMigration {
         New-MigrationObject 'AddTable' {
             Add-Table 'snafu' {
@@ -171,7 +171,7 @@ Describe 'Merge-Migration when adding a table then updating a column' {
     Assert-MigrationHasNoOperations $result[1]
 }
 
-Describe 'Merge-Migration when renaming a column' {
+Describe 'Merge-Migration.when renaming a column' {
     $result = Invoke-MergeMigration { 
         New-MigrationObject 'AddTable' {
             Add-Table 'snafu' {
@@ -198,7 +198,7 @@ Describe 'Merge-Migration when renaming a column' {
 }
 
 
-Describe 'Merge-Migration when renaming a table' {
+Describe 'Merge-Migration.when renaming a table' {
     $result = Invoke-MergeMigration { 
         New-MigrationObject 'AddTable' {
             Add-Table 'snafu' {
@@ -224,7 +224,7 @@ Describe 'Merge-Migration when renaming a table' {
     Assert-MigrationHasNoOperations $result[1]
 }
 
-Describe 'Merge-Migration when removing an object' {
+Describe 'Merge-Migration.when removing an object' {
     $result = Invoke-MergeMigration { 
         New-MigrationObject 'AddTable' {
             Add-Table 'snafu' {
@@ -244,7 +244,7 @@ Describe 'Merge-Migration when removing an object' {
 }
 
 
-Describe 'Merge-Migration when removing an object in the same migration it was created' {
+Describe 'Merge-Migration.when removing an object in the same migration it was created' {
     $Global:Error.Clear()
 
     $result = Invoke-MergeMigration { 
@@ -264,7 +264,7 @@ Describe 'Merge-Migration when removing an object in the same migration it was c
     Assert-MigrationHasNoOperations -Migration $result[0]
 }
 
-Describe 'Merge-Migration when updating a table' {
+Describe 'Merge-Migration.when updating a table' {
 
     $result = Invoke-MergeMigration {
         New-MigrationObject 'AddColumn' {
@@ -294,7 +294,7 @@ Describe 'Merge-Migration when updating a table' {
     Assert-MigrationHasNoOperations -Migration $result[1]
 }
 
-Describe 'Merge-Migration when adding a column that was removed' {
+Describe 'Merge-Migration.when adding a column that was removed' {
 
     $result = Invoke-MergeMigration {
         New-MigrationObject 'RemoveColumns' {
@@ -423,7 +423,7 @@ Describe 'Merge-Migation when updating an updated' {
     Assert-MigrationHasNoOperations -Migration $result[1]
 }
 
-Describe 'Merge-Migration when merging multiple update table operations' {
+Describe 'Merge-Migration.when merging multiple update table operations' {
     $result = Invoke-MergeMigration {
         New-MigrationObject 'AddAndUpdateTable' {
             Add-Table -SchemaName 'skma' 'Farmers' {
@@ -496,7 +496,7 @@ Describe 'Merge-Migation when adding removing and adding an object' {
     }
 }
 
-Describe 'Merge-Migration when adding a column to a table then removing it' {
+Describe 'Merge-Migration.when adding a column to a table then removing it' {
     $result = Invoke-MergeMigration {
         New-MigrationObject 'UpdateWithRemove' {
             Update-Table -Name 'FeedbackLog' -AddColumn {
@@ -535,7 +535,7 @@ Describe 'Merge-Migration when adding a column to a table then removing it' {
     }
 }
 
-Describe 'Merge-Migration when adding a removed column' {
+Describe 'Merge-Migration.when adding a removed column' {
     $result = Invoke-MergeMigration {
         New-MigrationObject 'RemoveThenAddColumns' {
             Update-Table -Name EligibilityMaps -RemoveColumn 'UsePgpEncryption'
@@ -567,7 +567,7 @@ Describe 'Merge-Migration when adding a removed column' {
     }
 }
 
-Describe 'Merge-Migration when adding/removing different objects multiple times' {
+Describe 'Merge-Migration.when adding/removing different objects multiple times' {
     $result = Invoke-MergeMigration {
         New-MigrationObject 'AddPrimaryKeyAndSynonym' {
             Add-PrimaryKey -TableName 'CoachMessagingPractice_RefOnly' -ColumnName AgentId,PracticeId
@@ -594,7 +594,7 @@ Describe 'Merge-Migration when adding/removing different objects multiple times'
     }
 }
 
-Describe 'Merge-Migration when add and removal are in the same migration and there are operations after the removal' {
+Describe 'Merge-Migration.when add and removal are in the same migration and there are operations after the removal' {
     $result = Invoke-MergeMigration {
         New-MigrationObject 'fubar' {
             # AccountIdentityStatusHistory_RefOnly_V2
@@ -639,7 +639,7 @@ Describe 'Merge-Migation when removing, adding, removing, then adding a primary 
     }
 }
 
-Describe 'Merge-Migration when objects across databases have the same name' {
+Describe 'Merge-Migration.when objects across databases have the same name' {
     $result = Invoke-MergeMigration {
 
         New-MigrationObject 'synonyms' -DatabaseName 'Messaging' {
@@ -666,7 +666,7 @@ Describe 'Merge-Migration when objects across databases have the same name' {
     }
 }
 
-Describe 'Merge-Migration when removing a table with keys, indexes, and constraints' {
+Describe 'Merge-Migration.when removing a table with keys, indexes, and constraints' {
     $result = Invoke-MergeMigration {
         New-MigrationObject 'addremovetable' {
             Add-Table 'table' {
@@ -711,7 +711,7 @@ Describe 'Merge-Migration when removing a table with keys, indexes, and constrai
     }
 }
 
-Describe 'Merge-Migration when removing and re-adding the same table across migrations' {
+Describe 'Merge-Migration.when removing and re-adding the same table across migrations' {
     $result = Invoke-MergeMigration {
         New-MigrationObject 'blah1' {
 	        Add-Table -Name 'admTestUser' {
@@ -744,5 +744,42 @@ Describe 'Merge-Migration when removing and re-adding the same table across migr
         $ops[0].Columns[0].Name | Should Be 'Active2'
         $ops[1].ColumnName.Count | Should Be 1
         $ops[1].ColumnName[0] | Should Be 'TestUserID2'
+    }
+}
+
+Describe 'Merge-Migration.when adding/removing rowguildcol from columns' {
+    $result = Invoke-MergeMigration {
+        New-MigrationObject 'migration' {
+            Add-Table 'AddInThisMigration' {
+                uniqueidentifier 'add_rowguidcol'
+            }
+            Add-Table 'RemoveInThisMigration' {
+                uniqueidentifier 'remove_rowguidcol' -RowGuidCol
+            }
+        }
+        New-MigrationObject 'migration2' {
+            Add-RowGuidCol -TableName 'AddInThisMigration' -ColumnName 'add_rowguidcol'
+
+            Remove-RowGuidCol -TableName 'RemoveInThisMigration' -ColumnName 'remove_rowguidcol'
+
+            Add-RowGuidCol -TableName 'AddMyRowGuidCol' -ColumnName  'future_rowguidcol'
+            Remove-RowGuidCol -TableName 'RemoveMyRowGuidCol' -ColumnName 'bye_bye_rowguidcol'
+        }
+    }
+
+    Assert-AllMigrationsReturned -MergedMigration $result -ExpectedCount 2
+    $ops = $result.PushOperations
+    It ('should merge rowguidcol into AddTable') {
+        $ops.Count | Should -Be 4
+        $ops[0] | Should -BeOfType ([Rivet.Operations.AddTableOperation])
+        ([Rivet.Operations.AddTableOperation]$ops[0]).Columns[0].RowGuidCol | Should -BeTrue
+        $ops[0].Source | Select-Object -ExpandProperty 'Name' | Should -Contain 'migration2'
+
+        $ops[1] | Should -BeOfType ([Rivet.Operations.AddTableOperation])
+        ([Rivet.Operations.AddTableOperation]$ops[1]).Columns[0].RowGuidCol | Should -BeFalse
+        $ops[1].Source | Select-Object -ExpandProperty 'Name' | Should -Contain 'migration2'
+
+        $ops[2] | Should -BeOfType ([Rivet.Operations.AddRowGuidColOperation])
+        $ops[3] | Should -BeOfType ([Rivet.Operations.RemoveRowGuidColOperation])
     }
 }

@@ -202,6 +202,7 @@ Rivet is a database migration/change management/versioning tool inspired by Ruby
 * Rivet can now add XML columns that don't have schema associated with them.
 * `New-Column` can now be used to create columns on tables that have custom size specifications, are rowguidcol, are identities, custom collations, and are file stream.
 * The "PluginsRoot" configuration setting is now allowed to have wildcards.
+* Fixed: `Merge-Migration` doesn't merge `Add-RowGuidCol` and `Remove-RowGuidCol` operations into `Add-Table`/`Update-Table` operations.
 '@
         } # End of PSData hashtable
 
