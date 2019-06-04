@@ -49,13 +49,13 @@ LONG DESCRIPTION
     run *before* a specific operation.
 
     It gets passed two parameters: `Migration`, which is the migration object
-    currently being loade and `Operation`, the operation that is about to
+    currently being loaded and `Operation`, the operation that is about to
     be loaded (i.e. saved into Rivet's internal store for later execution).
 
     Plugins that respond to this event *must* have `Migration` and `Operation`
     parameters.
 
-    ### Example 1
+    #### Example 1
 
     This code demonstrates an empty plugin that responds to the 
     `BeforeOperationLoad` event.
@@ -93,10 +93,10 @@ LONG DESCRIPTION
     Plugins that respond to this event *must* have `Migration` and `Operation`
     parameters.
 
-    ### Example 1
+    #### Example 1
 
     This code demonstrates an empty plugin that responds to the 
-    `BeforeOperationLoad` event.
+    `AfterOperationLoad` event.
 
         function Invoke-MyPlugin
         {
