@@ -4,9 +4,9 @@ $rivetConfigPath = $null
 $databasesRootPath = $null
 $minConfig = @'
 {
-    SqlServerName: '.\\Test',
-    DatabasesRoot: 'Databases',
-    PluginsRoot: 'Plugins'
+    "SqlServerName": ".\\Test",
+    "DatabasesRoot": "Databases",
+    "PluginPaths": "Plugins"
 }
 '@
 
@@ -33,6 +33,15 @@ function GivenDatabase
     {
         New-Item -Path (Join-Path -Path $databasesRootPath -ChildPath $dbName) -ItemType 'Directory'
     }
+}
+
+function GivenDirectory
+{
+    param(
+        $Name
+    )
+
+     New-Item -Path (Join-Path -Path ($rivetConfigPath | Split-Path -Parent) -ChildPath $Name) -ItemType 'Directory' -Force
 }
 
 function GivenDirectory
@@ -158,8 +167,8 @@ Describe 'Get-RivetConfig' {
         $config.Databases[0].Name | Should -Be $dbName
         $config.Databases[0].Root | Should -Be (Join-Path -Path $tempDir -ChildPath "Databases\$dbName")
         $config.Databases[0].MigrationsRoot | Should -Be (Join-Path -Path $tempDir -ChildPath "Databases\$dbName\Migrations")
-        ($config.PluginsRoot -is 'string') | Should -Be $true
-        $config.PluginsRoot | Should -Be (Join-Path -Path $tempDir -ChildPath "Plugins")
+        ,$config.PluginPaths | Should -BeOfType ([string[]])
+        $config.PluginPaths[0] | Should -Be (Join-Path -Path $tempDir -ChildPath "Plugins")
     }
     
     It 'should validate databases directory exists' {
@@ -177,7 +186,7 @@ Describe 'Get-RivetConfig' {
         $config = Get-RivetConfig -Path $rivetConfigPath -ErrorAction SilentlyContinue
         $config | Should -BeNullOrEmpty
         $Global:Error.Count | Should -BeGreaterThan 0
-        $Global:Error[0] | Should -Match 'it\ does\ not\ exist'
+        $Global:Error[0] | Should -Match 'does\ not\ exist'
     }
     
     It 'should require database scripts root' {
@@ -190,7 +199,7 @@ Describe 'Get-RivetConfig' {
         $config = Get-RivetConfig -Path $rivetConfigPath -ErrorAction SilentlyContinue
         $config | Should -BeNullOrEmpty
         $Global:Error.Count | Should -BeGreaterThan 0
-        $Global:Error[0] | Should -Match 'is\ required'
+        $Global:Error[0] | Should -Match 'required'
     }
     
     It 'should require sql server name' {
@@ -203,7 +212,7 @@ Describe 'Get-RivetConfig' {
         $config = Get-RivetConfig -Path $rivetConfigPath -ErrorAction SilentlyContinue
         $config | Should -BeNullOrEmpty
         $Global:Error.Count | Should -BeGreaterThan 0
-        $Global:Error[0] | Should -Match 'is\ required'
+        $Global:Error[0] | Should -Match 'required'
     }
     
     It 'should parse sql server name' {
@@ -505,11 +514,11 @@ Describe 'Get-RivetConfig.when plugins root has a wildcard' {
 {
     "SqlServerName": ".\\Rivet",
     "DatabasesRoot": "Databases",
-    "PluginsRoot": "Extensions\\*\\Plugins"
+    "PluginPaths": "Extensions\\*\\Plugins"
 }
 '@
         $config = WhenGettingConfig
-        $config.PluginsRoot | Should -Be (Join-Path -Path $TestDrive.FullName -ChildPath 'Extensions\0.1.0\Plugins')
+        $config.PluginPaths | Should -Be (Join-Path -Path $TestDrive.FullName -ChildPath 'Extensions\0.1.0\Plugins')
     }
 }
 
@@ -523,12 +532,32 @@ Describe 'Get-RivetConfig.when plugins root has a wildcard that points to multip
 {
     "SqlServerName": ".\\Rivet",
     "DatabasesRoot": "Databases",
-    "PluginsRoot": "Extensions\\*\\Plugins"
+    "PluginPaths": "Extensions\\*\\Plugins"
 }
 '@
         $config = WhenGettingConfig -ErrorAction SilentlyContinue
         $config | Should -BeNullOrEmpty
         $Global:Error | Should -Not -BeNullOrEmpty
         $Global:Error | Should -Match 'resolves\ to\ multiple\ items'
+    }
+}
+
+Describe 'Get-RivetConfig.when there are multiple plugin paths' {
+    It 'should set PluginPaths property to list of paths' {
+        Init
+        GivenDirectory 'PluginOne'
+        GivenDirectory 'PluginTwo'
+        GivenConfig @'
+{
+    "SqlServerName": ".\\Rivet",
+    "DatabasesRoot": "Databases",
+    "PluginPaths": [ "PluginOne", "PluginTwo" ]  
+}
+'@
+        $config = WhenGettingConfig
+        $config.PluginPaths.Count | Should -Be 2
+        $root = $rivetConfigPath | Split-Path -Parent
+        $config.PluginPaths[0] | Should -Be (Join-Path -Path $root -ChildPath 'PluginOne')
+        $config.PluginPaths[1] | Should -Be (Join-Path -Path $root -ChildPath 'PluginTwo')
     }
 }

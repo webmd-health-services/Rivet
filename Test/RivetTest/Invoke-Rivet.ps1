@@ -47,6 +47,7 @@ function Invoke-RTRivet
     )
     
     Set-StrictMode -Version Latest
+    Use-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
     $customParams = @{ }
     if( -not $Database )

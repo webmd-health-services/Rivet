@@ -3,7 +3,7 @@ function Start-RivetTest
 {
     [CmdletBinding()]
     param(
-        [string]
+        [string[]]
         # Optional Parameter to specify a plugin Path
         $PluginPath,
 
@@ -38,8 +38,7 @@ function Start-RivetTest
     $PluginPathClause = ''
     if ($PluginPath)
     {
-        $PluginPathClause = ",PluginsRoot: '{0}'" -f $PluginPath
-        $PluginPathClause = $PluginPathClause.Replace('\','\\')
+        $PluginPathClause = ",""PluginPaths"": {0}" -f (ConvertTo-Json -InputObject $PluginPath)
     }
 
     $IgnoreClause = ''

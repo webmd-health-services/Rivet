@@ -15,7 +15,7 @@ function Convert-FileInfoToMigration
 
         [Parameter(Mandatory=$true,ValueFromPipeline=$true)]
         [IO.FileInfo]
-        # The database whose migrations to get.np
+        # The database whose migrations to get.
         $InputObject
     )
 
@@ -23,6 +23,7 @@ function Convert-FileInfoToMigration
     {
         Set-StrictMode -Version 'Latest'
 
+        Write-Timing -Message 'Convert-FileInfoToMigration  BEGIN' -Indent
         function Clear-Migration
         {
             ('function:Push-Migration','function:Pop-Migration') |
@@ -31,10 +32,6 @@ function Convert-FileInfoToMigration
         }
 
         Clear-Migration
-        if( $Configuration.PluginsRoot )
-        {
-            Import-Plugin -Path $Configuration.PluginsRoot
-        }
     }
 
     process
@@ -46,6 +43,7 @@ function Convert-FileInfoToMigration
                 $dbName = Split-Path -Leaf -Path $dbName
 
                 $m = New-Object 'Rivet.Migration' $_.MigrationID,$_.MigrationName,$_.FullName,$dbName
+                Write-Timing -Message ('Convert-FileInfoToMigration  {0}' -f $m.FullName)
 
                 filter Add-Operation
                 {
@@ -67,20 +65,19 @@ function Convert-FileInfoToMigration
 
                     Set-StrictMode -Version 'Latest'
 
+
                     $Operation |
                         Where-Object { $_ -is [Rivet.Operation] } |
                         ForEach-Object {
-                            if( (Test-Path -Path 'function:Start-MigrationOperation') )
-                            {
-                                Start-MigrationOperation -Migration $m -Operation $_
-                            }
+
+                            $pluginParameter = @{ Migration = $m ; Operation = $_ }
+
+                            Invoke-RivetPlugin -Event ([Rivet.Events]::BeforeOperationLoad) -Parameter $pluginParameter
 
                             $_
 
-                            if( (Test-Path -Path 'function:Complete-MigrationOperation') )
-                            {
-                                Complete-MigrationOperation -Migration $m -Operation $_
-                            }
+                            Invoke-RivetPlugin -Event ([Rivet.Events]::AfterOperationLoad) -Parameter $pluginParameter
+
                         } |
                         Where-Object { $_ -is [Rivet.Operation] } |
                         ForEach-Object { $OperationsList.Add( $_ ) } |
@@ -168,5 +165,6 @@ Pop-Migration function is empty and contains no operations. Maybe you''d like to
 
     end
     {
+        Write-Timing -Message 'Convert-FileInfoToMigration  BEGIN' -Outdent
     }
 }

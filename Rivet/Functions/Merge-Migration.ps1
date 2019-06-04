@@ -1,4 +1,3 @@
-
 function Merge-Migration
 {
     <#
@@ -119,6 +118,7 @@ function Merge-Migration
             return $false
         }
 
+        Write-Timing -Message 'Merge-Migration  BEGIN' -Indent
         $databaseName = $null
         $migrations = New-Object 'Collections.Generic.List[Rivet.Migration]'
         [Collections.Generic.Hashset[string]]$preExistingObjects = $null
@@ -132,12 +132,30 @@ function Merge-Migration
             Set-Variable -Name 'operations' -Scope 1 -Value (New-Object 'Collections.ArrayList')
             Set-Variable -Name 'preExistingObjects' -Scope 1 -Value (New-Object 'Collections.Generic.Hashset[string]')
         }
+
     }
 
     process
     {
 
         #$DebugPreference = 'Continue'
+
+        function Find-TableOperation
+        {
+            param(
+                [Parameter(Mandatory)]
+                [string]
+                $SchemaName,
+
+                [Parameter(Mandatory)]
+                [string]
+                $Name
+            )
+
+            $operations |
+                Where-Object { $_ -is [Rivet.Operations.AddTableOperation] -or $_ -is [Rivet.Operations.UpdateTableOperation] } |
+                Where-Object { $_.SchemaName -eq $SchemaName -and $_.Name -eq $Name }
+        }
 
         foreach( $currentMigration in $Migration )
         {
@@ -258,20 +276,9 @@ function Merge-Migration
 
                 if( $op -is [Rivet.Operations.RenameColumnOperation] )
                 {
-                    $tableName = '{0}.{1}' -f $op.SchemaName,$op.TableName
-                    for( $idx = 0 ; $idx -lt $operations.Count; ++$idx )
+                    $tableOp = Find-TableOperation -SchemaName $op.SchemaName -Name $op.TableName
+                    if( $tableOp )
                     {
-                        $tableOp = $operations[$idx]
-                        if( $tableOp -isnot [Rivet.Operations.AddTableOperation] )
-                        {
-                            continue
-                        }
-
-                        if( $tableOp.ObjectName -ne $tableName )
-                        {
-                            continue
-                        }
-
                         $originalColumn = $tableOp.Columns | Where-Object { $_.Name -eq $op.Name }
                         if( $originalColumn )
                         {
@@ -303,6 +310,22 @@ function Merge-Migration
                         Register-Source $existingOp
                         Remove-CurrentOperation
                         continue
+                    }
+                }
+
+                if( $op -is [Rivet.Operations.AddRowGuidColOperation] -or $op -is [Rivet.Operations.RemoveRowGuidColOperation] )
+                {
+                    $tableOp = Find-TableOperation -SchemaName $op.SchemaName -Name $op.TableName
+                    if( $tableOp )
+                    {
+                        $columnIdx = Get-ColumnIndex -Name $op.ColumnName -List $tableOp.Columns
+                        if( $columnIdx -ge 0 )
+                        {
+                            $tableOp.Columns[$columnIdx].RowGuidCol = ($op -is [Rivet.Operations.AddRowGuidColOperation])
+                            Register-Source $tableOp
+                            Remove-CurrentOperation
+                            continue
+                        }
                     }
                 }
 
@@ -453,7 +476,7 @@ function Merge-Migration
                         }
                         else
                         {
-                            Write-Error ('Unhandled operation of type ''{0}''.' -f $existingOp.GetType())
+                            Write-Error ('Unhandled operation of type "{0}".' -f $existingOp.GetType())
                         }                        
                         continue
                     }
@@ -465,5 +488,6 @@ function Merge-Migration
     end
     {
         $migrations.ToArray()
+        Write-Timing 'Merge-Migration  END' -Outdent
     }
 }

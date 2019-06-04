@@ -4,7 +4,7 @@ namespace Rivet.Configuration
 {
 	public sealed class Configuration
 	{
-		public Configuration(string path, string environment, string sqlServerName, string databasesRoot, int connectionTimeout, int commandTimeout, string pluginsRoot)
+		public Configuration(string path, string environment, string sqlServerName, string databasesRoot, int connectionTimeout, int commandTimeout, string[] pluginPaths)
 		{
 			Path = path;
 			Environment = environment;
@@ -12,7 +12,7 @@ namespace Rivet.Configuration
 			DatabasesRoot = databasesRoot;
 			ConnectionTimeout = connectionTimeout;
 			CommandTimeout = commandTimeout;
-			PluginsRoot = pluginsRoot;
+            PluginPaths = pluginPaths ?? new string[0];
 
 			Databases = new List<Database>();
 		}
@@ -23,7 +23,7 @@ namespace Rivet.Configuration
 		public string DatabasesRoot { get; private set; }
 		public string Environment { get; private set; }
 		public string Path { get; private set; }
-		public string PluginsRoot { get; private set; }
+		public string[] PluginPaths { get; private set; }
 		public string SqlServerName { get; private set; }
 	}
 }

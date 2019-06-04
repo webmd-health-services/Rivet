@@ -5,11 +5,21 @@ Set-StrictMode -Version 'Latest'
 & (Join-Path -Path $PSScriptRoot -ChildPath 'Initialize-Test.ps1' -Resolve)
 
 $rivetPath = Join-Path -Path $PSScriptRoot -ChildPath '..\Rivet\rivet.ps1' -Resolve
-$convertRivetMigration = Join-Path -Path $PSScriptRoot -ChildPath '..\Rivet\Extras\Convert-Migration.ps1' -Resolve
+$convertRivetMigration = Join-Path -Path $PSScriptRoot -ChildPath '..\Rivet\RivetSamples\Convert-Migration.ps1' -Resolve
 $outputDir = $null
 $testedOperations = @{ }
-$pluginsPath = $null
 $testsRun = 0
+
+function Global:Watch-Operation
+{
+    [CmdletBinding()]
+    [Rivet.Plugin([Rivet.Events]::BeforeOperationLoad)]
+    param(
+        $Migration,
+        $Operation
+    )
+    $testedOperations[$Operation.GetType()] = $true
+}
 
 function Assert-ConvertMigration
 {
@@ -77,12 +87,24 @@ function Assert-ConvertMigration
         $convertRivetMigrationParams.Author = $Author
     }
     
+    $timer = New-Object 'Diagnostics.Stopwatch'
+    $timer.Start()
     & $convertRivetMigration -ConfigFilePath $RTConfigFilePath -OutputPath $outputDir @convertRivetMigrationParams -Verbose:$VerbosePreference
+    $timer.Stop()
+    Write-Verbose ('{0}  {1}' -f $timer.Elapsed,$convertRivetMigration)
     
+    $receivedParameters = $PSBoundParameters
     ('Schemas','Schema','DependentObject','ExtendedProperty','CodeObject','Data','Unknown','Trigger','Constraint','ForeignKey','Type') | ForEach-Object {
         $shouldExist = Get-Variable -Name $_ -ValueOnly
         $path = Join-Path -Path $outputDir -ChildPath ('{0}.{1}.sql' -f $DatabaseName,$_)
-        (Test-Path -Path $path) | Should -Be $shouldExist
+        if( $shouldExist )
+        {
+            $path | Should -Exist
+        }
+        else
+        {
+            $path | Should -Not -Exist
+        }
         if( $shouldExist -and $Author )
         {
             $content = Get-Content -Path $path -Raw
@@ -170,6 +192,32 @@ function Enable-Migration
     }
 }
 
+function Init
+{
+    $timer = New-Object 'Diagnostics.Stopwatch'
+    $timer.Start()
+
+    $Global:Error.Clear()
+    Get-ChildItem -Path $TestDrive.FullName | Remove-Item -Recurse -Force
+
+    Start-RivetTest -DatabaseName $RTDatabaseName,$RTDatabase2Name
+    
+    $script:outputDir = Join-Path -Path $TestDrive.FullName -ChildPath 'output'
+    if( -not (Test-Path -Path $outputDir -PathType Container) )
+    {
+        New-Item -Path $outputDir -ItemType 'Directory' | Out-Null
+    }
+
+    ++$script:testsRun
+    
+    Invoke-RTRivet -Push -Database $RTDatabaseName,$RTDatabase2Name
+    
+    & (Join-Path -Path $PSScriptRoot -ChildPath '..\Rivet\Import-Rivet.ps1' -Resolve)
+
+    $timer.Stop()
+    Write-Verbose -Message ('{0}  Init' -f $timer.Elapsed)
+}
+
 function Invoke-ConvertedScripts
 {
     param(
@@ -229,64 +277,35 @@ function Pop-ConvertedScripts
         }
 }
     
-Describe 'Convert-Migration' {
-    BeforeEach {
-        $Global:Error.Clear()
-        Get-ChildItem -Path $TestDrive.FullName | Remove-Item -Recurse -Force
+function Reset
+{
+    $timer = New-Object 'Diagnostics.Stopwatch'
+    $timer.Start()
 
-        $script:pluginsPath = Join-Path -Path $TestDrive.FullName -ChildPath 'ConvertMigrationPlugins'
-        if( -not (Test-Path -Path $pluginsPath -PathType Container) )
-        {
-            New-Item -Path $pluginsPath -ItemType 'Directory' | Out-Null
-        }
+    try
+    {
+        Stop-RivetTest -DatabaseName $RTDatabaseName,$RTDatabase2Name
+        Write-Verbose ('{0}  Reset  Successfully cleaned up.' -f $timer.Elapsed)
+    }
+    catch
+    {
+        Write-Verbose ('{0}  Reset  Failures cleaning up.' -f $timer.Elapsed)
+        # These tests sometimes don't use migrations to muck about with the database, so ignore any errors.
+    }
 
-        Start-RivetTest -PluginPath $pluginsPath -DatabaseName $RTDatabaseName,$RTDatabase2Name
-    
-        $outputDir = Join-Path -Path $TestDrive.FullName -ChildPath 'output'
-        if( -not (Test-Path -Path $outputDir -PathType Container) )
-        {
-            New-Item -Path $outputDir -ItemType 'Directory' | Out-Null
-        }
+    if( (Get-Module 'RivetSamples') )
+    {
+        Remove-Module 'RivetSamples' -Force
+        Write-Verbose ('{0}  Reset  Removed RivetSamples' -f $timer.Elapsed)
+    }
 
-        ++$testsRun
-    
-        Invoke-RTRivet -Push -Database $RTDatabaseName,$RTDatabase2Name
-    
-        & (Join-Path -Path $PSScriptRoot -ChildPath '..\Rivet\Import-Rivet.ps1' -Resolve)
-    }
-    
-    AfterEach {
-        Get-Migration -ConfigFilePath $RTConfigFilePath |
-            Select-Object -ExpandProperty PushOperations |
-            ForEach-Object { $testedOperations[$_.GetType()] = $true }
-    
-        Get-ChildItem -Path $RTDatabaseMigrationRoot -Filter '*.off' |
-            Rename-Item -NewName { $_.BaseName }
-        try
-        {
-            Stop-RivetTest -DatabaseName $RTDatabaseName,$RTDatabase2Name
-        }
-        catch
-        {
-            # These tests sometimes don't use migrations to muck about with the database, so ignore any errors.
-        }
-    }
-     
-    AfterAll {
-        $missingOps = [Reflection.Assembly]::GetAssembly( [Rivet.Operation] ) |
-                        ForEach-Object { $_.GetTypes() } | 
-                        Where-Object { $_.IsClass } |
-                        Where-Object { $_.Namespace -eq 'Rivet.Operations' } |
-                        Where-Object { -not $_.IsAbstract } |
-                        Where-Object { -not $testedOperations.ContainsKey( $_ ) } |
-                        Select-Object -ExpandProperty 'Name' |
-                        Sort-Object
-    
-        if( $testsRun -gt 1 )
-        {
-            $missingOps | Should -BeNullOrEmpty
-        }
-    }
+    $timer.Stop()
+    Write-Verbose -Message ('{0}  Reset' -f $timer.Elapsed)
+}
+
+Describe 'Convert-Migration.when output path doesn''t exist' {
+    BeforeEach { Init }
+    AfterEach { Reset }
     It 'should create output path' {
         $outputPath = Join-Path -Path $TestDrive.FullName -ChildPath ([IO.Path]::GetRandomFileName())
         $outputPath | Should -Not -Exist
@@ -294,7 +313,11 @@ Describe 'Convert-Migration' {
         $Global:Error.Count | Should -Be 0
         $outputPath | Should -Exist
     }
+}
 
+Describe 'Convert-Migration.when exporting migrations for multiple databases' {
+    BeforeEach { Init }
+    AfterEach { Reset }
     It 'should create scripts for database' {
         $migrationAPath = Join-Path -Path $RTDatabasesRoot -ChildPath ('{0}\Migrations\20000000000001_A.ps1' -f $RTDatabaseName)
         $migrationBPath = Join-Path -Path $RTDatabasesRoot -ChildPath ('{0}\Migrations\20000000000002_B.ps1' -f $RTDatabaseName)
@@ -376,7 +399,11 @@ Describe 'Convert-Migration' {
             Pop-ConvertedScripts -Database $RTDatabase2Name
         }         
     }
+}
 
+Describe 'Convert-Migration.when scripts are run multiple times' {
+    BeforeEach { Init }
+    AfterEach { Reset }
     It 'should create idempotent query for add operations' {
         $m = @'
     function Push-Migration
@@ -504,7 +531,11 @@ Describe 'Convert-Migration' {
         }
     
     }
+}
 
+Describe 'Convert-Migration.when converted pop operations are run multiple times' {
+    BeforeEach { Init }
+    AfterEach { Reset }
     It 'should create idempotent queries for remove operations' {
         $migration = @"
     function Push-Migration
@@ -674,7 +705,11 @@ Describe 'Convert-Migration' {
             Pop-ConvertedScripts
         }
     }
+}
 
+Describe 'Convert-Migration.when migrations contain operations that disable objects' {
+    BeforeEach { Init }
+    AfterEach { Reset }
     It 'should create idempotent queries for disable operations' {
         $migration = @"
     function Push-Migration
@@ -750,7 +785,11 @@ Describe 'Convert-Migration' {
         Assert-CheckConstraint -Name 'CK_Crops_AllowedCrops' -Definition '([Name]=''Strawberries'' or [Name]=''Rasberries'')' -IsDisabled
         Assert-ForeignKey @schema @crops -ReferencesSchema $schema.SchemaName -References $farmers.TableName -IsDisabled
     }
+}
 
+Describe 'Convert-Migration.when migrations contains operatins that enable objects' {
+    BeforeEach { Init }
+    AfterEach { Reset }
     It 'should create idempotent queries for enable operations' {
         $migration = @"
     function Push-Migration
@@ -830,7 +869,11 @@ Describe 'Convert-Migration' {
         Assert-CheckConstraint -Name 'CK_Crops_AllowedCrops' -Definition '([Name]=''Strawberries'' or [Name]=''Rasberries'')'
         Assert-ForeignKey @schema @crops -ReferencesSchema $schema.SchemaName -References $farmers.TableName
     }
-    
+}
+
+Describe 'Convert-Migration.when migrations contain row operations' {
+    BeforeEach { Init }
+    AfterEach { Reset }
     It 'should make insert update queries idempotent' {
         @'
     function Push-Migration
@@ -866,10 +909,13 @@ Describe 'Convert-Migration' {
             Pop-ConvertedScripts
         }
     }
-    
+}
+
+Describe 'Convert-Migration.when there are plugins' {
+    BeforeEach { Init }
+    AfterEach { Reset }
     It 'should run plugins' {
-        Get-Item -Path (Join-Path -Path $PSScriptRoot -ChildPath '..\Rivet\Extras\*-MigrationOperation.ps1') |
-            Copy-Item -Destination $pluginsPath
+        Set-PluginPath -PluginPath (Join-Path -Path $PSScriptRoot -ChildPath '..\Rivet\RivetSamples')
         
         @'
     function Push-Migration
@@ -902,7 +948,11 @@ Describe 'Convert-Migration' {
             Pop-ConvertedScripts
         }
     }
-    
+}
+
+Describe 'Convert-Migration.when author is passed as a parameter' {
+    BeforeEach { Init }
+    AfterEach { Reset }
     It 'should include author in output scripts' {
        $migrationOne = @'
     function Push-Migration
@@ -944,7 +994,11 @@ Describe 'Convert-Migration' {
             Pop-ConvertedScripts
         }
     }
-    
+}
+
+Describe 'Convert-Migration.when there are operations for the same object across migrations' {
+    BeforeEach { Init }
+    AfterEach { Reset }
     It 'should aggregate changes' {
         @'
     function Push-Migration
@@ -1022,7 +1076,11 @@ create table [aggregate].[Beta] (
             Pop-ConvertedScripts
         }
     }
+}
 
+Describe 'Convert-Migration.when multiple operations touch the same table' {
+    BeforeEach { Init }
+    AfterEach { Reset }
     It 'should aggregate multiple table updates' {
         $migration = @'
     function Push-Migration
@@ -1077,7 +1135,11 @@ create table [aggregate].[Beta] (
         Assert-Query -Schema -ExpectedQuery '[ToBeRemoved]' -NotExists
         Assert-Query -Schema -NotExists -ExpectedQuery "alter table [dbo].[FeedbackLog] alter column [ToBeIncreased] varchar(200)`r`nGO"
     }
-    
+}
+
+Describe 'Convert-Migration.when table and columns get renamed' {
+    BeforeEach { Init }
+    AfterEach { Reset }
     It 'should aggregate table and column renames' {
         @'
     function Push-Migration
@@ -1109,7 +1171,11 @@ create table [aggregate].[Beta] (
         Assert-Query -Schema -ExpectedQuery '[C2New] varchar(1008) not null'
         Assert-Query -Schema -NotExists -ExpectedQuery "sp_rename"
     }
-    
+}
+
+Describe 'Convert-Migration.when excluding certain operations' {
+    BeforeEach { Init }
+    AfterEach { Reset }
     It 'should exclude migrations' {
         @'
     function Push-Migration
@@ -1147,7 +1213,11 @@ create table [aggregate].[Beta] (
             Pop-ConvertedScripts
         }
     }
-    
+}
+
+Describe 'Convert-Migration.when only exporting specific migrations' {
+    BeforeEach { Init }
+    AfterEach { Reset }
     It 'should include migrations' {
         @'
     function Push-Migration
@@ -1185,7 +1255,11 @@ create table [aggregate].[Beta] (
             Pop-ConvertedScripts
         }
     }
-    
+}
+
+Describe 'Convert-Migration.when filtering migrations before a date' {
+    BeforeEach { Init }
+    AfterEach { Reset }
     It 'should exclude migrations before date' {
         $m1 = & $rivetPath -New -Name 'Include' -ConfigFilePath $RTConfigFilePath
         @'
@@ -1228,7 +1302,11 @@ create table [aggregate].[Beta] (
             Pop-ConvertedScripts
         }
     }
-    
+}
+
+Describe 'Convert-Migration.when filtering migrations after a date' {
+    BeforeEach { Init }
+    AfterEach { Reset }
     It 'should exclude migrations after date' {
         $m1 = & $rivetPath -New -Name 'Exclude' -ConfigFilePath $RTConfigFilePath
     
@@ -1274,7 +1352,11 @@ create table [aggregate].[Beta] (
             Pop-ConvertedScripts
         }
     }
-    
+}
+
+Describe 'Convert-Migration.when a column is removed then added' {
+    BeforeEach { Init }
+    AfterEach { Reset }
     It 'should handle removing then adding column' {
         @'
     function Push-Migration
@@ -1300,3 +1382,84 @@ create table [aggregate].[Beta] (
         ($sql -notmatch 'drop column') | Should -BeTrue
     }
 }
+
+Describe 'Convert-Migration.when migrations add/remove rowguidcol' {
+    BeforeEach { Init }
+    AfterEach { Reset }
+    It 'should export correct scripts' {
+        @'
+function Push-Migration
+{
+    Add-Table 'AddMyRowGuidCol' {
+        uniqueidentifier 'future_rowguidcol'
+    }
+
+    Add-Table 'RemoveMyRowGuidCol' {
+        uniqueidentifier 'bye_bye_rowguidcol' -RowGuidCol
+    }
+}
+function Pop-Migration
+{
+    Remove-Table 'RemoveMyRowGuidCol'
+    Remove-Table 'AddMyRowGuidCol'
+}
+'@ | New-TestMigration -Name 'BaseTables'
+
+        Invoke-RTRivet -Push
+
+        @'
+function Push-Migration
+{
+    Add-RowGuidCol -TableName 'AddMyRowGuidCol' -ColumnName  'future_rowguidcol'
+    Remove-RowGuidCol -TableName 'RemoveMyRowGuidCol' -ColumnName 'bye_bye_rowguidcol'
+
+    Add-Table 'AddInThisMigration' {
+        uniqueidentifier 'add_rowguidcol'
+    }
+
+    Add-RowGuidCol -TableName 'AddInThisMigration' -ColumnName 'add_rowguidcol'
+
+    Add-Table 'RemoveInThisMigration' {
+        uniqueidentifier 'remove_rowguidcol' -RowGuidCol
+    }
+
+    Remove-RowGuidCol -TableName 'RemoveInThisMigration' -ColumnName 'remove_rowguidcol'
+}
+function Pop-Migration
+{
+    Remove-Table -Name 'RemoveInThisMigration'
+    Remove-Table -Name 'AddInThisMigration'
+    Remove-RowGuidCol -TableName 'AddMyRowGuidCol' -ColumnName  'future_rowguidcol'
+    Add-RowGuidCol -TableName 'RemoveMyRowGuidCol' -ColumnName 'bye_bye_rowguidcol'
+}
+'@ | New-TestMigration -Name 'TestMe'
+
+        Assert-ConvertMigration -Schema -Include 'TestMe'
+        Assert-Column -Name 'remove_rowguidcol' -TableName 'RemoveInThisMigration' -DataType 'uniqueidentifier'
+        Assert-Column -Name 'add_rowguidcol' -TableName 'AddInThisMigration' -DataType 'uniqueidentifier' -RowGuidCol
+        Assert-Column -Name 'bye_bye_rowguidcol' -TableName 'RemoveMyRowGuidCol' -DataType 'uniqueidentifier'
+        Assert-Column -Name 'future_rowguidcol' -TableName 'AddMyRowGuidCol' -DataType 'uniqueidentifier' -RowGuidCol
+    }
+}
+
+# This one must be last!
+Describe 'Convert-Migration.test fixture' {
+    It 'should cover all operations' {
+        $opsToSkip = @{
+                        [Rivet.Operations.IrreversibleOperation] = $true;
+                     }
+        $missingOps = [Reflection.Assembly]::GetAssembly( [Rivet.Operation] ) |
+                            ForEach-Object { $_.GetTypes() } | 
+                            Where-Object { $_.IsClass } |
+                            Where-Object { $_.Namespace -eq 'Rivet.Operations' } |
+                            Where-Object { -not $_.IsAbstract } |
+                            Where-Object { -not $testedOperations.ContainsKey( $_ ) } |
+                            Where-Object { -not $opsToSkip.ContainsKey($_) } |
+                            Select-Object -ExpandProperty 'Name' |
+                            Sort-Object
+    
+        $missingOps | Should -BeNullOrEmpty
+    }
+}
+
+Remove-Item -Path 'function:Watch-Operation'

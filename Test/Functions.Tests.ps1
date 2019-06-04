@@ -14,7 +14,6 @@ Describe 'Rivet' {
                                 'Convert-FileInfoToMigration' = $true;
                                 'Get-MigrationScript' = $true;
                                 'Import-Rivet' = $true;
-                                'Import-Plugin' = $true;
                                 'Invoke-Query' = $true;
                                 'Initialize-Database' = $true;
                                 'Invoke-MigrationOperation' = $true;

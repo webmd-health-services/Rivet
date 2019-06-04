@@ -172,7 +172,7 @@ function Get-RivetConfig
                 {
                     return
                 }
-                if( -not (Test-Path -Path $configPath -PathType Container) )
+                if( -not (Test-Path -Path $configPath) )
                 {
                     Write-ValidationError ('path "{0}" not found.' -f $configPath)
                     return
@@ -278,7 +278,7 @@ function Get-RivetConfig
     {
         $commandTimeout = 30
     }
-    $pluginsRoot = Get-ConfigProperty -Name 'PluginsRoot' -AsPath -Resolve
+    $pluginPaths = Get-ConfigProperty -Name 'PluginPaths' -AsPath -Resolve
 
     $ignoredDatabases = Get-ConfigProperty -Name 'IgnoreDatabases' -AsList
     $targetDatabases = Get-ConfigProperty -Name 'TargetDatabases' -AsHashtable
@@ -289,7 +289,7 @@ function Get-RivetConfig
 
     $order = Get-ConfigProperty -Name 'DatabaseOrder' -AsList
 
-    [Rivet.Configuration.Configuration]$configuration = New-Object 'Rivet.Configuration.Configuration' $Path,$Environment,$sqlServerName,$dbsRoot,$connectionTimeout,$commandTimeout,$pluginsRoot
+    [Rivet.Configuration.Configuration]$configuration = New-Object 'Rivet.Configuration.Configuration' $Path,$Environment,$sqlServerName,$dbsRoot,$connectionTimeout,$commandTimeout,$pluginPaths
 
     if( $Global:Error.Count -ne $errorCount )
     {

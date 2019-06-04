@@ -23,25 +23,29 @@ LONG DESCRIPTION
     
     
     ## How do I customize constraint/index names?
+
+    ### Overview
     
-    You can customize constraint/index names using the `Start-MigrationOperation` 
-    plug-in to modify a constraint's name before it gets applied to a database. (See 
-    `about_Rivet_Plugins` for instructions on setting up your plug-ins.)
+    You can customize constraint/index names by writing a Rivet plug-in that 
+    modifies your constraint/index operation. See `about_Rivet_Plugins` for 
+    more information.
 
-    Each operation that adds/removes a constraint has a `SetConstraintName(string)` 
-    method. You can check what kind of constraint is being added/removed with the 
-    `ConstraintType` property. You can check if an operation is a constraint operation 
-    by testing if it is a `Rivert.Operations.ConstraintOperation`.  Here's an example:
+    Each operation that adds/removes a constraint has a 
+    `SetConstraintName(string)` method. You can check what kind of constraint is
+    being added/removed with the `ConstraintType` property. You can check if an
+    operation is a constraint operation by testing if it is a 
+    `Rivet.Operations.ConstraintOperation`.
 
-    The add/remove index operation has a 'SetIndexName(string)' method. You can check 
-    if an operation is an index operation by testing if it is a 
+    The add/remove index operation has a 'SetIndexName(string)' method. You can 
+    check if an operation is an index operation by testing if it is a 
     `Rivet.Operations.IndexOperation` object.
 
-    Here's some sample code demonstrating all this:
+    ### Examples 
 
-        function Start-MigrationOperation
+        function Update-ConstraintOrIndexName
         {
             [CmdletBinding()]
+            [Rivet.Plugin([Rivet.Events]::BeforeOperationLoad)]
             param(
                 [Parameter(Mandatory=$true)]
                 [Rivet.Migration]

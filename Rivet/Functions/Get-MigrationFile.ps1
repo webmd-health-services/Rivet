@@ -28,6 +28,9 @@ function Get-MigrationFile
     )
 
     Set-StrictMode -Version Latest
+    Use-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+    
+    Write-Timing -Message 'Get-MigrationFile  BEGIN' -Indent
 
     $requiredMatches = @{ }
     if( $PSBoundParameters.ContainsKey('Include') )
@@ -115,4 +118,6 @@ function Get-MigrationFile
             Write-Error ('Migration ''{0}'' not found.' -f $requiredMatch)
         }
     }
+
+    Write-Timing -Message 'Get-MigrationFile  BEGIN' -Outdent
 }

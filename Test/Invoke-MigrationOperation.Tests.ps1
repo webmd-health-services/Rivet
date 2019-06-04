@@ -6,19 +6,11 @@ Set-StrictMode -Version 'Latest'
 
 Describe 'Invoke-MigrationOperation' {
     BeforeEach {
-        $tempPluginsPath = Join-Path -Path $TestDrive.FullName -ChildPath 'InvokeMigrationOperationPlugins'
-        New-Item -Path $tempPluginsPath -ItemType 'Directory'
-        $pluginPath = Join-Path -Path $PSScriptRoot -ChildPath '..\Rivet\Extras\*-MigrationOperation.ps1' -Resolve
-        Copy-Item -Path $pluginPath -Destination $tempPluginsPath
-        Start-RivetTest -PluginPath $tempPluginsPath
+        Start-RivetTest -PluginPath (Join-Path -Path $PSScriptRoot -ChildPath '..\Rivet\RivetSamples')
     }
     
     AfterEach {
         Stop-RivetTest
-        if( (Test-Path -Path $tempPluginsPath -PathType Container) )
-        {
-            Remove-Item -Path $tempPluginsPath -Recurse
-        }
     }
     
     It 'should run plugins' {
