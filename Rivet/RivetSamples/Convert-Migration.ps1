@@ -102,150 +102,149 @@ $migrations = Get-Migration @getMigrationParams
 
 $mergedMigrations = $migrations | Merge-Migration
 
-$mergedMigrations |
-    ForEach-Object {
-        [Rivet.Migration]$migration = $_
-        Write-Timing -Message ('    {0}' -f $migration.FullName)
-        $migration.PushOperations | 
-            Where-Object { $_ } | 
-            ForEach-Object {
+foreach( $migration in $mergedMigrations )
+{
+    Write-Timing -Message ('    {0}' -f $migration.FullName)
+    foreach( $op in $migration.PushOperations )
+    {
+        if( -not $op )
+        {
+            continue
+        }
 
-                [Rivet.Operation]$op = $_
+        Write-Timing -Message ('      {0}' -f $op.GetType().FullName)
 
-                Write-Timing -Message ('      {0}' -f $op.GetType().FullName)
+        $schemasScriptPath = Join-Path -Path $OutputPath -ChildPath ('{0}.Schemas.sql' -f $migration.Database)
+        $schemaScriptPath = Join-Path -Path $OutputPath -ChildPath ('{0}.Schema.sql' -f $migration.Database)
+        $dependentObjectScriptPath = Join-Path -Path $OutputPath -ChildPath ('{0}.DependentObject.sql' -f $migration.Database)
+        $extendedPropertyScriptPath = Join-Path -Path $OutputPath -ChildPath ('{0}.ExtendedProperty.sql' -f $migration.Database)
+        $codeObjectScriptPath = Join-Path -Path $OutputPath -ChildPath ('{0}.CodeObject.sql' -f $migration.Database)
+        $dataScriptPath = Join-Path -Path $OutputPath -ChildPath ('{0}.Data.sql' -f $migration.Database)
+        $unknownScriptPath = Join-Path -Path $OutputPath -ChildPath ('{0}.Unknown.sql' -f $migration.Database)
+        $triggerScriptPath = Join-Path -Path $OutputPath -ChildPath ('{0}.Trigger.sql' -f $migration.Database)
+        $constraintScriptPath = Join-Path -Path $OutputPath -ChildPath ('{0}.Constraint.sql' -f $migration.Database)
+        $foreignKeyScriptPath = Join-Path -Path $OutputPath -ChildPath ('{0}.ForeignKey.sql' -f $migration.Database)
+        $typeScriptPath = Join-Path -Path $OutputPath -ChildPath ('{0}.Type.sql' -f $migration.Database)
 
-                $schemasScriptPath = Join-Path -Path $OutputPath -ChildPath ('{0}.Schemas.sql' -f $migration.Database)
-                $schemaScriptPath = Join-Path -Path $OutputPath -ChildPath ('{0}.Schema.sql' -f $migration.Database)
-                $dependentObjectScriptPath = Join-Path -Path $OutputPath -ChildPath ('{0}.DependentObject.sql' -f $migration.Database)
-                $extendedPropertyScriptPath = Join-Path -Path $OutputPath -ChildPath ('{0}.ExtendedProperty.sql' -f $migration.Database)
-                $codeObjectScriptPath = Join-Path -Path $OutputPath -ChildPath ('{0}.CodeObject.sql' -f $migration.Database)
-                $dataScriptPath = Join-Path -Path $OutputPath -ChildPath ('{0}.Data.sql' -f $migration.Database)
-                $unknownScriptPath = Join-Path -Path $OutputPath -ChildPath ('{0}.Unknown.sql' -f $migration.Database)
-                $triggerScriptPath = Join-Path -Path $OutputPath -ChildPath ('{0}.Trigger.sql' -f $migration.Database)
-                $constraintScriptPath = Join-Path -Path $OutputPath -ChildPath ('{0}.Constraint.sql' -f $migration.Database)
-                $foreignKeyScriptPath = Join-Path -Path $OutputPath -ChildPath ('{0}.ForeignKey.sql' -f $migration.Database)
-                $typeScriptPath = Join-Path -Path $OutputPath -ChildPath ('{0}.Type.sql' -f $migration.Database)
-
-                $header = $op.Source | ForEach-Object {
-                    $name = $_.FullName
-                    $by = ''
-                    if( $Author -and $Author.ContainsKey( $name ) )
-                    {
-                        $by = ': {0}' -f $Author[$name]
-                    }
-                    '-- {0}{1}' -f $name,$by
-                } 
-                $header = $header -join ([Environment]::NewLine)
-
-                if( $op -is [Rivet.Operations.AddTableOperation] )
-                {
-                    $newTables.Add( $op.ObjectName ) | Out-Null
-                }
-        
-                $op = $_
-                $path = switch -Regex ( $op.GetType() )
-                {
-                    '(Add|Remove|Update)ExtendedProperty'
-                    {
-                        $extendedPropertyScriptPath
-                        break
-                    }
-
-                    '(Add|Remove|Update)Schema'
-                    {
-                        $schemasScriptPath
-                        break
-                    }
-
-                    '(Add|Remove|Update)(Table|RowGuidCol)'
-                    {
-                        $schemaScriptPath
-                        break
-                    }
-
-                    '(Add|Remove|Update)Trigger'
-                    {
-                        $triggerScriptPath
-                        break
-                    }
-
-                    '(Add|Remove|Update)(Index|PrimaryKey|UniqueKey)'
-                    {
-                        $tableName = '{0}.{1}' -f $op.SchemaName,$op.TableName
-                        if( $newTables.Contains( $tableName ) )
-                        {
-                            $schemaScriptPath
-                        }
-                        else
-                        {
-                            $dependentObjectScriptPath
-                        }
-                        break
-                    }
-
-                    '(Add|Remove)(CheckConstraint|DefaultConstraint)'
-                    {
-                        $constraintScriptPath
-                        break
-                    }
-
-                    '(Enable|Disable)Constraint'
-                    {
-                        $constraintScriptPath
-                        break
-                    }
-
-                    '(Add|Remove|Disable|Enable)ForeignKey'
-                    {
-                        $foreignKeyScriptPath
-                        break
-                    }
-
-                    '(Add|Remove|Update)(DataType|Synonym)'
-                    {
-                        $typeScriptPath
-                        break
-                    }
-
-                    'Rename(Column|Constraint|Index)?Operation'
-                    {
-                        $schemaScriptPath
-                    }
-
-                    '(Add|Remove|Update)(CodeObjectMetadata|StoredProcedure|UserDefinedFunction|View)'
-                    {
-                        $codeObjectScriptPath
-                        break
-                    }
-
-                    '(Add|Remove|Update)Row'
-                    {
-                        $dataScriptPath
-                        break
-                    }
-
-                    'RawDdl|ScriptFile'
-                    {
-                        Write-Warning ('Generic migration operation found in ''{0}''.' -f $migration.Path)
-                        $unknownScriptPath
-                        break
-                    }
-
-                    default
-                    {
-                        Write-Error ('Unknown migration operation ''{0}'' in ''{1}''.' -f $op.GetType(),$migration.Path)
-                        return
-                    }
-                }
-
-                if( -not (Test-Path -Path $path -PathType Leaf) )
-                {
-                    $null = New-Item -Path $path -ItemType 'File' -Force
-                }
-                $header | Add-Content -Path $path
-                $op.ToIdempotentQuery() | Add-Content -Path $path
-                ("GO{0}" -f [Environment]::NewLine) | Add-Content -Path $path
+        $header = $op.Source | ForEach-Object {
+            $name = $_.FullName
+            $by = ''
+            if( $Author -and $Author.ContainsKey( $name ) )
+            {
+                $by = ': {0}' -f $Author[$name]
             }
+            '-- {0}{1}' -f $name,$by
+        } 
+        $header = $header -join ([Environment]::NewLine)
+
+        if( $op -is [Rivet.Operations.AddTableOperation] )
+        {
+            $newTables.Add( $op.ObjectName ) | Out-Null
+        }
+        
+        $path = switch -Regex ( $op.GetType() )
+        {
+            '(Add|Remove|Update)ExtendedProperty'
+            {
+                $extendedPropertyScriptPath
+                break
+            }
+
+            '(Add|Remove|Update)Schema'
+            {
+                $schemasScriptPath
+                break
+            }
+
+            '(Add|Remove|Update)(Table|RowGuidCol)'
+            {
+                $schemaScriptPath
+                break
+            }
+
+            '(Add|Remove|Update)Trigger'
+            {
+                $triggerScriptPath
+                break
+            }
+
+            '(Add|Remove|Update)(Index|PrimaryKey|UniqueKey)'
+            {
+                $tableName = '{0}.{1}' -f $op.SchemaName,$op.TableName
+                if( $newTables.Contains( $tableName ) )
+                {
+                    $schemaScriptPath
+                }
+                else
+                {
+                    $dependentObjectScriptPath
+                }
+                break
+            }
+
+            '(Add|Remove)(CheckConstraint|DefaultConstraint)'
+            {
+                $constraintScriptPath
+                break
+            }
+
+            '(Enable|Disable)Constraint'
+            {
+                $constraintScriptPath
+                break
+            }
+
+            '(Add|Remove|Disable|Enable)ForeignKey'
+            {
+                $foreignKeyScriptPath
+                break
+            }
+
+            '(Add|Remove|Update)(DataType|Synonym)'
+            {
+                $typeScriptPath
+                break
+            }
+
+            'Rename(Column|Constraint|Index)?Operation'
+            {
+                $schemaScriptPath
+            }
+
+            '(Add|Remove|Update)(CodeObjectMetadata|StoredProcedure|UserDefinedFunction|View)'
+            {
+                $codeObjectScriptPath
+                break
+            }
+
+            '(Add|Remove|Update)Row'
+            {
+                $dataScriptPath
+                break
+            }
+
+            'RawDdl|ScriptFile'
+            {
+                Write-Warning ('Generic migration operation found in ''{0}''.' -f $migration.Path)
+                $unknownScriptPath
+                break
+            }
+
+            default
+            {
+                Write-Error ('Unknown migration operation ''{0}'' in ''{1}''.' -f $op.GetType(),$migration.Path)
+                return
+            }
+        }
+
+        if( -not (Test-Path -Path $path -PathType Leaf) )
+        {
+            $null = New-Item -Path $path -ItemType 'File' -Force
+        }
+        $header | Add-Content -Path $path
+        $op.ToIdempotentQuery() | Add-Content -Path $path
+        ("GO{0}" -f [Environment]::NewLine) | Add-Content -Path $path
     }
+}
 
 Write-Timing -Message ('END')
