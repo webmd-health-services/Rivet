@@ -4,41 +4,6 @@ Set-StrictMode -Version 'Latest'
 
 & (Join-Path -Path $PSScriptRoot -ChildPath 'Initialize-Test.ps1' -Resolve)
 
-function GivenFile
-{
-    param(
-        $Path,
-        $Content
-    )
-
-    $Path = Join-Path -Path $TestDrive.FullName -ChildPath $Path
-    $parentPath = $Path | Split-Path
-    if( -not (Test-Path -Path $parentPath -PathType Container) )
-    {
-        New-Item -Path $parentPath -ItemType 'Directory'
-    }
-
-    @'
-    function Add-MyTable
-    {
-        Add-Table 'MyTable' {
-            int 'ID' -Identity
-        }
-    }
-
-    function Remove-MyTable
-    {
-        [CmdletBinding()]
-        [Rivet.Plugin([Rivet.Events]::BeforePluginAdd)]
-        param(
-            $Migration,
-            $Operation
-        )
-        New-Item -Path (Join-Path -Path $PSScriptRoot -ChildPath '..\pluginran')
-    }
-'@ | Set-Content -Path $Path
-}
-
 function Init
 {
     $Global:Error.Clear()
