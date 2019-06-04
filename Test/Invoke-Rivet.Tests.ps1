@@ -218,7 +218,6 @@ function Reset
     )
 
     Stop-RivetTest
-    #Clear-TestDatabase
     Remove-Module -Name $Plugin
 }
 
