@@ -315,15 +315,13 @@ function Merge-Migration
 
                 if( $op -is [Rivet.Operations.AddRowGuidColOperation] -or $op -is [Rivet.Operations.RemoveRowGuidColOperation] )
                 {
-                    $isRowGuidCol = ($op -is [Rivet.Operations.AddRowGuidColOperation])
-                    
                     $tableOp = Find-TableOperation -SchemaName $op.SchemaName -Name $op.TableName
                     if( $tableOp )
                     {
                         $columnIdx = Get-ColumnIndex -Name $op.ColumnName -List $tableOp.Columns
                         if( $columnIdx -ge 0 )
                         {
-                            $tableOp.Columns[$columnIdx].RowGuidCol = $isRowGuidCol
+                            $tableOp.Columns[$columnIdx].RowGuidCol = ($op -is [Rivet.Operations.AddRowGuidColOperation])
                             Register-Source $tableOp
                             Remove-CurrentOperation
                             continue
