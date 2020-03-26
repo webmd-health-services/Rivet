@@ -5,7 +5,7 @@ Initializes your Rivet working directory for development.
 [CmdletBinding()]
 param(
     [Parameter(Mandatory)]
-    # The name of the SQL Server tests should run against. Ignored if running under AppVeyor.
+    # The name of the SQL Server tests should run against.
     [String]$SqlServerName
 )
 
