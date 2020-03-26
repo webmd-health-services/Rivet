@@ -281,6 +281,7 @@ function Merge-Migration
                             continue
                         }
                     }
+                    continue
                 }
 
                 if( $op -is [Rivet.Operations.RenameOperation] )
