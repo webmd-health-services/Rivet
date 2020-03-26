@@ -747,6 +747,35 @@ Describe 'Merge-Migration.when removing and re-adding the same table across migr
     }
 }
 
+Describe 'Merge-Migration.when table and column have same name and the table is renamed' {
+    $result = Invoke-MergeMigration {
+        New-MigrationObject 'one' {
+            Add-Table -Name 'OldName' {
+                int 'id'
+            }
+        }
+        New-MigrationObject 'two' {
+            Update-Table 'OldName' -AddColumn {
+                tinyint 'OldColumn' -NotNull
+            }
+        }
+        New-MigrationObject 'three' {
+            Rename-Object -Name 'OldName' -NewName 'NewName'
+        }
+        New-MigrationObject 'four' {
+            Add-Table -Name 'OldColumn' {
+                tinyint 'OldColumnId' -NotNull
+            }
+        }
+        New-MigrationObject 'five' {
+            Rename-Column -TableName 'NewName' -Name 'OldColumn' -NewName 'OldColumnId'
+        }
+    }
+    It 'should handle this situation' {
+        $result | Should -Not -BeNullOrEmpty
+    }
+}
+
 Describe 'Merge-Migration.when adding/removing rowguildcol from columns' {
     $result = Invoke-MergeMigration {
         New-MigrationObject 'migration' {
