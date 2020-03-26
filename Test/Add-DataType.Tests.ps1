@@ -1,5 +1,9 @@
 
+#Requires -Version 5.1
+Set-StrictMode -Version 'Latest'
+
 & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
+
 Describe 'Add-DataType' {
     BeforeEach { Start-RivetTest }
     AfterEach { Stop-RivetTest }
@@ -34,12 +38,15 @@ function Pop-Migration
     It 'should add data type by assembly' {
         $assemblyPath = Join-Path -Path $PSScriptRoot -ChildPath '..\Source\Rivet.Test.Fake\bin\*\Rivet.Test.Fake.dll' -Resolve -ErrorAction Ignore |
                         Select-Object -First 1
+        $assemblyHash = Get-FileHash -Path $assemblyPath -Algorithm SHA512 | Select-Object -ExpandProperty 'Hash'
+        $assemblyHash = '0x{0}' -f $assemblyHash
         $assemblyPath | Should Not BeNullOrEmpty
         # Yes.  Spaces in the name so we check the name gets quoted.
         @"
 function Push-Migration
 {
-    Invoke-Ddl "create assembly rivettest from '$assemblyPath' "
+    Invoke-Ddl 'if not exists(select * from sys.trusted_assemblies where hash=$($assemblyHash)) exec sp_add_trusted_assembly @hash = $($assemblyHash)'
+    Invoke-Ddl "create assembly rivettest from '$assemblyPath'"
     Add-DataType 'Point Point' -AssemblyName 'rivettest' -ClassName 'Rivet.Test.Fake.Point'
 
     Add-Table 'important' {
