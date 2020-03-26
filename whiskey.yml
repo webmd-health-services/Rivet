@@ -29,8 +29,14 @@ Build:
     - Source\bin\$(WHISKEY_MSBUILD_CONFIGURATION)\netstandard2.0\Rivet.dll
     DestinationDirectory: Rivet\bin
 
+- File:
+    OnlyBy: BuildServer
+    Path: Test\Server.txt
+    Content: ".\\SQL2017"
+
 - Pester4:
-    Path: Test\*.Tests.ps1
+    Verbose: false  # Rivet is super chatty with Verbose messages.
+    Script: Test\*.Tests.ps1
 
 - PowerShell:
     OnlyDuring: Build
