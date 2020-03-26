@@ -1,20 +1,12 @@
 
 & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
+Describe 'Add-DataType' {
+    BeforeEach { Start-RivetTest }
+    AfterEach { Stop-RivetTest }
 
-function Setup
-{
-    Start-RivetTest
-}
-
-function TearDown
-{
-    Stop-RivetTest
-}
-
-function Test-ShouldAddDataTypeByAlias
-{
-    # Yes.  Spaces in the name so we check the name gets quoted.
-    @'
+    It 'should add data type by alias' {
+        # Yes.  Spaces in the name so we check the name gets quoted.
+        @'
 function Push-Migration
 {
     Add-DataType 'G U I D' 'uniqueidentifier'
@@ -32,20 +24,19 @@ function Pop-Migration
 
 '@ | New-TestMigration -Name 'ByAlias'
 
-    Invoke-RTRivet -Push 'ByAlias'
+        Invoke-RTRivet -Push 'ByAlias'
 
-    Assert-DataType -Name 'G U I D' -BaseTypeName 'uniqueidentifier' -UserDefined
-    Assert-Table 'important'
-    Assert-Column 'ident' -DataType 'G U I D' -TableName 'important'
-}
+        Assert-DataType -Name 'G U I D' -BaseTypeName 'uniqueidentifier' -UserDefined
+        Assert-Table 'important'
+        Assert-Column 'ident' -DataType 'G U I D' -TableName 'important'
+    }
 
-function Test-ShouldAddDataTypeByAssembly
-{
-    $assemblyPath = Join-Path -Path $PSScriptRoot -ChildPath '..\Source\Rivet.Test.Fake\bin\*\Rivet.Test.Fake.dll' -Resolve -ErrorAction Ignore |
+    It 'should add data type by assembly' {
+        $assemblyPath = Join-Path -Path $PSScriptRoot -ChildPath '..\Source\Rivet.Test.Fake\bin\*\Rivet.Test.Fake.dll' -Resolve -ErrorAction Ignore |
                         Select-Object -First 1
-    Assert-NotNull $assemblyPath   
-    # Yes.  Spaces in the name so we check the name gets quoted.
-    @"
+        $assemblyPath | Should Not BeNullOrEmpty
+        # Yes.  Spaces in the name so we check the name gets quoted.
+        @"
 function Push-Migration
 {
     Invoke-Ddl "create assembly rivettest from '$assemblyPath' "
@@ -65,17 +56,16 @@ function Pop-Migration
 
 "@ | New-TestMigration -Name 'ByAssembly'
 
-    Invoke-RTRivet -Push 'ByAssembly'
-    
-    Assert-DataType -Name 'Point Point' -BaseTypeName $null -UserDefined -AssemblyType
-    Assert-Table 'important'
-    Assert-Column 'ident' -DataType 'Point Point' -TableName 'important'
-}
+        Invoke-RTRivet -Push 'ByAssembly'
+        
+        Assert-DataType -Name 'Point Point' -BaseTypeName $null -UserDefined -AssemblyType
+        Assert-Table 'important'
+        Assert-Column 'ident' -DataType 'Point Point' -TableName 'important'
+    }
 
-function Test-ShouldAddDataTypeByTable
-{
-    # Yes.  Spaces in the name so we check the name gets quoted.
-    @'
+    It 'should add data type by table' {
+        # Yes.  Spaces in the name so we check the name gets quoted.
+        @'
 function Push-Migration
 {
     Add-DataType 'U s e r s' -AsTable { 
@@ -91,7 +81,8 @@ function Pop-Migration
 
 '@ | New-TestMigration -Name 'ByTable'
 
-    Invoke-RTRivet -Push 'ByTable'
+        Invoke-RTRivet -Push 'ByTable'
 
-    Assert-DataType -Name 'U s e r s' -UserDefined -TableType -NotNull
+        Assert-DataType -Name 'U s e r s' -UserDefined -TableType -NotNull
+    }
 }
