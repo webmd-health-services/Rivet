@@ -88,16 +88,33 @@ function Test-TypeDataMember
     return $typeData.Members.ContainsKey( $MemberName )
 }
 
+$oldVersionLoadedMsg = 'You have an old version of Rivet loaded. Please restart your PowerShell session.'
+function New-RivetObject
+{
+    param(
+        [Parameter(Mandatory)]
+        [String]$TypeName,
+
+        [Object[]]$ArgumentList
+    )
+
+    try
+    {
+        return (New-Object -TypeName $TypeName -ArgumentList $ArgumentList -ErrorAction Ignore)
+    }
+    catch
+    {
+        Write-Error -Message ('Unable to find type "{0}". {1}' -f $TypeName,$oldVersionLoadedMsg) -ErrorAction Stop
+    }
+}
+
 if( -not (Test-TypeDataMember -TypeName 'Rivet.OperationResult' -MemberName 'MigrationID') )
 {
     Update-TypeData -TypeName 'Rivet.OperationResult' -MemberType ScriptProperty -MemberName 'MigrationID' -Value { $this.Migration.ID }
 }
 
 # Added in Rivet 0.10.0
-if( -not (New-Object -TypeName 'Rivet.Scale' -ArgumentList '1' -ErrorAction Ignore) )
-{
-    Write-Error -Message ('You have an old version of Rivet loaded. Please restart your PowerShell session.') -ErrorAction Stop
-}
+New-RivetObject -TypeName 'Rivet.Scale' -ArgumentList '1' | Out-Null
 
 $functionRoot = Join-Path -Path $PSScriptRoot -ChildPath 'Functions' -Resolve
 $columnRoot = Join-Path -Path $functionRoot -ChildPath 'Columns' -Resolve
