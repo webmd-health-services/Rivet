@@ -39,7 +39,7 @@ function Pop-Migration
     Assert-Column 'ident' -DataType 'G U I D' -TableName 'important'
 }
 
-function Test-ShouldAddDataTypeByAssembly
+function Ignore-ShouldAddDataTypeByAssembly
 {
     $assemblyPath = Join-Path -Path $PSScriptRoot -ChildPath '..\Source\Rivet.Test.Fake\bin\*\Rivet.Test.Fake.dll' -Resolve -ErrorAction Ignore |
                         Select-Object -First 1

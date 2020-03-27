@@ -746,3 +746,32 @@ Describe 'Merge-Migration when removing and re-adding the same table across migr
         $ops[1].ColumnName[0] | Should Be 'TestUserID2'
     }
 }
+
+Describe 'Merge-Migration.when table and column have same name and the table is renamed' {
+    $result = Invoke-MergeMigration {
+        New-MigrationObject 'one' {
+            Add-Table -Name 'OldName' {
+                int 'id'
+            }
+        }
+        New-MigrationObject 'two' {
+            Update-Table 'OldName' -AddColumn {
+                tinyint 'OldColumn' -NotNull
+            }
+        }
+        New-MigrationObject 'three' {
+            Rename-Object -Name 'OldName' -NewName 'NewName'
+        }
+        New-MigrationObject 'four' {
+            Add-Table -Name 'OldColumn' {
+                tinyint 'OldColumnId' -NotNull
+            }
+        }
+        New-MigrationObject 'five' {
+            Rename-Column -TableName 'NewName' -Name 'OldColumn' -NewName 'OldColumnId'
+        }
+    }
+    It 'should handle this situation' {
+        $result | Should -Not -BeNullOrEmpty
+    }
+}   
