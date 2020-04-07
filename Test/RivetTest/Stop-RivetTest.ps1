@@ -15,8 +15,10 @@ function Stop-RivetTest
         Clear-TestDatabase -Name $name
     }
 
-    if( $RTDatabasesRoot -and (Test-Path -Path $RTDatabasesRoot) )
+    if( -not (Test-Pester) -and (Test-Path -Path $RTDatabasesRoot -PathType Container) )
     {
         Remove-Item -Path $RTDatabasesRoot -Recurse
     }
+
+    $script:RTTestRoot = $null
 }

@@ -1,19 +1,17 @@
 
 & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
 
-function Setup
-{
-    Start-RivetTest
-}
+Describe 'Update-Table' {
+    BeforeEach {
+        Start-RivetTest
+    }
 
-function TearDown
-{
-    Stop-RivetTest
-}
+    AfterEach {
+        Stop-RivetTest
+    }
 
-function Test-ShouldUpdateColumnFromInttoBigIntWithDescription
-{
-    @'
+    It 'should update column from int to big int with description' {
+        @'
 function Push-Migration
 {
     Add-Table -Name 'Foobar' -Column {
@@ -32,15 +30,14 @@ function Pop-Migration
 
 '@ | New-TestMigration -Name 'UpdateDateColumnWithDescription'
 
-    Invoke-RTRivet -Push 'UpdateDateColumnWithDescription'
-    
-    Assert-Table 'Foobar'
-    Assert-Column -Name 'id' -DataType 'BigInt' -TableName 'Foobar' -Description 'Bar'
-}
+        Invoke-RTRivet -Push 'UpdateDateColumnWithDescription'
+        
+        Assert-Table 'Foobar'
+        Assert-Column -Name 'id' -DataType 'BigInt' -TableName 'Foobar' -Description 'Bar'
+    }
 
-function Test-ShouldUpdateColumnFromBinarytoVarBinary
-{
-    @'
+    It 'should update column from binaryto var binary' {
+        @'
 function Push-Migration
 {
     Add-Table -Name 'Foobar' -Column {
@@ -59,15 +56,14 @@ function Pop-Migration
 
 '@ | New-TestMigration -Name 'ShouldUpdateColumnFromBinarytoVarBinary'
 
-    Invoke-RTRivet -Push 'ShouldUpdateColumnFromBinarytoVarBinary'
-    
-    Assert-Table 'Foobar'
-    Assert-Column -Name 'id' -DataType 'VarBinary' -TableName 'Foobar' -Sparse -Size 40 
-}
+        Invoke-RTRivet -Push 'ShouldUpdateColumnFromBinarytoVarBinary'
+        
+        Assert-Table 'Foobar'
+        Assert-Column -Name 'id' -DataType 'VarBinary' -TableName 'Foobar' -Sparse -Size 40 
+    }
 
-function Test-ShouldUpdateColumnFromNChartoNVarChar
-{
-    @'
+    It 'should update column from n charto n var char' {
+        @'
 function Push-Migration
 {
     Add-Table -Name 'Foobar' -Column {
@@ -86,14 +82,13 @@ function Pop-Migration
 
 '@ | New-TestMigration -Name 'ShouldUpdateColumnFromNChartoNVarChar'
 
-    Invoke-RTRivet -Push 'ShouldUpdateColumnFromNChartoNVarChar'
-    
-    Assert-Table 'Foobar'
-    Assert-Column -Name 'id' -DataType 'NVarChar' -TableName 'Foobar' -NotNull -Max -Collation "Chinese_Taiwan_Stroke_CI_AS"
-}
+        Invoke-RTRivet -Push 'ShouldUpdateColumnFromNChartoNVarChar'
+        
+        Assert-Table 'Foobar'
+        Assert-Column -Name 'id' -DataType 'NVarChar' -TableName 'Foobar' -NotNull -Max -Collation "Chinese_Taiwan_Stroke_CI_AS"
+    }
 
-function Test-ShouldUpdateColumnFromNVarChartoXml
-{
+    It 'should update column from n var charto xml' {
 
 @"
 function Push-Migration
@@ -130,14 +125,13 @@ function Pop-Migration
 }
 "@ | New-TestMigration -Name 'ShouldUpdateColumnFromNVarChartoXml'
 
-    Invoke-RTRivet -Push 'ShouldUpdateColumnFromNVarChartoXml'
-    
-    Assert-Table 'WithXmlContent'
-    Assert-Column -Name 'Two' -DataType 'Xml' -TableName 'WithXmlContent'
-}
+        Invoke-RTRivet -Push 'ShouldUpdateColumnFromNVarChartoXml'
+        
+        Assert-Table 'WithXmlContent'
+        Assert-Column -Name 'Two' -DataType 'Xml' -TableName 'WithXmlContent'
+    }
 
-function Test-ShouldUpdateColumnAfterAddColumnInUpdateTable
-{
+    It 'should update column after add column in update table' {
     @'
 function Push-Migration
 {
@@ -167,10 +161,11 @@ function Pop-Migration
 
 '@ | New-TestMigration -Name 'UpdateDateColumnWithDescription'
 
-    Invoke-RTRivet -Push 'UpdateDateColumnWithDescription'
-    
-    Assert-Table 'Foobar'
-    Assert-Column -Name 'id' -DataType 'VarChar' -TableName 'Foobar' -Max -Description 'Bar2'
-    Assert-Column -Name 'id2' -DataType 'BigInt' -TableName 'Foobar' -Description 'Bar'
-    Assert-Column -Name 'id3' -DataType 'BigInt' -TableName 'Foobar' -Description 'Foo'
+        Invoke-RTRivet -Push 'UpdateDateColumnWithDescription'
+        
+        Assert-Table 'Foobar'
+        Assert-Column -Name 'id' -DataType 'VarChar' -TableName 'Foobar' -Max -Description 'Bar2'
+        Assert-Column -Name 'id2' -DataType 'BigInt' -TableName 'Foobar' -Description 'Bar'
+        Assert-Column -Name 'id3' -DataType 'BigInt' -TableName 'Foobar' -Description 'Foo'
+    }
 }
