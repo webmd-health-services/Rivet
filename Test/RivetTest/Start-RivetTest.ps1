@@ -3,29 +3,27 @@ function Start-RivetTest
 {
     [CmdletBinding()]
     param(
-        [string[]]
         # Optional Parameter to specify a plugin Path
-        $PluginPath,
+        [String[]]$PluginPath,
 
-        [string[]]
-        $IgnoredDatabase,
+        [String[]]$IgnoredDatabase,
 
-        [string[]]
-        $DatabaseName = $RTDatabaseName
+        [String[]]$DatabaseName = $RTDatabaseName
     )
     
     Set-StrictMode -Version Latest
 
-    if( (Test-Path -Path 'TestDrive:') )
+    if( (Test-Pester) )
     {
-        $tempDir = (Get-Item -Path 'TestDrive:').FullName
+        $script:RTTestRoot = Join-Path -Path $TestDrive.FullName -ChildPath ([IO.Path]::GetRandomFileName())
+        New-Item -Path $RTTestRoot -ItemType 'Directory' | Out-Null
     }
     else
     {
-        $tempDir = New-TempDir -Prefix 'RivetTest'
+        $script:RTTestRoot = New-TempDir -Prefix 'RivetTest'
     }
 
-    $script:RTDatabasesRoot = Join-Path -Path $tempDir -ChildPath 'Databases'
+    $script:RTDatabasesRoot = Join-Path -Path $RTTestRoot -ChildPath 'Databases'
     foreach( $name in $DatabaseName )
     {
         $script:RTDatabaseRoot = Join-Path $RTDatabasesRoot $name
@@ -33,7 +31,23 @@ function Start-RivetTest
         $null = New-Item -Path $RTDatabaseMigrationRoot -ItemType Container -Force
     }
     
-    $script:RTConfigFilePath = Join-Path -Path $tempDir -ChildPath 'rivet.json'
+    $script:RTConfigFilePath = Join-Path -Path $RTTestRoot -ChildPath 'rivet.json'
+
+    Push-Location -Path $RTTestRoot
+    try
+    {
+        foreach( $item in $PluginPath )
+        {
+            if( -not (Test-Path -Path $item -PathType Container) )
+            {
+                New-Item -Path $item -ItemType 'Directory'
+            }
+        }
+    }
+    finally
+    {
+        Pop-Location
+    }
 
     $PluginPathClause = ''
     if ($PluginPath)

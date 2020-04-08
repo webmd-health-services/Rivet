@@ -64,7 +64,7 @@ Describe 'Import-RivetPlugin.when plugin in a .psm1 file' {
     
         Invoke-RTRivet -Push
     
-        (Join-Path -Path $TestDrive.FullName -ChildPath 'pluginran') | Should -Exist
+        (Join-Path -Path $RTTestRoot -ChildPath 'pluginran') | Should -Exist
         Assert-Table 'MyTable'
         Get-Module -Name 'ImportRivetPluginPlugins' | Should -Not -BeNullOrEmpty
     }

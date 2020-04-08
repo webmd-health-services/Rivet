@@ -6,7 +6,15 @@ function New-File
         $Content
     )
 
-    $path = Join-Path -Path $TestDrive.FullName -ChildPath $Name
+    Set-StrictMode -Version 'Latest'
+
+    $root = $TestDrive.FullName
+    if( $RTTestRoot )
+    {
+        $root = $RTTestRoot
+    }
+
+    $path = Join-Path -Path $root -ChildPath $Name
     $directoryPath = $path | Split-Path
     if( -not (Test-Path -Path $directoryPath -PathType Container) )
     {

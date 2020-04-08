@@ -60,7 +60,7 @@ function Write-Timing
 
 }
 
-function Test-TypeDataMember
+function Test-RivetTypeDataMember
 {
     [CmdletBinding()]
     [OutputType([bool])]
@@ -108,7 +108,7 @@ function New-RivetObject
     }
 }
 
-if( -not (Test-TypeDataMember -TypeName 'Rivet.OperationResult' -MemberName 'MigrationID') )
+if( -not (Test-RivetTypeDataMember -TypeName 'Rivet.OperationResult' -MemberName 'MigrationID') )
 {
     Update-TypeData -TypeName 'Rivet.OperationResult' -MemberType ScriptProperty -MemberName 'MigrationID' -Value { $this.Migration.ID }
 }

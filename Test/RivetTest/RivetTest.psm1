@@ -1,8 +1,7 @@
 
 param(
-    [Parameter(Mandatory=$true)]
-    [string]
-    $RivetRoot
+    [Parameter(Mandatory)]
+    [String]$RivetRoot
 )
 
 $RTConfigFilePath = 
@@ -13,7 +12,8 @@ $RTConfigFilePath =
     $RTRivetPath = 
     $RTRivetSchemaName = 
     $RTDatabaseName =
-    $RTRivetRoot = $null
+    $RTRivetRoot = 
+    $RTTestRoot = $null
 
 $RTTimestamp = 20150101000000
 
@@ -48,7 +48,7 @@ else
 
 $RTRivetPath = Join-Path -Path $RivetRoot -ChildPath 'rivet.ps1' -Resolve
 
-dir $PSScriptRoot *-*.ps1 |
+Get-ChildItem $PSScriptRoot *-*.ps1 |
     Where-Object { $_.BaseName -ne 'Import-RivetTest' } |
     ForEach-Object { . $_.FullName }
 

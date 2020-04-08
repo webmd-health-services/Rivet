@@ -1,20 +1,17 @@
 
 & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
 
-function Setup
-{
-    Start-RivetTest
-}
+Describe 'Rename-Object' {
+    BeforeEach { 
+        Start-RivetTest
+    }
 
-function TearDown
-{
-    Stop-RivetTest
-}
+    AfterEach { 
+        Stop-RivetTest
+    }
 
-function Test-ShouldRenameTable
-{
-
-@'
+    It 'should rename table' {
+        @'
 function Push-Migration
 {
     Add-Schema 'do.i.get.escaped'
@@ -34,18 +31,16 @@ function Pop-Migration
 
 '@ | New-TestMigration -Name 'RenameTable'
 
-    Invoke-RTRivet -Push 'RenameTable'
+        Invoke-RTRivet -Push 'RenameTable'
 
-    Assert-Table -SchemaName 'do.i.get.escaped' 'Rename Table' -Description 'Testing Add-Table migration'
-    Assert-Column -Name 'varchar' 'varchar' -NotNull -Description 'varchar(max) constraint DF_AddTable_varchar default default' -TableName 'Rename Table' -SchemaName 'do.i.get.escaped'
-    Assert-Column -Name 'id' 'bigint' -NotNull -Seed 1 -Increment 1 -TableName 'Rename Table' -SchemaName 'do.i.get.escaped'
+        Assert-Table -SchemaName 'do.i.get.escaped' 'Rename Table' -Description 'Testing Add-Table migration'
+        Assert-Column -Name 'varchar' 'varchar' -NotNull -Description 'varchar(max) constraint DF_AddTable_varchar default default' -TableName 'Rename Table' -SchemaName 'do.i.get.escaped'
+        Assert-Column -Name 'id' 'bigint' -NotNull -Seed 1 -Increment 1 -TableName 'Rename Table' -SchemaName 'do.i.get.escaped'
+    }
 
-}
+    It 'should rename column' {
 
-function Test-ShouldRenameColumn
-{
-
-@'
+        @'
 function Push-Migration
 {
     Add-Table -Name 'Table.Name' -Column {
@@ -63,18 +58,15 @@ function Pop-Migration
 
 '@ | New-TestMigration -Name 'RenameColumn'
 
-    Invoke-RTRivet -Push 'RenameColumn'
+        Invoke-RTRivet -Push 'RenameColumn'
 
-    Assert-Table 'Table.Name'
-    Assert-Column -Name 'fizz' -TableName 'Table.Name' -DataType 'varchar'
-    Assert-Column -Name 'id' 'bigint' -NotNull -Seed 1 -Increment 1 -TableName 'Table.Name'
+        Assert-Table 'Table.Name'
+        Assert-Column -Name 'fizz' -TableName 'Table.Name' -DataType 'varchar'
+        Assert-Column -Name 'id' 'bigint' -NotNull -Seed 1 -Increment 1 -TableName 'Table.Name'
+    }
 
-}
-
-function Test-ShouldRenameIndex
-{
-
-@'
+    It 'should rename index' {
+        @'
 function Push-Migration
 {
     Add-Schema 'the.schema'
@@ -95,21 +87,18 @@ function Pop-Migration
 
 '@ | New-TestMigration -Name 'RenameIndex'
 
-    Invoke-RTRivet -Push 'RenameIndex'
+        Invoke-RTRivet -Push 'RenameIndex'
 
-    ##Assert Table and Column
-    Assert-True (Test-Table 'Add.Index' -SchemaName 'the.schema')
-    Assert-True (Test-Column -Name 'Index.Me' -TableName 'Add.Index' -SchemaName 'the.schema')
+        ##Assert Table and Column
+        (Test-Table 'Add.Index' -SchemaName 'the.schema') | Should Be $true
+        (Test-Column -Name 'Index.Me' -TableName 'Add.Index' -SchemaName 'the.schema') | Should Be $true
 
-    ##Assert Index
-    Assert-Index -Name 'IX_AddIndex_Renamed' -ColumnName 'Index.Me'
+        ##Assert Index
+        Assert-Index -Name 'IX_AddIndex_Renamed' -ColumnName 'Index.Me'
+    }
 
-}
-
-function Test-ShouldRenameConstraint
-{
-
-@'
+    It 'should rename constraint' {
+        @'
 function Push-Migration
 {
     Add-Schema 'the.schema'
@@ -137,8 +126,8 @@ function Pop-Migration
 
 '@ | New-TestMigration -Name 'RenameConstraint'
 
-    Invoke-RTRivet -Push 'RenameConstraint'
+        Invoke-RTRivet -Push 'RenameConstraint'
 
-    Assert-ForeignKey -Name 'FK_Reference.Table_Source.Table'
-
+        Assert-ForeignKey -Name 'FK_Reference.Table_Source.Table'
+    }
 }
