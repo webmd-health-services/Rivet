@@ -18,10 +18,19 @@ function Start-MigrationOperation
     Set-StrictMode -Version 'Latest'
     Use-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     
+    function Test-DescriptionOperation
+    {
+        $Operation.ChildOperations | 
+            Where-Object { $_ -is [Rivet.Operations.AddExtendedPropertyOperation] } |
+            Where-Object { $_.Name -eq [Rivet.Operations.ExtendedPropertyOperation]::DescriptionPropertyName } |
+            Where-Object { $_.SchemaName -eq $Operation.SchemaName } |
+            Where-Object { $_.TableViewName -eq $Operation.Name }
+    }
+
     $problems = $false
     if( ($Operation -is [Rivet.Operations.AddTableOperation]) )
     {
-        if( -not $Operation.Description )
+        if( -not (Test-DescriptionOperation) )
         {
             Write-Error ('Table {0}''s description not found.  Please pass a value to the `Add-Table` function''s `-Description` parameter.' -f $Operation.Name)
             $problems = $true

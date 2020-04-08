@@ -37,7 +37,7 @@ function Invoke-MigrationOperation
         $optionalParams = @{ }
         $nonQuery = $false
         $asScalar = $false
-        if( $Operation.QueryType -eq [Rivet.OperationQueryType]::NonQuery )
+        if( $Operation.QueryType -eq [Rivet.OperationQueryType]::NonQuery -or $Operation.QueryType -eq [Rivet.OperationQueryType]::Ddl )
         {
             $optionalParams['NonQuery'] = $true
             $nonQuery = $true

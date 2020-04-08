@@ -54,7 +54,7 @@ function Add-Description
         $optionalArgs.ColumnName = $ColumnName
     }
 
-    Add-ExtendedProperty -Name 'MS_Description' `
+    Add-ExtendedProperty -Name ([Rivet.Operations.ExtendedPropertyOperation]::DescriptionPropertyName) `
                          -Value $Description `
                          -SchemaName $SchemaName `
                          -TableName $TableName `

@@ -1,5 +1,5 @@
 
-& (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
+& (Join-Path -Path $PSScriptRoot -ChildPath 'Initialize-Test.ps1' -Resolve)
 
 Describe 'Update-CodeObjectMetadata' {
     BeforeEach {
@@ -7,6 +7,7 @@ Describe 'Update-CodeObjectMetadata' {
     }
     
     AfterEach {
+        Invoke-RTRivet -Pop -All
         Stop-RivetTest
     }
     
@@ -41,7 +42,7 @@ Describe 'Update-CodeObjectMetadata' {
     
         $query = 'select refresh.to_upper(''abcdefgh'') Result'
         $result = Invoke-RivetTestQuery -Query $query -AsScalar
-        ($result -ceq 'ABCDE') | Should Be $true
+        ($result -ceq 'ABCDE') | Should -BeTrue
     
         @'
     function Push-Migration
@@ -63,6 +64,6 @@ Describe 'Update-CodeObjectMetadata' {
         Invoke-RTRivet -Push
     
         $result = Invoke-RivetTestQuery -Query $query -AsScalar
-        ($result -ceq 'ABCDEFGH') | Should Be $true
+        ($result -ceq 'ABCDEFGH') | Should -BeTrue
     }
 }

@@ -14,7 +14,7 @@ namespace Rivet.Test.Operations
 		[Test]
 		public void ShouldSetPropertiesForRenameTableOperation()
 		{
-			var op = new RenameOperation(SchemaName, CurrentName, NewName, TypeName);
+			var op = new RenameObjectOperation(SchemaName, CurrentName, NewName);
 			Assert.AreEqual(SchemaName, op.SchemaName);
 			Assert.AreEqual(CurrentName, op.Name);
 			Assert.AreEqual(NewName, op.NewName);
@@ -24,7 +24,7 @@ namespace Rivet.Test.Operations
 		[Test]
 		public void ShouldWriteQueryForRenameTableOperation()
 		{
-			var op = new RenameOperation(SchemaName, CurrentName, NewName, TypeName);
+			var op = new RenameObjectOperation(SchemaName, CurrentName, NewName);
 			Assert.That(op.ToQuery(), Contains.Substring("@objname = '[schemaName].[currentName]', @newname = 'newName', @objtype = 'OBJECT'"));
 		}
 	}

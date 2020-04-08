@@ -4,17 +4,18 @@ using System.Linq;
 
 namespace Rivet.Operations
 {
+	[ObjectRemovedByOperation(typeof(RemovePrimaryKeyOperation))]
 	public sealed class AddPrimaryKeyOperation : ConstraintOperation
 	{
 		//System Generated Constraint Name
 		public AddPrimaryKeyOperation(string schemaName, string tableName, string [] columnName, bool nonClustered, string[] options)
 			: base(schemaName, tableName, new ConstraintName(schemaName, tableName, columnName, ConstraintType.PrimaryKey).ToString(), ConstraintType.PrimaryKey)
 		{
-		    ColumnName = new List<string>(columnName);
+			ColumnName = new List<string>(columnName);
 			NonClustered = nonClustered;
 			if (options != null)
 			{
-			    Options = new List<string>(options);
+				Options = new List<string>(options);
 			}
 			else
 			{
@@ -26,11 +27,11 @@ namespace Rivet.Operations
 		public AddPrimaryKeyOperation(string schemaName, string tableName, string[] columnName, string customConstraintName, bool nonClustered, string[] options)
 			: base(schemaName, tableName, customConstraintName, ConstraintType.PrimaryKey)
 		{
-            ColumnName = new List<string>(columnName);
+			ColumnName = new List<string>(columnName);
 			NonClustered = nonClustered;
 			if (options != null)
 			{
-                Options = new List<string>(options);
+				Options = new List<string>(options);
 			}
 			else
 			{
@@ -39,8 +40,10 @@ namespace Rivet.Operations
 		}
 
 		public List<string> ColumnName { get; set; }
+
 		public bool NonClustered { get; set; }
-        public List<string> Options { get; set; }
+
+		public List<string> Options { get; set; }
 
 		public override string ToIdempotentQuery()
 		{

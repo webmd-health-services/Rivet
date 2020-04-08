@@ -35,7 +35,7 @@ namespace Rivet.Test.Operations
 			Assert.AreEqual(whereString, op.Where);
 			Assert.AreEqual(onString, op.On);
 			Assert.AreEqual(filestreamonString, op.FileStreamOn);
-			Assert.That(op.ObjectName, Is.EqualTo(string.Format("{0}.{1}.UIX_{0}_{1}_{2}", schemaName, tableName, String.Join("_", columnName))));
+			Assert.That(op.ObjectName, Is.EqualTo($"{schemaName}.UIX_{schemaName}_{tableName}_{String.Join("_", columnName)}"));
 		}
 
 		[Test]
@@ -195,9 +195,9 @@ namespace Rivet.Test.Operations
             var include = new string[] { };
 			
 			var op = new AddIndexOperation(schemaName, tableName, columnName, descending, unique, clustered, options, whereString, onString, filestreamonString, include);
-			const string expectedQuery = "create index [IX_schemaName_tableName_column1] on [schemaName].[tableName] ([column1])";
+			var expectedQuery = $"create index [IX_{schemaName}_{tableName}_{columnName[0]}] on [{schemaName}].[{tableName}] ([{columnName[0]}])";
 			Assert.AreEqual(expectedQuery, op.ToQuery());
-			Assert.That(op.ObjectName, Is.EqualTo(string.Format("{0}.{1}.IX_{0}_{1}_{2}", schemaName, tableName, String.Join("_", columnName))));
+			Assert.That(op.ObjectName, Is.EqualTo($"{schemaName}.IX_{schemaName}_{tableName}_{columnName[0]}"));
 		}
 
 		[Test]
@@ -206,6 +206,16 @@ namespace Rivet.Test.Operations
 			var op = new AddIndexOperation("schema", "table", new[] {"column"}, false, false, null, null, null, null, null);
 			op.Name = "new name";
 			Assert.That(op.Name, Is.EqualTo("new name"));
+		}
+
+		[Test]
+		public void ShouldDisableWhenMergedWithRemoveOperation()
+		{
+			var op = new AddIndexOperation("schema", "table", new string[0], "name", false, false, new string[0], "where", "on", "filestreamon", new string[0]);
+			var removeOp = new RemoveIndexOperation("SCHEMA", "TABLE", "NAME");
+			op.Merge(removeOp);
+			Assert.That(op.Disabled, Is.True);
+			Assert.That(removeOp.Disabled, Is.True);
 		}
 	}
 }

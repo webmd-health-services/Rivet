@@ -36,7 +36,7 @@ namespace Rivet.Test.Operations
 			Assert.AreEqual(onUpdate, op.OnUpdate);
 			Assert.AreEqual(notForReplication, op.NotForReplication);
 			Assert.AreEqual(withNoCheck, op.WithNoCheck);
-			Assert.That(op.ObjectName, Is.EqualTo(string.Format("{0}.{1}.FK_{0}_{1}_{2}_{3}", schemaName, tableName, referencesSchemaName, referencesTableName)));
+			Assert.That(op.ObjectName, Is.EqualTo($"{schemaName}.FK_{schemaName}_{tableName}_{referencesSchemaName}_{referencesTableName}"));
 			Assert.That(op.ConstraintType, Is.EqualTo(ConstraintType.ForeignKey));
 		}
 
@@ -117,6 +117,104 @@ namespace Rivet.Test.Operations
 			op.Name = "new name";
 			Assert.That(op.Name, Is.EqualTo("new name"));
 		}
-	}
 
+		[Test]
+		public void ShouldDisableWhenMergedWithRemoveOperation()
+		{
+			var op = new AddForeignKeyOperation("schema", "table", new string[0], "ref_schema", "ref_table", new string[0], "name", "delete", "update", false, false);
+			var removeOp = new RemoveForeignKeyOperation("SCHEMA", "TABLE", "NAME");
+			op.Merge(removeOp);
+			Assert.That(op.Disabled, Is.True);
+			Assert.That(removeOp.Disabled, Is.True);
+		}
+
+		[Test]
+		public void ShouldRenameSourceColumnIfRenamed()
+		{
+			var op = new AddForeignKeyOperation("schema", "table", new[] { "column", "column2" }, "ref schema",
+				"ref table", new string[] { "ref column", "ref column2" }, "name", "on delete", "on update", false, false);
+
+			var renameColumnOp = new RenameColumnOperation("SCHEMA", "TABLE", "COLUMN", "new column");
+			op.Merge(renameColumnOp);
+			Assert.That(op.Disabled, Is.False);
+			Assert.That(renameColumnOp.Disabled, Is.True);
+			Assert.That(op.ColumnName[0], Is.EqualTo("new column"));
+			Assert.That(op.ColumnName[1], Is.EqualTo("column2"));
+			Assert.That(op.ReferencesColumnName[0], Is.EqualTo("ref column"));
+			Assert.That(op.ReferencesColumnName[1], Is.EqualTo("ref column2"));
+
+		}
+
+		[Test]
+		public void ShouldRenameReferenceColumnIfRenamed()
+		{
+			var op = new AddForeignKeyOperation("schema", "table", new[] { "column", "column2" }, "ref schema",
+				"ref table", new string[] { "ref column", "ref column2" }, "name", "on delete", "on update", false, false);
+
+			var renameColumnOp = new RenameColumnOperation("REF SCHEMA", "REF TABLE", "REF COLUMN", "new column");
+			op.Merge(renameColumnOp);
+			Assert.That(op.Disabled, Is.False);
+			Assert.That(renameColumnOp.Disabled, Is.True);
+			Assert.That(op.ColumnName[0], Is.EqualTo("column"));
+			Assert.That(op.ColumnName[1], Is.EqualTo("column2"));
+			Assert.That(op.ReferencesColumnName[0], Is.EqualTo("new column"));
+			Assert.That(op.ReferencesColumnName[1], Is.EqualTo("ref column2"));
+		}
+
+		[Test]
+		[TestCase("other schema", "table")]
+		[TestCase("schema", "other table")]
+		public void ShouldNotRenameReferenceColumnIfReferencesDifferentTableThatIsRenamed(string schemaName, string tableName)
+		{
+			var op = new AddForeignKeyOperation("schema", "table", new[] { "column", "column2" }, "ref schema",
+				"ref table", new string[] { "ref column", "ref column2" }, "name", "on delete", "on update", false, false);
+
+			var renameColumnOp = new RenameColumnOperation(schemaName, tableName, "REF COLUMN", "new column");
+			op.Merge(renameColumnOp);
+			Assert.That(op.Disabled, Is.False);
+			Assert.That(renameColumnOp.Disabled, Is.False);
+			Assert.That(op.ColumnName[0], Is.EqualTo("column"));
+			Assert.That(op.ColumnName[1], Is.EqualTo("column2"));
+			Assert.That(op.ReferencesColumnName[0], Is.EqualTo("ref column"));
+			Assert.That(op.ReferencesColumnName[1], Is.EqualTo("ref column2"));
+		}
+
+		[Test]
+		public void ShouldChangeConstraintTableNameIfTableRenamed()
+		{
+			var op = new AddForeignKeyOperation("schema", "table", new string[0], "ref schema",
+				"ref table", new string[0], "name", "on delete", "on update", false, false);
+			var renameTableOp = new RenameObjectOperation("SCHEMA", "TABLE", "new table");
+			op.Merge(renameTableOp);
+			Assert.That(op.Disabled, Is.False);
+			Assert.That(renameTableOp.Disabled, Is.True);
+			Assert.That(op.TableName, Is.EqualTo(renameTableOp.NewName));
+		}
+
+		[Test]
+		public void ShouldChangeConstraintReferencedTableNameIfReferencedTableRenamed()
+		{
+			var op = new AddForeignKeyOperation("schema", "table", new string[0], "ref schema",
+				"ref table", new string[0], "name", "on delete", "on update", false, false);
+			var renameTableOp = new RenameObjectOperation("REF SCHEMA", "REF TABLE", "new table");
+			op.Merge(renameTableOp);
+			Assert.That(op.Disabled, Is.False);
+			Assert.That(renameTableOp.Disabled, Is.True);
+			Assert.That(op.ReferencesTableName, Is.EqualTo(renameTableOp.NewName));
+		}
+
+		[Test]
+		[TestCase("other schema", "table")]
+		[TestCase("schema", "other table")]
+		public void ShouldNotChangeConstraintReferencedTableNameIfANonReferencedTableRenamed(string schemaName, string tableName)
+		{
+			var op = new AddForeignKeyOperation("schema", "table", new string[0], "ref schema",
+				"ref table", new string[0], "name", "on delete", "on update", false, false);
+			var renameTableOp = new RenameObjectOperation(schemaName, tableName, "new table");
+			op.Merge(renameTableOp);
+			Assert.That(op.Disabled, Is.False);
+			Assert.That(renameTableOp.Disabled, Is.False);
+			Assert.That(op.ReferencesTableName, Is.EqualTo("ref table"));
+		}
+	}
 }

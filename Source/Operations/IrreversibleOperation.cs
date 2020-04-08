@@ -12,6 +12,8 @@ namespace Rivet.Operations
 
 		public string ErrorMessage { get; set; }
 
+		public override OperationQueryType QueryType => throw new NotImplementedException();
+
 		public override string ToQuery()
 		{
 			throw new Exception(ErrorMessage);

@@ -11,7 +11,21 @@ namespace Rivet.Operations
 		}
 
 		public string Name { get; set; }
+
 		public string Owner { get; set; }
+
+		public override OperationQueryType QueryType => OperationQueryType.Ddl;
+
+		protected override MergeResult DoMerge(Operation operation)
+		{
+			if (base.DoMerge(operation) == MergeResult.Stop)
+				return MergeResult.Stop;
+
+			if ( operation is RemoveSchemaOperation )
+				Disabled = operation.Disabled = true;
+
+			return MergeResult.Continue;
+		}
 
 		public override string ToIdempotentQuery()
 		{

@@ -2,6 +2,7 @@
 
 namespace Rivet.Operations
 {
+	[ObjectRemovedByOperation(typeof(RemoveViewOperation))]
 	public sealed class AddViewOperation : ObjectOperation
 	{
 		public AddViewOperation(string schemaName, string name, string definition)

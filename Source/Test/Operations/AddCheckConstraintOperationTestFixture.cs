@@ -24,12 +24,13 @@ namespace Rivet.Test.Operations
 			Assert.AreEqual(expression, op.Expression);
 			Assert.AreEqual(notForReplication, op.NotForReplication);
 			Assert.AreEqual(withNoCheck, op.WithNoCheck);
-			Assert.That(op.ObjectName, Is.EqualTo(string.Format("{0}.{1}.{2}", schemaName, tableName, name)));
+			Assert.That(op.ObjectName, Is.EqualTo($"{schemaName}.{name}"));
+			Assert.That(op.TableObjectName, Is.EqualTo($"{schemaName}.{tableName}"));
 			Assert.That(op.ConstraintType, Is.EqualTo(ConstraintType.Check));
 		}
 
 		[Test]
-		public void ShouldWriteQueryForAddCheckConstrait()
+		public void ShouldWriteQueryForAddCheckConstraint()
 		{
 			var schemaName = "schemaName";
 			var tableName = "tableName";
@@ -39,7 +40,7 @@ namespace Rivet.Test.Operations
 			bool withNoCheck = true;
 
 			var op = new AddCheckConstraintOperation(schemaName, tableName, name, expression, notForReplication, withNoCheck);
-			
+
 			var expectedQuery = @"alter table [schemaName].[tableName] with nocheck add constraint [constraintName] check not for replication (expression)";
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}
@@ -66,6 +67,15 @@ namespace Rivet.Test.Operations
 			op.Name = "new name";
 			Assert.That(op.Name, Is.EqualTo("new name"));
 		}
-	}
 
+		[Test]
+		public void ShouldDisableWhenMergedWithRemoveCheckConstraint()
+		{
+			var op = new AddCheckConstraintOperation("schema", "table", "name", "1", true, true);
+			var removeOp = new RemoveCheckConstraintOperation("SCHEMA", "TABLE", "NAME");
+			op.Merge(removeOp);
+			Assert.That(op.Disabled, Is.True);
+			Assert.That(removeOp.Disabled, Is.True);
+		}
+	}
 }

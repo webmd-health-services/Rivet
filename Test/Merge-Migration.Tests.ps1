@@ -2,26 +2,7 @@
 #Requires -Version 5.1
 Set-StrictMode -Version 'Latest'
 
-& (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
-
-function Assert-OperationIsSourcedFrom
-{
-    param(
-        [Rivet.Operation]
-        $Operation,
-        [string[]]
-        $ExpectedSource
-    )
-
-    $Operation | Get-Member -Name 'Source' | Should Not BeNullOrEmpty
-    $Operation.Source.Count | Should Be $ExpectedSource.Count
-    $Operation.Source | Should BeOfType ([Rivet.Migration])
-
-    for( $idx = 0; $idx -lt $ExpectedSource.Count; ++$idx )
-    {
-        $Operation.Source[$idx].Name | Should Be $ExpectedSource[$idx]
-    }
-}
+& (Join-Path -Path $PSScriptRoot -ChildPath 'Initialize-Test.ps1' -Resolve)
 
 function Assert-AllMigrationsReturned
 {
@@ -30,17 +11,16 @@ function Assert-AllMigrationsReturned
         $ExpectedCount
     )
 
-    $MergedMigration | Measure-Object | Select-Object -ExpandProperty 'Count' | Should Be $ExpectedCount
+    $MergedMigration | Measure-Object | Select-Object -ExpandProperty 'Count' | Should -Be $ExpectedCount
 }
 
 function Assert-MigrationHasNoOperations
 {
     param(
-        [Rivet.Migration]
-        $Migration
+        [Rivet.Migration]$Migration
     )
 
-    $Migration.PushOperations.Count | Should Be 0
+    $Migration.PushOperations | Measure-Object | Select-Object -ExpandProperty 'Count' | Should -Be 0
 }
 
 function Invoke-MergeMigration
@@ -96,10 +76,9 @@ Describe 'Merge-Migration.when adding a table then adding a column' {
         Assert-AllMigrationsReturned -MergedMigration $result -ExpectedCount 2
 
         [Rivet.Operations.AddTableOperation]$op = $result[0].PushOperations[0]
-        $op.Columns.Count | Should Be 2
-        $op.Columns[1].Name | Should Be 'newcol'
+        $op.Columns.Count | Should -Be 2
+        $op.Columns[1].Name | Should -Be 'newcol'
 
-        Assert-OperationIsSourcedFrom $op 'AddTable','AddColumn'
         Assert-MigrationHasNoOperations $result[1]
     }
 }
@@ -124,11 +103,9 @@ Describe 'Merge-Migration.when adding a table then updating a column' {
 
         [Rivet.Operations.AddTableOperation]$op = $result[0].PushOperations[0]
 
-        Assert-OperationIsSourcedFrom $op 'AddTable','UpdateColumn'
-
-        $op.Columns.Count | Should Be 1
-        $op.Columns[0].Name | Should Be 'index'
-        $op.Columns[0].NotNull | Should Be $false
+        $op.Columns.Count | Should -Be 1
+        $op.Columns[0].Name | Should -Be 'index'
+        $op.Columns[0].NotNull | Should -Be $false
 
         Assert-MigrationHasNoOperations $result[1]
     }
@@ -152,9 +129,7 @@ Describe 'Merge-Migration.when adding a table then removing a column' {
 
         [Rivet.Operations.AddTableOperation]$op = $result[0].PushOperations[0]
 
-        Assert-OperationIsSourcedFrom $op 'AddTable','RemoveColumn'
-
-        $op.Columns.Count | Should Be 0
+        $op.Columns.Count | Should -Be 0
 
         Assert-MigrationHasNoOperations $result[1]
     }
@@ -178,9 +153,7 @@ Describe 'Merge-Migration.when renaming a column' {
 
         $op = $result[0].PushOperations[0]
 
-        Assert-OperationIsSourcedFrom $op 'AddTable','RenameColumn'
-
-        $op.Columns[0].Name | Should Be 'newindex'
+        $op.Columns[0].Name | Should -Be 'newindex'
 
         Assert-MigrationHasNoOperations $result[1]
     }
@@ -204,9 +177,7 @@ Describe 'Merge-Migration.when renaming a table' {
 
         $op = $result[0].PushOperations[0]
 
-        Assert-OperationIsSourcedFrom $op 'AddTable','RenameTable'
-
-        $op.Name | Should Be 'fubar'
+        $op.Name | Should -Be 'fubar'
 
         Assert-MigrationHasNoOperations $result[1]
     }
@@ -247,7 +218,7 @@ Describe 'Merge-Migration.when removing an object in the same migration it was c
             }
         }
 
-        $Global:Error.Count | Should Be 0
+        $Global:Error.Count | Should -Be 0
 
         Assert-AllMigrationsReturned -MergedMigration $result -ExpectedCount 1
 
@@ -276,10 +247,8 @@ Describe 'Merge-Migration.when adding columns to a table' {
 
         $op = $result[0].PushOperations[0]
 
-        Assert-OperationIsSourcedFrom $op 'AddColumn','AddColumn2'
-
-        $op.AddColumns.Count | Should Be 2
-        $op.AddColumns[1].Name | Should Be 'col2'
+        $op.AddColumns.Count | Should -Be 2
+        $op.AddColumns[1].Name | Should -Be 'col2'
 
         Assert-MigrationHasNoOperations -Migration $result[1]
     }
@@ -304,18 +273,16 @@ Describe 'Merge-Migration.when adding a column that was removed' {
 
         $op = $result[0].PushOperations[0]
 
-        Assert-OperationIsSourcedFrom $op 'RemoveColumns','AddColumn'
-
-        $op.RemoveColumns.Count | Should Be 1
-        $op.RemoveColumns[0] | Should Be 'removemeforreal'
-        $op.AddColumns.Count | Should Be 1
-        $op.AddColumns[0].Name | Should Be 'removemebymistake'
+        $op.RemoveColumns.Count | Should -Be 1
+        $op.RemoveColumns[0] | Should -Be 'removemeforreal'
+        $op.AddColumns.Count | Should -Be 1
+        $op.AddColumns[0].Name | Should -Be 'removemebymistake'
 
         Assert-MigrationHasNoOperations -Migration $result[1]
     }
 }
 
-Describe 'Merge-Migation when removing an updated column' {
+Describe 'Merge-Migration.when removing an updated column' {
     It 'should remove the column from previous update operations' {
         $result = Invoke-MergeMigration {
             New-MigrationObject 'UpdateColumn' {
@@ -336,7 +303,7 @@ Describe 'Merge-Migation when removing an updated column' {
     }
 }
 
-Describe 'Merge-Migation when removing an added column' {
+Describe 'Merge-Migration.when removing an added column' {
     It 'should remove added column from the update operation' {
         $result = Invoke-MergeMigration {
             New-MigrationObject 'AddColumn' {
@@ -352,12 +319,11 @@ Describe 'Merge-Migation when removing an added column' {
         }
 
         Assert-AllMigrationsReturned -MergedMigration $result -ExpectedCount 2
-        Assert-MigrationHasNoOperations -Migration $result[0]
         Assert-MigrationHasNoOperations -Migration $result[1]
     }
 }
 
-Describe 'Merge-Migation when updating an added column' {
+Describe 'Merge-Migration.when updating an added column' {
     It 'should use the new column definition in original update table operation' {
         $result = Invoke-MergeMigration {
             New-MigrationObject 'AddColumn' {
@@ -376,18 +342,16 @@ Describe 'Merge-Migation when updating an added column' {
 
         $op = $result[0].PushOperations[0]
 
-        Assert-OperationIsSourcedFrom $op 'AddColumn','UpdateColumn'
-
-        $op.UpdateColumns.Count | Should Be 0
-        $op.AddColumns.Count | Should Be 1
-        $op.AddColumns[0].Name | Should Be 'tobeupdated'
-        $op.AddColumns[0].NotNull | Should Be $true
+        $op.UpdateColumns.Count | Should -Be 0
+        $op.AddColumns.Count | Should -Be 1
+        $op.AddColumns[0].Name | Should -Be 'tobeupdated'
+        $op.AddColumns[0].NotNull | Should -BeTrue
 
         Assert-MigrationHasNoOperations -Migration $result[1]
     }
 }
 
-Describe 'Merge-Migation when updating an updated column' {
+Describe 'Merge-Migration.when updating an updated column' {
     It 'should use the new column definition in original update table operation' {
         $result = Invoke-MergeMigration {
             New-MigrationObject 'UpdateColumn' {
@@ -406,11 +370,9 @@ Describe 'Merge-Migation when updating an updated column' {
         
         $op = $result[0].PushOperations[0]
 
-        Assert-OperationIsSourcedFrom $op 'UpdateColumn','UpdateColumn2'
-
-        $op.UpdateColumns.Count | Should Be 1
-        $op.UpdateColumns[0].Name | Should Be 'tobeupdated'
-        $op.UpdateColumns[0].NotNull | Should Be $true
+        $op.UpdateColumns.Count | Should -Be 1
+        $op.UpdateColumns[0].Name | Should -Be 'tobeupdated'
+        $op.UpdateColumns[0].NotNull | Should -BeTrue
 
         Assert-MigrationHasNoOperations -Migration $result[1]
     }
@@ -439,21 +401,19 @@ Describe 'Merge-Migration.when merging multiple update table operations' {
         Assert-AllMigrationsReturned -MergedMigration $result -ExpectedCount 1
         
         $ops = $result[0].PushOperations
-        $ops.Count | Should Be 1
+        $ops.Count | Should -Be 1
 
         $op = $ops[0]
 
-        Assert-OperationIsSourcedFrom $op 'AddAndUpdateTable'
-
-        $op | Should BeOfType ([Rivet.Operations.AddTableOperation])
-        $op.Columns.Count | Should Be 3
-        $op.Columns[0].Name | Should Be 'ID'
-        $op.Columns[1].Name | Should Be 'Name'
-        $op.Columns[2].Name | Should Be 'ZipCode'
+        $op | Should -BeOfType ([Rivet.Operations.AddTableOperation])
+        $op.Columns.Count | Should -Be 3
+        $op.Columns[0].Name | Should -Be 'ID'
+        $op.Columns[1].Name | Should -Be 'Name'
+        $op.Columns[2].Name | Should -Be 'ZipCode'
     }
 }
 
-Describe 'Merge-Migation when adding removing and adding an object' {
+Describe 'Merge-Migration.when adding removing and adding an object' {
     It 'should remove the add and removal of the object' {
         $result = Invoke-MergeMigration {
             New-MigrationObject 'AddTable' {
@@ -477,13 +437,13 @@ Describe 'Merge-Migation when adding removing and adding an object' {
         Assert-AllMigrationsReturned -MergedMigration $result -ExpectedCount 2
 
         $ops = $result[0].PushOperations
-        $ops.Count | Should Be 2
-        $ops[0] | Should BeOfType ([Rivet.Operations.AddSchemaOperation])
-        $ops[1] | Should BeOfType ([Rivet.Operations.AddTableOperation])
+        $ops.Count | Should -Be 2
+        $ops[0] | Should -BeOfType ([Rivet.Operations.AddSchemaOperation])
+        $ops[1] | Should -BeOfType ([Rivet.Operations.AddTableOperation])
 
         $ops = $result[1].PushOperations
-        $ops.Count | Should Be 1
-        $ops[0] | Should BeOfType ([Rivet.Operations.AddPrimaryKeyOperation])
+        $ops.Count | Should -Be 1
+        $ops[0] | Should -BeOfType ([Rivet.Operations.AddPrimaryKeyOperation])
     }
 }
 
@@ -509,20 +469,20 @@ Describe 'Merge-Migration.when adding a column to a table then removing it' {
         Assert-AllMigrationsReturned -MergedMigration $result -ExpectedCount 1
 
         $ops = $result[0].PushOperations
-        $ops.Count | Should Be 1
+        $ops.Count | Should -Be 1
 
         $op = $ops[0]
 
-        $op | Should BeOfType ([Rivet.Operations.UpdateTableOperation])
+        $op | Should -BeOfType ([Rivet.Operations.UpdateTableOperation])
 
-        $op.AddColumns.Count | Should Be 1
-        $op.AddColumns[0].Name | Should Be 'ToBeIncreased'
-        $op.AddColumns[0].Size.ToString() | Should Be '(200)'
+        $op.AddColumns.Count | Should -Be 1
+        $op.AddColumns[0].Name | Should -Be 'ToBeIncreased'
+        $op.AddColumns[0].Size.ToString() | Should -Be '(200)'
 
-        $op.UpdateColumns.Count | Should Be 1
-        $op.UpdateColumns[0].Name | Should Be 'Feedback'
+        $op.UpdateColumns.Count | Should -Be 1
+        $op.UpdateColumns[0].Name | Should -Be 'Feedback'
 
-        $op.RemoveColumns.Count | Should Be 0
+        $op.RemoveColumns.Count | Should -Be 0
     }
 }
 
@@ -541,15 +501,16 @@ Describe 'Merge-Migration.when adding a removed column' {
 
         $ops = $result[0].PushOperations
 
-        $ops.Count | Should Be 3
+        $ops | Should -HaveCount 3
 
-        $op = $ops[0]
-        $op | Should BeOfType ([Rivet.Operations.UpdateTableOperation])
-        $op.RemoveColumns.Count | Should Be 0
-        $op.UpdateColumns.Count | Should Be 0
-        $op.AddColumns.Count | Should Be 2
-        $ops[1] | Should BeOfType ([Rivet.Operations.AddExtendedPropertyOperation])
-        $ops[2] | Should BeOfType ([Rivet.Operations.AddExtendedPropertyOperation])
+        $ops[0] | Should -BeOfType ([Rivet.Operations.UpdateTableOperation])
+        $ops[0].RemoveColumns | Should -HaveCount 0
+        $ops[0].UpdateColumns | Should -HaveCount 0
+        $ops[0].AddColumns | Should -HaveCount 2
+        $ops[0].AddColumns[0].Name | Should -Be 'UsePgpEncryption'
+        $ops[0].AddColumns[1].Name | Should -Be 'Delimiter'
+        $ops[1] | Should -BeOfType ([Rivet.Operations.AddExtendedPropertyOperation])
+        $ops[2] | Should -BeOfType ([Rivet.Operations.AddExtendedPropertyOperation])
     }
 }
 
@@ -574,9 +535,9 @@ Describe 'Merge-Migration.when adding removing different objects multiple times'
 
         Assert-AllMigrationsReturned -MergedMigration $result -ExpectedCount 3
 
-        $result[0].PushOperations.Count | Should Be 0
-        $result[1].PushOperations.Count | Should Be 1
-        $result[2].PushOperations.Count | Should Be 1
+        $result[0].PushOperations.Count | Should -Be 0
+        $result[1].PushOperations.Count | Should -Be 1
+        $result[2].PushOperations.Count | Should -Be 1
     }
 }
 
@@ -594,34 +555,35 @@ Describe 'Merge-Migration.when add and removal are in the same migration and the
         Assert-AllMigrationsReturned -MergedMigration $result -ExpectedCount 1
 
         $ops = $result[0].PushOperations
-        $ops.Count | Should Be 1
-        $ops[0] | Should BeOfType ([Rivet.Operations.RemoveDefaultConstraintOperation])
+        $ops.Count | Should -Be 1
+        $ops[0] | Should -BeOfType ([Rivet.Operations.RemoveDefaultConstraintOperation])
     }
 }
 
-Describe 'Merge-Migation when removing, adding, removing, then adding a primary key' {
+Describe 'Merge-Migration.when removing, adding, removing, then adding a primary key' {
     It 'should use the last definition of the primary key' {
         $result = Invoke-MergeMigration {
             New-MigrationObject 'removeaddone' {
-                Remove-PrimaryKey MailingTemplate -Name 'PK_MailingTemplate'
-                Add-PrimaryKey MailingTemplate -ColumnName 'MailingTemplateID','SponsorID'
+                Remove-PrimaryKey -TableName 'MailingTemplate' -Name 'PK_MailingTemplate'
+                Add-PrimaryKey -TableName 'MailingTemplate' -Name 'PK_MailingTemplate' -ColumnName 'MailingTemplateID','SponsorID'
             }
             New-MigrationObject 'removeaddtwo' {
-                Remove-PrimaryKey -TableName MailingTemplate -Name 'PK_MailingTemplate'
-                Add-PrimaryKey MailingTemplate -ColumnName 'MailingTemplateID'
+                Remove-PrimaryKey -TableName 'MailingTemplate' -Name 'PK_MailingTemplate'
+                Add-PrimaryKey -TableName 'MailingTemplate' -Name 'PK_MailingTemplate' -ColumnName 'MailingTemplateID'
             }
         }
 
         Assert-AllMigrationsReturned -MergedMigration $result -ExpectedCount 2
 
-        Assert-MigrationHasNoOperations $result[0]
+        $ops = $result[0].PushOperations
+        $ops | Should -HaveCount 1
+        $ops | Should -BeOfType ([Rivet.Operations.RemovePrimaryKeyOperation])
 
         $ops = $result[1].PushOperations
-        $ops.Count | Should Be 2
-        $ops[0] | Should BeOfType ([Rivet.Operations.RemovePrimaryKeyOperation])
-        $ops[1] | Should BeOfType ([Rivet.Operations.AddPrimaryKeyOperation])
-        $ops[1].ColumnName.Count | Should Be 1
-        $ops[1].ColumnName[0] | Should Be 'MailingTemplateID'
+        $ops | Should -HaveCount 1
+        $ops | Should -BeOfType ([Rivet.Operations.AddPrimaryKeyOperation])
+        $ops.ColumnName | Should -HaveCount 1
+        $ops.ColumnName | Should -Be 'MailingTemplateID'
     }
 }
 
@@ -645,9 +607,9 @@ Describe 'Merge-Migration.when objects across databases have the same name' {
         Assert-AllMigrationsReturned -MergedMigration $result -ExpectedCount 2
 
         $ops = $result[0].PushOperations
-        $ops.Count | Should Be 4
+        $ops.Count | Should -Be 4
         $ops = $result[1].PushOperations
-        $ops.Count | Should Be 2
+        $ops.Count | Should -Be 2
     }
 }
 
@@ -655,8 +617,8 @@ Describe 'Merge-Migration.when removing a table with keys, indexes, and constrai
     It 'should remove all the dependent objects' {
         $result = Invoke-MergeMigration {
             New-MigrationObject 'addremovetable' {
-                Add-Table 'table' {
-                    int 'ID' -NotNull
+                Add-Table 'table' -Description 'table desc' {
+                    int 'ID' -NotNull -Description 'column desc'
                 }
 
                 Add-PrimaryKey 'table' 'ID'
@@ -683,14 +645,14 @@ Describe 'Merge-Migration.when removing a table with keys, indexes, and constrai
 
         $ops = $result[0].PushOperations
 
-        $ops.Count | Should Be 2
+        $ops.Count | Should -Be 2
 
-        $ops[0] | Should BeOfType ([Rivet.Operations.AddTableOperation])
-        $ops[0].Columns.Count | Should Be 1
-        $ops[0].Columns[0].Name | Should Be 'ID2'
-        $ops[1] | Should BeOfType ([Rivet.Operations.AddPrimaryKeyOperation])
-        $ops[1].ColumnName.Count | Should Be 1
-        $ops[1].ColumnName[0] | Should Be 'ID2'
+        $ops[0] | Should -BeOfType ([Rivet.Operations.AddTableOperation])
+        $ops[0].Columns.Count | Should -Be 1
+        $ops[0].Columns[0].Name | Should -Be 'ID2'
+        $ops[1] | Should -BeOfType ([Rivet.Operations.AddPrimaryKeyOperation])
+        $ops[1].ColumnName.Count | Should -Be 1
+        $ops[1].ColumnName[0] | Should -Be 'ID2'
     }
 }
 
@@ -722,11 +684,11 @@ Describe 'Merge-Migration.when removing and re-adding the same table across migr
 
         $ops = $result[1].PushOperations
 
-        $ops.Count | Should Be 2
-        $ops[0].Columns.Count | Should Be 1
-        $ops[0].Columns[0].Name | Should Be 'Active2'
-        $ops[1].ColumnName.Count | Should Be 1
-        $ops[1].ColumnName[0] | Should Be 'TestUserID2'
+        $ops.Count | Should -Be 2
+        $ops[0].Columns.Count | Should -Be 1
+        $ops[0].Columns[0].Name | Should -Be 'Active2'
+        $ops[1].ColumnName.Count | Should -Be 1
+        $ops[1].ColumnName[0] | Should -Be 'TestUserID2'
     }
 }
 
@@ -785,13 +747,43 @@ Describe 'Merge-Migration.when adding/removing rowguildcol from columns' {
         $ops.Count | Should -Be 4
         $ops[0] | Should -BeOfType ([Rivet.Operations.AddTableOperation])
         ([Rivet.Operations.AddTableOperation]$ops[0]).Columns[0].RowGuidCol | Should -BeTrue
-        $ops[0].Source | Select-Object -ExpandProperty 'Name' | Should -Contain 'migration2'
 
         $ops[1] | Should -BeOfType ([Rivet.Operations.AddTableOperation])
         ([Rivet.Operations.AddTableOperation]$ops[1]).Columns[0].RowGuidCol | Should -BeFalse
-        $ops[1].Source | Select-Object -ExpandProperty 'Name' | Should -Contain 'migration2'
 
         $ops[2] | Should -BeOfType ([Rivet.Operations.AddRowGuidColOperation])
         $ops[3] | Should -BeOfType ([Rivet.Operations.RemoveRowGuidColOperation])
+    }
+}
+
+Describe 'Merge-Migration.when objects have extended properties' {
+    It 'should remove the extended properties' {
+        $result = Invoke-MergeMigration {
+            New-MigrationObject 'one' {
+                Add-Table -Name 'with_description' -Description 'TABLE' {
+                    int 'id' -Description 'COLUMN'
+                }
+
+                Add-Schema -Name 'with_description'
+                Add-ExtendedProperty -Name ([Rivet.Operations.ExtendedPropertyOperation]::DescriptionPropertyName) -Value 'SCHEMA' -SchemaName 'with_description'
+
+                Add-View -Name 'with_description' -Definition @'
+as 
+    select 1 One
+'@
+                Add-ExtendedProperty -Name ([Rivet.Operations.ExtendedPropertyOperation]::DescriptionPropertyName) -Value 'VIEW' -ViewName 'with_description'
+                Add-ExtendedProperty -Name ([Rivet.Operations.ExtendedPropertyOperation]::DescriptionPropertyName) -Value 'VIEW-COLUMN' -ViewName 'with_description' -ColumnName 'One'
+            }
+
+            New-MigrationObject 'two' {
+                Remove-View -Name 'with_description'
+                Remove-Schema -Name 'with_description'
+                Remove-Table -Name 'with_description'
+            }
+        }
+
+        $result | Should -HaveCount 2
+        $result[0].PushOperations | Should -HaveCount 0
+        $result[1].PushOperations | Should -HaveCount 0
     }
 }

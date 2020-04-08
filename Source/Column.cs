@@ -7,48 +7,48 @@
 		Sparse
 	}
 
-	public class Column
+	public sealed class Column
 	{
-        public Column(string name, DataType dataType, ColumnSize size, Identity identity, bool rowGuidCol, string description, bool fileStream) 
-            : this(name, dataType, size, Nullable.NotNull, null, rowGuidCol, null, description, fileStream)
-        {
-            if (identity != null)
-            {
-                Identity = identity;
-            }
-        }
+		public Column(string name, DataType dataType, ColumnSize size, Identity identity, bool rowGuidCol, string description, bool fileStream) 
+			: this(name, dataType, size, Nullable.NotNull, null, rowGuidCol, null, description, fileStream)
+		{
+			if (identity != null)
+			{
+				Identity = identity;
+			}
+		}
 
-        public Column(string name, DataType dataType, ColumnSize size, Nullable nullable, string collation, bool rowGuidCol, string defaultExpression, string description, bool fileStream)
-        {
-            Name = name;
-            DataType = dataType;
+		public Column(string name, DataType dataType, ColumnSize size, Nullable nullable, string collation, bool rowGuidCol, string defaultExpression, string description, bool fileStream)
+		{
+			Name = name;
+			DataType = dataType;
 
-            if (size != null)
-            {
-                Size = size;
-            }
+			if (size != null)
+			{
+				Size = size;
+			}
 
-            Nullable = nullable;
+			Nullable = nullable;
 
-            if (collation != null)
-            {
-                Collation = collation;
-            }
+			if (collation != null)
+			{
+				Collation = collation;
+			}
 
-            RowGuidCol = rowGuidCol;
+			RowGuidCol = rowGuidCol;
 
-            if (defaultExpression != null)
-            {
-                DefaultExpression = defaultExpression;
-            }
+			if (defaultExpression != null)
+			{
+				DefaultExpression = defaultExpression;
+			}
 
-            if (description != null)
-            {
-                Description = description;
-            }
+			if (description != null)
+			{
+				Description = description;
+			}
 
-            FileStream = fileStream;
-        }
+			FileStream = fileStream;
+		}
 
 		public string Collation { get; set; }
 
@@ -66,7 +66,7 @@
 
 		public string Name { get; set; }
 
-        public bool NotNull
+		public bool NotNull
 		{
 			get { return Nullable == Nullable.NotNull; }
 		}
@@ -245,18 +245,18 @@
 			return new Column(name, DataType.Xml, new XmlPrecisionScale(isDocument, xmlSchemaCollection), nullable, null, false, defaultExpression, description, false);
 		}
 
-        public static Column Xml(string name, Nullable nullable, string defaultExpression, string description)
-        {
-            return new Column(name, DataType.Xml, null, nullable, null, false, defaultExpression, description, false);
-        }
-        #endregion
+		public static Column Xml(string name, Nullable nullable, string defaultExpression, string description)
+		{
+			return new Column(name, DataType.Xml, null, nullable, null, false, defaultExpression, description, false);
+		}
+		#endregion
 
 		public override string ToString()
 		{
 			return Name;
 		}
 
-		public virtual string GetColumnDefinition(string tableName, string schemaName, bool withValues)
+		public string GetColumnDefinition(string tableName, string schemaName, bool withValues)
 		{
 			var fileStreamClause = "";
 			if (FileStream)
@@ -271,21 +271,21 @@
 			}
 
 			var notNullClause = "";
-            var sparseClause = "";
-            if (NotNull)
-            {
-                notNullClause = " not null";
-            }
-            else
-            {
-                if (Sparse)
-                {
-                    sparseClause = " sparse";
-                }
-            }
+			var sparseClause = "";
+			if (NotNull)
+			{
+				notNullClause = " not null";
+			}
+			else
+			{
+				if (Sparse)
+				{
+					sparseClause = " sparse";
+				}
+			}
 
-            var identityClause = "";
-            if (Identity != null)
+			var identityClause = "";
+			if (Identity != null)
 			{
 				identityClause = string.Format(" {0}", Identity);
 			}

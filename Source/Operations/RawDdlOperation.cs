@@ -9,6 +9,8 @@
 
 		public string Query { get; set; }
 
+		public override OperationQueryType QueryType => OperationQueryType.Ddl;
+
 		public override string ToIdempotentQuery()
 		{
 			return ToQuery();

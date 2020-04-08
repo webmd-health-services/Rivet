@@ -2,6 +2,7 @@
 
 namespace Rivet.Operations
 {
+	[ObjectRemovedByOperation(typeof(RemoveCheckConstraintOperation))]
 	public sealed class AddCheckConstraintOperation : ConstraintOperation
 	{
 		public AddCheckConstraintOperation(string schemaName, string tableName, string name, string expression, bool notForReplication, bool withNoCheck) 
@@ -13,20 +14,22 @@ namespace Rivet.Operations
 		}
 
 		public string Expression { get; set; }
+
 		public bool NotForReplication { get; set; }
+
 		public bool WithNoCheck { get; set; }
 
 		public override string ToIdempotentQuery()
 		{
-			return String.Format("if object_id('{0}.{1}', 'C') is null{2}\t{3}", SchemaName, Name, Environment.NewLine, ToQuery());
+			return $"if object_id('{SchemaName}.{Name}', 'C') is null{Environment.NewLine}\t{ToQuery()}";
 		}
 
 		public override string ToQuery()
 		{
-			var notForReplicationclause = "";
+			var notForReplicationClause = "";
 			if (NotForReplication)
 			{
-				notForReplicationclause = " not for replication";
+				notForReplicationClause = " not for replication";
 			}
 
 			var withNoCheckClause = "";
@@ -35,8 +38,7 @@ namespace Rivet.Operations
 				withNoCheckClause = " with nocheck";
 			}
 
-			return string.Format("alter table [{0}].[{1}]{2} add constraint [{3}] check{4} ({5})",
-				SchemaName, TableName, withNoCheckClause, Name, notForReplicationclause, Expression);
+			return $"alter table [{SchemaName}].[{TableName}]{withNoCheckClause} add constraint [{Name}] check{notForReplicationClause} ({Expression})";
 		}
 	}
 }

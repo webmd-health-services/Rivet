@@ -25,7 +25,8 @@ namespace Rivet.Test.Operations
 			Assert.AreEqual(nonClustered, op.NonClustered);
 			Assert.AreEqual(options, op.Options);
 			Assert.AreNotEqual(smokeoptions, op.Options);
-			Assert.That(op.ObjectName, Is.EqualTo(string.Format("{0}.{1}.PK_{0}_{1}", schemaName, tableName)));
+			Assert.That(op.ObjectName, Is.EqualTo($"{schemaName}.PK_{schemaName}_{tableName}"));
+			Assert.That(op.TableObjectName, Is.EqualTo($"{schemaName}.{tableName}"));
 			Assert.That(op.ConstraintType, Is.EqualTo(ConstraintType.PrimaryKey));
 		}
 
@@ -100,6 +101,16 @@ namespace Rivet.Test.Operations
 			var op = new AddPrimaryKeyOperation("schema", "table", new[] {"column"}, false, null);
 			op.Name = "new name";
 			Assert.That(op.Name, Is.EqualTo("new name"));
+		}
+
+		[Test]
+		public void ShouldDisableWhenMergedWithRemoveOperation()
+		{
+			var op = new AddPrimaryKeyOperation("schema", "table", new string[0], "name", false, new string[0]);
+			var removeOp = new RemovePrimaryKeyOperation("SCHEMA", "TABLE", "NAME");
+			op.Merge(removeOp);
+			Assert.That(op.Disabled, Is.True);
+			Assert.That(removeOp.Disabled, Is.True);
 		}
 	}
 }

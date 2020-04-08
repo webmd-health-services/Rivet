@@ -22,11 +22,17 @@ namespace Rivet.Operations
 			Truncate = truncate;
 		}
 
-		public string SchemaName { get; set; }
-		public string TableName { get; set; }
-		public string Where { get; set; }
 		public bool All { get; set; }
+
+		public string SchemaName { get; set; }
+
+		public string TableName { get; set; }
+
 		public bool Truncate { get; set; }
+
+		public string Where { get; set; }
+
+		public override OperationQueryType QueryType => OperationQueryType.NonQuery;
 
 		public override string ToIdempotentQuery()
 		{

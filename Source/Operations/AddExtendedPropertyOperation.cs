@@ -7,24 +7,24 @@ namespace Rivet.Operations
 		// Schema
 		public AddExtendedPropertyOperation(string schemaName, string name, object value) : base(schemaName, name)
 		{
-			Value = (value == null) ? null : value.ToString();
+			Value = value?.ToString();
 		}
 
 		// Table or View
 		public AddExtendedPropertyOperation(string schemaName, string tableViewName, string name, object value, bool forView)
 			: base(schemaName, tableViewName, name, forView)
 		{
-			Value = (value == null) ? null : value.ToString();
+			Value = value?.ToString();
 		}
 
 		// Column
 		public AddExtendedPropertyOperation(string schemaName, string tableViewName, string columnName, string name, object value, bool forView) 
 			: base(schemaName, tableViewName, columnName, name, forView)
 		{
-			Value = (value == null) ? null : value.ToString();
+			Value = value?.ToString();
 		}
 
-		public string Value { get; set; }
+		protected override string StoredProcedureName => "sp_addextendedproperty";
 
 		public override string ToIdempotentQuery()
 		{
@@ -57,27 +57,5 @@ namespace Rivet.Operations
 					Name, SchemaName, level1Type, level1Name, level2Type, level2Name, Environment.NewLine, ToQuery());
 		}
 
-		public override string ToQuery()
-		{
-			var propertyValue = (Value == null) ? "null" : string.Format("N'{0}'", Value.Replace("'", "''"));
-			var query = string.Format("exec sys.sp_addextendedproperty @name=N'{0}', @value={1},{3}                                @level0type=N'SCHEMA', @level0name=N'{2}'", Name, propertyValue, SchemaName, Environment.NewLine);
-
-			if (ForTable)
-			{
-				query += string.Format(",{1}                                @level1type=N'TABLE', @level1name='{0}'", TableViewName, Environment.NewLine);
-			}
-
-			if (ForView)
-			{
-				query += string.Format(",{1}                                @level1type=N'VIEW', @level1name='{0}'", TableViewName, Environment.NewLine);
-			}
-
-			if (ForColumn)
-			{
-				query += string.Format(",{1}                                @level2type=N'COLUMN', @level2name='{0}'", ColumnName, Environment.NewLine);
-			}
-			
-			return query;
-		}
 	}
 }

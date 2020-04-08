@@ -15,36 +15,27 @@ Demonstrates how to run `Convert-Migration.ps1`.
 #>
 [CmdletBinding()]
 param(
-    [Parameter(Mandatory=$true)]
-    [string]
+    [Parameter(Mandatory)]
     # The directory where the scripts should be output.
-    $OutputPath,
+    [String]$OutputPath,
 
-    [Parameter()]
-    [string]
     # The path to the rivet.json file to use.  By default, it will look in the current directory.
-    $ConfigFilePath,
+    [String]$ConfigFilePath,
 
-    [Parameter()]
-    [Hashtable]
     # Mapping of migration base name (e.g. `20130115142433_CreateTable`) to the person's name who created it.
-    $Author = @{ },
+    [hashtable]$Author = @{ },
 
-    [string[]]
     # A list of migrations to include. Only migrations that match are returned.  Wildcards permitted.
-    $Include,
+    [String[]]$Include,
 
-    [string[]]
     # Any migrations/files to exclude.  Wildcards accepted.
-    $Exclude,
+    [String[]]$Exclude,
 
-    [DateTime]
     # Only get migrations before this date/time.
-    $Before,
+    [DateTime]$Before,
 
-    [DateTime]
     # Only get migrations after this date/time.
-    $After
+    [DateTime]$After
 )
 
 $timer = New-Object 'Diagnostics.Stopwatch'
@@ -94,9 +85,7 @@ $getMigrationParams = @{ }
     Where-Object { $PSBoundParameters.ContainsKey( $_ ) } |
     ForEach-Object { $getMigrationParams.$_ = Get-Variable -Name $_ -ValueOnly }
 
-$operations = New-Object 'Collections.ArrayList'
 $newTables = New-Object 'Collections.Generic.HashSet[string]'
-$opIdx = @{ }
 
 $migrations = Get-Migration @getMigrationParams
 
@@ -105,6 +94,16 @@ $mergedMigrations = $migrations | Merge-Migration
 foreach( $migration in $mergedMigrations )
 {
     Write-Timing -Message ('    {0}' -f $migration.FullName)
+
+    $name = $migration.Path | Split-Path -Leaf
+    $name = [IO.Path]::GetFileNameWithoutExtension($name)
+    $header = ''
+    if( $Author -and $Author.ContainsKey($name) )
+    {
+        $header = ': {0}' -f $Author[$name]
+    }
+    $header = '-- {0}{1}' -f $name,$header
+
     foreach( $op in $migration.PushOperations )
     {
         if( -not $op )
@@ -125,17 +124,6 @@ foreach( $migration in $mergedMigrations )
         $constraintScriptPath = Join-Path -Path $OutputPath -ChildPath ('{0}.Constraint.sql' -f $migration.Database)
         $foreignKeyScriptPath = Join-Path -Path $OutputPath -ChildPath ('{0}.ForeignKey.sql' -f $migration.Database)
         $typeScriptPath = Join-Path -Path $OutputPath -ChildPath ('{0}.Type.sql' -f $migration.Database)
-
-        $header = $op.Source | ForEach-Object {
-            $name = $_.FullName
-            $by = ''
-            if( $Author -and $Author.ContainsKey( $name ) )
-            {
-                $by = ': {0}' -f $Author[$name]
-            }
-            '-- {0}{1}' -f $name,$by
-        } 
-        $header = $header -join ([Environment]::NewLine)
 
         if( $op -is [Rivet.Operations.AddTableOperation] )
         {
@@ -206,7 +194,7 @@ foreach( $migration in $mergedMigrations )
                 break
             }
 
-            'Rename(Column|Constraint|Index)?Operation'
+            'Rename(Column|Constraint|Index|Object)?Operation'
             {
                 $schemaScriptPath
             }
@@ -241,6 +229,7 @@ foreach( $migration in $mergedMigrations )
         {
             $null = New-Item -Path $path -ItemType 'File' -Force
         }
+
         $header | Add-Content -Path $path
         $op.ToIdempotentQuery() | Add-Content -Path $path
         ("GO{0}" -f [Environment]::NewLine) | Add-Content -Path $path

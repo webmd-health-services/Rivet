@@ -23,7 +23,7 @@ namespace Rivet.Test.Operations
 			Assert.AreEqual(true, op.ForSchema);
 			Assert.AreEqual(SchemaName, op.SchemaName);
 			Assert.AreEqual(Name, op.Name);
-			Assert.That(op.ObjectName, Is.EqualTo(SchemaName + ".@" + Name));
+			Assert.That(op.TableViewObjectName, Is.Empty);
 
 			//For Table
 			op = new RemoveExtendedPropertyOperation(SchemaName, TableName, Name, false);
@@ -31,7 +31,7 @@ namespace Rivet.Test.Operations
 			Assert.AreEqual(SchemaName, op.SchemaName);
 			Assert.AreEqual(TableName, op.TableViewName);
 			Assert.AreEqual(Name, op.Name);
-			Assert.That(op.ObjectName, Is.EqualTo(SchemaName + "." + TableName + ".@" + Name));
+			Assert.That(op.TableViewObjectName, Is.EqualTo($"{SchemaName}.{TableName}"));
 
 			//For View
 			op = new RemoveExtendedPropertyOperation(SchemaName, ViewName, Name, true);
@@ -39,7 +39,7 @@ namespace Rivet.Test.Operations
 			Assert.AreEqual(SchemaName, op.SchemaName);
 			Assert.AreEqual(ViewName, op.TableViewName);
 			Assert.AreEqual(Name, op.Name);
-			Assert.That(op.ObjectName, Is.EqualTo(SchemaName + "." + ViewName + ".@" + Name));
+			Assert.That(op.TableViewObjectName, Is.EqualTo($"{SchemaName}.{ViewName}"));
 
 			//For Column
 			op = new RemoveExtendedPropertyOperation(SchemaName, TableName, ColumnName, Name, false);
@@ -48,7 +48,7 @@ namespace Rivet.Test.Operations
 			Assert.AreEqual(TableName, op.TableViewName);
 			Assert.AreEqual(ColumnName, op.ColumnName);
 			Assert.AreEqual(Name, op.Name);
-			Assert.That(op.ObjectName, Is.EqualTo(SchemaName + "." + TableName + "." + ColumnName + ".@" + Name));
+			Assert.That(op.TableViewObjectName, Is.EqualTo($"{SchemaName}.{TableName}"));
 		}
 
 		[Test]

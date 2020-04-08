@@ -66,5 +66,5 @@ function Rename-Object
 
     Set-StrictMode -Version 'Latest'
 
-    New-Object 'Rivet.Operations.RenameOperation' $SchemaName, $Name, $NewName, 'OBJECT'
+    [Rivet.Operations.RenameObjectOperation]::New($SchemaName, $Name, $NewName)
 }

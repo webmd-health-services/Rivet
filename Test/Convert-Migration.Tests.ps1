@@ -25,56 +25,39 @@ function Assert-ConvertMigration
 {
     [CmdletBinding()]
     param(
-        [string]
-        $DatabaseName = $RTDatabaseName,
+        [String]$DatabaseName = $RTDatabaseName,
             
-        [Switch]
-        $Schemas,
+        [switch]$Schemas,
     
-        [Switch]
-        $Schema,
+        [switch]$Schema,
     
-        [Switch]
-        $DependentObject,
+        [switch]$DependentObject,
     
-        [Switch]
-        $CodeObject,
+        [switch]$CodeObject,
     
-        [Switch]
-        $ExtendedProperty,
+        [switch]$ExtendedProperty,
     
-        [Switch]
-        $Data,
+        [switch]$Data,
     
-        [Switch]
-        $Unknown,
+        [switch]$Unknown,
     
-        [Switch]
-        $Trigger,
+        [switch]$Trigger,
     
-        [Switch]
-        $Constraint,
+        [switch]$Constraint,
     
-        [Switch]
-        $ForeignKey,
+        [switch]$ForeignKey,
     
-        [Switch]
-        $Type,
+        [switch]$Type,
     
-        [string[]]
-        $Include,
+        [String[]]$Include,
     
-        [string[]]
-        $Exclude,
+        [String[]]$Exclude,
     
-        [DateTime]
-        $Before,
+        [DateTime]$Before,
     
-        [DateTime]
-        $After,
+        [DateTime]$After,
     
-        [Hashtable]
-        $Author
+        [hashtable]$Author
     )
     
     $convertRivetMigrationParams = @{ }
@@ -93,7 +76,6 @@ function Assert-ConvertMigration
     $timer.Stop()
     Write-Verbose ('{0}  {1}' -f $timer.Elapsed,$convertRivetMigration)
     
-    $receivedParameters = $PSBoundParameters
     ('Schemas','Schema','DependentObject','ExtendedProperty','CodeObject','Data','Unknown','Trigger','Constraint','ForeignKey','Type') | ForEach-Object {
         $shouldExist = Get-Variable -Name $_ -ValueOnly
         $path = Join-Path -Path $outputDir -ChildPath ('{0}.{1}.sql' -f $DatabaseName,$_)
@@ -138,14 +120,13 @@ function Assert-Query
     
     $scriptPath = Join-Path -Path $outputDir -ChildPath ('{0}.{1}.sql' -f $RTDatabaseName,$PSCmdlet.ParameterSetName)
     $content = Get-Content -Path $scriptPath -Raw
-    $contains = $content.Contains( $ExpectedQuery )
     if( $NotExists )
     {
-        $contains | Should -BeFalse
+        $content | Should -Not -Match ([regex]::Escape($ExpectedQuery))
     }
     else
     {
-        $contains | Should -BeTrue
+        $content | Should -Match ([regex]::Escape($ExpectedQuery))
     }
 }
     
@@ -284,6 +265,7 @@ function Reset
 
     try
     {
+        Invoke-RTRivet -Pop -All
         Stop-RivetTest -DatabaseName $RTDatabaseName,$RTDatabase2Name
         Write-Verbose ('{0}  Reset  Successfully cleaned up.' -f $timer.Elapsed)
     }
@@ -291,12 +273,6 @@ function Reset
     {
         Write-Verbose ('{0}  Reset  Failures cleaning up.' -f $timer.Elapsed)
         # These tests sometimes don't use migrations to muck about with the database, so ignore any errors.
-    }
-
-    if( (Get-Module 'RivetSamples') )
-    {
-        Remove-Module 'RivetSamples' -Force
-        Write-Verbose ('{0}  Reset  Removed RivetSamples' -f $timer.Elapsed)
     }
 
     $timer.Stop()
@@ -787,7 +763,7 @@ Describe 'Convert-Migration.when migrations contain operations that disable obje
     }
 }
 
-Describe 'Convert-Migration.when migrations contains operatins that enable objects' {
+Describe 'Convert-Migration.when migrations contains operations that enable objects' {
     BeforeEach { Init }
     AfterEach { Reset }
     It 'should create idempotent queries for enable operations' {
@@ -903,45 +879,6 @@ Describe 'Convert-Migration.when migrations contain row operations' {
         try
         {
             Assert-Row -SchemaName 'idempotent' -TableName 'Idempotent' -Column @{ ID = 1 ; Name = 'First' ; Optional = 'Value' } -Where 'ID = 1'
-        }
-        finally
-        {
-            Pop-ConvertedScripts
-        }
-    }
-}
-
-Describe 'Convert-Migration.when there are plugins' {
-    BeforeEach { Init }
-    AfterEach { Reset }
-    It 'should run plugins' {
-        Set-PluginPath -PluginPath (Join-Path -Path $PSScriptRoot -ChildPath '..\Rivet\RivetSamples')
-        
-        @'
-    function Push-Migration
-    {
-        Add-Table 'NeedsPluginStuff' -Description "test" {
-            int 'ID' -NotNull -Description "test"
-        }
-    }
-    
-    function Pop-Migration
-    {
-        Remove-Table 'NeedsPluginStuff'
-    }
-'@ | New-TestMigration -Name 'ShouldRunPlugins'
-    
-        Assert-ConvertMigration -Schema -ExtendedProperty -Trigger 
-    
-        try
-        {
-            Assert-Table 'NeedsPluginStuff'
-            Assert-Column -TableName 'NeedsPluginStuff' -Name 'CreateDate' -DataType 'smalldatetime' -NotNull
-            Assert-Column -TableName 'NeedsPluginStuff' -Name 'LastUpdated' -DataType 'datetime' -NotNull
-            Assert-Column -TableName 'NeedsPluginStuff' -Name 'rowguid' -DataType 'uniqueIdentifier' -NotNull -RowGuidCol
-            Assert-Column -TableName 'NeedsPluginStuff' -Name 'SkipBit' -DataType 'bit'
-            Assert-Trigger 'trNeedsPluginStuff_Activity'
-            Assert-Index -TableName 'NeedsPluginStuff' -ColumnName 'rowguid' -Unique
         }
         finally
         {
@@ -1160,11 +1097,11 @@ Describe 'Convert-Migration.when table and columns get renamed' {
     }
 '@ | New-TestMigration -Name 'AddT1'
     
-        Invoke-RTRivet -Push 'AddT1'
-    
-        Assert-Table -Name 'T1New'
+        # Invoke-RTRivet -Push 'AddT1'
     
         Assert-ConvertMigration -Schema
+    
+        Assert-Table -Name 'T1New'
     
         Assert-Query -Schema -ExpectedQuery 'create table [dbo].[T1New]'
         Assert-Query -Schema -ExpectedQuery '[C1New] int not null'
@@ -1442,23 +1379,63 @@ function Pop-Migration
     }
 }
 
+# These *must* run after all other tests that run migrations because the plug-ins stay loaded and affects other tests.
+Describe 'Convert-Migration.when there are plugins' {
+    BeforeEach { Init }
+    AfterEach { Reset }
+    It 'should run plugins' {
+        Set-PluginPath -PluginPath (Join-Path -Path $PSScriptRoot -ChildPath '..\Rivet\RivetSamples')
+        
+        @'
+    function Push-Migration
+    {
+        Add-Table 'NeedsPluginStuff' -Description "test" {
+            int 'ID' -NotNull -Description "test"
+        }
+    }
+    
+    function Pop-Migration
+    {
+        Remove-Table 'NeedsPluginStuff'
+    }
+'@ | New-TestMigration -Name 'ShouldRunPlugins'
+    
+        Assert-ConvertMigration -Schema -ExtendedProperty -Trigger 
+    
+        try
+        {
+            Assert-Table 'NeedsPluginStuff'
+            Assert-Column -TableName 'NeedsPluginStuff' -Name 'CreateDate' -DataType 'smalldatetime' -NotNull
+            Assert-Column -TableName 'NeedsPluginStuff' -Name 'LastUpdated' -DataType 'datetime' -NotNull
+            Assert-Column -TableName 'NeedsPluginStuff' -Name 'rowguid' -DataType 'uniqueIdentifier' -NotNull -RowGuidCol
+            Assert-Column -TableName 'NeedsPluginStuff' -Name 'SkipBit' -DataType 'bit'
+            Assert-Trigger 'trNeedsPluginStuff_Activity'
+            Assert-Index -TableName 'NeedsPluginStuff' -ColumnName 'rowguid' -Unique
+        }
+        finally
+        {
+            Pop-ConvertedScripts
+        }
+    }
+}
+
 # This one must be last!
 Describe 'Convert-Migration.test fixture' {
     It 'should cover all operations' {
         $opsToSkip = @{
                         [Rivet.Operations.IrreversibleOperation] = $true;
+                        [Rivet.Operations.RenameOperation] = $true;
                      }
         $missingOps = [Reflection.Assembly]::GetAssembly( [Rivet.Operation] ) |
                             ForEach-Object { $_.GetTypes() } | 
-                            Where-Object { $_.IsClass } |
-                            Where-Object { $_.Namespace -eq 'Rivet.Operations' } |
+                            Where-Object { $_.IsSubclassOf([Rivet.Operation]) } |
                             Where-Object { -not $_.IsAbstract } |
                             Where-Object { -not $testedOperations.ContainsKey( $_ ) } |
-                            Where-Object { -not $opsToSkip.ContainsKey($_) } |
-                            Select-Object -ExpandProperty 'Name' |
-                            Sort-Object
+                            Where-Object { -not $opsToSkip.ContainsKey($_) } #|
+                            # Select-Object -ExpandProperty 'Name' |
+                            # Sort-Object
     
-        $missingOps | Should -BeNullOrEmpty
+        $missingOps | Should -BeNullOrEmpty -Because 'should test all operations but these are missing'
     }
 }
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 namespace Rivet.Operations
 {
+	[ObjectRemovedByOperation(typeof(RemoveIndexOperation))]
 	public sealed class AddIndexOperation : TableObjectOperation
 	{
 		// All Columns ASC
@@ -17,39 +18,47 @@ namespace Rivet.Operations
 			On = on;
 			FileStreamOn = fileStreamOn;
 			Descending = new bool[0];
-            Include = new List<string>(include ?? new string[0]);
+			Include = new List<string>(include ?? new string[0]);
 		}
 
 		// All Columns ASC With Custom Constraint Name
-        public AddIndexOperation(string schemaName, string tableName, string[] columnName, string name, bool unique, bool clustered, string[] options, string where, string on, string fileStreamOn, string[] include) 
+		public AddIndexOperation(string schemaName, string tableName, string[] columnName, string name, bool unique, bool clustered, string[] options, string where, string on, string fileStreamOn, string[] include) 
 			: this(schemaName, tableName, columnName, unique, clustered, options, where, on, fileStreamOn, include)
 		{
 			Name = name;
 		}
 		
 		// Some Columns DESC
-        public AddIndexOperation(string schemaName, string tableName, string[] columnName, bool[] descending, bool unique, bool clustered, string[] options, string where, string on, string fileStreamOn, string[] include)
-            : this(schemaName, tableName, columnName, unique, clustered, options, where, on, fileStreamOn, include)
+		public AddIndexOperation(string schemaName, string tableName, string[] columnName, bool[] descending, bool unique, bool clustered, string[] options, string where, string on, string fileStreamOn, string[] include)
+			: this(schemaName, tableName, columnName, unique, clustered, options, where, on, fileStreamOn, include)
 		{
 			Descending = descending ?? new bool[0];
 		}
 
 		// Some Columns DESC With Custom Constraint Name
-        public AddIndexOperation(string schemaName, string tableName, string[] columnName, string name, bool[] descending, bool unique, bool clustered, string[] options, string where, string on, string fileStreamOn, string[] include)
-            : this(schemaName, tableName, columnName, name, unique, clustered, options, where, on, fileStreamOn, include)
+		public AddIndexOperation(string schemaName, string tableName, string[] columnName, string name, bool[] descending, bool unique, bool clustered, string[] options, string where, string on, string fileStreamOn, string[] include)
+			: this(schemaName, tableName, columnName, name, unique, clustered, options, where, on, fileStreamOn, include)
 		{
 			Descending = descending ?? new bool[0];
 		}
 
-		public List<string> ColumnName { get; private set; }
-		public bool [] Descending { get; set; }
-		public bool Unique { get; set; }
 		public bool Clustered { get; set; }
-		public List<string> Options { get; private set; }
-		public string Where { get; set; }
-		public string On { get; set; }
+
+		public List<string> ColumnName { get; private set; }
+
+		public bool[] Descending { get; set; }
+
 		public string FileStreamOn { get; set; }
-        public List<string> Include { get; set; }
+
+		public List<string> Include { get; set; }
+
+		public string On { get; set; }
+
+		public List<string> Options { get; private set; }
+
+		public string Where { get; set; }
+
+		public bool Unique { get; set; }
 
 		public override string ToIdempotentQuery()
 		{
@@ -80,16 +89,16 @@ namespace Rivet.Operations
 				optionsClause = string.Format(" with ( {0} )", optionsClause);
 			}
 
-            var includeClause = "";
-            if (Include.Count > 0)
-            {
-                for( var idx = 0; idx < Include.Count; idx++ )
-                {
-                    Include[idx] = string.Format("[{0}]", Include[idx]);
-                }
-                includeClause = string.Join(", ", Include.ToArray());
-                includeClause = string.Format(" include ( {0} )", includeClause);
-            }
+			var includeClause = "";
+			if (Include.Count > 0)
+			{
+				for( var idx = 0; idx < Include.Count; idx++ )
+				{
+					Include[idx] = string.Format("[{0}]", Include[idx]);
+				}
+				includeClause = string.Join(", ", Include.ToArray());
+				includeClause = string.Format(" include ( {0} )", includeClause);
+			}
 
 			var whereClause = "";
 			if (!string.IsNullOrEmpty(Where))
