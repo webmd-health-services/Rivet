@@ -49,60 +49,50 @@ function New-DecimalColumn
     #>
     [CmdletBinding(DefaultParameterSetName='Null')]
     param(
-        [Parameter(Mandatory=$true,Position=0)]
-        [string]
+        [Parameter(Mandatory,Position=0)]
         # The column's name.
-        $Name,
+        [String]$Name,
 
         [Parameter(Position=1)]
-        [Int]
         # Maximum total number of decimal digits that will be stored.
-        $Precision,
+        [int]$Precision,
 
         [Parameter(Position=2)]
-        [Int]
         # The number of decimal digits that will be stored to the right of the decimal point.
-        $Scale,
+        [int]$Scale,
 
-        [Parameter(Mandatory=$true,ParameterSetName='Identity')]
-        [Switch]
+        [Parameter(Mandatory,ParameterSetName='Identity')]
         # The column should be an identity.
-        $Identity,
+        [switch]$Identity,
 
         [Parameter(ParameterSetName='Identity')]
-        [int]
         # The starting value for the identity.
-        $Seed,
+        [int]$Seed,
 
         [Parameter(ParameterSetName='Identity')]
-        [int]
         # The increment between auto-generated identity values.
-        $Increment,
+        [int]$Increment,
 
         [Parameter(ParameterSetName='Identity')]
-        [Switch]
         # Stops the identity from being replicated.
-        $NotForReplication,
+        [switch]$NotForReplication,
 
-        [Parameter(Mandatory=$true,ParameterSetName='NotNull')]
-        [Switch]
+        [Parameter(Mandatory,ParameterSetName='NotNull')]
         # Don't allow `NULL` values in this column.
-        $NotNull,
+        [switch]$NotNull,
 
         [Parameter(ParameterSetName='Null')]
-        [Switch]
         # Store nulls as Sparse.
-        $Sparse,
+        [switch]$Sparse,
 
-        [Parameter()]
-        [string]
         # A SQL Server expression for the column's default value 
-        $Default,
+        [String]$Default,
+
+        # The name of the default constraint for the column's default expression. Required if the Default parameter is given.
+        [String]$DefaultConstraintName,
             
-        [Parameter()]
-        [string]
         # A description of the column.
-        $Description
+        [String]$Description
     )
         
     $dataSize = $null
@@ -128,13 +118,13 @@ function New-DecimalColumn
             {
                 $nullable = 'Sparse'
             }
-            [Rivet.Column]::Decimal($Name, $dataSize, $nullable, $Default, $Description)
+            [Rivet.Column]::Decimal($Name, $dataSize, $nullable, $Default, $DefaultConstraintName, $Description)
             break
         }
             
         'NotNull'
         {
-            [Rivet.Column]::Decimal($Name, $dataSize, 'NotNull', $Default, $Description)
+            [Rivet.Column]::Decimal($Name, $dataSize, 'NotNull', $Default, $DefaultConstraintName, $Description)
             break
         }
 

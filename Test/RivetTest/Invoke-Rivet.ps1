@@ -1,53 +1,50 @@
 
 function Invoke-RTRivet
 {
-    [CmdletBinding(SupportsShouldProcess=$True)]
+    [CmdletBinding(SupportsShouldProcess,DefaultParameterSetName='PushByName')]
     param(
-        [Parameter(Mandatory=$true,ParameterSEtName='Push')]
-        [Switch]
-        $Push,
+        [Parameter(Mandatory,ParameterSetName='Push')]
+        [switch]$Push,
 
-        [Parameter(Mandatory=$true,ParameterSetName='Pop')]
-        [Parameter(Mandatory=$true,ParameterSetName='PopByName')]
-        [Parameter(Mandatory=$true,ParameterSetName='PopByCount')]
-        [Parameter(Mandatory=$true,ParameterSetName='PopAll')]
-        [Switch]
-        $Pop,
+        [Parameter(Mandatory,ParameterSetName='Pop')]
+        [Parameter(Mandatory,ParameterSetName='PopByName')]
+        [Parameter(Mandatory,ParameterSetName='PopByCount')]
+        [Parameter(Mandatory,ParameterSetName='PopAll')]
+        [switch]$Pop,
         
         [Parameter(Position=1,ParameterSetName='Push')]
-        [Parameter(Mandatory=$true,Position=1,ParameterSetName='PopByName')]
-        [string]
+        [Parameter(Mandatory,Position=0,ParameterSetName='PushByName')]
+        [Parameter(Mandatory,Position=1,ParameterSetName='PopByName')]
         # The name of the migration to push/pop.
-        $Name,
+        [String]$Name,
 
-        [Parameter(Mandatory=$true,Position=1,ParameterSetName='PopByCount')]
-        [int]
-        $Count = 1,
+        [Parameter(Mandatory,Position=1,ParameterSetName='PopByCount')]
+        [int]$Count,
 
-        [Parameter(Mandatory=$true,ParameterSetName='PopAll')]
-        [Switch]
-        $All,
+        [Parameter(Mandatory,ParameterSetName='PopAll')]
+        [switch]$All,
 
         [Parameter(ParameterSetName='Pop')]
         [Parameter(ParameterSetName='PopByName')]
         [Parameter(ParameterSetName='PopByCount')]
         [Parameter(ParameterSetName='PopAll')]
-        [Switch]
-        $Force,
+        [switch]$Force,
 
         [Parameter(ParameterSetName='Redo')]
-        [Switch]
-        $Redo,
+        [switch]$Redo,
 
-        [string[]]
-        $Database,
+        [String[]]$Database,
 
-        [string]
-        $ConfigFilePath
+        [String]$ConfigFilePath
     )
     
     Set-StrictMode -Version Latest
     Use-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+
+    if( $PSCmdlet.ParameterSetName -eq 'PushByName' )
+    {
+        $PSBoundParameters['Push'] = $Push = $true
+    }
 
     $customParams = @{ }
     if( -not $Database )
@@ -68,6 +65,19 @@ function Invoke-RTRivet
     Write-Host -Foregroundcolor green @customParams
     #>
 
-    Invoke-Rivet @PSBoundParameters @customParams
-
+    try
+    {
+        Invoke-Rivet @PSBoundParameters @customParams
+    }
+    catch
+    {
+        $script:RTLastMigrationFailed = $true
+        if( $ErrorActionPrefence -ne [Management.Automation.ActionPreference]::SilentlyContinue -and `
+            $ErrorActionPrefence -ne [Management.Automation.ActionPreference]::Ignore )
+        {
+            $_ | Out-String | Write-Host -ForegroundColor Red
+        }
+    }
 }
+
+Set-Alias -Name 'WhenMigrating' -Value 'Invoke-RTRivet'

@@ -37,35 +37,30 @@ function New-BinaryColumn
     #>
     [CmdletBinding(DefaultParameterSetName='Nullable')]
     param(
-        [Parameter(Mandatory=$true,Position=0)]
-        [string]
+        [Parameter(Mandatory,Position=0)]
         # The column's name.
-        $Name,
+        [String]$Name,
 
-        [Parameter(Mandatory=$true,Position=1)]
-        [Int]
+        [Parameter(Mandatory,Position=1)]
         # The number of bytes the column will hold.
-        $Size,
+        [int]$Size,
 
-        [Parameter(Mandatory=$true,ParameterSetName='NotNull')]
-        [Switch]
+        [Parameter(Mandatory,ParameterSetName='NotNull')]
         # Don't allow `NULL` values in this column.
-        $NotNull,
+        [switch]$NotNull,
 
         [Parameter(ParameterSetName='Nullable')]
-        [Switch]
         # Store nulls as Sparse.
-        $Sparse,
+        [switch]$Sparse,
 
-        [Parameter()]
-        [string]
         # A SQL Server expression for the column's default value 
-        $Default,
+        [String]$Default,
+
+        # The name of the default constraint for the column's default expression. Required if the Default parameter is given.
+        [String]$DefaultConstraintName,
             
-        [Parameter()]
-        [string]
         # A description of the column.
-        $Description
+        [String]$Description
     )
 
     $sizetype = New-Object Rivet.CharacterLength $Size
@@ -80,7 +75,7 @@ function New-BinaryColumn
         $nullable = 'Sparse'
     }
 
-    [Rivet.Column]::Binary($Name, $sizetype, $nullable, $Default, $Description)
+    [Rivet.Column]::Binary($Name, $sizetype, $nullable, $Default, $DefaultConstraintName, $Description)
 }
     
 Set-Alias -Name 'Binary' -Value 'New-BinaryColumn'

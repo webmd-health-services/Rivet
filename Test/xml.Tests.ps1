@@ -92,17 +92,6 @@ Describe 'New-XmlColumn' {
     }
 }
 
-function GivenMigration
-{
-    param(
-        [Parameter(Mandatory)]
-        [string]
-        $Migration
-    )
-
-    $Migration | New-TestMigration -Name 'Migration'
-}
-
 function Init
 {
     Stop-RivetTest -ErrorAction Ignore
@@ -148,7 +137,7 @@ function WhenPushing
 
 Describe 'New-XmlColumn.when column has no schema' {
     Init
-    GivenMigration @'
+    GivenMigration -Named 'Migration' @'
     function Push-Migration
     {
         Add-Table -Name 'WithXmlColumn' -Column {
@@ -160,7 +149,7 @@ Describe 'New-XmlColumn.when column has no schema' {
         Remove-Table 'WithXmlColumn'
     }
 '@
-    WhenPushing
+    WhenMigrating 'Migration'
     ThenTable 'WithXmlColumn' -HasXmlColumn 'Two' -NoSchema
     ThenMigrationPoppable
 }

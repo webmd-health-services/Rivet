@@ -37,30 +37,26 @@ function New-SmallDateTimeColumn
     #>
     [CmdletBinding(DefaultParameterSetName='Nullable')]
     param(
-        [Parameter(Mandatory=$true,Position=0)]
-        [string]
+        [Parameter(Mandatory,Position=0)]
         # The column's name.
-        $Name,
+        [String]$Name,
 
-        [Parameter(Mandatory=$true,ParameterSetName='NotNull')]
-        [Switch]
+        [Parameter(Mandatory,ParameterSetName='NotNull')]
         # Don't allow `NULL` values in this column.
-        $NotNull,
+        [switch]$NotNull,
 
         [Parameter(ParameterSetName='Nullable')]
-        [Switch]
         # Store nulls as Sparse.
-        $Sparse,
+        [switch]$Sparse,
 
-        [Parameter()]
-        [string]
         # A SQL Server expression for the column's default value 
-        $Default,
+        [String]$Default,
+
+        # The name of the default constraint for the column's default expression. Required if the Default parameter is given.
+        [String]$DefaultConstraintName,
             
-        [Parameter()]
-        [string]
         # A description of the column.
-        $Description
+        [String]$Description
     )
  
     switch ($PSCmdlet.ParameterSetName)
@@ -72,12 +68,12 @@ function New-SmallDateTimeColumn
             {
                 $nullable = 'Sparse'
             }
-            [Rivet.Column]::SmallDateTime($Name, $nullable, $Default, $Description)
+            [Rivet.Column]::SmallDateTime($Name, $nullable, $Default, $DefaultConstraintName, $Description)
         }
             
         'NotNull'
         {
-            [Rivet.Column]::SmallDateTime($Name,'NotNull', $Default, $Description)
+            [Rivet.Column]::SmallDateTime($Name,'NotNull', $Default, $DefaultConstraintName, $Description)
         }
     }
 }

@@ -37,50 +37,42 @@ function New-NVarCharColumn
     #>
     [CmdletBinding(DefaultParameterSetName='NullSize')]
     param(
-        [Parameter(Mandatory=$true,Position=0)]
-        [string]
+        [Parameter(Mandatory,Position=0)]
         # The column's name.
-        $Name,
+        [String]$Name,
 
-        [Parameter(Mandatory=$true,Position=1,ParameterSetName='NullSize')]
-        [Parameter(Mandatory=$true,Position=1,ParameterSetName='NotNullSize')]
+        [Parameter(Mandatory,Position=1,ParameterSetName='NullSize')]
+        [Parameter(Mandatory,Position=1,ParameterSetName='NotNullSize')]
         [Alias('Length')]
-        [Int]
         # The maximum length of the column, i.e. the number of unicode characters.
-        $Size,
+        [int]$Size,
 
-        [Parameter(Mandatory=$true,ParameterSetName='NullMax')]
-        [Parameter(Mandatory=$true,ParameterSetName='NotNullMax')]
-        [Switch]
+        [Parameter(Mandatory,ParameterSetName='NullMax')]
+        [Parameter(Mandatory,ParameterSetName='NotNullMax')]
         # Create an `nvarchar(max)` column.
-        $Max,
+        [switch]$Max,
 
-        [Parameter()]
-        [string]
         # Controls the code page that is used to store the data
-        $Collation,
+        [String]$Collation,
 
-        [Parameter(Mandatory=$true,ParameterSetName='NotNullSize')]
-        [Parameter(Mandatory=$true,ParameterSetName='NotNullMax')]
-        [Switch]
+        [Parameter(Mandatory,ParameterSetName='NotNullSize')]
+        [Parameter(Mandatory,ParameterSetName='NotNullMax')]
         # Don't allow `NULL` values in this column.
-        $NotNull,
+        [switch]$NotNull,
 
         [Parameter(ParameterSetName='NullSize')]
         [Parameter(ParameterSetName='NullMax')]
-        [Switch]
         # Store nulls as Sparse.
-        $Sparse,
+        [switch]$Sparse,
 
-        [Parameter()]
-        [string]
         # A SQL Server expression for the column's default value 
-        $Default,
+        [String]$Default,
+
+        # The name of the default constraint for the column's default expression. Required if the Default parameter is given.
+        [String]$DefaultConstraintName,
             
-        [Parameter()]
-        [string]
         # A description of the column.
-        $Description
+        [String]$Description
     )
 
     $sizeType = $null
@@ -103,7 +95,7 @@ function New-NVarCharColumn
         $nullable = 'Sparse'
     }
 
-    [Rivet.Column]::NVarChar($Name, $sizeType, $Collation, $nullable, $Default, $Description)
+    [Rivet.Column]::NVarChar($Name, $sizeType, $Collation, $nullable, $Default, $DefaultConstraintName, $Description)
 }
     
 Set-Alias -Name 'NVarChar' -Value 'New-NVarCharColumn'

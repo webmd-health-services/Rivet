@@ -33,8 +33,8 @@ namespace Rivet.Test.Operations
 		{
 			var columns = new[]
 			{
-				Column.Int("c1", Nullable.NotNull, null, "description"),
-				Column.VarChar("c2", new CharacterLength(1008), "collation", Nullable.NotNull, null, "description")
+				Column.Int("c1", Nullable.NotNull, null, null, "description"),
+				Column.VarChar("c2", new CharacterLength(1008), "collation", Nullable.NotNull, null, null, "description")
 			};
 			var op = new AddTableOperation("schema", "table", columns, false, "file group", "textimagefilegroup", "filestreamfilegroup", new string[0]);
 			var renameColumn1Op = new RenameColumnOperation("SCHEMA", "TABLE", "C1", "C1New");
@@ -66,7 +66,7 @@ namespace Rivet.Test.Operations
 		{
 			var columns = new[]
 			{
-				Column.Int("c1", Nullable.NotNull, null, "description"),
+				Column.Int("c1", Nullable.NotNull, null, null, "description"),
 			};
 			var op = new AddTableOperation("schema", "table", columns, false, "file group", "textimagefilegroup", "filestreamfilegroup", new string[0]);
 			var renameColumn1Op = new RenameColumnOperation("SCHEMA", "TABLE", "C1", "C1New");

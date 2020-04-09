@@ -108,13 +108,13 @@ namespace Rivet.Operations
 					break;
 				}
 
-				// column default constraints don't handle with values clause (yet)
 				case AddDefaultConstraintOperation addDefaultConstraintOp when !addDefaultConstraintOp.WithValues:
 				{
 					var column = FindColumn(addDefaultConstraintOp.ColumnName);
 					if( column != null )
 					{
 						column.DefaultExpression = addDefaultConstraintOp.Expression;
+						column.DefaultConstraintName = addDefaultConstraintOp.Name;
 						operation.Disabled = true;
 						return MergeResult.Continue;
 					}
@@ -182,7 +182,7 @@ namespace Rivet.Operations
 				var columnDefinitionList = new List<string>();
 				foreach (var column in Columns)
 				{
-					columnDefinitionList.Add(column.GetColumnDefinition(Name, SchemaName, false));
+					columnDefinitionList.Add(column.GetColumnDefinition(false));
 				}
 				columnDefinitionClause = string.Join($",{Environment.NewLine}    ", columnDefinitionList.ToArray());
 				columnDefinitionClause = string.Format("({0}    {1}{0})", Environment.NewLine, columnDefinitionClause);

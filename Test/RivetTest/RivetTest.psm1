@@ -13,7 +13,8 @@ $RTConfigFilePath =
     $RTRivetSchemaName = 
     $RTDatabaseName =
     $RTRivetRoot = 
-    $RTTestRoot = $null
+    $RTTestRoot = 
+    $RTLastMigrationFailed = $null
 
 $RTTimestamp = 20150101000000
 
@@ -48,7 +49,7 @@ else
 
 $RTRivetPath = Join-Path -Path $RivetRoot -ChildPath 'rivet.ps1' -Resolve
 
-Get-ChildItem $PSScriptRoot *-*.ps1 |
+Get-ChildItem -Path $PSScriptRoot -Filter '*.ps1' |
     Where-Object { $_.BaseName -ne 'Import-RivetTest' } |
     ForEach-Object { . $_.FullName }
 

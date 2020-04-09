@@ -3,7 +3,7 @@
 namespace Rivet.Test
 {
 	[TestFixture]
-	public sealed class ColumnTestFixture
+	internal sealed class ColumnTestFixture
 	{
 
 		private static readonly PrecisionScale PrecisionNoScale = new PrecisionScale(4);
@@ -30,12 +30,15 @@ namespace Rivet.Test
 			[Values("defaultExpression",null)]
 			string defaultExpression,
 
+			[Values("default constraint name")]
+			string defaultConstraintName,
+
 			[Values("description",null)]
 			string description)
 		{
-			var c  = Column.BigInt(name, nullable, defaultExpression, description);
+			var c  = Column.BigInt(name, nullable, defaultExpression, defaultConstraintName, description);
 			GivenColumn(c);
-			ThenColumnShouldBe(name, DataType.BigInt, nullable, defaultExpression, description);
+			ThenColumnShouldBe(name, DataType.BigInt, nullable, defaultExpression, defaultConstraintName, description);
 		}
 
         #endregion
@@ -84,13 +87,16 @@ namespace Rivet.Test
 			
 			[Values("'Hello'")]
 			string defaultExpression,
-			
+
+			[Values("default constraint name")]
+			string defaultConstraintName,
+
 			[Values("varbinary")]
 			string description)
 		{
 			var size = (length == null) ? null : new CharacterLength(length.Value);
-			GivenColumn(Column.Binary(name, size, nullable, defaultExpression, description));
-			ThenColumnShouldBe(name, DataType.Binary, size, nullable, defaultExpression, description);
+			GivenColumn(Column.Binary(name, size, nullable, defaultExpression, defaultConstraintName, description));
+			ThenColumnShouldBe(name, DataType.Binary, size, nullable, defaultExpression, defaultConstraintName, description);
 		}
 		#endregion Binary
 
@@ -106,12 +112,15 @@ namespace Rivet.Test
 			[Values("1", "0")]
 			string defaultExpression,
 
+			[Values("default constraint name")]
+			string defaultConstraintName,
+
 			[Values("bit column")]
 			string description
 			)
 		{
-			GivenColumn(Column.Bit(name, nullable, defaultExpression, description));
-			ThenColumnShouldBe(name, DataType.Bit, nullable, defaultExpression, description);
+			GivenColumn(Column.Bit(name, nullable, defaultExpression, defaultConstraintName, description));
+			ThenColumnShouldBe(name, DataType.Bit, nullable, defaultExpression, defaultConstraintName, description);
 		}
 		#endregion Bit
 
@@ -131,14 +140,17 @@ namespace Rivet.Test
 			Nullable nullable, 
 			
 			[Values("richard cory")]
-			string defaultExpression, 
+			string defaultExpression,
+
+			[Values("default constraint name")]
+			string defaultConstraintName,
 			
 			[Values("char")]
 			string description)
 		{
 			var size = (length == null) ? null : new CharacterLength(length.Value);
-			GivenColumn(Column.Char(name, size, collation, nullable, defaultExpression, description));
-			ThenColumnShouldBe(name, DataType.Char, size, collation, nullable, defaultExpression, description);
+			GivenColumn(Column.Char(name, size, collation, nullable, defaultExpression, defaultConstraintName, description));
+			ThenColumnShouldBe(name, DataType.Char, size, collation, nullable, defaultExpression, defaultConstraintName, description);
 		}
 		#endregion Char
 
@@ -151,15 +163,18 @@ namespace Rivet.Test
 			[Values(Nullable.NotNull, Nullable.Null, Nullable.Sparse)]
 			Nullable nullable,
 			
-			[Values("getdate()", null)]
+			[Values("getdate()")]
 			string defaultExpression,
+
+			[Values("default constraint name")]
+			string defaultConstraintName,
 
 			[Values("bit column", null)]
 			string description
 			)
 		{
-			GivenColumn(Column.Date(name, nullable, defaultExpression, description));
-			ThenColumnShouldBe(name, DataType.Date, nullable, defaultExpression, description);
+			GivenColumn(Column.Date(name, nullable, defaultExpression, defaultConstraintName, description));
+			ThenColumnShouldBe(name, DataType.Date, nullable, defaultExpression, defaultConstraintName, description);
 		}
 		#endregion Date
 
@@ -175,15 +190,18 @@ namespace Rivet.Test
 			[Values(Nullable.Null, Nullable.NotNull, Nullable.Sparse)]
 			Nullable nullable,
 
-			[Values("getdate()", null)]
+			[Values("getdate()")]
 			string defaultExpression,
-			
+
+			[Values("default constraint name")]
+			string defaultConstraintName,
+
 			[Values("datetime2 column", null)]
 			string description)
 		{
 			var size = (scale == null) ? null : new Scale(scale.Value);
-			GivenColumn(Column.DateTime2(name, size, nullable, defaultExpression, description));
-			ThenColumnShouldBe(name, DataType.DateTime2,  size, nullable, defaultExpression, description);
+			GivenColumn(Column.DateTime2(name, size, nullable, defaultExpression, defaultConstraintName, description));
+			ThenColumnShouldBe(name, DataType.DateTime2,  size, nullable, defaultExpression, defaultConstraintName, description);
 		}
 		#endregion DateTime2
 
@@ -199,15 +217,18 @@ namespace Rivet.Test
 			[Values(Nullable.Null, Nullable.NotNull, Nullable.Sparse)]
 			Nullable nullable,
 
-			[Values("getdate()", null)]
+			[Values("getdate()")]
 			string defaultExpression,
+
+			[Values("default constraint name")]
+			string defaultConstraintName,
 
 			[Values("datetimeoffset column", null)]
 			string description)
 		{
 			var size = (scale == null) ? null : new Scale(scale.Value);
-			GivenColumn(Column.DateTimeOffset(name, size, nullable, defaultExpression, description));
-			ThenColumnShouldBe(name, DataType.DateTimeOffset, size, nullable, defaultExpression, description);
+			GivenColumn(Column.DateTimeOffset(name, size, nullable, defaultExpression, defaultConstraintName, description));
+			ThenColumnShouldBe(name, DataType.DateTimeOffset, size, nullable, defaultExpression, defaultConstraintName, description);
 		}
 		#endregion DateTime2
 
@@ -220,9 +241,9 @@ namespace Rivet.Test
 			[Values(Nullable.Null, Nullable.NotNull, Nullable.Sparse)]
 			Nullable nullable)
 		{
-			var c = Column.Decimal(name, null, nullable, "1.0", "decimal");
+			var c = Column.Decimal(name, null, nullable, "1.0", "default constraint name", "decimal");
 			GivenColumn(c);
-			ThenColumnShouldBe(name, DataType.Decimal, nullable, "1.0", "decimal");
+			ThenColumnShouldBe(name, DataType.Decimal, nullable, "1.0", "default constraint name", "decimal");
 		}
 
 		[Test]
@@ -232,9 +253,9 @@ namespace Rivet.Test
 		{
 			foreach (var ps in Precisions)
 			{
-				var c = Column.Decimal("DecimalWithPrecision", ps, nullable, "3.0", "decimal with scale");
+				var c = Column.Decimal("DecimalWithPrecision", ps, nullable, "3.0", "default constraint name", "decimal with scale");
 				GivenColumn(c);
-				ThenColumnShouldBe("DecimalWithPrecision", DataType.Decimal, ps, nullable, "3.0", "decimal with scale");
+				ThenColumnShouldBe("DecimalWithPrecision", DataType.Decimal, ps, nullable, "3.0", "default constraint name", "decimal with scale");
 			}
 		}
 
@@ -262,8 +283,11 @@ namespace Rivet.Test
 			[Values(Nullable.Null, Nullable.NotNull, Nullable.Sparse)]
 			Nullable nullable,
 
-			[Values("2.9999999999999", null)]
+			[Values("2.9999999999999")]
 			string defaultExpression,
+
+			[Values("default constraint name")]
+			string defaultConstraintName,
 
 			[Values("float column", null)]
 			string description)
@@ -281,8 +305,8 @@ namespace Rivet.Test
 				size = new PrecisionScale(precision.Value, scale.Value);
 			}
 
-			GivenColumn(Column.Float(name, size, nullable, defaultExpression, description));
-			ThenColumnShouldBe(name, DataType.Float, size, nullable, defaultExpression, description);
+			GivenColumn(Column.Float(name, size, nullable, defaultExpression, defaultConstraintName, description));
+			ThenColumnShouldBe(name, DataType.Float, size, nullable, defaultExpression, defaultConstraintName, description);
 		}
 		#endregion Float
 
@@ -297,15 +321,18 @@ namespace Rivet.Test
 			[Values(Nullable.NotNull, Nullable.Null, Nullable.Sparse)]
 			Nullable nullable,
 
-			[Values("5", null)]
+			[Values("5")]
 			string defaultExpression,
+
+			[Values("default constraint name")]
+			string defaultConstraintName,
 
 			[Values("hierarchyid column", null)]
 			string description
 			)
 		{
-			GivenColumn(Column.HierarchyID(name, nullable, defaultExpression, description));
-			ThenColumnShouldBe(name, DataType.HierarchyID, nullable, defaultExpression, description);
+			GivenColumn(Column.HierarchyID(name, nullable, defaultExpression, defaultConstraintName, description));
+			ThenColumnShouldBe(name, DataType.HierarchyID, nullable, defaultExpression, defaultConstraintName, description);
 		}
 		#endregion HierarchyID
 
@@ -318,9 +345,9 @@ namespace Rivet.Test
 			[Values(Nullable.Null, Nullable.NotNull, Nullable.Sparse)]
 			Nullable nullable)
 		{
-			var c = Column.Int(name, nullable, "(0)", "int collumn");
+			var c = Column.Int(name, nullable, "(0)", "default constraint name", "int column");
 			GivenColumn(c);
-			ThenColumnShouldBe(name, DataType.Int, nullable, "(0)", "int collumn");
+			ThenColumnShouldBe(name, DataType.Int, nullable, "(0)", "default constraint name", "int column");
 		}
 		#endregion
 
@@ -333,15 +360,18 @@ namespace Rivet.Test
 			[Values(Nullable.NotNull, Nullable.Null, Nullable.Sparse)]
 			Nullable nullable,
 
-			[Values("5.00", null)]
+			[Values("5.00")]
 			string defaultExpression,
+
+			[Values("default constraint name")]
+			string defaultConstraintName,
 
 			[Values("money column", null)]
 			string description
 			)
 		{
-			GivenColumn(Column.Money(name, nullable, defaultExpression, description));
-			ThenColumnShouldBe(name, DataType.Money, nullable, defaultExpression, description);
+			GivenColumn(Column.Money(name, nullable, defaultExpression, defaultConstraintName, description));
+			ThenColumnShouldBe(name, DataType.Money, nullable, defaultExpression, defaultConstraintName, description);
 		}
 		#endregion Money
 
@@ -363,12 +393,15 @@ namespace Rivet.Test
 			[Values("richard cory")]
 			string defaultExpression,
 
+			[Values("default constraint name")]
+			string defaultConstraintName,
+
 			[Values("char")]
 			string description)
 		{
 			var size = (length == null) ? null : new CharacterLength(length.Value);
-			GivenColumn(Column.NChar(name, size, collation, nullable, defaultExpression, description));
-			ThenColumnShouldBe(name, DataType.NChar, size, collation, nullable, defaultExpression, description);
+			GivenColumn(Column.NChar(name, size, collation, nullable, defaultExpression, defaultConstraintName, description));
+			ThenColumnShouldBe(name, DataType.NChar, size, collation, nullable, defaultExpression, defaultConstraintName, description);
 		}
 		#endregion Char
 
@@ -388,15 +421,18 @@ namespace Rivet.Test
 			[Values(Nullable.NotNull, Nullable.Null, Nullable.Sparse)]
 			Nullable nullable,
 
-			[Values("''", "DEFAULT", null)]
+			[Values("DEFAULT")]
 			string defaultExpression,
+
+			[Values("default constraint name")]
+			string defaultConstraintName,
 
 			[Values("''", "varchar")]
 			string description)
 		{
 			var size = length == null ? null : new CharacterLength(length.Value);
-			GivenColumn(Column.NVarChar(name, size, collation, nullable, defaultExpression, description));
-			ThenColumnShouldBe(name, DataType.NVarChar, size, collation, nullable, defaultExpression, description);
+			GivenColumn(Column.NVarChar(name, size, collation, nullable, defaultExpression, defaultConstraintName, description));
+			ThenColumnShouldBe(name, DataType.NVarChar, size, collation, nullable, defaultExpression, defaultConstraintName, description);
 		}
 		#endregion NVarChar
 
@@ -409,15 +445,18 @@ namespace Rivet.Test
 			[Values(Nullable.NotNull, Nullable.Null, Nullable.Sparse)]
 			Nullable nullable,
 
-			[Values("5.00", null)]
+			[Values("5.00")]
 			string defaultExpression,
+
+			[Values("default constraint name")]
+			string defaultConstraintName,
 
 			[Values("real column", null)]
 			string description
 			)
 		{
-			GivenColumn(Column.Real(name, nullable, defaultExpression, description));
-			ThenColumnShouldBe(name, DataType.Real, nullable, defaultExpression, description);
+			GivenColumn(Column.Real(name, nullable, defaultExpression, defaultConstraintName, description));
+			ThenColumnShouldBe(name, DataType.Real, nullable, defaultExpression, defaultConstraintName, description);
 		}
 		#endregion Money
 
@@ -430,15 +469,18 @@ namespace Rivet.Test
 			[Values(Nullable.NotNull, Nullable.Null, Nullable.Sparse)]
 			Nullable nullable,
 
-			[Values("1", null)]
+			[Values("1")]
 			string defaultExpression,
+
+			[Values("default constraint name")]
+			string defaultConstraintName,
 
 			[Values("rowversion column", null)]
 			string description
 			)
 		{
-			GivenColumn(Column.RowVersion(name, nullable, defaultExpression, description));
-			ThenColumnShouldBe(name, DataType.RowVersion, nullable, defaultExpression, description);
+			GivenColumn(Column.RowVersion(name, nullable, defaultExpression, defaultConstraintName, description));
+			ThenColumnShouldBe(name, DataType.RowVersion, nullable, defaultExpression, defaultConstraintName, description);
 		}
 		#endregion RowVersion
 
@@ -451,15 +493,18 @@ namespace Rivet.Test
 			[Values(Nullable.NotNull, Nullable.Null, Nullable.Sparse)]
 			Nullable nullable,
 
-			[Values("getdate()", null)]
+			[Values("getdate()")]
 			string defaultExpression,
+
+			[Values("default constraint name")]
+			string defaultConstraintName,
 
 			[Values("smalldatetime column", null)]
 			string description
 			)
 		{
-			GivenColumn(Column.SmallDateTime(name, nullable, defaultExpression, description));
-			ThenColumnShouldBe(name, DataType.SmallDateTime, nullable, defaultExpression, description);
+			GivenColumn(Column.SmallDateTime(name, nullable, defaultExpression, defaultConstraintName, description));
+			ThenColumnShouldBe(name, DataType.SmallDateTime, nullable, defaultExpression, defaultConstraintName, description);
 		}
 		#endregion SmallDateTime
 
@@ -472,9 +517,9 @@ namespace Rivet.Test
 			[Values(Nullable.Null, Nullable.NotNull, Nullable.Sparse)]
 			Nullable nullable)
 		{
-			var c = Column.SmallInt(name, nullable, "(4)", "small int");
+			var c = Column.SmallInt(name, nullable, "(4)", "default constraint name", "small int");
 			GivenColumn(c);
-			ThenColumnShouldBe(name, DataType.SmallInt, nullable, "(4)", "small int");
+			ThenColumnShouldBe(name, DataType.SmallInt, nullable, "(4)", "default constraint name", "small int");
 		}
 		#endregion
 
@@ -487,15 +532,18 @@ namespace Rivet.Test
 			[Values(Nullable.NotNull, Nullable.Null, Nullable.Sparse)]
 			Nullable nullable,
 
-			[Values("5.00", null)]
+			[Values("5.00")]
 			string defaultExpression,
+
+			[Values("default constraint name")]
+			string defaultConstraintName,
 
 			[Values("money column", null)]
 			string description
 			)
 		{
-			GivenColumn(Column.SmallMoney(name, nullable, defaultExpression, description));
-			ThenColumnShouldBe(name, DataType.SmallMoney, nullable, defaultExpression, description);
+			GivenColumn(Column.SmallMoney(name, nullable, defaultExpression, defaultConstraintName, description));
+			ThenColumnShouldBe(name, DataType.SmallMoney, nullable, defaultExpression, defaultConstraintName, description);
 		}
 		#endregion SmallMoney
 
@@ -508,15 +556,18 @@ namespace Rivet.Test
 			[Values(Nullable.NotNull, Nullable.Null, Nullable.Sparse)]
 			Nullable nullable,
 
-			[Values("'35'", null)]
+			[Values("'35'")]
 			string defaultExpression,
+
+			[Values("default constraint name")]
+			string defaultConstraintName,
 
 			[Values("sql_variant column", null)]
 			string description
 			)
 		{
-			GivenColumn(Column.SqlVariant(name, nullable, defaultExpression, description));
-			ThenColumnShouldBe(name, DataType.SqlVariant, nullable, defaultExpression, description);
+			GivenColumn(Column.SqlVariant(name, nullable, defaultExpression, defaultConstraintName, description));
+			ThenColumnShouldBe(name, DataType.SqlVariant, nullable, defaultExpression, defaultConstraintName, description);
 		}
 		#endregion SqlVariant
 
@@ -532,15 +583,18 @@ namespace Rivet.Test
 			[Values(Nullable.Null, Nullable.NotNull, Nullable.Sparse)]
 			Nullable nullable,
 
-			[Values("gettime()", null)]
+			[Values("gettime()")]
 			string defaultExpression,
+
+			[Values("default constraint name")]
+			string defaultConstraintName,
 
 			[Values("time column", null)]
 			string description)
 		{
 			var size = (scale == null) ? null : new Scale(scale.Value);
-			GivenColumn(Column.Time(name, size, nullable, defaultExpression, description));
-			ThenColumnShouldBe(name, DataType.Time, size, nullable, defaultExpression, description);
+			GivenColumn(Column.Time(name, size, nullable, defaultExpression, defaultConstraintName, description));
+			ThenColumnShouldBe(name, DataType.Time, size, nullable, defaultExpression, defaultConstraintName, description);
 		}
 		#endregion DateTime2
 
@@ -553,9 +607,9 @@ namespace Rivet.Test
 			[Values(Nullable.Null, Nullable.NotNull, Nullable.Sparse)]
 			Nullable nullable)
 		{
-			var c = Column.TinyInt(name, nullable, "(6)", "tinyint");
+			var c = Column.TinyInt(name, nullable, "(6)", "default constraint name", "tinyint");
 			GivenColumn(c);
-			ThenColumnShouldBe(name, DataType.TinyInt, nullable, "(6)", "tinyint");
+			ThenColumnShouldBe(name, DataType.TinyInt, nullable, "(6)", "default constraint name", "tinyint");
 		}
 		#endregion
 
@@ -571,15 +625,17 @@ namespace Rivet.Test
 			[Values(Nullable.NotNull, Nullable.Null, Nullable.Sparse)]
 			Nullable nullable,
 
-			[Values("newsequentialid()", null)]
+			[Values("newsequentialid()")]
 			string defaultExpression,
 
+			[Values("default constraint name")]
+			string defaultConstraintName,
 			[Values("uniqueidentifier column", null)]
 			string description
 			)
 		{
-			GivenColumn(Column.UniqueIdentifier(name, rowGuidCol, nullable, defaultExpression, description));
-			ThenColumnShouldBe(name, DataType.UniqueIdentifier, rowGuidCol, nullable, defaultExpression, description);
+			GivenColumn(Column.UniqueIdentifier(name, rowGuidCol, nullable, defaultExpression, defaultConstraintName, description));
+			ThenColumnShouldBe(name, DataType.UniqueIdentifier, rowGuidCol, nullable, defaultExpression, defaultConstraintName, description);
 		}
 
 		#endregion UniqueIdentifier
@@ -603,12 +659,15 @@ namespace Rivet.Test
 			[Values("'Hello'")]
 			string defaultExpression,
 
+			[Values("default constraint name")]
+			string defaultConstraintName,
+
 			[Values("varbinary")]
 			string description)
 		{
 			var size = (length == null) ? null : new CharacterLength(length.Value);
-			GivenColumn(Column.VarBinary(name, size, filestream, nullable, defaultExpression, description));
-			ThenColumnShouldBe(name, DataType.VarBinary, size, filestream, nullable, defaultExpression, description);
+			GivenColumn(Column.VarBinary(name, size, filestream, nullable, defaultExpression, defaultConstraintName, description));
+			ThenColumnShouldBe(name, DataType.VarBinary, size, filestream, nullable, defaultExpression, defaultConstraintName, description);
 		}
 
 		#endregion Binary
@@ -618,26 +677,29 @@ namespace Rivet.Test
 		[Test]
 		public void ShouldCreateVarCharColumn(
 			[Values("Name")]
-			string name, 
-			
+			string name,
+
 			[Values(50, null)]
-			int? length, 
-			
+			int? length,
+
 			[Values(null, "collation")]
-			string collation, 
-			
+			string collation,
+
 			[Values(Nullable.NotNull, Nullable.Null, Nullable.Sparse)]
-			Nullable nullable, 
-			
-			[Values("''", "DEFAULT", null)]
-			string defaultExpression, 
+			Nullable nullable,
+
+			[Values("DEFAULT")]
+			string defaultExpression,
+
+			[Values("default constraint name")]
+			string defaultConstraintName,
 			
 			[Values("''", "varchar")]
 			string description)
 		{
 			var size = length == null ? null : new CharacterLength(length.Value);
-			GivenColumn(Column.VarChar(name, size, collation, nullable, defaultExpression, description));
-			ThenColumnShouldBe(name, DataType.VarChar, size, collation, nullable, defaultExpression, description);
+			GivenColumn(Column.VarChar(name, size, collation, nullable, defaultExpression, defaultConstraintName, description));
+			ThenColumnShouldBe(name, DataType.VarChar, size, collation, nullable, defaultExpression, defaultConstraintName, description);
 		}
 
 		#endregion VarChar
@@ -658,43 +720,42 @@ namespace Rivet.Test
 			[Values(Nullable.NotNull, Nullable.Null, Nullable.Sparse)]
 			Nullable nullable,
 
-			[Values("<hello/>", null)]
+			[Values("<hello/>")]
 			string defaultExpression,
+
+			[Values("default constraint name")]
+			string defaultConstraintName,
 
 			[Values("xml column", null)]
 			string description
 			)
 		{
-			GivenColumn(Column.Xml(name, isDocument, xmlSchemaCollection, nullable, defaultExpression, description));
-			ThenColumnShouldBe(name, DataType.Xml, isDocument, xmlSchemaCollection, nullable, defaultExpression, description);
+			GivenColumn(Column.Xml(name, isDocument, xmlSchemaCollection, nullable, defaultExpression, defaultConstraintName, description));
+			ThenColumnShouldBe(name, DataType.Xml, isDocument, xmlSchemaCollection, nullable, defaultExpression, defaultConstraintName, description);
 		}
+		#endregion
 
-		private void ThenColumnShouldBe(string name, DataType dataType, bool isDocument, string xmlSchemaCollection, Nullable nullable, string defaultExpression, string description)
+		private void ThenColumnShouldBe(string name, DataType dataType, bool isDocument, string xmlSchemaCollection, Nullable nullable, string defaultExpression, string defaultConstraintName, string description)
 		{
-			ThenColumnShouldBe(name, dataType, defaultExpression, description);
+			ThenColumnShouldBe(name, dataType, defaultExpression, defaultConstraintName, description);
 			Assert.That(_column.Nullable, Is.EqualTo(nullable));
 
 			var notNullClause = ConvertToNotNullClause(nullable);
 			var sparseClause = ConvertToSparseClause(nullable);
-			var defaultClause = ConvertToDefaultClause(defaultExpression, "table", "schema", true);
+			var defaultClause = ConvertToDefaultClause(defaultExpression, defaultConstraintName, true);
 
 			var size = new XmlPrecisionScale(isDocument, xmlSchemaCollection);
 			Assert.That(_column.Size.ToString(), Is.EqualTo(size.ToString()));
 
-			Assert.That(_column.GetColumnDefinition("table", "schema", true), Is.EqualTo(string.Format("[{0}] xml{1}{2}{3}{4}", name, size, notNullClause, defaultClause,sparseClause)));
+			var columnDefinition = $"[{name}] xml{size}{notNullClause}{defaultClause}{sparseClause}";
+			Assert.That(_column.GetColumnDefinition(true), Is.EqualTo(columnDefinition));
 		}
 
-		private string ConvertToDefaultClause(string defaultExpression, string table, string schema, bool withValues)
+		private string ConvertToDefaultClause(string defaultExpression, string defaultConstraintName, bool withValues)
 		{
 			if (string.IsNullOrEmpty(defaultExpression))
 			{
 				return "";
-			}
-
-			var constraintName = string.Format("{0}_{1}", schema, table);
-			if (schema == "dbo")
-			{
-				constraintName = string.Format("{0}", table);
 			}
 
 			var withValuesClause = "";
@@ -703,10 +764,8 @@ namespace Rivet.Test
 				withValuesClause = " with values";
 			}
 
-			return string.Format(" constraint [DF_{0}_{1}] default {2}{3}", constraintName, _column.Name, defaultExpression, withValuesClause);
+			return $" constraint [{defaultConstraintName}] default {defaultExpression}{withValuesClause}";
 		}
-
-		#endregion Xml
 
 		private void GivenColumn(Column column)
 		{
@@ -715,31 +774,33 @@ namespace Rivet.Test
 
         private void ThenColumnShouldBe(string expectedValue)
         {
-            Assert.That(_column.GetColumnDefinition("fubar", "snafu", false), Is.EqualTo(expectedValue));
+            Assert.That(_column.GetColumnDefinition(false), Is.EqualTo(expectedValue));
         }
 
-        private void ThenColumnShouldBe(string name, DataType dataType, bool rowGuidCol, Nullable nullable, string defaultExpression, string description)
+        private void ThenColumnShouldBe(string name, DataType dataType, bool rowGuidCol, Nullable nullable, string defaultExpression, string defaultConstraintName, string description)
 		{
-			ThenColumnShouldBe(name, dataType, defaultExpression, description);
+			ThenColumnShouldBe(name, dataType, defaultExpression, defaultConstraintName, description);
 			Assert.That(_column.Nullable, Is.EqualTo(nullable));
 
 			var notNullClause = ConvertToNotNullClause(nullable);
 			var sparseClause = ConvertToSparseClause(nullable);
-			var defaultClause = ConvertToDefaultClause(defaultExpression, "guid", "dbo", false);
+			var defaultClause = ConvertToDefaultClause(defaultExpression, defaultConstraintName, false);
 
 			var rowGuidColClause = "";
 			if (rowGuidCol)
 			{
+				// ReSharper disable once StringLiteralTypo
 				rowGuidColClause = " rowguidcol";
 			}
 
 			var dataTypeName = dataType.ToString().ToLowerInvariant();
-			Assert.That(_column.GetColumnDefinition("guid", "dbo", false), Is.EqualTo(string.Format("[{0}] {1}{2}{3}{4}{5}", name, dataTypeName, notNullClause, defaultClause, rowGuidColClause,sparseClause)));
+			var expectedDefinition = $"[{name}] {dataTypeName}{notNullClause}{defaultClause}{rowGuidColClause}{sparseClause}";
+			Assert.That(_column.GetColumnDefinition(false), Is.EqualTo(expectedDefinition));
 		}
 
-		private void ThenColumnShouldBe(string name, DataType dataType, CharacterLength size, string collation, Nullable nullable, string defaultExpression, string description)
+		private void ThenColumnShouldBe(string name, DataType dataType, CharacterLength size, string collation, Nullable nullable, string defaultExpression, string defaultConstraintName, string description)
 		{
-			ThenColumnShouldBe(name, dataType, defaultExpression, description);
+			ThenColumnShouldBe(name, dataType, defaultExpression, defaultConstraintName, description);
 			Assert.That(_column.Nullable, Is.EqualTo(nullable));
 
 			var sizeClause = "(max)";
@@ -773,43 +834,44 @@ namespace Rivet.Test
 
 			var notNullClause = ConvertToNotNullClause(nullable);
 			var sparseClause = ConvertToSparseClause(nullable);
-			var defaultClause = ConvertToDefaultClause(defaultExpression, "character", "char", true);
+			var defaultClause = ConvertToDefaultClause(defaultExpression, defaultConstraintName, true);
 
 			var expectedDefintion = string.Format("[{0}] {1}{2}{3}{4}{5}{6}", name, dataType.ToString().ToLowerInvariant(), sizeClause, collationClause, notNullClause,
 			                                      defaultClause,sparseClause);
-			Assert.That(_column.GetColumnDefinition("character", "char", true), Is.EqualTo(expectedDefintion));
+			Assert.That(_column.GetColumnDefinition(true), Is.EqualTo(expectedDefintion));
 		}
 
-		private void ThenColumnShouldBe(string name, DataType dataType, string defaultExpression, string description)
+		private void ThenColumnShouldBe(string name, DataType dataType, string defaultExpression, string defaultConstraintName, string description)
 		{
 			Assert.That(_column.Name, Is.EqualTo(name));
 			Assert.That(_column.DataType, Is.EqualTo(dataType));
 			Assert.That(_column.DefaultExpression, Is.EqualTo(defaultExpression));
+			Assert.That(_column.DefaultConstraintName, Is.EqualTo(defaultConstraintName));
 			Assert.That(_column.Description, Is.EqualTo(description));
 		}
 
-		private void ThenColumnShouldBe(string name, DataType dataType, Nullable nullable, string defaultExpression, string description)
+		private void ThenColumnShouldBe(string name, DataType dataType, Nullable nullable, string defaultExpression, string defaultConstraintName, string description)
 		{
-			ThenColumnShouldBe(name, dataType, defaultExpression, description);
+			ThenColumnShouldBe(name, dataType, defaultExpression, defaultConstraintName, description);
 			Assert.That(_column.Nullable, Is.EqualTo(nullable));
 
 			var notNullClause = ConvertToNotNullClause(nullable);
 			var sparseClause = ConvertToSparseClause(nullable);
-			var defaultClause = ConvertToDefaultClause(defaultExpression, "any", "any", false);
+			var defaultClause = ConvertToDefaultClause(defaultExpression, defaultConstraintName, false);
 
-			Assert.That(_column.GetColumnDefinition("any","any",false), Is.EqualTo(string.Format("[{0}] {1}{2}{3}{4}", name, dataType, notNullClause, defaultClause, sparseClause)));
+			Assert.That(_column.GetColumnDefinition(false), Is.EqualTo(string.Format("[{0}] {1}{2}{3}{4}", name, dataType, notNullClause, defaultClause, sparseClause)));
 		}
 
 		private void ThenColumnShouldBe(string name, DataType dataType, ColumnSize size, bool filestream,
-		                                Nullable nullable, string defaultExpression, string description)
+		                                Nullable nullable, string defaultExpression, string defaultConstraintName, string description)
 		{
 			Assert.That(_column.FileStream, Is.EqualTo(filestream));
-			ThenColumnShouldBe(name, dataType, size, nullable, defaultExpression, description);
+			ThenColumnShouldBe(name, dataType, size, nullable, defaultExpression, defaultConstraintName, description);
 		}
 
-		private void ThenColumnShouldBe(string name, DataType dataType, ColumnSize size, Nullable nullable, string defaultExpression, string description)
+		private void ThenColumnShouldBe(string name, DataType dataType, ColumnSize size, Nullable nullable, string defaultExpression, string defaultConstraintName, string description)
 		{
-			ThenColumnShouldBe(name, dataType, defaultExpression, description);
+			ThenColumnShouldBe(name, dataType, defaultExpression, defaultConstraintName, description);
 			var sizeClause = "";
 			if (size == null)
 			{
@@ -837,43 +899,44 @@ namespace Rivet.Test
 			
 			var notNullClause = ConvertToNotNullClause(nullable);
 			var sparseClause = ConvertToSparseClause(nullable);
-			var defaultClause = ConvertToDefaultClause(defaultExpression, "precision", "scale", true);
+			var defaultClause = ConvertToDefaultClause(defaultExpression, defaultConstraintName, true);
 
-			var filestreamClause = "";
+			var fileStreamClause = "";
 			if (_column.FileStream)
 			{
-				filestreamClause = " filestream";
+				// ReSharper disable once StringLiteralTypo
+				fileStreamClause = " filestream";
 			}
 
-			var expectedDefinition = string.Format("[{0}] {1}{2}{3}{4}{5}{6}", name, dataType.ToString().ToLowerInvariant(),
-			                                       sizeClause, filestreamClause, notNullClause, defaultClause, sparseClause);
-			Assert.That(_column.GetColumnDefinition("precision", "scale", true), Is.EqualTo(expectedDefinition));
+			var expectedDefinition =
+				$"[{name}] {dataType.ToString().ToLowerInvariant()}{sizeClause}{fileStreamClause}{notNullClause}{defaultClause}{sparseClause}";
+			Assert.That(_column.GetColumnDefinition(true), Is.EqualTo(expectedDefinition));
 		}
 
 		private void ThenColumnShouldBe(string name, DataType dataType, Identity identity, string description)
 		{
-			ThenColumnShouldBe(name, dataType, (string)null, description);
+			ThenColumnShouldBe(name, dataType, null, null as string, description);
 			Assert.That(_column.Nullable, Is.EqualTo(Nullable.NotNull));
 			Assert.That(_column.Identity.Seed, Is.EqualTo(identity.Seed));
 			Assert.That(_column.Identity.Increment, Is.EqualTo(identity.Increment));
 			Assert.That(_column.Identity.NotForReplication, Is.EqualTo(identity.NotForReplication));
 			Assert.That(_column.Identity.ToString(), Is.EqualTo(identity.ToString()));
-			Assert.That(_column.GetColumnDefinition("identity", "id", false), Contains.Substring(identity.ToString()));
-			var expectedDefinition = string.Format("[{0}] {1} {2}", name, dataType.ToString().ToLowerInvariant(), identity);
-			Assert.That(_column.GetColumnDefinition("identity", "id", false), Is.EqualTo(expectedDefinition));
+			Assert.That(_column.GetColumnDefinition(false), Contains.Substring(identity.ToString()));
+			var expectedDefinition = $"[{name}] {dataType.ToString().ToLowerInvariant()} {identity}";
+			Assert.That(_column.GetColumnDefinition(false), Is.EqualTo(expectedDefinition));
 		}
 
 		private void ThenColumnShouldBe(string name, DataType dataType, ColumnSize size, Identity identity, string description)
 		{
-			ThenColumnShouldBe(name, dataType, (string)null, description);
+			ThenColumnShouldBe(name, dataType, null, null as string, description);
 			Assert.That(_column.Size, Is.Not.Null);
 			Assert.That(_column.Size.ToString(), Is.EqualTo(size.ToString()));
 			Assert.That(_column.Identity.Seed, Is.EqualTo(identity.Seed));
 			Assert.That(_column.Identity.Increment, Is.EqualTo(identity.Increment));
 			Assert.That(_column.Identity.NotForReplication, Is.EqualTo(identity.NotForReplication));
 			Assert.That(_column.Identity.ToString(), Is.EqualTo(identity.ToString()));
-			var expectedDefinition = string.Format("[{0}] {1}{2} {3}", name, dataType.ToString().ToLowerInvariant(), size, identity);
-			Assert.That(_column.GetColumnDefinition("precisionscale", "identity", true), Is.EqualTo(expectedDefinition));
+			var expectedDefinition = $"[{name}] {dataType.ToString().ToLowerInvariant()}{size} {identity}";
+			Assert.That(_column.GetColumnDefinition(true), Is.EqualTo(expectedDefinition));
 		}
 
 		private static string ConvertToNotNullClause(Nullable nullable)

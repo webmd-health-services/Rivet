@@ -13,6 +13,8 @@ function Start-RivetTest
     
     Set-StrictMode -Version Latest
 
+    $Global:Error.Clear()
+
     if( (Test-Pester) )
     {
         $script:RTTestRoot = Join-Path -Path $TestDrive.FullName -ChildPath ([IO.Path]::GetRandomFileName())
