@@ -40,7 +40,7 @@ function Invoke-RivetTestQuery
     if( -not $connection -or $connection.State -ne [Data.ConnectionState]::Open )
     {
         $Connection = New-SqlConnection -Database $DatabaseName
-        Write-Verbose -Message ('                {0}' -f $Connection.ConnectionString)
+        Write-Debug -Message ('                {0}' -f $Connection.ConnectionString)
     }
 
     if( -not $PSBoundParameters.ContainsKey('Connection') )
@@ -48,7 +48,7 @@ function Invoke-RivetTestQuery
         if( $Connection.Database -ne $DatabaseName )
         {
             $Connection.ChangeDatabase( $DatabaseName )
-            Write-Verbose -Message ('                {0}' -f $Connection.ConnectionString)
+            Write-Debug -Message ('                {0}' -f $Connection.ConnectionString)
         }
     }
 
