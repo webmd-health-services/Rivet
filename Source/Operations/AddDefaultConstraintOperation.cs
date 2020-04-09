@@ -5,20 +5,13 @@ namespace Rivet.Operations
 	[ObjectRemovedByOperation(typeof(RemoveDefaultConstraintOperation))]
 	public sealed class AddDefaultConstraintOperation : ConstraintOperation
 	{
-		public AddDefaultConstraintOperation(string schemaName, string tableName, string expression, string columnName,
-											 bool withValues)
-			: base(schemaName, tableName, new ConstraintName(schemaName, tableName, new[]{columnName}, ConstraintType.Default).ToString(), ConstraintType.Default)
+		public AddDefaultConstraintOperation(string schemaName, string tableName, string name, 
+											 string columnName, string expression, bool withValues)
+			: base(schemaName, tableName, name, ConstraintType.Default)
 		{
 			Expression = expression;
 			ColumnName = columnName;
 			WithValues = withValues;
-		}
-
-		public AddDefaultConstraintOperation(string schemaName, string tableName, string expression, string columnName, string name,
-									 bool withValues)
-			: this(schemaName, tableName, expression, columnName, withValues)
-		{
-			Name = name;
 		}
 
 		public string ColumnName { get; set; }
@@ -29,7 +22,7 @@ namespace Rivet.Operations
 
 		public override string ToIdempotentQuery()
 		{
-			return String.Format("if object_id('{0}.{1}', 'D') is null{2}\t{3}", SchemaName, Name, Environment.NewLine, ToQuery());
+			return $"if object_id('{SchemaName}.{Name}', 'D') is null{Environment.NewLine}\t{ToQuery()}";
 		}
 
 		public override string ToQuery()
@@ -37,11 +30,11 @@ namespace Rivet.Operations
 			var withValuesClause = "";
 			if (WithValues)
 			{
-				withValuesClause = "with values";
+				withValuesClause = " with values";
 			}
 
-			return string.Format("alter table [{0}].[{1}] add constraint [{2}] default {3} for [{4}] {5}",
-					SchemaName, TableName, Name, Expression, ColumnName, withValuesClause);
+			return
+				$"alter table [{SchemaName}].[{TableName}] add constraint [{Name}] default {Expression} for [{ColumnName}]{withValuesClause}";
 		}
 	}
 }

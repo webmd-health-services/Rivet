@@ -12,7 +12,7 @@ namespace Rivet.Test.Operations
 		{
 			var schemaName = "schemaName";
 			var tableName = "tableName";
-			var column1 = Column.VarChar("name", new CharacterLength(50), null, Nullable.NotNull, "''", "varchar column");
+			var column1 = Column.VarChar("name", new CharacterLength(50), null, Nullable.NotNull, "''", "default constraint name", "varchar column");
 			Identity identity = new Identity();
 			var column2 = Column.Int("int column", identity, "test int column");
 			Column[] columnlist = new Column[] { column1, column2 };
@@ -43,7 +43,7 @@ namespace Rivet.Test.Operations
 		{
 			var schemaName = "schemaName";
 			var tableName = "tableName";
-			var column1 = Column.VarChar("name", new CharacterLength(50), null, Nullable.NotNull, "''", "varchar column");
+			var column1 = Column.VarChar("name", new CharacterLength(50), null, Nullable.NotNull, "''", "default constraint name", "varchar column");
 			Identity identity = new Identity();
 			var column2 = Column.Int("int column", identity, "test int column");
 			Column[] columnlist = new Column[] { column1, column2 };
@@ -65,7 +65,7 @@ namespace Rivet.Test.Operations
 		{
 			var schemaName = "schemaName";
 			var tableName = "tableName";
-			var column1 = Column.VarChar("name", new CharacterLength(50), null, Nullable.NotNull, "''", "varchar column");
+			var column1 = Column.VarChar("name", new CharacterLength(50), null, Nullable.NotNull, "''", "default constraint name", "varchar column");
 			Identity identity = new Identity();
 			var column2 = Column.Int("int column", identity, "test int column");
 			Column[] columnlist = new Column[] { column1, column2 };
@@ -76,7 +76,15 @@ namespace Rivet.Test.Operations
 			string[] options = new string[] { "option1", "option2" };
 
 			var op = new AddTableOperation(schemaName, tableName, columnlist, fileTable, fileGroup, textImageFileGroup, fileStremFileGroup, options);
-			var expectedQuery = String.Format(@"create table [schemaName].[tableName] ({0}    [name] varchar(50) not null constraint [DF_schemaName_tableName_name] default '',{0}    [int column] int identity not null{0}){0}on fileGroup{0}textimage_on textImageFileGroup{0}filestream_on fileGroup{0}with ( option1, option2 )", Environment.NewLine);
+			var expectedQuery = 
+				$@"create table [schemaName].[tableName] ({Environment.NewLine}" + 
+				$"    [name] varchar(50) not null constraint [default constraint name] default '',{Environment.NewLine}" + 
+				$"    [int column] int identity not null{Environment.NewLine})" + 
+				$"{Environment.NewLine}" + 
+				$"on fileGroup{Environment.NewLine}" + 
+				$"textimage_on textImageFileGroup{Environment.NewLine}" + 
+				$"filestream_on fileGroup{Environment.NewLine}" + 
+"with ( option1, option2 )";
 
 			Assert.That(op.ToQuery(), Is.EqualTo(expectedQuery));
 		}
@@ -86,11 +94,13 @@ namespace Rivet.Test.Operations
 		{
 			var schemaName = "schemaName";
 			var tableName = "tableName";
-			var column1 = Column.VarChar("name", new CharacterLength(50), null, Nullable.NotNull, "''", "varchar column");
+			var column1 = Column.VarChar("name", new CharacterLength(50), null, Nullable.NotNull, "''", "default constraint name", "varchar column");
 			Column[] columnlist = { column1 };
 
 			var op = new AddTableOperation(schemaName, tableName, columnlist, false, null, null, null, null);
-			var expectedQuery = String.Format(@"create table [schemaName].[tableName] ({0}    [name] varchar(50) not null constraint [DF_schemaName_tableName_name] default ''{0})", Environment.NewLine);
+			var expectedQuery =
+				$@"create table [schemaName].[tableName] ({Environment.NewLine}" + 
+				$"    [name] varchar(50) not null constraint [default constraint name] default ''{Environment.NewLine})";
 
 			Assert.That(op.ToQuery(), Is.EqualTo(expectedQuery));
 		}
@@ -100,7 +110,7 @@ namespace Rivet.Test.Operations
 		{
 			var schemaName = "schemaName";
 			var tableName = "tableName";
-			var column1 = Column.VarChar("name", new CharacterLength(50), null, Nullable.NotNull, "''", "varchar column");
+			var column1 = Column.VarChar("name", new CharacterLength(50), null, Nullable.NotNull, "''", "default constraint name", "varchar column");
 			Identity identity = new Identity();
 			var column2 = Column.Int("int column", identity, "test int column");
 			Column[] columnlist = new Column[] { column1, column2 };
@@ -121,7 +131,7 @@ namespace Rivet.Test.Operations
 		{
 			var schemaName = "schemaName";
 			var tableName = "tableName";
-			var column1 = Column.VarChar("name", new CharacterLength(50), null, Nullable.NotNull, "''", "varchar column");
+			var column1 = Column.VarChar("name", new CharacterLength(50), null, Nullable.NotNull, "''", "default constraint name", "varchar column");
 			Identity identity = new Identity();
 			var column2 = Column.Int("int column", identity, "test int column");
 			Column[] columnlist = new Column[] { column1, column2 };
@@ -141,7 +151,7 @@ namespace Rivet.Test.Operations
 		{
 			var schemaName = "schemaName";
 			var tableName = "tableName";
-			var column1 = Column.VarChar("name", new CharacterLength(50), null, Nullable.NotNull, "''", "varchar column");
+			var column1 = Column.VarChar("name", new CharacterLength(50), null, Nullable.NotNull, "''", "default constraint name", "varchar column");
 			Identity identity = new Identity();
 			var column2 = Column.Int("int column", identity, "test int column");
 			Column[] columnlist = new Column[] { column1, column2 };
@@ -162,7 +172,7 @@ namespace Rivet.Test.Operations
 		{
 			var schemaName = "schemaName";
 			var tableName = "tableName";
-			var column1 = Column.VarChar("name", new CharacterLength(50), null, Nullable.NotNull, "''", "varchar column");
+			var column1 = Column.VarChar("name", new CharacterLength(50), null, Nullable.NotNull, "''", "default constraint name", "varchar column");
 			Identity identity = new Identity();
 			var column2 = Column.Int("int column", identity, "test int column");
 			Column[] columnlist = new Column[] { column1, column2 };
@@ -193,16 +203,16 @@ namespace Rivet.Test.Operations
 			var columns = new Column[]
 			{
 				Column.Int("id", null, "description"),
-				Column.VarChar("name", new CharacterLength(50), "collation", Nullable.Null, "", "description"),
-				Column.Char("flag", new CharacterLength(1), "collation", Nullable.NotNull, "", "description")
+				Column.VarChar("name", new CharacterLength(50), "collation", Nullable.Null, null, null, "description"),
+				Column.Char("flag", new CharacterLength(1), "collation", Nullable.NotNull, null, null, "description")
 			};
 			var op = new AddTableOperation("schema", "table", columns, false, "filegroup", "textimagefilegroup", "filetreamfilegroup", new string[0]);
 
 			var updatedColumns = new Column[]
 			{
 				Column.BigInt("ID", new Identity(), "new_description"),
-				Column.NVarChar("NAME", new CharacterLength(25), "new collation", Nullable.NotNull, "default", "new description"),
-				Column.NVarChar("donotexist", new CharacterLength(25), "new collation", Nullable.NotNull, "default", "new description")
+				Column.NVarChar("NAME", new CharacterLength(25), "new collation", Nullable.NotNull, "default", "default constraint name", "new description"),
+				Column.NVarChar("donotexist", new CharacterLength(25), "new collation", Nullable.NotNull, "default", "default constraint name", "new description")
 			};
 			var updateOp = new UpdateTableOperation("schema", "table", null, updatedColumns, null);
 			op.Merge(updateOp);
@@ -219,14 +229,14 @@ namespace Rivet.Test.Operations
 			var columns = new Column[]
 			{
 				Column.Int("id", null, "description"),
-				Column.VarChar("name", new CharacterLength(50), "collation", Nullable.Null, "", "description"),
+				Column.VarChar("name", new CharacterLength(50), "collation", Nullable.Null, null, null, "description"),
 			};
 			var op = new AddTableOperation("schema", "table", columns, false, "filegroup", "textimagefilegroup", "filetreamfilegroup", new string[0]);
 
 			var newColumns = new Column[]
 			{
 				Column.BigInt("third", new Identity(), "new_description"),
-				Column.NVarChar("fourth", new CharacterLength(25), "new collation", Nullable.NotNull, "default", "description")
+				Column.NVarChar("fourth", new CharacterLength(25), "new collation", Nullable.NotNull, "default", "default constraint name", "description")
 			};
 			var updateOp = new UpdateTableOperation("schema", "table", newColumns, null, null);
 			op.Merge(updateOp);
@@ -244,8 +254,8 @@ namespace Rivet.Test.Operations
 			var columns = new []
 			{
 				Column.Int("id", null, "description"),
-				Column.VarChar("name", new CharacterLength(50), "collation", Nullable.Null, "", "description"),
-				Column.Char("flag", new CharacterLength(1), "collation", Nullable.NotNull, "", "description")
+				Column.VarChar("name", new CharacterLength(50), "collation", Nullable.Null, null, null, "description"),
+				Column.Char("flag", new CharacterLength(1), "collation", Nullable.NotNull, null, null, "description")
 			};
 			var op = new AddTableOperation("schema", "table", columns, false, "filegroup", "textimagefilegroup", "filetreamfilegroup", new string[0]);
 
@@ -263,7 +273,7 @@ namespace Rivet.Test.Operations
 			var columns = new []
 			{
 				Column.Int("id", null, "description"),
-				Column.VarChar("name", new CharacterLength(50), "collation", Nullable.Null, null, "description")
+				Column.VarChar("name", new CharacterLength(50), "collation", Nullable.Null, null, null, "description")
 			};
 			var op = new AddTableOperation("schema", "table", columns, false, "filegroup", "textimagefilegroup", "filestreamfilegroup", new string[0]);
 			var renameColumnOp = new RenameColumnOperation("SCHEMA", "TABLE", "NAME", "newname");
@@ -280,10 +290,11 @@ namespace Rivet.Test.Operations
 			var columns = new Column[]
 			{
 				Column.Int("id", null, "description"),
-				Column.VarChar("name", new CharacterLength(50), "collation", Nullable.Null, null, "description")
+				Column.VarChar("column", new CharacterLength(50), "collation", Nullable.Null, null, null, "description")
 			};
-			var op = new AddTableOperation("schema", "table", columns, false, "filegroup", "textimagefilegroup", "filestreamfilegroup", new string[0]);
-			var addDefaultConstraintOp = new AddDefaultConstraintOperation("SCHEMA", "TABLE", "default", "NAME", false);
+			var op = new AddTableOperation("schema", "table", columns, false, "file group", "textimagefilegroup", "filestreamfilegroup", new string[0]);
+			var addDefaultConstraintOp = 
+				new AddDefaultConstraintOperation("SCHEMA", "TABLE", "NAME", "COLUMN", "default", false);
 			op.Merge(addDefaultConstraintOp);
 			Assert.That(op.Disabled, Is.False);
 			Assert.That(addDefaultConstraintOp.Disabled, Is.True);
@@ -297,10 +308,11 @@ namespace Rivet.Test.Operations
 			var columns = new Column[]
 			{
 				Column.Int("id", null, "description"),
-				Column.VarChar("name", new CharacterLength(50), "collation", Nullable.Null, null, "description")
+				Column.VarChar("column", new CharacterLength(50), "collation", Nullable.Null, null, null, "description")
 			};
-			var op = new AddTableOperation("schema", "table", columns, false, "filegroup", "textimagefilegroup", "filestreamfilegroup", new string[0]);
-			var addDefaultConstraintOp = new AddDefaultConstraintOperation("SCHEMA", "TABLE", "default", "NAME", true);
+			var op = new AddTableOperation("schema", "table", columns, false, "file group", "text image file group", "filestreamfilegroup", new string[0]);
+			var addDefaultConstraintOp = 
+				new AddDefaultConstraintOperation("SCHEMA", "TABLE", "NAME", "COLUMN", "default", true);
 			op.Merge(addDefaultConstraintOp);
 			Assert.That(op.Disabled, Is.False);
 			Assert.That(addDefaultConstraintOp.Disabled, Is.False);
@@ -317,7 +329,7 @@ namespace Rivet.Test.Operations
 			var columns = new Column[]
 			{
 				Column.Int("id", null, "description"),
-				Column.VarChar("column", new CharacterLength(50), "collation", Nullable.Null, "default", "description")
+				Column.VarChar("column", new CharacterLength(50), "collation", Nullable.Null, "default", "default constraint name", "description")
 			};
 			var op = new AddTableOperation("schema", "table", columns, false, "filegroup", "textimagefilegroup", "filestreamfilegroup", new string[0]);
 			var addDefaultConstraintOp = new RemoveDefaultConstraintOperation("SCHEMA", "TABLE", columnName, "NAME");
@@ -342,8 +354,8 @@ namespace Rivet.Test.Operations
 		{
 			var columns = new Column[]
 			{
-				Column.UniqueIdentifier("name", false, Nullable.NotNull, "default expression", "description"),
-				Column.UniqueIdentifier("name2", false, Nullable.NotNull, "default expression", "description"),
+				Column.UniqueIdentifier("name", false, Nullable.NotNull, "default expression", "default constraint name", "description"),
+				Column.UniqueIdentifier("name2", false, Nullable.NotNull, "default expression", "default constraint name", "description"),
 			};
 			var op = new AddTableOperation("schema", "table", columns, false, "file group", "text image file group", "file stream file group", new string[0]);
 			var addRowGuidColOp = new AddRowGuidColOperation("SCHEMA", "TABLE", "name");
@@ -359,7 +371,7 @@ namespace Rivet.Test.Operations
 		{
 			var columns = new Column[]
 			{
-				Column.NVarChar("name", new CharacterLength(50), "collation", Nullable.Null, null, "description"),
+				Column.NVarChar("name", new CharacterLength(50), "collation", Nullable.Null, null, null, "description"),
 			};
 			var op = new AddTableOperation("schema", "table", columns, false, "file group", "text image file group", "file stream file group", new string[0]);
 			var addRowGuidColOp = new AddRowGuidColOperation("SCHEMA", "TABLE", "name");
@@ -374,8 +386,8 @@ namespace Rivet.Test.Operations
 		{
 			var columns = new Column[]
 			{
-				Column.UniqueIdentifier("name", true, Nullable.NotNull, "default expression", "description"),
-				Column.UniqueIdentifier("name2", true, Nullable.NotNull, "default expression", "description"),
+				Column.UniqueIdentifier("name", true, Nullable.NotNull, "default expression", "default constraint name", "description"),
+				Column.UniqueIdentifier("name2", true, Nullable.NotNull, "default expression", "default constraint name", "description"),
 			};
 			var op = new AddTableOperation("schema", "table", columns, false, "file group", "text image file group", "file stream file group", new string[0]);
 			var addRowGuidColOp = new RemoveRowGuidColOperation("SCHEMA", "TABLE", "name");
@@ -391,7 +403,7 @@ namespace Rivet.Test.Operations
 		{
 			var columns = new Column[]
 			{
-				Column.NVarChar("name", new CharacterLength(50), "collation", Nullable.Null, null, "description"),
+				Column.NVarChar("name", new CharacterLength(50), "collation", Nullable.Null, null, null, "description"),
 			};
 			var op = new AddTableOperation("schema", "table", columns, false, "file group", "text image file group", "file stream file group", new string[0]);
 			var addRowGuidColOp = new AddRowGuidColOperation("SCHEMA", "TABLE", "name");
@@ -406,15 +418,15 @@ namespace Rivet.Test.Operations
 		{
 			var columns = new[]
 			{
-				Column.Int("ID", Nullable.NotNull, null, null),
-				Column.VarChar("Name", new CharacterLength(500), null, Nullable.NotNull, null, null),
+				Column.Int("ID", Nullable.NotNull, null, null, null),
+				Column.VarChar("Name", new CharacterLength(500), null, Nullable.NotNull, null, null, null),
 			};
 			var addTableOp = new AddTableOperation("skma", "Farmers", columns, false, null, null, null, new string[0]);
 			var updateNameColumnOp = new UpdateTableOperation("skma", "Farmers",
-				new[] { Column.VarChar("NAME", new CharacterLength(50), null, Nullable.NotNull, null, null) }, null,
+				new[] { Column.VarChar("NAME", new CharacterLength(50), null, Nullable.NotNull, null, null, null) }, null,
 				null);
 			var updateZipColumnOp = new UpdateTableOperation("skma", "Farmers",
-				new[] { Column.VarChar("Zip", new CharacterLength(10), null, Nullable.Null, null, null) }, null, null);
+				new[] { Column.VarChar("Zip", new CharacterLength(10), null, Nullable.Null, null, null, null) }, null, null);
 			var renameZipColumnOp = new RenameColumnOperation("skma", "Farmers", "ZIP", "ZipCode");
 			updateZipColumnOp.Merge(renameZipColumnOp);
 			updateNameColumnOp.Merge(renameZipColumnOp);
@@ -432,6 +444,46 @@ namespace Rivet.Test.Operations
 			Assert.That(addTableOp.Columns[0].Name, Is.EqualTo("ID"));
 			Assert.That(addTableOp.Columns[1].Name, Is.EqualTo("NAME"));
 			Assert.That(addTableOp.Columns[2].Name, Is.EqualTo("ZipCode"));
+		}
+
+		[Test]
+		public void ShouldMergeDefaultConstraintNameWhenMergingAddDefaultConstraintOp()
+		{
+			var columns = new[]
+			{
+				Column.Int("ID", Nullable.NotNull, null, null, null),
+				Column.VarChar("Name", new CharacterLength(500), null, Nullable.NotNull, null, null, null),
+			};
+			var op = new AddTableOperation("schema", "table", columns, false, null, null, null, new string[0]);
+			var addDefaultConstraintOp =
+				new AddDefaultConstraintOperation("SCHEMA", "TABLE", "DF_NAME", "NAME", "expression", false);
+			op.Merge(addDefaultConstraintOp);
+			Assert.That(op.Disabled, Is.False);
+			Assert.That(addDefaultConstraintOp.Disabled, Is.True);
+			Assert.That(op.Columns[0].DefaultExpression, Is.Null);
+			Assert.That(op.Columns[0].DefaultConstraintName, Is.Null);
+			Assert.That(op.Columns[1].DefaultExpression, Is.EqualTo("expression"));
+			Assert.That(op.Columns[1].DefaultConstraintName, Is.EqualTo("DF_NAME"));
+		}
+
+		[Test]
+		public void ShouldNotMergeDefaultConstraintNameWhenMergingAddDefaultConstraintWithValuesOp()
+		{
+			var columns = new[]
+			{
+				Column.Int("ID", Nullable.NotNull, null, null, null),
+				Column.VarChar("Name", new CharacterLength(500), null, Nullable.NotNull, null, null, null),
+			};
+			var op = new AddTableOperation("schema", "table", columns, false, null, null, null, new string[0]);
+			var addDefaultConstraintOp =
+				new AddDefaultConstraintOperation("SCHEMA", "TABLE", "DF_NAME", "NAME", "expression", true);
+			op.Merge(addDefaultConstraintOp);
+			Assert.That(op.Disabled, Is.False);
+			Assert.That(addDefaultConstraintOp.Disabled, Is.False);
+			Assert.That(op.Columns[0].DefaultExpression, Is.Null);
+			Assert.That(op.Columns[0].DefaultConstraintName, Is.Null);
+			Assert.That(op.Columns[1].DefaultExpression, Is.Null);
+			Assert.That(op.Columns[1].DefaultConstraintName, Is.Null);
 		}
 	}
 }

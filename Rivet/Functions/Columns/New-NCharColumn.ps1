@@ -32,40 +32,33 @@ function New-NCharColumn
     #>
     [CmdletBinding(DefaultParameterSetName='Nullable')]
     param(
-        [Parameter(Mandatory=$true,Position=0)]
-        [string]
+        [Parameter(Mandatory,Position=0)]
         # The column's name.
-        $Name,
+        [String]$Name,
 
-        [Parameter(Mandatory=$true,Position=1)]
-        [Int]
+        [Parameter(Mandatory,Position=1)]
         # Defines the string Size of the fixed-Size string data.  Default is 30
-        $Size,
+        [int]$Size,
 
-        [Parameter()]
-        [string]
         # Controls the code page that is used to store the data
-        $Collation,
+        [String]$Collation,
 
-        [Parameter(Mandatory=$true,ParameterSetName='NotNull')]
-        [Switch]
+        [Parameter(Mandatory,ParameterSetName='NotNull')]
         # Don't allow `NULL` values in this column.
-        $NotNull,
+        [switch]$NotNull,
 
         [Parameter(ParameterSetName='Nullable')]
-        [Switch]
         # Store nulls as Sparse.
-        $Sparse,
+        [switch]$Sparse,
 
-        [Parameter()]
-        [string]
         # A SQL Server expression for the column's default value 
-        $Default,
+        [String]$Default,
+
+        # The name of the default constraint for the column's default expression. Required if the Default parameter is given.
+        [String]$DefaultConstraintName,
             
-        [Parameter()]
-        [string]
         # A description of the column.
-        $Description
+        [String]$Description
     )
 
     $Sizetype = $null
@@ -82,7 +75,7 @@ function New-NCharColumn
     {
         $nullable = 'Sparse'
     }
-    [Rivet.Column]::NChar($Name, $Sizetype, $Collation, $nullable, $Default, $Description)
+    [Rivet.Column]::NChar($Name, $Sizetype, $Collation, $nullable, $Default, $DefaultConstraintName, $Description)
 }
     
 Set-Alias -Name 'NChar' -Value 'New-NCharColumn'

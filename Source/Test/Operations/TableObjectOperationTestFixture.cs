@@ -69,7 +69,7 @@ namespace Rivet.Test.Operations
 			var tableObjectOps = new TableObjectOperation[]
 			{
 				new AddCheckConstraintOperation("schema", "table", "column", "expression", false, false),
-				new AddDefaultConstraintOperation("schema", "table", "expression", "column", false),
+				new AddDefaultConstraintOperation("schema", "table", "name", "column", "expression", false),
 				new AddForeignKeyOperation("schema", "table", new[] {"column"}, "ref_schema", "ref_table",
 					new[] {"ref_column"}, "onDelete", "onUpdate", false, false),
 				new AddIndexOperation("schema", "table", null, false, false, null, null, null, null, null),

@@ -4,13 +4,15 @@ function Assert-Table
     param(
         $Name,
 
-        [string]
-        $SchemaName = 'dbo',
+        [String]$SchemaName = 'dbo',
 
         $Description,
 
-        [int]
-        $DataCompression
+        [int]$DataCompression,
+
+        [switch]$Not,
+
+        [switch]$Exists
     )
     
     Set-StrictMode -Version Latest
@@ -19,6 +21,12 @@ function Assert-Table
 
     if( (Test-Pester) )
     {
+        if( $Not -and $Exists )
+        {
+            $table | Should -BeNullOrEmpty -Because "table [$($SchemaName)].[$($Name)] was created but should not exist"
+            return
+        }
+
         $table | Should -Not -BeNullOrEmpty
         if( $PSBoundParameters.ContainsKey('Description') )
         {
@@ -44,5 +52,6 @@ function Assert-Table
             Assert-Equal $DataCompression $table.data_compression ('table {0} data compression option not set' -f $Name)
         }
     }
-
 }
+
+Set-Alias -Name 'ThenTable' -Value 'Assert-Table'
