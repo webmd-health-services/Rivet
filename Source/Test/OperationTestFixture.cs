@@ -102,7 +102,7 @@ namespace Rivet.Test
                 new AddSynonymOperation("schema", "name", "target schema name", "target database name", "target object name"), 
                 new AddTableOperation("schema", "name", new Column[0], false, "file group", "text image file group", "file stream file group", new string[0]), 
                 new AddTriggerOperation("schema", "name", "definition"), 
-                new AddUniqueKeyOperation("schema", "table", new string[0], "name", false, 0, new string[0], "file group"), 
+                new AddUniqueKeyOperation("schema", "table", "name", new string[0], false, 0, new string[0], "file group"), 
                 new AddUserDefinedFunctionOperation("schema", "name", "definition"), 
                 new AddViewOperation("schema", "name", "definition"), 
                 new UpdateStoredProcedureOperation("schema", "name", "definition"), 

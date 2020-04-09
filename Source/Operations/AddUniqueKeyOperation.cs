@@ -6,35 +6,26 @@ namespace Rivet.Operations
 	[ObjectRemovedByOperation(typeof(RemoveUniqueKeyOperation))]
 	public sealed class AddUniqueKeyOperation : ConstraintOperation
 	{
-		//System Generated Constraint Name
-		public AddUniqueKeyOperation(string schemaName, string tableName, string[] columnName, bool clustered,
-										int fillFactor, string[] options, string filegroup)
-			: base(schemaName, tableName, new ConstraintName(schemaName, tableName, columnName, ConstraintType.UniqueKey).ToString(), ConstraintType.UniqueKey)
+		public AddUniqueKeyOperation(string schemaName, string tableName, string name, string[] columnName,
+			bool clustered, int fillFactor, string[] options, string fileGroup)
+			: base(schemaName, tableName, name, ConstraintType.UniqueKey)
 		{
 			ColumnName = new List<string>(columnName);
 			Clustered = clustered;
 			FillFactor = fillFactor;
 			Options = new List<string>(options ?? new string[0]);
-			FileGroup = filegroup;
-		}
-
-		//Custom Constraint Name
-		public AddUniqueKeyOperation(string schemaName, string tableName, string[] columnName, string customConstraintName, bool clustered,
-									int fillFactor, string[] options, string filegroup)
-			: this(schemaName, tableName, columnName, clustered, fillFactor, options, filegroup)
-		{
-			Name = customConstraintName;
+			FileGroup = fileGroup;
 		}
 
 		public bool Clustered { get; set; }
 
-		public List<string> ColumnName { get; private set; }
+		public List<string> ColumnName { get; }
 
 		public string FileGroup { get; set; }
 
 		public int FillFactor { get; set; }
 
-		public List<string> Options { get; private set; }
+		public List<string> Options { get; }
 
 		public override string ToIdempotentQuery()
 		{
