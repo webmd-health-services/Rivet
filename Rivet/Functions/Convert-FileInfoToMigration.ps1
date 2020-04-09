@@ -3,20 +3,18 @@ function Convert-FileInfoToMigration
 {
     <#
     .SYNOPSIS
-    Converts a `System.IO.FileInfo` object containing a migration into a `Rivet.Operation` object.
+    Converts a `System.IO.FileInfo` object containing a migration into a `Rivet.Operations.Operation` object.
     #>
     [CmdletBinding()]
     [OutputType([Rivet.Migration])]
     param(
-        [Parameter(Mandatory=$true)]
-        [Rivet.Configuration.Configuration]
+        [Parameter(Mandatory)]
         # The Rivet configuration to use.
-        $Configuration,
+        [Rivet.Configuration.Configuration]$Configuration,
 
-        [Parameter(Mandatory=$true,ValueFromPipeline=$true)]
-        [IO.FileInfo]
+        [Parameter(Mandatory,ValueFromPipeline)]
         # The database whose migrations to get.
-        $InputObject
+        [IO.FileInfo]$InputObject
     )
 
     begin
@@ -54,7 +52,7 @@ function Convert-FileInfoToMigration
                         $Operation,
 
                         [Parameter(ParameterSetName='Push',Mandatory=$true)]
-                        [Collections.Generic.List[Rivet.Operation]]
+                        [Collections.Generic.List[Rivet.Operations.Operation]]
                         [AllowEmptyCollection()]
                         $OperationsList,
 
@@ -67,7 +65,7 @@ function Convert-FileInfoToMigration
 
 
                     $Operation |
-                        Where-Object { $_ -is [Rivet.Operation] } |
+                        Where-Object { $_ -is [Rivet.Operations.Operation] } |
                         ForEach-Object {
 
                             $pluginParameter = @{ Migration = $m ; Operation = $_ }
@@ -79,7 +77,7 @@ function Convert-FileInfoToMigration
                             Invoke-RivetPlugin -Event ([Rivet.Events]::AfterOperationLoad) -Parameter $pluginParameter
 
                         } |
-                        Where-Object { $_ -is [Rivet.Operation] } |
+                        Where-Object { $_ -is [Rivet.Operations.Operation] } |
                         ForEach-Object { $OperationsList.Add( $_ ) } |
                         Out-Null
                 }

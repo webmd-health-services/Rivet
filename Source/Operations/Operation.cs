@@ -1,9 +1,8 @@
-﻿using Rivet.Operations;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace Rivet
+namespace Rivet.Operations
 {
 	public abstract class Operation
 	{

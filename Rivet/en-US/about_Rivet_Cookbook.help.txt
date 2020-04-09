@@ -18,8 +18,9 @@ LONG DESCRIPTION
         {
         }
         
-    Operations take no parameters. They should return one or more `Rivet.Operation` 
-    objects. See the `Rivet.Operations` namespace for available operations.
+    Operations take no parameters. They should return one or more 
+    `Rivet.Operations.Operation` objects. See the `Rivet.Operations` namespace
+    for available operations.
     
     
     ## How do I customize constraint/index names?
@@ -53,7 +54,7 @@ LONG DESCRIPTION
                 $Migration,
                 
                 [Parameter(Mandatory=$true)]
-                [Rivet.Operation]
+                [Rivet.Operations.Operation]
                 # The operation which is about to be applied.
                 $Operation
             )
@@ -96,7 +97,7 @@ LONG DESCRIPTION
                     
                 }
             }
-            elseif( $Operation -is [Rivet.Operation.IndexOperation] )
+            elseif( $Operation -is [Rivet.Operations.IndexOperation] )
             {
                 $prefix = 'IX'
                 if( $Operation.Unique )

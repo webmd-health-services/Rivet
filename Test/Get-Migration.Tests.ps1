@@ -722,7 +722,7 @@ function Pop-Migration
 '@ | New-TestMigration -Name 'One'
         WhenGettingMigrations
         $migrations | Should -Not -BeNullOrEmpty
-        $migrations.PushOperations | Should -BeOfType ([Rivet.Operation])
-        $migrations.PopOperations | Should -BeOfType ([Rivet.Operation])
+        $migrations.PushOperations | Should -BeOfType ([Rivet.Operations.Operation])
+        $migrations.PopOperations | Should -BeOfType ([Rivet.Operations.Operation])
     }
 }

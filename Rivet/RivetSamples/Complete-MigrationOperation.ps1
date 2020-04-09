@@ -10,7 +10,7 @@ function Complete-MigrationOperation
         $Migration,
 
         [Parameter(Mandatory=$true)]
-        [Rivet.Operation]
+        [Rivet.Operations.Operation]
         # The operation which was just applied.
         $Operation
     )
