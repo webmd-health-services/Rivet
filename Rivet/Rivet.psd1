@@ -222,6 +222,7 @@ See `about_Rivet_Plugins` for more information.
 * The `Remove-DefaultConstraint` operation's `ColumnName` parameter is now required. When merging operations, Rivet needs to know what column a default expression operates on. You'll get a warning if it isn't provided. In a future version of Rivet, this parameter will be made mandatory.
 * Default constraint names are now required. You must pass a constraint name to the Add-DefaultConstraint operator's Name parameter and to the DefaultConstraintName parameter on any column definition that has a default value.
 * Unique key constraint names are now required. You must pass a constraint name to the Add-UniqueKey operator's Name parameter.
+* Primary key constraint names are now required. You must pass a constraint name to the Add-PrimaryKey operator's Name parameter.
 '@
         } # End of PSData hashtable
 
