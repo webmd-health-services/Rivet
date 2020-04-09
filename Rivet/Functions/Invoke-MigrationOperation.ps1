@@ -15,15 +15,13 @@ function Invoke-MigrationOperation
     #>
     [CmdletBinding(DefaultParameterSetName='AsReader')]
     param(
-        [Parameter(Mandatory=$true)]
-        [Rivet.Migration]
+        [Parameter(Mandatory)]
         # The migration this operation is from.
-        $Migration,
+        [Rivet.Migration]$Migration,
 
-        [Parameter(Mandatory=$true,ValueFromPipeline=$true)]
-        [Rivet.Operation]
+        [Parameter(Mandatory,ValueFromPipeline)]
         # The migration object to invoke.
-        $Operation
+        [Rivet.Operations.Operation]$Operation
     )
 
     begin

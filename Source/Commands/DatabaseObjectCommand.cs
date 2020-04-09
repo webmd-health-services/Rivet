@@ -1,4 +1,5 @@
 ﻿using System.Management.Automation;
+using Rivet.Operations;
 
 namespace Rivet.Commands
 {

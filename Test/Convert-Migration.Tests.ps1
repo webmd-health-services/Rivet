@@ -1427,9 +1427,9 @@ Describe 'Convert-Migration.test fixture' {
                         [Rivet.Operations.IrreversibleOperation] = $true;
                         [Rivet.Operations.RenameOperation] = $true;
                      }
-        $missingOps = [Reflection.Assembly]::GetAssembly( [Rivet.Operation] ) |
+        $missingOps = [Reflection.Assembly]::GetAssembly( [Rivet.Operations.Operation] ) |
                             ForEach-Object { $_.GetTypes() } | 
-                            Where-Object { $_.IsSubclassOf([Rivet.Operation]) } |
+                            Where-Object { $_.IsSubclassOf([Rivet.Operations.Operation]) } |
                             Where-Object { -not $_.IsAbstract } |
                             Where-Object { -not $testedOperations.ContainsKey( $_ ) } |
                             Where-Object { -not $opsToSkip.ContainsKey($_) } #|
