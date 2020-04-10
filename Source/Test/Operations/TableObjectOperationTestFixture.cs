@@ -70,7 +70,7 @@ namespace Rivet.Test.Operations
 			{
 				new AddCheckConstraintOperation("schema", "table", "column", "expression", false, false),
 				new AddDefaultConstraintOperation("schema", "table", "name", "column", "expression", false),
-				new AddForeignKeyOperation("schema", "table", new[] { "column" }, "ref_schema", "ref_table", new[] { "ref_column" }, "onDelete", "onUpdate", false, false),
+				new AddForeignKeyOperation("schema", "table", "name", new[] { "column" }, "ref_schema", "ref_table", new[] { "ref_column" }, "onDelete", "onUpdate", false, false),
 				new AddIndexOperation("schema", "table", null, false, false, null, null, null, null, null),
 				new AddPrimaryKeyOperation("schema", "table", "name", new[] { "column" }, false, new string[0]),
 				new AddRowGuidColOperation("schema", "table", "column"),
@@ -119,7 +119,7 @@ namespace Rivet.Test.Operations
 				new AddRowGuidColOperation("schema", "name", "columnName"),
 				new AddCheckConstraintOperation("schema", "name", "constraint", "expression", false, false),
 				new AddDefaultConstraintOperation("schema", "name", "expression", "column", "constraint", false),
-				new AddForeignKeyOperation("schema", "name", new string[0], "referencesschema", "referencestable", new string[0], "key", "ondelete", "onupdate", false, false),
+				new AddForeignKeyOperation("schema", "name", "key", new string[0], "referencesschema", "referencestable", new string[0], "ondelete", "onupdate", false, false),
 				new AddIndexOperation("schema", "name", new string[0], "index", false, false, new string[0], "where", "on", "filestreamon", new string[0]),
 				new AddPrimaryKeyOperation("schema", "name", "key", new string[0], false, new string[0]),
 				new AddUniqueKeyOperation("schema", "name", "key", new string[0], false, 0, new string[0], "filegroup"),

@@ -23,27 +23,14 @@ namespace Rivet.Test.Operations
 		}
 
 		[Test]
-		public void ShouldSetPropertiesForRemoveForeignKeyWithOptionalConstraintName()
-		{
-			var schemaName = "schemaName";
-			var tableName = "tableName";
-			var optionalConstraintName = "optionalConstraintName";
-
-			var op = new RemoveForeignKeyOperation(schemaName, tableName, optionalConstraintName);
-			Assert.AreEqual(schemaName, op.SchemaName);
-			Assert.AreEqual(tableName, op.TableName);
-			Assert.AreEqual(optionalConstraintName, op.Name.ToString());
-		}
-
-		[Test]
 		public void ShouldWriteQueryForRemoveForeignKey()
 		{
 			const string schemaName = "schemaName";
 			const string tableName = "tableName";
-			const string name = "fubar";
+			const string name = "constraintName";
 
 			var op = new RemoveForeignKeyOperation(schemaName, tableName, name);
-			var expectedQuery = string.Format("alter table [{0}].[{1}] drop constraint [{2}]", schemaName, tableName, name);
+			var expectedQuery = $"alter table [{schemaName}].[{tableName}] drop constraint [{name}]";
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}
 	}
