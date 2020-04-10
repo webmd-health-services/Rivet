@@ -1,11 +1,12 @@
 
 & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
 
-Describe 'Initialize-Database' {
-    BeforeEach {
-        Start-RivetTest
-        Remove-RivetTestDatabase
-        @'
+function Init
+{
+    Start-RivetTest
+    Remove-RivetTestDatabase
+
+    @'
     function Push-Migration
     {
         Add-Schema 'initialize'
@@ -16,12 +17,16 @@ Describe 'Initialize-Database' {
         Remove-Schema 'initialize'
     }
 '@ | New-TestMigration -Name 'First'
-    }
-    
-    AfterEach {
-        Stop-RivetTest
-    }
-    
+}
+
+function Reset
+{
+    Stop-RivetTest
+}
+
+Describe 'Initialize-Database.when first run against a database' {
+    BeforeEach { Init }
+    AfterEach { Reset }
     It 'should create rivet objects in database' {
         Invoke-RTRivet -Push | Format-Table | Out-String | Write-Verbose
         
@@ -61,31 +66,37 @@ Describe 'Initialize-Database' {
     
         }
     }
-    
+}
+
+Describe 'Initialize-Database.when migrating a database that was migrated with Rivet''s previous name' {
+    BeforeEach { Init }
+    AfterEach { Reset }
     It 'should rename pstep schema to rivet' {
         $oldSchemaName = 'pstep'
         $rivetSchemaName = 'rivet'
         Invoke-RTRivet -Push
         $Global:Error | Should -BeNullOrEmpty
         $expectedCount = Measure-Migration
-            
+
+        Invoke-RTRivet -Pop 1
+
         Invoke-RivetTestQuery -Query ('create schema {0}' -f $oldSchemaName)
-    
+
         Invoke-RivetTestQuery -Query ('alter schema {0} transfer {1}.Migrations' -f $oldSchemaName,$RivetSchemaName)
-    
+
         Invoke-RivetTestQuery -Query ('drop table [{0}].[Activity]' -f $RivetSchemaName)
         Invoke-RivetTestQuery -Query ('drop procedure [{0}].[InsertMigration]' -f $RivetSchemaName)
         Invoke-RivetTestQuery -Query ('drop procedure [{0}].[RemoveMigration]' -f $RivetSchemaName)
-    
+
         Invoke-RivetTestQuery -Query ('drop schema {0}' -f $RivetSchemaName)
-    
-        Invoke-RivetTestQuery -Query 'delete from [pstep].[Migrations] where ID=00000000000001'
-    
+
+        Invoke-RivetTestQuery -Query 'delete from [pstep].[Migrations]'
+
         (Test-Table -Name 'Migrations' -SchemaName $RivetSchemaName) | Should -BeFalse
         (Test-Table -Name 'Migrations' -SchemaName $oldSchemaName) | Should -BeTrue
         (Test-Schema -Name $RivetSchemaName) | Should -BeFalse
         (Test-Schema -Name $oldSchemaName) | Should -BeTrue
-    
+
         Invoke-RTRivet -Push
         $Global:Error | Should -BeNullOrEmpty
         Measure-Migration | Should -HaveCount $expectedCount
@@ -95,7 +106,11 @@ Describe 'Initialize-Database' {
         (Test-Schema -Name $RivetSchemaName) | Should -BeTrue
         (Test-Schema -Name $oldSchemaName) | Should -BeFalse
     }
-    
+}
+
+Describe 'Initialize-Database.when a database was initialized with an early version of Rivet' {
+    BeforeEach { Init }
+    AfterEach { Reset }
     It 'should change at utc to datetime2' {
         Invoke-RTRivet -Push
         $Global:Error | Should -BeNullOrEmpty

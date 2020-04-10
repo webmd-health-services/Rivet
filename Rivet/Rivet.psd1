@@ -263,6 +263,8 @@ See `about_Rivet_Plugins` for more information.
 * The Convert-Migration.ps1 sample script no longer include a header for all migrations that affected an operation, since Rivet no longer exposes this information. Instead, it only adds an author header for the migration an operation ends up in.
 * The `Remove-DefaultConstraint` operation's `ColumnName` parameter is now required. When merging operations, Rivet needs to know what column a default expression operates on. You'll get a warning if it isn't provided. In a future version of Rivet, this parameter will be made mandatory.
 * Default constraint names are now required. You must pass a constraint name to the Add-DefaultConstraint operator's Name parameter and to the DefaultConstraintName parameter on any column definition that has a default value.
+* Performance improvement: Rivet now only queries once for the state of all applied migrations instead of querying for every migration.
+* Performance improvement: Rivet only reads migration files that haven't been applied to a database. This should help with backwards-compatability. If Rivet's API changes only migrations you want to push/pop will need to get updated to match the new API.
 * Unique key constraint names are now required. You must pass a constraint name to the Add-UniqueKey operation's Name parameter.
 * Primary key constraint names are now required. You must pass a constraint name to the Add-PrimaryKey operation's Name parameter.
 * Foreign key constraint names are now required. You must pass a constraint name to the Add-ForeignKey operation's Name parameter.

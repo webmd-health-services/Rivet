@@ -74,7 +74,7 @@ function Get-MigrationFile
                 return
             }
         
-            $id = [UInt64]$matches[1]
+            $id = [int64]$matches[1]
             $name = $matches[2]
         
             $_ | 
