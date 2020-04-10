@@ -266,6 +266,7 @@ See `about_Rivet_Plugins` for more information.
 * Unique key constraint names are now required. You must pass a constraint name to the Add-UniqueKey operation's Name parameter.
 * Primary key constraint names are now required. You must pass a constraint name to the Add-PrimaryKey operation's Name parameter.
 * Foreign key constraint names are now required. You must pass a constraint name to the Add-ForeignKey operation's Name parameter.
+* Index names are now required. You must pass an index name to the Add-Index operation's Name parameter.
 '@
         } # End of PSData hashtable
 

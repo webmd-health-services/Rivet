@@ -95,7 +95,7 @@ namespace Rivet.Test
 				new AddDataTypeOperation("schema", "name", "from"),
 				new AddDefaultConstraintOperation("schema", "table", "expression", "column", "name", false),
 				new AddForeignKeyOperation("schema", "table", "name", new string[0], "ref schema", "ref table", new string[0], "on delete", "on update", false, false), 
-				new AddIndexOperation("schema", "table", new string[0], "name", false, false, new string[0], "where", "on", "file stream on", new string[0]), 
+				new AddIndexOperation("schema", "table", "name", new string[0], false, false, new string[0], "where", "on", "file stream on", new string[0]), 
 				new AddPrimaryKeyOperation("schema", "table", "name", new string[0], false, new string[0]),
 				new AddRowGuidColOperation("schema", "table", "column"),
 				new AddSchemaOperation("schema", "owner"),
