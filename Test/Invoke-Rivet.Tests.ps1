@@ -88,8 +88,8 @@ Describe 'Invoke-Rivet' {
     
         $result = Invoke-RTRivet -Push -Database $RTDatabaseName
         $Global:Error.Count | Should -Be 0
-        (Test-Database) | Should -Be $true
-        (Test-Database $RTDatabase2Name) | Should -Be $true
+        (Test-Database) | Should -BeTrue
+        (Test-Database $RTDatabase2Name) | Should -BeTrue
     }
     
     It 'should write error if migrating ignored database' {

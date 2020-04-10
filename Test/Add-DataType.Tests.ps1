@@ -40,7 +40,7 @@ function Pop-Migration
                         Select-Object -First 1
         $assemblyHash = Get-FileHash -Path $assemblyPath -Algorithm SHA512 | Select-Object -ExpandProperty 'Hash'
         $assemblyHash = '0x{0}' -f $assemblyHash
-        $assemblyPath | Should Not BeNullOrEmpty
+        $assemblyPath | Should -Not -BeNullOrEmpty
         # Yes.  Spaces in the name so we check the name gets quoted.
         @"
 function Push-Migration

@@ -1,132 +1,127 @@
 
 & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
 
-function Start-Test
-{
-    Start-RivetTest
-}
-
-function Stop-Test
-{
-    Stop-RivetTest
-}
-
-function Test-ShouldAddDefaultConstraint
-{
-    @'
-function Push-Migration()
-{
-    # Yes.  Spaces in the name so we check the name gets quoted.
-    Add-Table -Name 'AddDefaultConstraint' {
-        Int 'Default Constraint Me' -NotNull
+Describe 'Add-DefaultConstraint' {
+    BeforeEach {
+        Start-RivetTest
     }
-
-    Add-DefaultConstraint -TableName 'AddDefaultConstraint' -ColumnName 'Default Constraint Me' -Expression 101
-
-}
-
-function Pop-Migration()
-{
-    Remove-Table 'AddDefaultConstraint'
-}
+    
+    AfterEach {
+        Stop-RivetTest -Pop
+    }
+    
+    It 'should add default constraint' {
+        @'
+    function Push-Migration()
+    {
+        # Yes.  Spaces in the name so we check the name gets quoted.
+        Add-Table -Name 'AddDefaultConstraint' {
+            Int 'Default Constraint Me' -NotNull
+        }
+    
+        Add-DefaultConstraint -TableName 'AddDefaultConstraint' -ColumnName 'Default Constraint Me' -Expression 101
+    
+    }
+    
+    function Pop-Migration()
+    {
+        Remove-Table 'AddDefaultConstraint'
+    }
 '@ | New-TestMigration -Name 'AddDefaultConstraint'
-
-    Invoke-RTRivet -Push 'AddDefaultConstraint'
-    Assert-DefaultConstraint -TableName 'AddDefaultConstraint' -ColumnName 'Default Constraint Me'
-
-}
-
-function Test-ShouldAddDefaultConstraintWithValues
-{
-    @'
-function Push-Migration()
-{
-    Add-Table -Name 'AddDefaultConstraint' {
-        Int 'DefaultConstraintMe' -NotNull
+    
+        Invoke-RTRivet -Push 'AddDefaultConstraint'
+        Assert-DefaultConstraint -TableName 'AddDefaultConstraint' -ColumnName 'Default Constraint Me'
+    
     }
-
-    Add-DefaultConstraint -TableName 'AddDefaultConstraint' -ColumnName 'DefaultConstraintMe' -Expression 101 -WithValues
-}
-
-function Pop-Migration()
-{
-    Remove-Table 'AddDefaultConstraint'
-}
+    
+    It 'should add default constraint with values' {
+        @'
+    function Push-Migration()
+    {
+        Add-Table -Name 'AddDefaultConstraint' {
+            Int 'DefaultConstraintMe' -NotNull
+        }
+    
+        Add-DefaultConstraint -TableName 'AddDefaultConstraint' -ColumnName 'DefaultConstraintMe' -Expression 101 -WithValues
+    }
+    
+    function Pop-Migration()
+    {
+        Remove-Table 'AddDefaultConstraint'
+    }
 '@ | New-TestMigration -Name 'AddDefaultConstraintWithValues'
-
-    Invoke-RTRivet -Push 'AddDefaultConstraintWithValues'
-    Assert-DefaultConstraint -TableName 'AddDefaultConstraint' -ColumnName 'DefaultConstraintMe'
-    Assert-NoError
-}
-
-
-function Test-ShouldAddDefaultConstraintQuotesName
-{
-    @'
-function Push-Migration()
-{
-    Add-Table -Name 'Add-DefaultConstraint' {
-        Int 'DefaultConstraintMe' -NotNull
+    
+        Invoke-RTRivet -Push 'AddDefaultConstraintWithValues'
+        Assert-DefaultConstraint -TableName 'AddDefaultConstraint' -ColumnName 'DefaultConstraintMe'
+        $Global:Error.Count | Should -Be 0
     }
-
-    Add-DefaultConstraint -TableName 'Add-DefaultConstraint' -ColumnName 'DefaultConstraintMe' -Expression 101
-
-}
-
-function Pop-Migration()
-{
-    Remove-Table 'Add-DefaultConstraint'
-}
+    
+    
+    It 'should add default constraint quotes name' {
+        @'
+    function Push-Migration()
+    {
+        Add-Table -Name 'Add-DefaultConstraint' {
+            Int 'DefaultConstraintMe' -NotNull
+        }
+    
+        Add-DefaultConstraint -TableName 'Add-DefaultConstraint' -ColumnName 'DefaultConstraintMe' -Expression 101
+    
+    }
+    
+    function Pop-Migration()
+    {
+        Remove-Table 'Add-DefaultConstraint'
+    }
 '@ | New-TestMigration -Name 'AddDefaultConstraintQuotesName'
-
-    Invoke-RTRivet -Push 'AddDefaultConstraintQuotesName'
-    Assert-DefaultConstraint -TableName 'Add-DefaultConstraint' -ColumnName 'DefaultConstraintMe'
-
-}
-
-function Test-ShouldSupportOptionalParameterNames
-{
-    @'
-function Push-Migration()
-{
-    Add-Table -Name 'AddDefaultConstraint' {
-        Int 'DefaultConstraintMe' -NotNull
+    
+        Invoke-RTRivet -Push 'AddDefaultConstraintQuotesName'
+        Assert-DefaultConstraint -TableName 'Add-DefaultConstraint' -ColumnName 'DefaultConstraintMe'
+    
     }
-
-    Add-DefaultConstraint 'AddDefaultConstraint' 'DefaultConstraintMe' 101
-
-}
-
-function Pop-Migration()
-{
-    Remove-Table 'AddDefaultConstraint'
-}
-'@ | New-TestMigration -Name 'AddDefaultConstraintOptionalParameterNames'
-
-    Invoke-RTRivet -Push 'AddDefaultConstraintOptionalParameterNames'
-    Assert-DefaultConstraint -TableName 'AddDefaultConstraint' -ColumnName 'DefaultConstraintMe'
-
-}
-
-function Test-ShouldSupportOptionalConstraintName
-{
-    @'
-function Push-Migration()
-{
-    Add-Table -Name 'AddDefaultConstraint' {
-        Int 'DefaultConstraintMe' -NotNull
+    
+    It 'should support optional parameter names' {
+        @'
+    function Push-Migration()
+    {
+        Add-Table -Name 'AddDefaultConstraint' {
+            Int 'DefaultConstraintMe' -NotNull
+        }
+    
+        Add-DefaultConstraint 'AddDefaultConstraint' 'DefaultConstraintMe' 101
+    
     }
-
-    Add-DefaultConstraint 'AddDefaultConstraint' 'DefaultConstraintMe' 101 -Name 'Optional'
-
-}
-
-function Pop-Migration()
-{
-    Remove-Table 'AddDefaultConstraint'
-}
+    
+    function Pop-Migration()
+    {
+        Remove-Table 'AddDefaultConstraint'
+    }
 '@ | New-TestMigration -Name 'AddDefaultConstraintOptionalParameterNames'
-
-    Invoke-RTRivet -Push 'AddDefaultConstraintOptionalParameterNames'
-    Assert-DefaultConstraint -TableName 'AddDefaultConstraint' -ColumnName 'DefaultConstraintMe' -Name 'Optional'
+    
+        Invoke-RTRivet -Push 'AddDefaultConstraintOptionalParameterNames'
+        Assert-DefaultConstraint -TableName 'AddDefaultConstraint' -ColumnName 'DefaultConstraintMe'
+    
+    }
+    
+    It 'should support optional constraint name' {
+        @'
+    function Push-Migration()
+    {
+        Add-Table -Name 'AddDefaultConstraint' {
+            Int 'DefaultConstraintMe' -NotNull
+        }
+    
+        Add-DefaultConstraint 'AddDefaultConstraint' 'DefaultConstraintMe' 101 -Name 'Optional'
+    
+    }
+    
+    function Pop-Migration()
+    {
+        Remove-Table 'AddDefaultConstraint'
+    }
+'@ | New-TestMigration -Name 'AddDefaultConstraintOptionalParameterNames'
+    
+        Invoke-RTRivet -Push 'AddDefaultConstraintOptionalParameterNames'
+        Assert-DefaultConstraint -TableName 'AddDefaultConstraint' -ColumnName 'DefaultConstraintMe' -Name 'Optional'
+    }
 }
