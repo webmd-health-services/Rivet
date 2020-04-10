@@ -7,7 +7,7 @@ Describe 'bigint' {
     }
     
     AfterEach {
-        Stop-RivetTest
+        Stop-RivetTest -Pop
     }
     
     It 'should create big int with nullable' {
@@ -131,7 +131,7 @@ Describe 'bigint' {
     
     function Pop-Migration
     {
-        Remove-Table Foobar    
+        Remove-Table Foobar
     }
     
 '@ | New-TestMigration -Name 'CreateBigIntWithIdentityCustomSeedCustomIncrement'
@@ -147,13 +147,13 @@ Describe 'bigint' {
     function Push-Migration
     {
         Add-Table Foobar {
-            BigInt ID  -Default 21 -Description 'Test'
+            BigInt ID -Default 21 -Description 'Test'
         }
     }
     
     function Pop-Migration
     {
-        Remove-Table Foobar    
+        Remove-Table Foobar
     }
     
 '@ | New-TestMigration -Name 'CreateBigIntWithCustomValueCustomDescription'

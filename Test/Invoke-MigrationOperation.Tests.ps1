@@ -218,7 +218,7 @@ Describe 'Invoke-MigrationOperation' {
     
     function Pop-Migration
     {
-        Remove-ForeignKey -TableName 'Foo' -Name '$(New-ForeignKeyConstraintName 'Foo' 'Bar')'
+        Remove-ForeignKey -TableName 'Foo' -Name '$(New-RTConstraintName -ForeignKey 'Foo' 'Bar')'
         Remove-Table 'Bar'
         Remove-Table 'Foo'
     }

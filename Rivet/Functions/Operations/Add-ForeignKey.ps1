@@ -70,7 +70,7 @@ function Add-ForeignKey
     
     if( -not $Name )
     {
-        $Name = New-ForeignKeyConstraintName -SourceSchema $SchemaName -SourceTable $TableName -TargetSchema $ReferencesSchema -TargetTable $References
+        $Name = New-ConstraintName -ForeignKey -SchemaName $SchemaName -TableName $TableName -ReferencesSchema $ReferencesSchema -ReferencesTable $References
         Write-Warning ("Foreign key constraint names will be required in a future version of Rivet. Please add a ""Name"" parameter (with a value of ""$($Name)"") to the Add-ForeignKey operation for the [$($SchemaName)].[$($TableName)] table's .[$($ColumnName -join '],[')] column(s).")
     }
 

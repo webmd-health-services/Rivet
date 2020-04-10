@@ -35,7 +35,7 @@ Describe 'Remove-PrimaryKey' {
     
     function Pop-Migration()
     {
-        Remove-PrimaryKey -TableName 'PrimaryKey' -Name '$(New-ConstraintName -PrimaryKey 'PrimaryKey')'
+        Remove-PrimaryKey -TableName 'PrimaryKey' -Name '$(New-RTConstraintName -PrimaryKey 'PrimaryKey')'
     }
 "@ | New-TestMigration -Name 'SetandRemovePrimaryKey'
         Invoke-RTRivet -Push

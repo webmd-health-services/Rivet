@@ -24,7 +24,7 @@ Describe 'Add-PrimaryKey' {
     
     function Pop-Migration()
     {
-        Remove-PrimaryKey -TableName 'Primary Key' -Name '$(New-ConstraintName -PrimaryKey -TableName 'Primary Key')'
+        Remove-PrimaryKey -TableName 'Primary Key' -Name '$(New-RTConstraintName -PrimaryKey -TableName 'Primary Key')'
         Remove-Table -Name 'Primary Key'
     }
     

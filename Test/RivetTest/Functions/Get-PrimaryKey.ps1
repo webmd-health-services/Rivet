@@ -25,7 +25,7 @@ function Get-PrimaryKey
     
     if( $PSCmdlet.ParameterSetName -eq 'ByTable' )
     {
-        $Name = New-ConstraintName @PSBoundParameters -PrimaryKey
+        $Name = New-RTConstraintName @PSBoundParameters -PrimaryKey
     }
 
     $query = @'

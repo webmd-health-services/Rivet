@@ -19,7 +19,7 @@ Describe 'Remove-DefaultConstraint' {
         }
     
         Add-DefaultConstraint -TableName 'AddDefaultConstraint' -ColumnName 'DefaultConstraintMe' -Expression 101
-        Remove-DefaultConstraint 'AddDefaultConstraint' -Name '$(New-ConstraintName -Default 'AddDefaultConstraint' 'DefaultConstraintMe')'
+        Remove-DefaultConstraint 'AddDefaultConstraint' -Name '$(New-RTConstraintName -Default 'AddDefaultConstraint' 'DefaultConstraintMe')'
     }
     
     function Pop-Migration()
@@ -40,7 +40,7 @@ Describe 'Remove-DefaultConstraint' {
         }
     
         Add-DefaultConstraint -TableName 'Remove-DefaultConstraint' -ColumnName 'DefaultConstraintMe' -Expression 101
-        Remove-DefaultConstraint -TableName 'Remove-DefaultConstraint' -Name '$(New-ConstraintName -Default 'Remove-DefaultConstraint' 'DefaultConstraintMe')'
+        Remove-DefaultConstraint -TableName 'Remove-DefaultConstraint' -Name '$(New-RTConstraintName -Default 'Remove-DefaultConstraint' 'DefaultConstraintMe')'
     }
     
     function Pop-Migration()

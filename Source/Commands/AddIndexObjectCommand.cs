@@ -44,7 +44,7 @@ namespace Rivet.Commands
 			{
 				Name = new IndexName(SchemaName, TableName, ColumnName, Unique).ToString();
 				WriteWarning(
-					$"Index names will be required in a future version of Rivet. Please add a \"Name\" parameter (with a value of \"{Name}\") to the Add-Index operation for the[{SchemaName}].[{TableName}] table's [{ColumnName}] column.");
+					$"Index names will be required in a future version of Rivet. Please add a \"Name\" parameter (with a value of \"{Name}\") to the Add-Index operation for the [{SchemaName}].[{TableName}] table's [{string.Join("], [", ColumnName)}] column(s).");
 			}
 
 			var usingDescendingParamSet = ParameterSetName == "Descending";

@@ -72,8 +72,8 @@ function Invoke-RTRivet
     catch
     {
         $script:RTLastMigrationFailed = $true
-        if( $ErrorActionPrefence -ne [Management.Automation.ActionPreference]::SilentlyContinue -and `
-            $ErrorActionPrefence -ne [Management.Automation.ActionPreference]::Ignore )
+        if( $ErrorActionPreference -ne [Management.Automation.ActionPreference]::SilentlyContinue -and `
+            $ErrorActionPreference -ne [Management.Automation.ActionPreference]::Ignore )
         {
             $_ | Out-String | Write-Host -ForegroundColor Red
         }

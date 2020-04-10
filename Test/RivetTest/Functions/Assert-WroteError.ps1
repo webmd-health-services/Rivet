@@ -1,5 +1,5 @@
 
-function ThenWroteError
+function Assert-WroteError
 {
     param(
         [Parameter(Position=0)]
@@ -10,3 +10,5 @@ function ThenWroteError
 
     $Global:Error | Where-Object { $_ -match $Matching } | Should -Not -BeNullOrEmpty
 }
+
+Set-Alias -Name 'ThenWroteError' -Value 'Assert-WroteError'

@@ -266,8 +266,7 @@ function Reset
 
     try
     {
-        Invoke-RTRivet -Pop -All
-        Stop-RivetTest -DatabaseName $RTDatabaseName,$RTDatabase2Name
+        Stop-RivetTest -DatabaseName $RTDatabaseName,$RTDatabase2Name -Pop
         Write-Verbose ('{0}  Reset  Successfully cleaned up.' -f $timer.Elapsed)
     }
     catch
@@ -573,9 +572,9 @@ Describe 'Convert-Migration.when converted pop operations are run multiple times
         Remove-Synonym -Name 'Crop' @idempotent
         Remove-DataType @idempotent -Name 'GUID'
         
-        Remove-UniqueKey @idempotent @crops -Name '$(New-ConstraintName -UniqueKey -SchemaName 'idempotent' 'Crops' 'Name')'
-        Remove-Index @idempotent @crops -Name '$(New-ConstraintName -Index -SchemaName 'idempotent' 'Crops' 'Name')'
-        Remove-ForeignKey @idempotent @crops -Name '$(New-ForeignKeyConstraintName -SourceSchema 'idempotent' 'Crops' -TargetSchema 'idempotent' 'Farmers')'
+        Remove-UniqueKey @idempotent @crops -Name '$(New-RTConstraintName -UniqueKey -SchemaName 'idempotent' 'Crops' 'Name')'
+        Remove-Index @idempotent @crops -Name '$(New-RTConstraintName -Index -SchemaName 'idempotent' 'Crops' 'Name')'
+        Remove-ForeignKey @idempotent @crops -Name '$(New-RTConstraintName -ForeignKey -SchemaName 'idempotent' 'Crops' -ReferencesSchema 'idempotent' 'Farmers')'
         Remove-Table @idempotent `$crops.TableName
         Remove-Table @idempotent `$farmers.TableName
         Remove-Schema 'empty'
@@ -598,18 +597,18 @@ Describe 'Convert-Migration.when converted pop operations are run multiple times
         Remove-CheckConstraint @schema @crops -Name 'CK_Crops_AllowedCrops'
         Update-Table @schema -Name `$farmers.TableName -Remove 'RemoveMe'
         Remove-DataType @schema -Name 'GUID'
-        Remove-DefaultConstraint @schema @crops -Name '$(New-ConstraintName -Default -SchemaName 'idempotent' 'Crops' 'Name')'
+        Remove-DefaultConstraint @schema @crops -Name '$(New-RTConstraintName -Default -SchemaName 'idempotent' 'Crops' 'Name')'
         Remove-Description @schema @crops -ColumnName 'Name'
-        Remove-ForeignKey @schema @crops -Name '$(New-ForeignKeyConstraintName -SourceSchema 'idempotent' 'Crops' -TargetSchema 'idempotent' 'Farmers')'
-        Remove-Index @schema @crops -Name '$(New-ConstraintName -Index -SchemaName 'idempotent' 'Crops' 'Name')'
-        Remove-PrimaryKey @schema @crops -Name '$(New-ConstraintName -PrimaryKey -SchemaName 'schema' 'Crops')'
+        Remove-ForeignKey @schema @crops -Name '$(New-RTConstraintName -ForeignKey -SchemaName 'idempotent' 'Crops' -ReferencesSchema 'idempotent' 'Farmers')'
+        Remove-Index @schema @crops -Name '$(New-RTConstraintName -Index -SchemaName 'idempotent' 'Crops' 'Name')'
+        Remove-PrimaryKey @schema @crops -Name '$(New-RTConstraintName -PrimaryKey -SchemaName 'schema' 'Crops')'
         Remove-Row @schema @farmers -Where 'ID = 1'
         Remove-Schema 'empty'
         Remove-StoredProcedure @schema -Name 'GetFarmers'
         Remove-Synonym @schema -Name 'Crop'
         Remove-Table @schema -Name 'removeme'
         Remove-Trigger @schema -Name 'CropActivity'
-        Remove-UniqueKey @schema @crops -Name '$(New-ConstraintName -UniqueKey -SchemaName 'idempotent' 'Crops' 'Name')'
+        Remove-UniqueKey @schema @crops -Name '$(New-RTConstraintName -UniqueKey -SchemaName 'idempotent' 'Crops' 'Name')'
         Remove-UserDefinedFunction @schema -Name 'GetInteger'
         Remove-View @schema -Name 'FarmerCrops'
     }
@@ -684,7 +683,7 @@ Describe 'Convert-Migration.when converted pop operations are run multiple times
     }
 }
 
-Describe 'Convert-Migration.when migrations contain operations that disable objects' {
+Describe 'Convert-Migration.when migrations contain operations that disables objects' {
     BeforeEach { Init }
     AfterEach { Reset }
     It 'should create idempotent queries for disable operations' {
@@ -720,7 +719,7 @@ Describe 'Convert-Migration.when migrations contain operations that disable obje
         `$crops = @{ TableName = 'Crops' }
         `$farmers = @{ TableName = 'Farmers' }
     
-        Remove-ForeignKey @idempotent @crops -Name '$(New-ForeignKeyConstraintName -SourceSchema 'idempotent' 'Crops' -TargetSchema 'idempotent' 'Farmers')' 
+        Remove-ForeignKey @idempotent @crops -Name '$(New-RTConstraintName -ForeignKey -SchemaName 'idempotent' 'Crops' -ReferencesSchema 'idempotent' 'Farmers')' 
         Remove-Table @idempotent `$crops.TableName
         Remove-Table @idempotent `$farmers.TableName
         Remove-Schema `$idempotent.SchemaName
@@ -739,7 +738,7 @@ Describe 'Convert-Migration.when migrations contain operations that disable obje
         `$farmers = @{ TableName = 'Farmers' }
     
         Disable-Constraint @schema @crops -Name 'CK_Crops_AllowedCrops'
-        Disable-Constraint @schema @crops -Name '$(New-ForeignKeyConstraintName -SourceSchema 'idempotent' 'Crops' -TargetSchema 'idempotent' 'Farmers')'
+        Disable-Constraint @schema @crops -Name '$(New-RTConstraintName -ForeignKey -SchemaName 'idempotent' 'Crops' -ReferencesSchema 'idempotent' 'Farmers')'
     }
     
     function Pop-Migration
@@ -749,7 +748,7 @@ Describe 'Convert-Migration.when migrations contain operations that disable obje
         `$farmers = @{ TableName = 'Farmers' }
     
         Enable-Constraint @schema @crops -Name 'CK_Crops_AllowedCrops'
-        Enable-Constraint @schema @crops -Name '$(New-ForeignKeyConstraintName -SourceSchema 'idempotent' 'Crops' -TargetSchema 'idempotent' 'Farmers')'
+        Enable-Constraint @schema @crops -Name '$(New-RTConstraintName -ForeignKey -SchemaName 'idempotent' 'Crops' -ReferencesSchema 'idempotent' 'Farmers')'
     }
 "@ | New-TestMigration -Name 'DisableOperations'
     
@@ -793,7 +792,7 @@ Describe 'Convert-Migration.when migrations contains operations that enable obje
         Add-ForeignKey @idempotent @crops -ColumnName 'FarmerID' -ReferencesSchema `$idempotent.SchemaName -References `$farmers.TableName -ReferencedColumn 'ID'
     
         Disable-Constraint @idempotent @crops -Name 'CK_Crops_AllowedCrops'
-        Disable-Constraint @idempotent @crops -Name '$(New-ForeignKeyConstraintName -SourceSchema 'idempotent' 'Crops' -TargetSchema 'idempotent' 'Farmers')'
+        Disable-Constraint @idempotent @crops -Name '$(New-RTConstraintName -ForeignKey -SchemaName 'idempotent' 'Crops' -ReferencesSchema 'idempotent' 'Farmers')'
     }
     
     function Pop-Migration
@@ -803,8 +802,8 @@ Describe 'Convert-Migration.when migrations contains operations that enable obje
         `$farmers = @{ TableName = 'Farmers' }
     
         Enable-Constraint @idempotent @crops -Name 'CK_Crops_AllowedCrops'
-        Enable-Constraint @idempotent @crops -Name '$(New-ForeignKeyConstraintName -SourceSchema 'idempotent' 'Crops' -TargetSchema 'idempotent' 'Farmers')'
-        Remove-ForeignKey @idempotent @crops -Name '$(New-ForeignKeyConstraintName -SourceSchema 'idempotent' 'Crops' -TargetSchema 'idempotent' 'Farmers')'
+        Enable-Constraint @idempotent @crops -Name '$(New-RTConstraintName -ForeignKey -SchemaName 'idempotent' 'Crops' -ReferencesSchema 'idempotent' 'Farmers')'
+        Remove-ForeignKey @idempotent @crops -Name '$(New-RTConstraintName -ForeignKey -SchemaName 'idempotent' 'Crops' -ReferencesSchema 'idempotent' 'Farmers')'
         Remove-Table @idempotent `$crops.TableName
         Remove-Table @idempotent `$farmers.TableName
         Remove-Schema `$idempotent.SchemaName
@@ -823,7 +822,7 @@ Describe 'Convert-Migration.when migrations contains operations that enable obje
         `$farmers = @{ TableName = 'Farmers' }
     
         Enable-Constraint @schema @crops -Name 'CK_Crops_AllowedCrops'
-        Enable-Constraint @schema @crops -Name '$(New-ForeignKeyConstraintName -SourceSchema 'idempotent' 'Crops' -TargetSchema 'idempotent' 'Farmers')'
+        Enable-Constraint @schema @crops -Name '$(New-RTConstraintName -ForeignKey -SchemaName 'idempotent' 'Crops' -ReferencesSchema 'idempotent' 'Farmers')'
     }
     
     function Pop-Migration
@@ -833,7 +832,7 @@ Describe 'Convert-Migration.when migrations contains operations that enable obje
         `$farmers = @{ TableName = 'Farmers' }
     
         Disable-Constraint @schema @crops -Name 'CK_Crops_AllowedCrops'
-        Disable-Constraint @schema @crops -Name '$(New-ForeignKeyConstraintName -SourceSchema 'idempotent' 'Crops' -TargetSchema 'idempotent' 'Farmers')'
+        Disable-Constraint @schema @crops -Name '$(New-RTConstraintName -ForeignKey -SchemaName 'idempotent' 'Crops' -ReferencesSchema 'idempotent' 'Farmers')'
     }
 "@ | New-TestMigration -Name 'DisableOperations'
     
@@ -962,7 +961,7 @@ Describe 'Convert-Migration.when there are operations for the same object across
         @"
     function Push-Migration
     {
-        Remove-PrimaryKey -SchemaName 'aggregate' -TableName 'Beta' -Name '$(New-ConstraintName -PrimaryKey -SchemaName 'aggregate' -TableName 'Beta')'
+        Remove-PrimaryKey -SchemaName 'aggregate' -TableName 'Beta' -Name '$(New-RTConstraintName -PrimaryKey -SchemaName 'aggregate' -TableName 'Beta')'
         Add-PrimaryKey -SchemaName 'aggregate' -TableName 'Beta' -ColumnName 'Name'
     
         Update-Table -SchemaName 'aggregate' 'Beta' -UpdateColumn {
@@ -982,7 +981,7 @@ Describe 'Convert-Migration.when there are operations for the same object across
     
     function Pop-Migration
     {
-        Remove-PrimaryKey -SchemaName 'aggregate' -TableName 'Beta' -Name '$(New-ConstraintName -PrimaryKey -SchemaName 'aggregate' -TableName 'Beta')'
+        Remove-PrimaryKey -SchemaName 'aggregate' -TableName 'Beta' -Name '$(New-RTConstraintName -PrimaryKey -SchemaName 'aggregate' -TableName 'Beta')'
     }
 "@ | New-TestMigration -Name 'UpdateTables'
     

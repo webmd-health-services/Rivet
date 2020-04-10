@@ -33,7 +33,7 @@ function Assert-DefaultConstraint
     if( -not $Name )
     {
         Write-Warning ('Constructing constraint names will soon become obsolete. Please update usages of Assert-DefaultConstraint/ThenDefaultConstraint to pass the name of the constraint instead of the schema name, table name, and column names.')
-        $Name = New-ConstraintName -ColumnName $ColumnName -TableName $TableName -SchemaName $SchemaName -Default
+        $Name = New-RTConstraintName -ColumnName $ColumnName -TableName $TableName -SchemaName $SchemaName -Default
     }
 
     $constraint = Get-DefaultConstraint -Name $Name
