@@ -633,7 +633,6 @@ function Pop-Migration
     }
     finally
     {
-        Invoke-RTRivet -Pop
         Stop-RivetTest
     }
 }

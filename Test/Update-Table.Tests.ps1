@@ -177,7 +177,6 @@ function Init
 
 function Reset
 {
-    Invoke-RTRivet -Pop -All
     Stop-RivetTest
 }
 

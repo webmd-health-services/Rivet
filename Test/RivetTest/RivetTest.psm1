@@ -1,6 +1,5 @@
 
 param(
-    [Parameter(Mandatory)]
     [String]$RivetRoot
 )
 
@@ -12,13 +11,15 @@ $RTConfigFilePath =
     $RTRivetPath = 
     $RTRivetSchemaName = 
     $RTDatabaseName =
-    $RTRivetRoot = 
     $RTTestRoot = 
     $RTLastMigrationFailed = $null
 
 $RTTimestamp = 20150101000000
 
-$RTRivetRoot = $RivetRoot
+if( -not $RivetRoot )
+{
+    $RivetRoot = Join-Path -Path $PSScriptRoot -ChildPath '..\..\Rivet' -Resolve
+}
                   
 $RTRivetSchemaName = 'rivet'
 $RTDatabaseName = 'RivetTest'

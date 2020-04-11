@@ -137,8 +137,7 @@ function Disable-Migration
     param(
         [Parameter(Mandatory,ValueFromPipeline,ValueFromPipelineByPropertyName)]
         [Alias('FullName')]
-        [string]
-        $Path
+        [String]$Path
     )
     
     begin
@@ -158,8 +157,7 @@ function Enable-Migration
     param(
         [Parameter(Mandatory,ValueFromPipeline,ValueFromPipelineByPropertyName)]
         [Alias('FullName')]
-        [string]
-        $Path
+        [String]$Path
     )
     
     begin
@@ -266,10 +264,10 @@ function Reset
 
     try
     {
-        Stop-RivetTest -DatabaseName $RTDatabaseName,$RTDatabase2Name -Pop
+        Stop-RivetTest -DatabaseName $RTDatabaseName,$RTDatabase2Name
         Write-Verbose ('{0}  Reset  Successfully cleaned up.' -f $timer.Elapsed)
     }
-    catch
+    finally
     {
         Write-Verbose ('{0}  Reset  Failures cleaning up.' -f $timer.Elapsed)
         # These tests sometimes don't use migrations to muck about with the database, so ignore any errors.
@@ -679,6 +677,7 @@ Describe 'Convert-Migration.when converted pop operations are run multiple times
         finally
         {
             Pop-ConvertedScripts
+            $migration | Enable-Migration
         }
     }
 }
@@ -752,14 +751,22 @@ Describe 'Convert-Migration.when migrations contain operations that disables obj
     }
 "@ | New-TestMigration -Name 'DisableOperations'
     
-        Assert-ConvertMigration -Constraint 
-    
-        $schema = @{ SchemaName = 'idempotent' }
-        $crops = @{ TableName = 'Crops' }
-        $farmers = @{ TableName = 'Farmers' }
-    
-        Assert-CheckConstraint -Name 'CK_Crops_AllowedCrops' -Definition '([Name]=''Strawberries'' or [Name]=''Rasberries'')' -IsDisabled
-        Assert-ForeignKey @schema @crops -ReferencesSchema $schema.SchemaName -References $farmers.TableName -IsDisabled
+        try
+        {
+            Assert-ConvertMigration -Constraint 
+        
+            $schema = @{ SchemaName = 'idempotent' }
+            $crops = @{ TableName = 'Crops' }
+            $farmers = @{ TableName = 'Farmers' }
+        
+            Assert-CheckConstraint -Name 'CK_Crops_AllowedCrops' -Definition '([Name]=''Strawberries'' or [Name]=''Rasberries'')' -IsDisabled
+            Assert-ForeignKey @schema @crops -ReferencesSchema $schema.SchemaName -References $farmers.TableName -IsDisabled
+        }
+        finally
+        {
+            Pop-ConvertedScripts
+            $migration | Enable-Migration
+        }
     }
 }
 
@@ -836,14 +843,22 @@ Describe 'Convert-Migration.when migrations contains operations that enable obje
     }
 "@ | New-TestMigration -Name 'DisableOperations'
     
-        Assert-ConvertMigration -Constraint
-    
-        $schema = @{ SchemaName = 'idempotent' }
-        $crops = @{ TableName = 'Crops' }
-        $farmers = @{ TableName = 'Farmers' }
-    
-        Assert-CheckConstraint -Name 'CK_Crops_AllowedCrops' -Definition '([Name]=''Strawberries'' or [Name]=''Rasberries'')'
-        Assert-ForeignKey @schema @crops -ReferencesSchema $schema.SchemaName -References $farmers.TableName
+        try
+        {
+            Assert-ConvertMigration -Constraint
+        
+            $schema = @{ SchemaName = 'idempotent' }
+            $crops = @{ TableName = 'Crops' }
+            $farmers = @{ TableName = 'Farmers' }
+        
+            Assert-CheckConstraint -Name 'CK_Crops_AllowedCrops' -Definition '([Name]=''Strawberries'' or [Name]=''Rasberries'')'
+            Assert-ForeignKey @schema @crops -ReferencesSchema $schema.SchemaName -References $farmers.TableName
+        }
+        finally
+        {
+            Pop-ConvertedScripts
+            $migration | Enable-Migration
+        }
     }
 }
 
@@ -1065,12 +1080,20 @@ Describe 'Convert-Migration.when multiple operations touch the same table' {
     }
 '@ | New-TestMigration -Name 'RemoveOperations'
     
-        Assert-ConvertMigration -Schema
-    
-        Assert-Query -Schema -ExpectedQuery 'alter table [dbo].[FeedbackLog] add [ToBeIncreased] varchar(200)'
-        Assert-Query -Schema -ExpectedQuery 'alter table [dbo].[FeedbackLog] alter column [Feedback] varchar(3000)'
-        Assert-Query -Schema -ExpectedQuery '[ToBeRemoved]' -NotExists
-        Assert-Query -Schema -NotExists -ExpectedQuery "alter table [dbo].[FeedbackLog] alter column [ToBeIncreased] varchar(200)`r`nGO"
+        try
+        {
+            Assert-ConvertMigration -Schema
+        
+            Assert-Query -Schema -ExpectedQuery 'alter table [dbo].[FeedbackLog] add [ToBeIncreased] varchar(200)'
+            Assert-Query -Schema -ExpectedQuery 'alter table [dbo].[FeedbackLog] alter column [Feedback] varchar(3000)'
+            Assert-Query -Schema -ExpectedQuery '[ToBeRemoved]' -NotExists
+            Assert-Query -Schema -NotExists -ExpectedQuery "alter table [dbo].[FeedbackLog] alter column [ToBeIncreased] varchar(200)`r`nGO"
+        }
+        finally
+        {
+            Pop-ConvertedScripts
+            $migration | Enable-Migration
+        }
     }
 }
 
@@ -1101,12 +1124,19 @@ Describe 'Convert-Migration.when table and columns get renamed' {
     
         Assert-ConvertMigration -Schema
     
-        Assert-Table -Name 'T1New'
-    
-        Assert-Query -Schema -ExpectedQuery 'create table [dbo].[T1New]'
-        Assert-Query -Schema -ExpectedQuery '[C1New] int not null'
-        Assert-Query -Schema -ExpectedQuery '[C2New] varchar(1008) not null'
-        Assert-Query -Schema -NotExists -ExpectedQuery "sp_rename"
+        try
+        {
+            Assert-Table -Name 'T1New'
+        
+            Assert-Query -Schema -ExpectedQuery 'create table [dbo].[T1New]'
+            Assert-Query -Schema -ExpectedQuery '[C1New] int not null'
+            Assert-Query -Schema -ExpectedQuery '[C2New] varchar(1008) not null'
+            Assert-Query -Schema -NotExists -ExpectedQuery "sp_rename"
+        }
+        finally
+        {
+            Pop-ConvertedScripts
+        }
     }
 }
 
@@ -1324,7 +1354,7 @@ Describe 'Convert-Migration.when migrations add/remove rowguidcol' {
     BeforeEach { Init }
     AfterEach { Reset }
     It 'should export correct scripts' {
-        @'
+        $migration = @'
 function Push-Migration
 {
     Add-Table 'AddMyRowGuidCol' {
@@ -1343,6 +1373,7 @@ function Pop-Migration
 '@ | New-TestMigration -Name 'BaseTables'
 
         Invoke-RTRivet -Push
+        $migration | Disable-Migration
 
         @'
 function Push-Migration
@@ -1371,11 +1402,19 @@ function Pop-Migration
 }
 '@ | New-TestMigration -Name 'TestMe'
 
-        Assert-ConvertMigration -Schema -Include 'TestMe'
-        Assert-Column -Name 'remove_rowguidcol' -TableName 'RemoveInThisMigration' -DataType 'uniqueidentifier'
-        Assert-Column -Name 'add_rowguidcol' -TableName 'AddInThisMigration' -DataType 'uniqueidentifier' -RowGuidCol
-        Assert-Column -Name 'bye_bye_rowguidcol' -TableName 'RemoveMyRowGuidCol' -DataType 'uniqueidentifier'
-        Assert-Column -Name 'future_rowguidcol' -TableName 'AddMyRowGuidCol' -DataType 'uniqueidentifier' -RowGuidCol
+        try
+        {
+            Assert-ConvertMigration -Schema -Include 'TestMe'
+            Assert-Column -Name 'remove_rowguidcol' -TableName 'RemoveInThisMigration' -DataType 'uniqueidentifier'
+            Assert-Column -Name 'add_rowguidcol' -TableName 'AddInThisMigration' -DataType 'uniqueidentifier' -RowGuidCol
+            Assert-Column -Name 'bye_bye_rowguidcol' -TableName 'RemoveMyRowGuidCol' -DataType 'uniqueidentifier'
+            Assert-Column -Name 'future_rowguidcol' -TableName 'AddMyRowGuidCol' -DataType 'uniqueidentifier' -RowGuidCol
+        }
+        finally
+        {
+            Pop-ConvertedScripts
+            $migration | Enable-Migration
+        }
     }
 }
 

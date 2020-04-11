@@ -1,15 +1,20 @@
 
 & (Join-Path -Path $PSScriptRoot -ChildPath 'Initialize-Test.ps1' -Resolve)
 
+function Init
+{
+    Start-RivetTest
+}
+
+function Reset
+{
+    Stop-RivetTest
+}
+
 Describe 'Remove-DefaultConstraint' {
-    BeforeEach {
-        Start-RivetTest
-    }
-    
-    AfterEach {
-        Stop-RivetTest -Pop
-    }
-    
+    BeforeEach { Init }
+    AfterEach { Reset }
+
     It 'should remove default constraint' {
         @"
     function Push-Migration()

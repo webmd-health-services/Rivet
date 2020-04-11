@@ -7,7 +7,6 @@ Describe 'Update-CodeObjectMetadata' {
     }
     
     AfterEach {
-        Invoke-RTRivet -Pop -All
         Stop-RivetTest
     }
     

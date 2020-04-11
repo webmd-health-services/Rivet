@@ -7,7 +7,7 @@ Describe 'bigint' {
     }
     
     AfterEach {
-        Stop-RivetTest -Pop
+        Stop-RivetTest
     }
     
     It 'should create big int with nullable' {

@@ -4,10 +4,10 @@ Set-StrictMode -Version 'Latest'
 
 & (Join-Path -Path $PSScriptRoot -ChildPath 'Initialize-Test.ps1' -Resolve)
 
-Describe 'Remove-PrimaryKey' {
-    BeforeEach {
-        Start-RivetTest
-        @'
+function Init
+{
+    Start-RivetTest
+    @'
     function Push-Migration()
     {
         Add-Table -Name 'PrimaryKey' {
@@ -20,12 +20,17 @@ Describe 'Remove-PrimaryKey' {
         Remove-Table -Name 'PrimaryKey'
     }
 '@ | New-TestMigration -Name 'CreateTable'
-    }
-    
-    AfterEach {
-        Stop-RivetTest -Pop
-    }
-    
+}
+
+function Reset
+{
+    Stop-RivetTest
+}
+
+Describe 'Remove-PrimaryKey' {
+    BeforeEach { Init }
+    AfterEach { Reset }
+
     It 'should remove primary key' {
         @"
     function Push-Migration()
