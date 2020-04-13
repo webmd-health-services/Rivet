@@ -46,20 +46,25 @@ else
     }
 }
 
-$RTRivetPath = Join-Path -Path $RivetRoot -ChildPath 'rivet.ps1' -Resolve
-
-Get-ChildItem $PSScriptRoot *-*.ps1 |
-    Where-Object { $_.BaseName -ne 'Import-RivetTest' } |
-    ForEach-Object { . $_.FullName }
-
-$connection = $null
-if( -not $connection -or $connection.State -ne [Data.ConnectionState]::Open )
+if( -not $RivetRoot )
 {
-    $connection = New-SqlConnection -Database 'master'
+    $RivetRoot = Join-Path -Path $PSScriptRoot -ChildPath '..\..\Rivet' -Resolve
 }
 
-. (Join-Path $PSScriptRoot '..\..\Test\RivetTest\New-ConstraintName.ps1')
-. (Join-Path $PSScriptRoot '..\..\Test\RivetTest\New-ForeignKeyConstraintName.ps1')
-. (Join-Path $PSScriptRoot '..\..\Rivet\Functions\Use-CallerPreference.ps1')
-    
-Export-ModuleMember -Function * -Alias * -Variable (Get-Variable -Name 'RT*' | Select-Object -ExpandProperty 'Name')
+$RTRivetPath = Join-Path -Path $RivetRoot -ChildPath 'rivet.ps1' -Resolve
+
+
+$functionsDir = Join-Path -Path $PSScriptRoot -ChildPath 'Functions'
+if( (Test-Path -Path $functionsDir -PathType Container) )
+{
+    Get-ChildItem -Path $functionsDir -Filter '*-*.ps1' |
+        Where-Object { $_.BaseName -ne 'Import-RivetTest' } |
+        ForEach-Object { . $_.FullName }
+
+}
+
+$exportsPath = Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest.Exports.ps1'
+if( (Test-Path -Path $exportsPath -PathType Leaf) )
+{
+    . $exportsPath
+}

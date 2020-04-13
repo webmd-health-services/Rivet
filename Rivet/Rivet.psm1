@@ -5,6 +5,7 @@ $RivetSchemaName = 'rivet'
 $RivetMigrationsTableName = 'Migrations'
 $RivetMigrationsTableFullName = '{0}.{1}' -f $RivetSchemaName,$RivetMigrationsTableName
 $RivetActivityTableName = 'Activity'
+$rivetModuleRoot = $PSScriptRoot
 
 $timer = New-Object 'Diagnostics.Stopwatch'
 $timerForWrites = New-Object 'Diagnostics.Stopwatch'
@@ -79,7 +80,7 @@ function Write-Timing
         }
     }
     
-    $DebugPreference = 'Continue'
+    # $DebugPreference = 'Continue'
 
     if( $DebugPreference -eq 'Continue' )
     {
@@ -153,48 +154,14 @@ if( -not (Test-RivetTypeDataMember -TypeName 'Rivet.OperationResult' -MemberName
 }
 
 # Added in Rivet 0.10.0
-New-RivetObject -TypeName 'Rivet.Scale' -ArgumentList '1' | Out-Null
+Test-RivetTypeDataMember -TypeName 'Rivet.Scale' -MemberName 'Value'
 
-$functionRoot = Join-Path -Path $PSScriptRoot -ChildPath 'Functions' -Resolve
-$columnRoot = Join-Path -Path $functionRoot -ChildPath 'Columns' -Resolve
-$operationsRoot = Join-Path -Path $functionRoot -ChildPath 'Operations' -Resolve
-@(
-    $functionRoot,
-    $operationsRoot,
-    $columnRoot
-) | 
+# Import functions on developer computers.
+& {
+    Join-Path -Path $rivetModuleRoot -ChildPath 'Functions'
+    Join-Path -Path $rivetModuleRoot -ChildPath 'Functions\Columns'
+    Join-Path -Path $rivetModuleRoot -ChildPath 'Functions\Operations'
+} |
+    Where-Object { Test-Path -Path $_ -PathType Container } |
     Get-ChildItem -Filter '*-*.ps1' |
-    Where-Object { $_.BaseName -ne 'Export-Row' } |
     ForEach-Object { . $_.FullName }
-
-$privateFunctions = @{
-                        'Connect-Database' = $true;
-                        'Convert-FileInfoToMigration' = $true;
-                        'Disable-ForeignKey' = $true;
-                        'Disconnect-Database' = $true;
-                        'Enable-ForeignKey' = $true;
-                        'Get-MigrationFile' = $true;
-                        'Initialize-Database' = $true;
-                        'Invoke-MigrationOperation' = $true;
-                        'Invoke-Query' = $true;
-                        'New-MigrationObject' = $true;
-                        'Split-SqlBatchQuery' = $true;
-                        'Test-Migration' = $true;
-                        'Update-Database' = $true;
-                        'Use-CallerPreference' = $true;
-                        'Write-RivetError' = $true;
-                     }
-$publicFunctions = Invoke-Command -ScriptBlock {
-                                                     @(
-                                                            'Get-Migration',
-                                                            'Get-RivetConfig',
-                                                            'Invoke-Rivet'
-                                                     )
-
-                                                     Get-ChildItem -Path $operationsRoot,$functionRoot,$columnRoot -Filter '*.ps1' |
-                                                        Select-Object -ExpandProperty 'BaseName'
-
-                                               } |
-                        Where-Object { -not $privateFunctions.ContainsKey( $_ ) }
-
-Export-ModuleMember -Function $publicFunctions -Alias '*' -Cmdlet '*'

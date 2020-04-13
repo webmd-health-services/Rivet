@@ -41,29 +41,4 @@ Describe 'Rivet' {
                                 Where-Object { (Get-Command -Module 'Rivet' -Name $_ -ErrorAction Ignore) }
         $exposedFunctions | Should -BeNullOrEmpty
     }
-    
-    It 'should export custom operations' {
-        $operationPath = Join-Path -Path $PSScriptRoot -ChildPath '..\Rivet\Functions\Operations\Add-MyOperation.ps1'
-        New-Item -Path $operationPath -ItemType 'File'
-    
-        @'
-    function Add-MyOperation
-    {
-    }
-'@ | Set-Content -Path $operationPath
-        try
-        {
-            if( (Get-Module -Name 'Rivet') )
-            {
-                Remove-Module -Name 'Rivet' -Force
-            }
-            Import-Module -Name (Join-Path -Path $PSScriptRoot -ChildPath '..\Rivet\Rivet.psd1' -Resolve)
-            (Get-Command -Name 'Add-MyOperation' -Module 'Rivet') | Should -BeTrue
-        }
-        finally
-        {
-            Remove-Item -Path $operationPath
-        }
-    
-    }
 }

@@ -32,6 +32,23 @@ Build:
     - Rivet\bin
     - Rivet.dll
 
+- MergeFile:
+    Path:
+    - Rivet\Functions\*.ps1
+    - Rivet\Functions\Columns\*.ps1
+    - Rivet\Functions\Operations\*.ps1
+    DestinationPath: Rivet\Rivet.psm1
+    DeleteSourceFiles: true
+    TextSeparator: "$(NewLine)$(NewLine)"
+
+- MergeFile:
+    Path: 
+    - Test\RivetTest\Functions\*.ps1
+    - Test\RivetTest\RivetTest.Exports.ps1
+    DestinationPath: Test\RivetTest\RivetTest.psm1
+    DeleteSourceFiles: true
+    TextSeparator: "$(NewLine)$(NewLine)"
+
 - File:
     OnlyBy: BuildServer
     Path: Test\Server.txt

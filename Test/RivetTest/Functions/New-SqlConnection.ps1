@@ -21,3 +21,9 @@ function New-SqlConnection
     $connection.Open()
     return $connection
 }
+
+$connection = $null
+if( -not $connection -or $connection.State -ne [Data.ConnectionState]::Open )
+{
+    $connection = New-SqlConnection -Database 'master'
+}
