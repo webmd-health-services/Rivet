@@ -18,6 +18,7 @@ function Global:Watch-Operation
         $Migration,
         $Operation
     )
+
     $testedOperations[$Operation.GetType()] = $true
 }
 

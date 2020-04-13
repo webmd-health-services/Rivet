@@ -165,6 +165,6 @@ Pop-Migration function is empty and contains no operations. Maybe you''d like to
 
     end
     {
-        Write-Timing -Message 'Convert-FileInfoToMigration  BEGIN' -Outdent
+        Write-Timing -Message 'Convert-FileInfoToMigration  END' -Outdent
     }
 }

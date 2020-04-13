@@ -11,6 +11,8 @@ function Stop-RivetTest
     Set-StrictMode -Version 'Latest'
     Use-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     
+    Write-RTTiming -Message ('Stop-RivetTest  BEGIN')
+    
     if( $Pop )
     {
         Invoke-RTRivet -Pop -All
@@ -27,4 +29,6 @@ function Stop-RivetTest
     }
 
     $script:RTTestRoot = $null
+
+    Write-RTTiming -Message ('Stop-RivetTest  END')
 }

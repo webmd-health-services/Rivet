@@ -26,7 +26,9 @@ function Write-Timing
         [Switch]
         $Outdent
     )
-            
+
+    Set-StrictMode -Version 'Latest'
+
     if( -not $timer.IsRunning )
     {
         $timer.Start()
@@ -43,9 +45,47 @@ function Write-Timing
     }
 
     $prefix = ' ' * ($timingLevel * 2)
+
+    function ConvertTo-DurationString
+    {
+        param(
+            [Parameter(Mandatory,ValueFromPipeline)]
+            [TimeSpan]$TimeSpan
+        )
+
+        process 
+        {
+            Set-StrictMode -Version 'Latest'
+
+            $hours = ''
+            if( $TimeSpan.Hours )
+            {
+                $hours = "$($TimeSpan.Hours.ToString())h "
+            }
+
+            $minutes = ''
+            if( $TimeSpan.Minutes )
+            {
+                $minutes = "$($TimeSpan.Minutes.ToString('00'))m "
+            }
+
+            $seconds = ''
+            if( $TimeSpan.Seconds )
+            {
+                $seconds = "$($TimeSpan.Seconds.ToString('00'))s "
+            }
+
+            return "$($hours)$($minutes)$($seconds)$($TimeSpan.Milliseconds.ToString('000'))ms"
+        }
+    }
     
-    #$DebugPreference = 'Continue'
-    Write-Debug -Message ('{0}  {1}  {2}{3}' -f $timer.Elapsed,$timerForWrites.Elapsed,$prefix,$Message)
+    $DebugPreference = 'Continue'
+
+    if( $DebugPreference -eq 'Continue' )
+    {
+        Write-Debug -Message ('{0,17}  {1,17}  {2}{3}' -f ($timer.Elapsed | ConvertTo-DurationString),($timerForWrites.Elapsed | ConvertTo-DurationString),$prefix,$Message)
+    }
+
     $timerForWrites.Restart()
 
     if( $Indent )
@@ -57,7 +97,6 @@ function Write-Timing
     {
         $timingLevel = 0
     }
-
 }
 
 function Test-RivetTypeDataMember
