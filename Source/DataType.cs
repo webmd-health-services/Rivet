@@ -2,8 +2,8 @@
 
 namespace Rivet
 {
-	public struct DataType
-	{
+    public struct DataType
+    {
         public DataType(string name)
         {
             if (string.IsNullOrEmpty(name))
@@ -21,13 +21,24 @@ namespace Rivet
 
         public override bool Equals(object obj)
         {
-            if (obj == null)
-                return false;
+            return obj != null &&
+                   obj is DataType dataType &&
+                   Equals(dataType);
+        }
 
-            if (!(obj is DataType))
-                return false;
+        public bool Equals(DataType dataType)
+        {
+            return string.Equals(Name, dataType.Name, StringComparison.InvariantCultureIgnoreCase);
+        }
 
-            return string.Equals(Name, ((DataType) obj).Name, StringComparison.InvariantCultureIgnoreCase);
+        public static bool operator ==(DataType left, DataType right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(DataType left, DataType right)
+        {
+            return !(left == right);
         }
 
         public override string ToString()

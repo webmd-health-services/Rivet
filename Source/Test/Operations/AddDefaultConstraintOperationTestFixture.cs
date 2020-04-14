@@ -27,7 +27,8 @@ namespace Rivet.Test.Operations
 			Assert.AreEqual(columnName, op.ColumnName);
 			Assert.AreEqual(expression, op.Expression);
 			Assert.AreEqual(withValues, op.WithValues);
-			Assert.That(op.ObjectName, Is.EqualTo(string.Format("{0}.{1}.DF_{0}_{1}_{2}", schemaName, tableName, columnName)));
+			Assert.That(op.ObjectName, Is.EqualTo($"{schemaName}.DF_{schemaName}_{tableName}_{columnName}"));
+			Assert.That(op.TableObjectName, Is.EqualTo($"{schemaName}.{tableName}"));
 			Assert.That(op.ConstraintType, Is.EqualTo(ConstraintType.Default));
 		}
 
@@ -100,6 +101,15 @@ namespace Rivet.Test.Operations
 			op.Name = "new name";
 			Assert.That(op.Name, Is.EqualTo("new name"));
 		}
-	}
 
+		[Test]
+		public void ShouldDisableWhenMergedWithRemoveOperation()
+		{
+			var op = new AddDefaultConstraintOperation("schema", "table", "expression", "column", "name", false);
+			var removeOp = new RemoveDefaultConstraintOperation("SCHEMA", "TABLE", "COLUMN", "NAME");
+			op.Merge(removeOp);
+			Assert.That(op.Disabled, Is.True);
+			Assert.That(removeOp.Disabled, Is.True);
+		}
+	}
 }

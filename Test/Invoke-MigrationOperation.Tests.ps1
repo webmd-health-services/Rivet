@@ -10,6 +10,7 @@ Describe 'Invoke-MigrationOperation' {
     }
     
     AfterEach {
+        Invoke-RTRivet -Pop -All
         Stop-RivetTest
     }
     

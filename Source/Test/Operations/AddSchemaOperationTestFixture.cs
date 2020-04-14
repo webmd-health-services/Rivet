@@ -31,5 +31,15 @@ namespace Rivet.Test.Operations
 			Assert.That(op.ToQuery(), Is.EqualTo(expectedQuery));
 
 		}
+
+		[Test]
+		public void ShouldDisableWhenMergedWithRemoveOperation()
+		{
+			var op = new AddSchemaOperation("name", "owner");
+			var removeOp = new RemoveSchemaOperation("NAME");
+			op.Merge(removeOp);
+			Assert.That(op.Disabled, Is.True);
+			Assert.That(removeOp.Disabled, Is.True);
+		}
 	}
 }

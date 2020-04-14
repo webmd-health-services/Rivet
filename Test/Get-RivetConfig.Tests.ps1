@@ -1,4 +1,7 @@
 
+#Requires -Version 5.1
+Set-StrictMode -Version 'Latest'
+
 $tempDir = $null
 $rivetConfigPath = $null
 $databasesRootPath = $null
@@ -44,21 +47,12 @@ function GivenDirectory
      New-Item -Path (Join-Path -Path ($rivetConfigPath | Split-Path -Parent) -ChildPath $Name) -ItemType 'Directory' -Force
 }
 
-function GivenDirectory
-{
-    param(
-        $Name
-    )
-
-    New-Item -Path (Join-Path -Path ($rivetConfigPath | Split-Path -Parent) -ChildPath $Name) -ItemType 'Directory' -Force
-}
-
 function Init
 {
     $Global:Error.Clear()
-    $script:tempDir = $TestDrive.FullName 
+    $script:tempDir = Join-Path -Path $TestDrive.FullName -ChildPath ([IO.Path]::GetRandomFileName())
     $script:databasesRootPath = Join-Path -Path $tempDir -ChildPath 'Databases'
-    New-Item -Path $script:databasesRootPath -ItemType 'Directory'
+    New-Item -Path $databasesRootPath -ItemType 'Directory' -Force
     New-Item -Path (Join-Path -Path $tempDir -ChildPath 'Plugins') -ItemType 'Directory'
     $script:rivetConfigPath = Join-Path -Path $tempDir -ChildPath 'rivet'
     New-Item -Path $rivetConfigPath -ItemType 'File'
@@ -120,35 +114,31 @@ Describe 'Get-RivetConfig' {
     }
     
     AfterEach {
-        if( $tempDir -and (Test-Path -Path $tempDir -PathType Container) )
-        {
-            Remove-Item -Path $tempDir -Recurse
-        }
     }
     
     It 'should handle relative path' {
-        $tempDirName = Split-Path -Leaf -Path $tempDir
-        $tempDir2 = New-Item -Path (Join-Path -Path $env:Temp -ChildPath ('Rivet-Test-GetRivetConfig+{0}' -f [IO.Path]::GetRandomFileName())) -ItemType 'Directory'
-        $tempDir2Name = Split-Path -Leaf -Path $tempDir2
+        $otherDir = Join-Path -Path $TestDrive.FullName -ChildPath ([IO.Path]::GetRandomFileName())
+        New-Item -Path (Join-Path -Path $otherDir -ChildPath 'Databases') -ItemType 'Directory' -Force
+        $otherDirName = Split-Path -Path $otherDir -Leaf
+
         $configContents = @"
 {
     SqlServerName: '.\\Test',
-    DatabasesRoot: '..\\$tempDirName\\Databases'
+    DatabasesRoot: '..\\$($otherDirName)\\Databases'
 }
 "@
-        $configContents | Set-Content -Path (Join-Path -Path $tempDir2 -ChildPath 'rivet.json')
+        $configContents | Set-Content -Path (Join-Path -Path $otherDir -ChildPath 'rivet.json')
     
-        Push-Location -Path $tempDir
+        Push-Location -Path $otherDir
         try
         {
-            $config = Get-RivetConfig -Path ('..\{0}\rivet.json' -f $tempDir2Name)
+            $config = Get-RivetConfig -Path '.\rivet.json'
             $config | Should -Not -BeNullOrEmpty
-            $config.DatabasesRoot | Should -Be (Join-Path -Path $tempDir -ChildPath 'Databases')
+            $config.DatabasesRoot | Should -Be (Join-Path -Path $otherDir -ChildPath 'Databases')
         }
         finally
         {
             Pop-Location
-            Remove-Item -Path $tempDir2 -Recurse
         }
     }
     
@@ -518,7 +508,7 @@ Describe 'Get-RivetConfig.when plugins root has a wildcard' {
 }
 '@
         $config = WhenGettingConfig
-        $config.PluginPaths | Should -Be (Join-Path -Path $TestDrive.FullName -ChildPath 'Extensions\0.1.0\Plugins')
+        $config.PluginPaths | Should -Be (Join-Path -Path $tempDir -ChildPath 'Extensions\0.1.0\Plugins')
     }
 }
 

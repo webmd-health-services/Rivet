@@ -2,6 +2,7 @@
 
 namespace Rivet.Operations
 {
+	[ObjectRemovedByOperation(typeof(RemoveUserDefinedFunctionOperation))]
 	public sealed class AddUserDefinedFunctionOperation : ObjectOperation
 	{
 		public AddUserDefinedFunctionOperation(string schemaName, string name, string definition)

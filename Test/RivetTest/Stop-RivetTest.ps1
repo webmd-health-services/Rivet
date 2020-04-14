@@ -3,8 +3,7 @@ function Stop-RivetTest
 {
     [CmdletBinding()]
     param(
-        [string[]]
-        $DatabaseName = $RTDatabaseName
+        [String[]]$DatabaseName = $RTDatabaseName
     )
 
     Set-StrictMode -Version 'Latest'

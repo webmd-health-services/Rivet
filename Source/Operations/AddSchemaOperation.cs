@@ -2,6 +2,7 @@ using System;
 
 namespace Rivet.Operations
 {
+	[ObjectRemovedByOperation(typeof(RemoveSchemaOperation))]
 	public sealed class AddSchemaOperation : Operation
 	{
 		public AddSchemaOperation(string name, string owner)
@@ -11,7 +12,10 @@ namespace Rivet.Operations
 		}
 
 		public string Name { get; set; }
+
 		public string Owner { get; set; }
+
+		public override OperationQueryType QueryType => OperationQueryType.Ddl;
 
 		public override string ToIdempotentQuery()
 		{

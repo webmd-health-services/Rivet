@@ -78,6 +78,15 @@ namespace Rivet.Test.Operations
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}
 
+		[Test]
+		public void ShouldMergeIfDataTypeRemoved()
+		{
+			var op = new AddDataTypeOperation("schema", "name", "from");
+			var removeDataTypeOp = new RemoveDataTypeOperation("SCHEMA", "NAME");
+			op.Merge(removeDataTypeOp);
+			Assert.That(op.Disabled, Is.True);
+			Assert.That(removeDataTypeOp.Disabled, Is.True);
+		}
 	}
 
 }

@@ -60,9 +60,8 @@ function Invoke-RTRivet
         $customParams.ConfigFilePath = $RTConfigFilePath
     }
 
-    $parms = $PSBoundParameters
-
     <#
+    $parms = $PSBoundParameters
     Write-Host -Foregroundcolor black $PSCmdlet.ParameterSetName
     Write-Host -Foregroundcolor blue $RTRivetPath
     Write-Host -Foregroundcolor red @PSBoundParameters

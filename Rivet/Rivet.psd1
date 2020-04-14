@@ -11,7 +11,7 @@
     RootModule = 'Rivet.psm1'
 
     # Version number of this module.
-    ModuleVersion = '0.10.0'
+    ModuleVersion = '0.11.0'
 
     # ID used to uniquely identify this module
     GUID = '8af34b47-259b-4630-a945-75d38c33b94d'
@@ -217,6 +217,9 @@ See `about_Rivet_Plugins` for more information.
 * Fixed: `Merge-Migration` doesn't merge `Add-RowGuidCol` and `Remove-RowGuidCol` operations into `Add-Table`/`Update-Table` operations.
 * ***Breaking Change***: Rivet plug-ins must now be packaged as/in PowerShell modules. The `PluginsRoot` configuration option has been renamed to `PluginPaths` and should be a list of paths were Rivet can find the PowerShell modules containing your plug-ins. These paths are imported using the `Import-Module` command. See `about_Rivet_Plugins` for more information.
 * The `PluginsPath` (fka `PluginsRoot`) configuration setting is now allowed to have wildcards.
+* Completely re-architected how `Merge-Migration` merges migrations together. This fixed a lot of bugs where many operations were not merging correctly. 
+* The Convert-Migration.ps1 sample script no longer include a header for all migrations that affected an operation, since Rivet no longer exposes this information. Instead, it only adds an author header for the migration an operation ends up in.
+* The `Remove-DefaultConstraint` operation's `ColumnName` parameter is now required. When merging operations, Rivet needs to know what column a default expression operates on. You'll get a warning if it isn't provided. In a future version of Rivet, this parameter will be made mandatory.
 '@
         } # End of PSData hashtable
 

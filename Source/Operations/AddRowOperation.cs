@@ -24,9 +24,14 @@ namespace Rivet.Operations
 		}
 
 		public string SchemaName { get; set; }
+
 		public string TableName { get; set; }
+
 		public Hashtable[] Column { get; private set; }
+
 		public bool IdentityInsert { get; set; }
+
+		public override OperationQueryType QueryType => OperationQueryType.NonQuery;
 
 		public int Count
 		{

@@ -3,14 +3,15 @@ using System.Collections.Generic;
 
 namespace Rivet.Operations
 {
+	[ObjectRemovedByOperation(typeof(RemoveUniqueKeyOperation))]
 	public sealed class AddUniqueKeyOperation : ConstraintOperation
 	{
 		//System Generated Constraint Name
 		public AddUniqueKeyOperation(string schemaName, string tableName, string[] columnName, bool clustered,
-		                                    int fillFactor, string[] options, string filegroup)
+										int fillFactor, string[] options, string filegroup)
 			: base(schemaName, tableName, new ConstraintName(schemaName, tableName, columnName, ConstraintType.UniqueKey).ToString(), ConstraintType.UniqueKey)
 		{
-		    ColumnName = new List<string>(columnName);
+			ColumnName = new List<string>(columnName);
 			Clustered = clustered;
 			FillFactor = fillFactor;
 			Options = new List<string>(options ?? new string[0]);
@@ -25,11 +26,15 @@ namespace Rivet.Operations
 			Name = customConstraintName;
 		}
 
-		public List<string> ColumnName { get; private set; }
 		public bool Clustered { get; set; }
-		public int FillFactor { get; set; }
-        public List<string> Options { get; private set; }
+
+		public List<string> ColumnName { get; private set; }
+
 		public string FileGroup { get; set; }
+
+		public int FillFactor { get; set; }
+
+		public List<string> Options { get; private set; }
 
 		public override string ToIdempotentQuery()
 		{
@@ -44,17 +49,17 @@ namespace Rivet.Operations
 				clusteredClause = " clustered";
 			}
 
-		    var allOptions = new List<string>(Options);
-		    if (FillFactor > 0)
-		    {
-		        allOptions.Add(string.Format("fillfactor = {0}", FillFactor));
-		    }
+			var allOptions = new List<string>(Options);
+			if (FillFactor > 0)
+			{
+				allOptions.Add(string.Format("fillfactor = {0}", FillFactor));
+			}
 
-            var optionClause = "";
+			var optionClause = "";
 			if (allOptions.Count > 0)
-		    {
-		        optionClause = string.Format(" with ({0})", string.Join(", ", allOptions.ToArray()));
-		    }
+			{
+				optionClause = string.Format(" with ({0})", string.Join(", ", allOptions.ToArray()));
+			}
 
 			var fileGroupClause = "";
 			if (!string.IsNullOrEmpty(FileGroup))
