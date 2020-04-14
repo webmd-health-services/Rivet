@@ -91,7 +91,7 @@ namespace Rivet.Operations
 						}
 					}
 
-					operation.Disabled = true;
+					updateTableOp.Disabled = true;
 					return MergeResult.Continue;
 				}
 
@@ -115,7 +115,7 @@ namespace Rivet.Operations
 					if( column != null )
 					{
 						column.DefaultExpression = addDefaultConstraintOp.Expression;
-						operation.Disabled = true;
+                        addDefaultConstraintOp.Disabled = true;
 						return MergeResult.Continue;
 					}
 
