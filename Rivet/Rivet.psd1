@@ -236,6 +236,8 @@ Rivet is a database migration/change management/versioning tool inspired by Ruby
             # A URL to an icon representing this module.
             # IconUri = ''
 
+            Prerelease = ''
+
             # ReleaseNotes of this module
             ReleaseNotes = @'
 ## Upgrade Instructions
