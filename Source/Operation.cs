@@ -22,12 +22,12 @@ namespace Rivet
 		public bool Disabled { get; internal set; }
 
 		// Any child operations spawned by this operation. These operations are for informational purposes only.
-		public IList<Operation> ChildOperations { get; private set; }
+		public IList<Operation> ChildOperations { get; }
 
 		/// <summary>
 		/// Any parameters to send with the query.
 		/// </summary>
-		public Hashtable Parameters { get; private set; }
+		public Hashtable Parameters { get; }
 
 		/// <summary>
 		/// What kind of results to expect from the operation. Default is `NonQuery`, which means no results are expected.
@@ -43,6 +43,10 @@ namespace Rivet
 					return objectOp.ObjectName;
 				case TableObjectOperation tableObjectOp:
 					return tableObjectOp.TableObjectName;
+				case AddSchemaOperation schemaOp:
+                    return schemaOp.Name;
+				case RemoveSchemaOperation schemaOp:
+					return schemaOp.Name;
 				default:
 					return null;
 			}
