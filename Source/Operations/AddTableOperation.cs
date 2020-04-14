@@ -38,12 +38,12 @@ namespace Rivet.Operations
 
 		protected override MergeResult DoMerge(Operation operation)
 		{
-			if( base.DoMerge(operation) == MergeResult.Stop )
+			if (base.DoMerge(operation) == MergeResult.Stop)
 				return MergeResult.Stop;
 
 			// only table object operations that operate on this table are allowed.
-			if( operation is TableObjectOperation otherAsTableObjectOp && 
-				!ObjectName.Equals(otherAsTableObjectOp.TableObjectName, StringComparison.InvariantCultureIgnoreCase) )
+			if (operation is TableObjectOperation otherAsTableObjectOp &&
+			    !ObjectName.Equals(otherAsTableObjectOp.TableObjectName, StringComparison.InvariantCultureIgnoreCase))
 				return MergeResult.Stop;
 
 			switch (operation)
@@ -72,20 +72,22 @@ namespace Rivet.Operations
 						}
 					}
 
-					for ( var idx = 0; idx < Columns.Count; ++idx )
+					for (var idx = 0; idx < Columns.Count; ++idx)
 					{
 						var originalColumn = Columns[idx];
-						var updateColumn = updateTableOp.UpdateColumns.SingleOrDefault(c => c.Name.Equals(originalColumn.Name, StringComparison.InvariantCultureIgnoreCase));
-						if( updateColumn != null )
+						var updateColumn = updateTableOp.UpdateColumns.SingleOrDefault(c =>
+							c.Name.Equals(originalColumn.Name, StringComparison.InvariantCultureIgnoreCase));
+						if (updateColumn != null)
 						{
 							Columns[idx] = updateColumn;
 						}
 					}
 
-					foreach( var columnName in updateTableOp.RemoveColumns )
+					foreach (var columnName in updateTableOp.RemoveColumns)
 					{
-						var index = Columns.FindIndex(c => c.Name.Equals(columnName, StringComparison.InvariantCultureIgnoreCase));
-						if( index >= 0 )
+						var index = Columns.FindIndex(c =>
+							c.Name.Equals(columnName, StringComparison.InvariantCultureIgnoreCase));
+						if (index >= 0)
 						{
 							Columns.RemoveAt(index);
 						}
@@ -95,10 +97,11 @@ namespace Rivet.Operations
 					return MergeResult.Continue;
 				}
 
-				case RenameColumnOperation renameColumnOp when ObjectName.Equals(renameColumnOp.TableObjectName, StringComparison.InvariantCultureIgnoreCase):
+				case RenameColumnOperation renameColumnOp when ObjectName.Equals(renameColumnOp.TableObjectName,
+					StringComparison.InvariantCultureIgnoreCase):
 				{
 					var column = FindColumn(renameColumnOp.Name);
-					if( column != null )
+					if (column != null)
 					{
 						column.Name = renameColumnOp.NewName;
 						renameColumnOp.Disabled = true;
@@ -112,10 +115,10 @@ namespace Rivet.Operations
 				case AddDefaultConstraintOperation addDefaultConstraintOp when !addDefaultConstraintOp.WithValues:
 				{
 					var column = FindColumn(addDefaultConstraintOp.ColumnName);
-					if( column != null )
+					if (column != null)
 					{
 						column.DefaultExpression = addDefaultConstraintOp.Expression;
-                        addDefaultConstraintOp.Disabled = true;
+						addDefaultConstraintOp.Disabled = true;
 						return MergeResult.Continue;
 					}
 
@@ -184,6 +187,7 @@ namespace Rivet.Operations
 				{
 					columnDefinitionList.Add(column.GetColumnDefinition(Name, SchemaName, false));
 				}
+
 				columnDefinitionClause = string.Join($",{Environment.NewLine}    ", columnDefinitionList.ToArray());
 				columnDefinitionClause = string.Format("({0}    {1}{0})", Environment.NewLine, columnDefinitionClause);
 			}
@@ -213,7 +217,8 @@ namespace Rivet.Operations
 				optionsClause = $"{Environment.NewLine}with ( {optionsClause} )";
 			}
 
-			return $"create table [{SchemaName}].[{Name}] {columnDefinitionClause}{fileGroupClause}{textImageFileGroupClause}{fileStreamFileGroupClause}{optionsClause}";
+			return
+				$"create table [{SchemaName}].[{Name}] {columnDefinitionClause}{fileGroupClause}{textImageFileGroupClause}{fileStreamFileGroupClause}{optionsClause}";
 		}
 	}
 }
