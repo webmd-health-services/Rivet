@@ -69,4 +69,7 @@ function Start-RivetTest
     $IgnoreClause
 }
 "@ | Set-Content -Path $RTConfigFilePath
+
+    $Global:Error.Clear()
+
 }

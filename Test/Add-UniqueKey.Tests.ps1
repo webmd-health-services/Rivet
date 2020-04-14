@@ -1,19 +1,16 @@
-& (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
 
-function Setup
-{
-    Start-RivetTest
-}
+#Requires -Version 5.1
+Set-StrictMode -Version 'Latest'
 
-function TearDown
-{
-    Stop-RivetTest
-}
+& (Join-Path -Path $PSScriptRoot -ChildPath 'Initialize-Test.ps1' -Resolve)
 
-function Test-ShouldAddUniqueKeyToOneColumn
-{
-    # Yes.  Spaces in names so we check that the names get quoted.
-    @'
+Describe 'Add-UniqueKey' {
+    BeforeEach { Start-RivetTest }
+    AfterEach { Stop-RivetTest -Pop }
+
+    It 'should add unique key to one column' {
+        # Yes.  Spaces in names so we check that the names get quoted.
+        @'
 function Push-Migration()
 {
     Add-Table -Name 'Add Unique Key' {
@@ -28,13 +25,12 @@ function Pop-Migration()
     Remove-Table 'Add Unique Key'
 }
 '@ | New-TestMigration -Name 'AddUniqueKeyToOneColumn'
-    Invoke-RTRivet -Push 'AddUniqueKeyToOneColumn'
-    Assert-UniqueKey -TableName 'Add Unique Key' -ColumnName 'Unique Key Me'
-}
+        Invoke-RTRivet -Push 'AddUniqueKeyToOneColumn'
+        Assert-UniqueKey -TableName 'Add Unique Key' -ColumnName 'Unique Key Me'
+    }
 
-function Test-ShouldAddUniqueKeyToMultipleColumns
-{
-    @'
+    It 'should add unique key to multiple columns' {
+        @'
 function Push-Migration()
 {
     Add-Table -Name 'AddUniqueKey' {
@@ -51,12 +47,11 @@ function Pop-Migration()
     Remove-Table AddUniqueKey
 }
 '@ | New-TestMigration -Name 'AddUniqueKeyToMultipleColumns'
-    Invoke-RTRivet -Push 'AddUniqueKeyToMultipleColumns'
-    Assert-UniqueKey -TableName 'AddUniqueKey' -ColumnName 'UniqueKeyMe','UniqueKeyMe2'
-}
+        Invoke-RTRivet -Push 'AddUniqueKeyToMultipleColumns'
+        Assert-UniqueKey -TableName 'AddUniqueKey' -ColumnName 'UniqueKeyMe','UniqueKeyMe2'
+    }
 
-function Test-ShouldAddUniqueKeyWithClustered
-{
+    It 'should add unique key with clustered' {
     @'
 function Push-Migration()
 {
@@ -74,13 +69,12 @@ function Pop-Migration()
     Remove-Table AddUniqueKey
 }
 '@ | New-TestMigration -Name 'AddUniqueKeyWithClustered'
-    Invoke-RTRivet -Push 'AddUniqueKeyWithClustered'
-    Assert-UniqueKey -TableName 'AddUniqueKey' -ColumnName 'UniqueKeyMe','UniqueKeyMe2' -Clustered
-}
+        Invoke-RTRivet -Push 'AddUniqueKeyWithClustered'
+        Assert-UniqueKey -TableName 'AddUniqueKey' -ColumnName 'UniqueKeyMe','UniqueKeyMe2' -Clustered
+    }
 
-function Test-ShouldAddUniqueKeyWithFillFactor
-{
-    @'
+    It 'should add unique key with fill factor' {
+        @'
 function Push-Migration()
 {
     Add-Table -Name 'AddUniqueKey' {
@@ -97,13 +91,12 @@ function Pop-Migration()
     Remove-Table AddUniqueKey
 }
 '@ | New-TestMigration -Name 'AddUniqueKeyWithFillFactor'
-    Invoke-RTRivet -Push 'AddUniqueKeyWithFillFactor'
-    Assert-UniqueKey -TableName 'AddUniqueKey' -ColumnName 'UniqueKeyMe','UniqueKeyMe2' -FillFactor 80 -IgnoreDupKey -DenyRowLocks
-}
+        Invoke-RTRivet -Push 'AddUniqueKeyWithFillFactor'
+        Assert-UniqueKey -TableName 'AddUniqueKey' -ColumnName 'UniqueKeyMe','UniqueKeyMe2' -FillFactor 80 -IgnoreDupKey -DenyRowLocks
+    }
 
-function Test-ShouldAddUniqueKeyWithOptions
-{
-    @'
+    It 'should add unique key with options' {
+        @'
 function Push-Migration()
 {
     Add-Table -Name 'AddUniqueKey' {
@@ -120,13 +113,12 @@ function Pop-Migration()
     Remove-Table AddUniqueKey
 }
 '@ | New-TestMigration -Name 'AddUniqueKeyWithOptions'
-    Invoke-RTRivet -Push 'AddUniqueKeyWithOptions'
-    Assert-UniqueKey -TableName 'AddUniqueKey' -ColumnName 'UniqueKeyMe','UniqueKeyMe2' -IgnoreDupKey -DenyRowLocks
-}
+        Invoke-RTRivet -Push 'AddUniqueKeyWithOptions'
+        Assert-UniqueKey -TableName 'AddUniqueKey' -ColumnName 'UniqueKeyMe','UniqueKeyMe2' -IgnoreDupKey -DenyRowLocks
+    }
 
-function Test-ShouldAddUniqueKeyWithCustomFileGroup
-{
-    @'
+    It 'should add unique key with custom file group' {
+        @'
 function Push-Migration()
 {
 
@@ -141,13 +133,12 @@ function Pop-Migration()
     Remove-Table AddUniqueKey
 }
 '@ | New-TestMigration -Name 'AddUniqueKeyWithCustomFileGroup'
-    Invoke-RTRivet -Push 'AddUniqueKeyWithCustomFileGroup' -ErrorAction SilentlyContinue
-    Assert-Error 1 'Invalid filegroup'
-}
+        Invoke-RTRivet -Push 'AddUniqueKeyWithCustomFileGroup' -ErrorAction SilentlyContinue
+        $Global:Error.Count | Should -BeGreaterThan 0
+    }
 
-function Test-ShouldQuoteUniqueKeyName
-{
-    @'
+    It 'should quote unique key name' {
+        @'
 function Push-Migration()
 {
     Add-Table -Name 'Add-UniqueKey' {
@@ -162,13 +153,12 @@ function Pop-Migration()
     Remove-Table 'Add-UniqueKey'
 }
 '@ | New-TestMigration -Name 'AddUniqueKeyToOneColumn'
-    Invoke-RTRivet -Push 'AddUniqueKeyToOneColumn'
-    Assert-UniqueKey -TableName 'Add-UniqueKey' -ColumnName 'UniqueKeyMe'
-}
+        Invoke-RTRivet -Push 'AddUniqueKeyToOneColumn'
+        Assert-UniqueKey -TableName 'Add-UniqueKey' -ColumnName 'UniqueKeyMe'
+    }
 
-function Test-ShouldAddUniqueKeyWithCustomName
-{
-    @'
+    It 'should add unique key with custom name' {
+        @'
 function Push-Migration()
 {
     Add-Table -Name 'Add-UniqueKey' {
@@ -183,10 +173,11 @@ function Pop-Migration()
     Remove-Table 'Add-UniqueKey'
 }
 '@ | New-TestMigration -Name 'AddUniqueKeyWithCustomName'
-    Invoke-RTRivet -Push 'AddUniqueKeyWithCustomName'
-    
-    $UQC = Invoke-RivetTestQuery -Query "select * from sys.indexes where is_unique_constraint='True'"
+        Invoke-RTRivet -Push 'AddUniqueKeyWithCustomName'
+        
+        $UQC = Invoke-RivetTestQuery -Query "select * from sys.indexes where is_unique_constraint='True'"
 
-    Assert-Equal 'Custom' $UQC.name
+        $UQC.name | Should -Be 'Custom'
 
+    }
 }

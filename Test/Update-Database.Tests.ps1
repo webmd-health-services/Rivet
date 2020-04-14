@@ -36,7 +36,7 @@ Describe 'Update-Database' {
     
         Invoke-RTRivet -Push
         $Global:Error.Count | Should -Be 0
-        (Test-Table 'Foobar') | Should -Be $true
+        (Test-Table 'Foobar') | Should -BeTrue
     }
 
 }

@@ -20,7 +20,7 @@ function Assert-MigrationHasNoOperations
         [Rivet.Migration]$Migration
     )
 
-    $Migration.PushOperations | Measure-Object | Select-Object -ExpandProperty 'Count' | Should -Be 0
+    $Migration.PushOperations | Should -HaveCount 0
 }
 
 function Invoke-MergeMigration
@@ -105,7 +105,7 @@ Describe 'Merge-Migration.when adding a table then updating a column' {
 
         $op.Columns.Count | Should -Be 1
         $op.Columns[0].Name | Should -Be 'index'
-        $op.Columns[0].NotNull | Should -Be $false
+        $op.Columns[0].NotNull | Should -BeFalse
 
         Assert-MigrationHasNoOperations $result[1]
     }

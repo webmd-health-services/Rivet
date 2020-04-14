@@ -90,8 +90,8 @@ function Pop-Migration
         Invoke-RTRivet -Push 'RenameIndex'
 
         ##Assert Table and Column
-        (Test-Table 'Add.Index' -SchemaName 'the.schema') | Should Be $true
-        (Test-Column -Name 'Index.Me' -TableName 'Add.Index' -SchemaName 'the.schema') | Should Be $true
+        (Test-Table 'Add.Index' -SchemaName 'the.schema') | Should -BeTrue
+        (Test-Column -Name 'Index.Me' -TableName 'Add.Index' -SchemaName 'the.schema') | Should -BeTrue
 
         ##Assert Index
         Assert-Index -Name 'IX_AddIndex_Renamed' -ColumnName 'Index.Me'

@@ -7,7 +7,7 @@ Describe 'Remove-DefaultConstraint' {
     }
     
     AfterEach {
-        Stop-RivetTest
+        Stop-RivetTest -Pop
     }
     
     It 'should remove default constraint' {
@@ -28,7 +28,7 @@ Describe 'Remove-DefaultConstraint' {
     }
 "@ | New-TestMigration -Name 'RemoveDefaultConstraint'
         Invoke-RTRivet -Push 'RemoveDefaultConstraint'
-        (Get-DefaultConstraint 'DF_AddDefaultConstraint_DefaultConstraintMe') | Should BeNullOrEmpty
+        (Get-DefaultConstraint 'DF_AddDefaultConstraint_DefaultConstraintMe') | Should -BeNullOrEmpty
     }
     
     It 'should quote default constraint name' {
@@ -49,7 +49,7 @@ Describe 'Remove-DefaultConstraint' {
     }
 "@ | New-TestMigration -Name 'RemoveDefaultConstraint'
         Invoke-RTRivet -Push 'RemoveDefaultConstraint'
-        (Get-DefaultConstraint 'DF_Remove-DefaultConstraint_DefaultConstraintMe') | Should BeNullOrEmpty
+        (Get-DefaultConstraint 'DF_Remove-DefaultConstraint_DefaultConstraintMe') | Should -BeNullOrEmpty
     }
     
     
@@ -71,6 +71,6 @@ Describe 'Remove-DefaultConstraint' {
     }
 "@ | New-TestMigration -Name 'RemoveDefaultConstraint'
         Invoke-RTRivet -Push 'RemoveDefaultConstraint'
-        (Get-DefaultConstraint 'DF_AddDefaultConstraint_DefaultConstraintMe') | Should BeNullOrEmpty
+        (Get-DefaultConstraint 'DF_AddDefaultConstraint_DefaultConstraintMe') | Should -BeNullOrEmpty
     }
 }

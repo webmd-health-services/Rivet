@@ -79,7 +79,7 @@ function Pop-Migration
 
         Invoke-RTRivet -Push 'AddColumnNoDefaultsAllNull'
 
-        (Test-Table -Name 'AddColumnNoDefaultsAllNull') | Should Be $true
+        (Test-Table -Name 'AddColumnNoDefaultsAllNull') | Should -BeTrue
 
         $commonArgs = @{ TableName = 'AddColumnNoDefaultsAllNull' }
         Assert-Column -Name 'varchar' 'varchar' -Size 20 -Description 'varchar(20) null' @commonArgs
@@ -183,7 +183,7 @@ function Pop-Migration()
 
         Invoke-RTRivet -Push 'AddColumnDefaultsNotNull'
 
-        (Test-Table -Name 'AddColumnDefaultsNotNull') | Should Be $true
+        (Test-Table -Name 'AddColumnDefaultsNotNull') | Should -BeTrue
 
         $commonArgs = @{ TableName = 'AddColumnDefaultsNotNull'; NotNull = $true; }
         Assert-Column -Name 'varchar' 'varchar' -Size 20 -Default "'varchar'" -Description 'varchar(20) not null' @commonArgs
