@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Rivet.Operations
 {
@@ -12,14 +13,14 @@ namespace Rivet.Operations
 		{
 			ColumnName = new List<string>(columnName);
 			NonClustered = nonClustered;
-			Options = options != null ? new List<string>(options) : null;
+			Options = options != null ? options.ToList() : new List<string>();
 		}
 
-		public List<string> ColumnName { get; set; }
+		public List<string> ColumnName { get; }
 
 		public bool NonClustered { get; set; }
 
-		public List<string> Options { get; set; }
+		public List<string> Options { get; }
 
 		public override string ToIdempotentQuery()
 		{

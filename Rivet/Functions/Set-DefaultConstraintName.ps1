@@ -23,12 +23,11 @@ function Set-DefaultConstraintName
             return $Column
         }
 
-        if( $Column.DefaultExpression -and $Column.DefaultConstraintName )
+        if( $Column.DefaultConstraintName )
         {
             return $Column
         }
-        
-        if( $Column.DefaultExpression -and -not $Column.DefaultConstraintName )
+        else
         {
             $Column.DefaultConstraintName = New-ConstraintName -Default -SchemaName $SchemaName -TableName $TableName -ColumnName $Column.Name
             Write-Warning -Message ('Columns with a default expression must also be given a default constraint name. ' +

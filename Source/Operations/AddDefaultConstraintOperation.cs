@@ -5,8 +5,8 @@ namespace Rivet.Operations
 	[ObjectRemovedByOperation(typeof(RemoveDefaultConstraintOperation))]
 	public sealed class AddDefaultConstraintOperation : ConstraintOperation
 	{
-		public AddDefaultConstraintOperation(string schemaName, string tableName, string name, 
-											 string columnName, string expression, bool withValues)
+		public AddDefaultConstraintOperation(string schemaName, string tableName, string name, string columnName,
+			string expression, bool withValues)
 			: base(schemaName, tableName, name, ConstraintType.Default)
 		{
 			Expression = expression;
