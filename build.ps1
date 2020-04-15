@@ -28,6 +28,9 @@ Demonstrates how to initialize the build root with any tools that are required b
 #>
 [CmdletBinding(DefaultParameterSetName='Build')]
 param(
+    [Parameter(ParameterSetName='Build')]
+    [String]$PipelineName,
+
     [Parameter(Mandatory,ParameterSetName='Clean')]
     # Runs the build in clean mode, which removes any files, tools, packages created by previous builds.
     [switch]$Clean,
@@ -142,6 +145,11 @@ Publish:
 }
 
 $optionalArgs = @{ }
+if( $PipelineName )
+{
+    $optionalArgs['PipelineName'] = $PipelineName
+}
+
 if( $Clean )
 {
     $optionalArgs['Clean'] = $true

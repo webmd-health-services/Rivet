@@ -8,3 +8,8 @@ if( (Get-Module -Name 'RivetSamples') )
 {
     Remove-Module 'RivetSamples' -Force
 }
+
+if( (Test-Path -Path 'function:Watch-Operation') )
+{
+    Remove-Item -Path 'function:Watch-Operation'
+}

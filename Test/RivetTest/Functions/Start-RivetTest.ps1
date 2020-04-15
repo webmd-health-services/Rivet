@@ -13,6 +13,10 @@ function Start-RivetTest
     
     Set-StrictMode -Version Latest
 
+    Write-RTTiming ('Start-RivetTest  BEGIN')
+
+    $Global:Error.Clear()
+
     if( (Test-Pester) )
     {
         $script:RTTestRoot = Join-Path -Path $TestDrive.FullName -ChildPath ([IO.Path]::GetRandomFileName())
@@ -70,6 +74,5 @@ function Start-RivetTest
 }
 "@ | Set-Content -Path $RTConfigFilePath
 
-    $Global:Error.Clear()
-
+    Write-RTTiming ('Start-RivetTest  END')
 }
