@@ -10,7 +10,7 @@ Describe 'Update-Table' {
         Stop-RivetTest
     }
 
-    It 'should update column from int to big int with description' {
+    It 'should update column from int to bigint with description' {
         @'
 function Push-Migration
 {
@@ -36,7 +36,7 @@ function Pop-Migration
         Assert-Column -Name 'id' -DataType 'BigInt' -TableName 'Foobar' -Description 'Bar'
     }
 
-    It 'should update column from binaryto var binary' {
+    It 'should update column from binary to varbinary' {
         @'
 function Push-Migration
 {
@@ -62,7 +62,7 @@ function Pop-Migration
         Assert-Column -Name 'id' -DataType 'VarBinary' -TableName 'Foobar' -Sparse -Size 40 
     }
 
-    It 'should update column from n charto n var char' {
+    It 'should update column from nchar to nvarchar' {
         @'
 function Push-Migration
 {
@@ -88,7 +88,7 @@ function Pop-Migration
         Assert-Column -Name 'id' -DataType 'NVarChar' -TableName 'Foobar' -NotNull -Max -Collation "Chinese_Taiwan_Stroke_CI_AS"
     }
 
-    It 'should update column from n var charto xml' {
+    It 'should update column from nvarchar to xml' {
 
 @"
 function Push-Migration
@@ -132,7 +132,7 @@ function Pop-Migration
     }
 
     It 'should update column after add column in update table' {
-    @'
+        @'
 function Push-Migration
 {
     Add-Table -Name 'Foobar' -Column {
@@ -167,5 +167,96 @@ function Pop-Migration
         Assert-Column -Name 'id' -DataType 'VarChar' -TableName 'Foobar' -Max -Description 'Bar2'
         Assert-Column -Name 'id2' -DataType 'BigInt' -TableName 'Foobar' -Description 'Bar'
         Assert-Column -Name 'id3' -DataType 'BigInt' -TableName 'Foobar' -Description 'Foo'
+    }
+}
+
+function Init
+{
+    Start-RivetTest
+}
+
+function Reset
+{
+    Stop-RivetTest
+}
+
+Describe 'Update-Table.when setting default constraint name' {
+    AfterEach { Reset }
+    It 'should use the custom constraint name' {
+        Init
+        GivenMigration -Named 'CustomConstraintNames' @'
+function Push-Migration 
+{
+    Add-Table 'CustomConstraintNames' {
+        int 'ID'
+    }
+
+    Update-Table 'CustomConstraintNames' -AddColumn {
+        int 'column2' -NotNull -Default 2 -DefaultConstraintName 'DF_Two'
+        int 'column3' -Identity
+    }
+}
+
+function Pop-Migration
+{
+    Remove-Table 'CustomConstraintNames'
+}
+'@
+        WhenMigrating 'CustomConstraintNames'
+        ThenDefaultConstraint 'DF_Two' -Is 'snafu'
+    }
+}
+
+Describe 'Update-Table.when adding a default constraint to an existing column' {
+    AfterEach { Reset }
+    It 'should fail' {
+        Init
+        GivenMigration -Named 'DefaultConstraintOnExistingColumn' @'
+function Push-Migration 
+{
+    Add-Table 'DefaultConstraintOnExistingColumn' {
+        int 'column1'
+    }
+
+    Update-Table 'DefaultConstraintOnExistingColumn' -UpdateColumn {
+        int 'column1' -NotNull -Default 2 -DefaultConstraintName 'DF_Two'
+    }
+}
+
+function Pop-Migration
+{
+    Remove-Table 'DefaultConstraintOnExistingColumn'
+}
+'@
+        WhenMigrating 'DefaultConstraintOnExistingColumn' -ErrorAction SilentlyContinue
+        ThenWroteError 'Use the Add-DefaultConstraint operation'
+        ThenTable 'DefaultConstraintOnExistingColumn' -Not -Exists
+    }
+}
+
+Describe 'Update-Table.when adding an identity to an existing column' {
+    AfterEach { Reset }
+    It 'should fail' {
+        Init
+        GivenMigration -Named 'IdentityOnExistingColumn' @'
+function Push-Migration 
+{
+    Add-Table 'IdentityOnExistingColumn' {
+        int 'column1'
+    }
+
+    Update-Table 'IdentityOnExistingColumn' -UpdateColumn {
+        int 'column1' -Identity
+    }
+}
+
+function Pop-Migration
+{
+    Remove-Table 'IdentityOnExistingColumn'
+}
+'@
+        WhenMigrating 'IdentityOnExistingColumn' -ErrorAction SilentlyContinue
+        ThenWroteError 'identity'
+        ThenTable 'IdentityOnExistingColumn' -Not -Exists
     }
 }

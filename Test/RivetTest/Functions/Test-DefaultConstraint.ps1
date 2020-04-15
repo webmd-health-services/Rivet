@@ -24,7 +24,7 @@ function Test-DefaultConstraint
 
     Set-StrictMode -Version Latest
 
-    $name = New-ConstraintName @PSBoundParameters -Default
+    $name = New-RTConstraintName @PSBoundParameters -Default
     $constraint = Get-DefaultConstraint -Name $name
     return ($constraint -ne $null)
 }

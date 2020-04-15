@@ -5,7 +5,7 @@ function Clear-TestDatabase
     #>
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory=$true)]
+        [Parameter(Mandatory)]
         [string]
         $Name
     )
@@ -22,14 +22,12 @@ function Clear-TestDatabase
 
     if( Test-Database -Name $Name )
     {
-        Write-Debug -Message ('RTRivetRoot = {0}' -f $RTRivetRoot)
-        $expectedCount = Get-ChildItem -Path (Join-Path -Path $RTRivetRoot -ChildPath 'Migrations') -Filter '*.ps1' | Measure-Object | Select-Object -ExpandProperty 'Count'
-        $query = 'select * from [{0}].[rivet].[Migrations] order by ID' -f $Name
+        $query = "select * from [$($Name)].[rivet].[Migrations] where ID > 1000000000 order by ID"
         [object[]]$migrations = Invoke-RivetTestQuery -Query $query -DatabaseName $Name
-        if( $migrations.Count -gt $expectedCount )
+        if( ($migrations | Measure-Object).Count )
         {
             Remove-RivetTestDatabase -Name $Name
-            $migrationList = $migrations | Select-Object -Skip $expectedCount | Format-Table -Property 'ID','Name' -AutoSize | Out-String
+            $migrationList = $migrations | Format-Table -Property 'ID','Name' -AutoSize | Out-String
             Write-Error -Message ('The following migrations weren''t popped from {0}. Please update your test so that its `Pop-Migration` function correctly reverses the operations performed in its `Push-Migration` function.{1}{2}' -f $Name,([Environment]::NewLine),$migrationList) -ErrorAction Stop
         }
 

@@ -3,8 +3,6 @@ function Stop-RivetTest
 {
     [CmdletBinding()]
     param(
-        [Switch]$Pop,
-
         [String[]]$DatabaseName = $RTDatabaseName
     )
 
@@ -13,11 +11,6 @@ function Stop-RivetTest
     
     Write-RTTiming -Message ('Stop-RivetTest  BEGIN')
     
-    if( $Pop )
-    {
-        Invoke-RTRivet -Pop -All
-    }
-
     foreach( $name in $DatabaseName )
     {
         Clear-TestDatabase -Name $name

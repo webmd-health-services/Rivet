@@ -5,47 +5,46 @@ function Assert-DefaultConstraint
     .SYNOPSIS
     Tests that a default constraint exists for a particular column and table
     #>
-
+    [CmdletBinding(DefaultParameterSetName='ByName')]
     param(
-        [Parameter()]
-        [string]
+        [Parameter(ParameterSetName='NoName')]
         # The table's schema.  Default is `dbo`.
-        $SchemaName = 'dbo',
+        [string]$SchemaName = 'dbo',
 
-        [Parameter(Mandatory=$true)]
-        [string]
+        [Parameter(Mandatory,ParameterSetName='NoName')]
         # The name of the table
-        $TableName,
+        [String]$TableName,
 
-        [string[]]
+        [Parameter(Mandatory,ParameterSetName='NoName')]
         # Array of Column Names
-        $ColumnName,
+        [String[]]$ColumnName,
 
-        [string]
+        [Parameter(Position=0)]
         # The name of the constraint.
-        $Name,
+        [String]$Name,
 
-        [string]
         # The expected expression.
-        $Definition
+        [Alias('Definition')]
+        [String]$Is
     )
 
     Set-StrictMode -Version Latest
 
     if( -not $Name )
     {
-        $Name = New-ConstraintName -ColumnName $ColumnName -TableName $TableName -SchemaName $SchemaName -Default
+        Write-Warning ('Constructing constraint names will soon become obsolete. Please update usages of Assert-DefaultConstraint/ThenDefaultConstraint to pass the name of the constraint instead of the schema name, table name, and column names.')
+        $Name = New-RTConstraintName -ColumnName $ColumnName -TableName $TableName -SchemaName $SchemaName -Default
     }
 
     $constraint = Get-DefaultConstraint -Name $Name
 
     if( (Test-Pester) )
     {
-        $constraint | Should -Not -BeNullOrEmpty -Because ('Default constraint ''{0}'' not found.' -f $Name)
+        $constraint | Should -Not -BeNullOrEmpty -Because ('Default constraint "{0}" not found.' -f $Name)
 
         if( $PSBoundParameters.ContainsKey('Expression') )
         {
-            $constraint.definition | Should -Be $Definition 
+            $constraint.definition | Should -Be $Is 
         }
     }
     else
@@ -54,7 +53,9 @@ function Assert-DefaultConstraint
 
         if( $PSBoundParameters.ContainsKey('Expression') )
         {
-            Assert-Equal $Definition $constraint.definition
+            Assert-Equal $Is $constraint.definition
         }
     }
 }
+
+Set-Alias -Name 'ThenDefaultConstraint' -Value 'Assert-DefaultConstraint'

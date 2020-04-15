@@ -7,49 +7,25 @@ namespace Rivet.Operations
 	[ObjectRemovedByOperation(typeof(RemovePrimaryKeyOperation))]
 	public sealed class AddPrimaryKeyOperation : ConstraintOperation
 	{
-		//System Generated Constraint Name
-		public AddPrimaryKeyOperation(string schemaName, string tableName, string [] columnName, bool nonClustered, string[] options)
-			: base(schemaName, tableName, new ConstraintName(schemaName, tableName, columnName, ConstraintType.PrimaryKey).ToString(), ConstraintType.PrimaryKey)
+		public AddPrimaryKeyOperation(string schemaName, string tableName, string name, string[] columnName,
+			bool nonClustered, string[] options)
+			: base(schemaName, tableName, name, ConstraintType.PrimaryKey)
 		{
 			ColumnName = new List<string>(columnName);
 			NonClustered = nonClustered;
-			if (options != null)
-			{
-				Options = new List<string>(options);
-			}
-			else
-			{
-				Options = null;
-			}
+			Options = options != null ? options.ToList() : new List<string>();
 		}
 
-		//Custom Constraint Name
-		public AddPrimaryKeyOperation(string schemaName, string tableName, string[] columnName, string customConstraintName, bool nonClustered, string[] options)
-			: base(schemaName, tableName, customConstraintName, ConstraintType.PrimaryKey)
-		{
-			ColumnName = new List<string>(columnName);
-			NonClustered = nonClustered;
-			if (options != null)
-			{
-				Options = new List<string>(options);
-			}
-			else
-			{
-				Options = null;
-			}
-		}
-
-		public List<string> ColumnName { get; set; }
+		public List<string> ColumnName { get; }
 
 		public bool NonClustered { get; set; }
 
-		public List<string> Options { get; set; }
+		public List<string> Options { get; }
 
 		public override string ToIdempotentQuery()
 		{
 			return
-				String.Format(
-					"if not exists (select * from sys.indexes where name = '{0}' and object_id = object_id('{1}.{2}', 'U')){3}\t{4}", Name, SchemaName, TableName, Environment.NewLine, ToQuery());
+				$"if not exists (select * from sys.indexes where name = '{Name}' and object_id = object_id('{SchemaName}.{TableName}', 'U')){Environment.NewLine}\t{ToQuery()}";
 		}
 
 		public override string ToQuery()
@@ -57,6 +33,7 @@ namespace Rivet.Operations
 			var clusteredClause = "clustered";
 			if (NonClustered)
 			{
+				// ReSharper disable once StringLiteralTypo
 				clusteredClause = "nonclustered";
 			}
 
@@ -64,13 +41,13 @@ namespace Rivet.Operations
 			if (!(Options == null || Options.Count == 0))
 			{
 				optionClause = string.Join(", ", Options.ToArray());
-				optionClause = string.Format(" with ( {0} )", optionClause);
+				optionClause = $" with ( {optionClause} )";
 			}
 
 			var columnClause = string.Join("], [", ColumnName.ToArray());
 
-			return string.Format("alter table [{0}].[{1}] add constraint [{2}] primary key {3} ([{4}]){5}", 
-				SchemaName, TableName, Name, clusteredClause, columnClause, optionClause);
+			return
+				$"alter table [{SchemaName}].[{TableName}] add constraint [{Name}] primary key {clusteredClause} ([{columnClause}]){optionClause}";
 		}
 	}
 }

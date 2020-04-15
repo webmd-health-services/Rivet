@@ -41,7 +41,7 @@ function Remove-DefaultConstraint
         }
 
         Write-Warning -Message ('Not providing an explicit default constraint name is OBSOLETE. Please add the name of the default constraint you''re removing to the Name parameter.')
-        $Name = New-Object -TypeName 'Rivet.ConstraintName' -ArgumentList $SchemaName, $TableName, $ColumnName, ([Rivet.ConstraintType]::Default) | Select-Object -ExpandProperty 'Name'
+        $Name = New-ConstraintName -Default -SchemaName $SchemaName -TableName $TableName -ColumnName $ColumnName
     }
 
     if( -not $ColumnName )

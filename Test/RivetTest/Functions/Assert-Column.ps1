@@ -115,7 +115,7 @@ function Assert-Column
         if( $Default )
         {
             $column.default_constraint | Should -Not -BeNullOrEmpty
-            $dfConstraintName = New-ConstraintName -SchemaName $SchemaName -TableName $TableName -ColumnName $Name -Default
+            $dfConstraintName = New-RTConstraintName -SchemaName $SchemaName -TableName $TableName -ColumnName $Name -Default
             $column.default_constraint_name | Should -Be $dfConstraintName
             $column.default_constraint | Should -Match ('{0}' -f ([Text.RegularExpressions.Regex]::Escape($Default)))
         }
@@ -218,7 +218,7 @@ function Assert-Column
         if( $Default )
         {
             Assert-NotNull $column.default_constraint ('column {0} default constraint not created')
-            $dfConstraintName = New-ConstraintName -SchemaName $SchemaName -TableName $TableName -ColumnName $Name -Default
+            $dfConstraintName = New-RTConstraintName -SchemaName $SchemaName -TableName $TableName -ColumnName $Name -Default
             Assert-Equal $dfConstraintName $column.default_constraint_name ('column {0} default constraint name not set correctly' -f $Name)
             Assert-Match  $column.default_constraint ('{0}' -f ([Text.RegularExpressions.Regex]::Escape($Default))) ('column {0} default constraint not set' -f $Name)
         }

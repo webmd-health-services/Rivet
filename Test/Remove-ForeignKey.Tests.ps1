@@ -4,15 +4,20 @@ Set-StrictMode -Version 'Latest'
 
 & (Join-Path -Path $PSScriptRoot -ChildPath 'Initialize-Test.ps1' -Resolve)
 
+function Init
+{
+    Start-RivetTest
+}
+
+function Reset
+{
+    Stop-RivetTest
+}
+
 Describe 'Remove-ForeignKey' {
-    BeforeEach {
-        Start-RivetTest
-    }
-    
-    AfterEach {
-        Stop-RivetTest -Pop
-    }
-    
+    BeforeEach { Init }
+    AfterEach { Reset }
+
     It 'should remove foreign key' {
         @"
     function Push-Migration()
@@ -27,7 +32,7 @@ Describe 'Remove-ForeignKey' {
     
         Add-PrimaryKey -TableName 'Reference' -ColumnName 'reference_id'
         Add-ForeignKey -TableName 'Source' -ColumnName 'source_id' -References 'Reference' -ReferencedColumn 'reference_id'
-        Remove-ForeignKey 'Source' -Name '$(New-ForeignKeyConstraintName 'Source' 'Reference')'
+        Remove-ForeignKey 'Source' -Name '$(New-RTConstraintName -ForeignKey 'Source' 'Reference')'
     }
     
     function Pop-Migration()
@@ -54,7 +59,7 @@ Describe 'Remove-ForeignKey' {
     
         Add-PrimaryKey -TableName 'Reference' -ColumnName 'reference_id'
         Add-ForeignKey -TableName 'Remove-ForeignKey' -ColumnName 'source_id' -References 'Reference' -ReferencedColumn 'reference_id'
-        Remove-ForeignKey -TableName 'Remove-ForeignKey' -Name '$(New-ForeignKeyConstraintName 'Remove-ForeignKey' 'Reference')'
+        Remove-ForeignKey -TableName 'Remove-ForeignKey' -Name '$(New-RTConstraintName -ForeignKey 'Remove-ForeignKey' 'Reference')'
     }
     
     function Pop-Migration()

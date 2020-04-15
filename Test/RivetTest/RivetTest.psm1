@@ -1,6 +1,5 @@
 
 param(
-    [Parameter(Mandatory)]
     [String]$RivetRoot
 )
 
@@ -12,12 +11,15 @@ $RTConfigFilePath =
     $RTRivetPath = 
     $RTRivetSchemaName = 
     $RTDatabaseName =
-    $RTRivetRoot = 
-    $RTTestRoot = $null
+    $RTTestRoot = 
+    $RTLastMigrationFailed = $null
 
 $RTTimestamp = 20150101000000
 
-$RTRivetRoot = $RivetRoot
+if( -not $RivetRoot )
+{
+    $RivetRoot = Join-Path -Path $PSScriptRoot -ChildPath '..\..\Rivet' -Resolve
+}
                   
 $RTRivetSchemaName = 'rivet'
 $RTDatabaseName = 'RivetTest'
@@ -57,7 +59,7 @@ $RTRivetPath = Join-Path -Path $RivetRoot -ChildPath 'rivet.ps1' -Resolve
 $functionsDir = Join-Path -Path $PSScriptRoot -ChildPath 'Functions'
 if( (Test-Path -Path $functionsDir -PathType Container) )
 {
-    Get-ChildItem -Path $functionsDir -Filter '*-*.ps1' |
+    Get-ChildItem -Path $functionsDir -Filter '*.ps1' |
         Where-Object { $_.BaseName -ne 'Import-RivetTest' } |
         ForEach-Object { . $_.FullName }
 

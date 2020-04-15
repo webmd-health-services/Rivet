@@ -22,7 +22,7 @@ function Get-UniqueKey
     
     Set-StrictMode -Version Latest
 
-    $name = New-ConstraintName @PSBoundParameters -UniqueKey
+    $name = New-RTConstraintName @PSBoundParameters -UniqueKey
 
     $query = @'
     select

@@ -429,7 +429,7 @@ Describe 'Merge-Migration.when adding removing and adding an object' {
             }
 
             New-MigrationObject 'UpdateTable' {
-                Remove-PrimaryKey -SchemaName 'aggregate' -TableName 'Beta' -Name (New-ConstraintName -PrimaryKey -SchemaName 'aggregate' -TableName 'Beta')
+                Remove-PrimaryKey -SchemaName 'aggregate' -TableName 'Beta' -Name (New-RTConstraintName -PrimaryKey -SchemaName 'aggregate' -TableName 'Beta')
                 Add-PrimaryKey -SchemaName 'aggregate' -TableName 'Beta' -ColumnName 'Name'
             }
         }

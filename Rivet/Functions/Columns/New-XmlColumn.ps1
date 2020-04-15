@@ -35,60 +35,54 @@ function New-XmlColumn
     [CmdletBinding(DefaultParameterSetName='Nullable')]
     param(
         [Parameter(Mandatory,Position=0)]
-        [string]
         # The column's name.
-        $Name,
+        [String]$Name,
 
         [Parameter(Position=1)]
-        [string]
         # Name of an XML schema collection
-        $XmlSchemaCollection,
+        [String]$XmlSchemaCollection,
 
-        [Switch]
         # Specifies that this is a well-formed XML document instead of an XML fragment.
-        $Document,
+        [switch]$Document,
 
         [Parameter(Mandatory,ParameterSetName='NotNull')]
-        [Switch]
         # Don't allow `NULL` values in this column.
-        $NotNull,
+        [switch]$NotNull,
 
         [Parameter(ParameterSetName='Nullable')]
-        [Switch]
         # Store nulls as Sparse.
-        $Sparse,
+        [switch]$Sparse,
 
-        [Parameter()]
-        [string]
         # A SQL Server expression for the column's default value 
-        $Default,
+        [String]$Default,
+
+        # The name of the default constraint for the column's default expression. Required if the Default parameter is given.
+        [String]$DefaultConstraintName,
             
-        [Parameter()]
-        [string]
         # A description of the column.
-        $Description
+        [String]$Description
     )
 
-    $nullable = 'Null'
+    $nullable = [Rivet.Nullable]::Null
     if( $PSCmdlet.ParameterSetName -eq 'NotNull' )
     {
-        $nullable = 'NotNull'
+        $nullable = [Rivet.Nullable]::NotNull
     }
     else
     {
         if( $Sparse )
         {
-            $nullable = 'Sparse'
+            $nullable = [Rivet.Nullable]::Sparse
         }
     }
 
     if( $XmlSchemaCollection )
     {
-        [Rivet.Column]::Xml($Name,$Document,$XmlSchemaCollection,$nullable,$Default,$description)
+        [Rivet.Column]::Xml($Name, $Document, $XmlSchemaCollection, $nullable, $Default, $DefaultConstraintName, $Description)
     }
     else
     {
-        [Rivet.Column]::Xml($Name,$nullable,$Default,$Description)
+        [Rivet.Column]::Xml($Name, $nullable, $Default, $DefaultConstraintName, $Description)
     }
 }
 

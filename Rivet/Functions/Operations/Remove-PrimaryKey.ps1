@@ -36,7 +36,7 @@ function Remove-PrimaryKey
     if( $PSCmdlet.ParameterSetName -eq 'ByDefaultName' )
     {
         Write-Warning ('Remove-PrimaryKey''s Name parameter will be required in a future version of Rivet. Please use the Name parameter to remove the primary key.')
-        $Name = New-Object -TypeName 'Rivet.ConstraintName' -ArgumentList $SchemaName, $TableName, @(), ([Rivet.ConstraintType]::PrimaryKey) | Select-Object -ExpandProperty 'Name'
+        $Name = New-ConstraintName -PrimaryKey -SchemaName $SchemaName -TableName $TableName
     }
 
     New-Object 'Rivet.Operations.RemovePrimaryKeyOperation' $SchemaName, $TableName, $Name

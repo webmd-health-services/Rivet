@@ -7,26 +7,10 @@ namespace Rivet.Operations
 	[ObjectRemovedByOperation(typeof(RemoveForeignKeyOperation))]
 	public sealed class AddForeignKeyOperation : ConstraintOperation
 	{
-		// System Generated Constraint Name
-		public AddForeignKeyOperation(string schemaName, string tableName, string[] columnName, string referencesSchemaName,
-									  string referencesTableName, string[] referencesColumnName, string onDelete,
-									  string onUpdate, bool notForReplication, bool withNoCheck)
-			: base(schemaName, tableName, new ForeignKeyConstraintName(schemaName, tableName, referencesSchemaName, referencesTableName).ToString(), ConstraintType.ForeignKey)
-		{
-			ColumnName = new List<string>(columnName);
-			ReferencesSchemaName = referencesSchemaName;
-			ReferencesTableName = referencesTableName;
-			ReferencesColumnName = new List<string>(referencesColumnName);
-			OnDelete = onDelete;
-			OnUpdate = onUpdate;
-			NotForReplication = notForReplication;
-			WithNoCheck = withNoCheck;
-		}
-
-		//Custom Constraint Name
-		public AddForeignKeyOperation(string schemaName, string tableName, string[] columnName, string referencesSchemaName,
-							  string referencesTableName, string[] referencesColumnName, string name, string onDelete,
-							  string onUpdate, bool notForReplication, bool withNoCheck)
+		public AddForeignKeyOperation(string schemaName, string tableName, string name, string[] columnName,
+			string referencesSchemaName,
+			string referencesTableName, string[] referencesColumnName, string onDelete,
+			string onUpdate, bool notForReplication, bool withNoCheck)
 			: base(schemaName, tableName, name, ConstraintType.ForeignKey)
 		{
 			ColumnName = new List<string>(columnName);

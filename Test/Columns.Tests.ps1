@@ -565,31 +565,15 @@ function Pop-Migration()
     }
 }
 
-function GivenMigration
-{
-    param(
-        [Parameter(Mandatory)]
-        [string]
-        $Content
-    )
-
-    $Content | New-TestMigration -Name 'Columns'
-}
-
 function Init
 {
     Stop-RivetTest
     Start-RivetTest
 }
 
-function WhenPushing
-{
-    Invoke-RTRivet -Push
-}
-
 Describe 'Columns.when adding generic columns' {
     Init
-    GivenMigration @'
+    GivenMigration -Named 'Columns' @'
 function Push-Migration
 {
     Add-Table 'CustomColumns' {
@@ -623,7 +607,7 @@ function Pop-Migration
     Remove-Table 'CustomColumns'
 }
 '@
-    WhenPushing
+    WhenMigrating 'Columns'
     try
     {
         It 'should create table with correct columns' {
@@ -649,7 +633,6 @@ function Pop-Migration
     }
     finally
     {
-        Invoke-RTRivet -Pop
         Stop-RivetTest
     }
 }

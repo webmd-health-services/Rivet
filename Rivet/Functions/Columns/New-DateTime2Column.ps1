@@ -42,36 +42,31 @@ function New-DateTime2Column
     #>
     [CmdletBinding(DefaultParameterSetName='Null')]
     param(
-        [Parameter(Mandatory=$true,Position=0)]
-        [string]
+        [Parameter(Mandatory,Position=0)]
         # The column's name.
-        $Name,
+        [String]$Name,
 
         [Parameter(Position=1)]
         [Alias('Precision')]
-        [Int]
         # The number of decimal digits for the fractional seconds. SQL Server's default is `7`, or 100 nanoseconds.
-        $Scale,
+        [int]$Scale,
 
-        [Parameter(Mandatory=$true,ParameterSetName='NotNull')]
-        [Switch]
+        [Parameter(Mandatory,ParameterSetName='NotNull')]
         # Don't allow `NULL` values in this column.
-        $NotNull,
+        [switch]$NotNull,
 
         [Parameter(ParameterSetName='Null')]
-        [Switch]
         # Store nulls as Sparse.
-        $Sparse,
+        [switch]$Sparse,
 
-        [Parameter()]
-        [string]
         # A SQL Server expression for the column's default value 
-        $Default,
+        [String]$Default,
+
+        # The name of the default constraint for the column's default expression. Required if the Default parameter is given.
+        [String]$DefaultConstraintName,
             
-        [Parameter()]
-        [string]
         # A description of the column.
-        $Description
+        [String]$Description
     )
 
     $dataSize = $null
@@ -86,7 +81,7 @@ function New-DateTime2Column
         $nullable = 'Sparse'
     }
 
-    [Rivet.Column]::DateTime2($Name, $dataSize, $nullable, $Default, $Description)
+    [Rivet.Column]::DateTime2($Name, $dataSize, $nullable, $Default, $DefaultConstraintName, $Description)
 }
     
 Set-Alias -Name 'DateTime2' -Value 'New-DateTime2Column'

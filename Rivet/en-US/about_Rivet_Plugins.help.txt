@@ -66,12 +66,10 @@ LONG DESCRIPTION
             [Rivet.Plugin([Rivet.Events]::BeforeOperationLoad)]
             param(
                 [Parameter(Mandatory)]
-                [Rivet.Migration]
-                $Migration,
+                [Rivet.Migration]$Migration,
 
                 [Parameter(Mandatory)]
-                [Rivet.Operation]
-                $Operation
+                [Rivet.Operations.Operation]$Operation
             )
 
             # Do stuff.
@@ -104,12 +102,10 @@ LONG DESCRIPTION
             [Rivet.Plugin([Rivet.Events]::AfterOperationLoad)]
             param(
                 [Parameter(Mandatory)]
-                [Rivet.Migration]
-                $Migration,
+                [Rivet.Migration]$Migration,
 
                 [Parameter(Mandatory)]
-                [Rivet.Operation]
-                $Operation
+                [Rivet.Operations.Operation]$Operation
             )
 
             # Do stuff.

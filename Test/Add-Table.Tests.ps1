@@ -180,3 +180,35 @@ Describe 'Add-Table' {
         Assert-Table 'Add-Table-Test' -SchemaName 'Add-Table'
     }
 }
+
+function Init
+{
+    Start-RivetTest
+}
+
+function Reset
+{
+    Stop-RivetTest
+}
+
+Describe 'Add-Table.when setting default constraint name' {
+    AfterEach { Reset }
+    It 'should use that name' {
+        Init
+        GivenMigration -Name 'CustomDefaultConstraint' @'
+function Push-Migration
+{
+    Add-Table 'Default' {
+        int 'ID' -Default 0 -DefaultConstraintName 'DF_my_custom_constraint_name'
+    }
+}
+
+function Pop-Migration
+{
+    Remove-Table 'Default'
+}
+'@
+        WhenMigrating 'CustomDefaultConstraint'
+        ThenDefaultConstraint 'DF_my_custom_constraint_name' -Is '0'
+    }
+}

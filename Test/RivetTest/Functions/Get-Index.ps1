@@ -34,7 +34,7 @@ function Get-Index
 
     if( $PSCmdlet.ParameterSetName -eq 'ByTable' )
     {
-        $Name = New-ConstraintName @PSBoundParameters -Index
+        $Name = New-RTConstraintName @PSBoundParameters -Index
         $Name = $Name.ToString()
     }
 

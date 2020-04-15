@@ -43,7 +43,7 @@ function Merge-Migration
 
     end
     {
-        [Rivet.Operation[]]$operations = $migrations | Select-Object -ExpandProperty 'PushOperations'
+        [Rivet.Operations.Operation[]]$operations = $migrations | Select-Object -ExpandProperty 'PushOperations'
 
         if( $operations )
         {

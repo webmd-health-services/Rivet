@@ -23,7 +23,7 @@ function GivenDatabase
     $script:databases += $Name
 }
 
-function GivenMigration
+function GivenMigrationContent
 {
     param(
         [Parameter(Mandatory)]
@@ -133,7 +133,7 @@ function WhenExporting
 
 Describe 'Export-Migration.when exporting a table' {
     Init
-    GivenMigration @'
+    GivenMigrationContent @'
 function Push-Migration
 {
     Add-DataType -Name 'CID' -From 'char(8)'
@@ -248,7 +248,7 @@ ON [dbo].[Migrations] for insert as select 1
 
 Describe 'Export-Migration.when identity column is not for replication' {
     Init
-    GivenMigration @'
+    GivenMigrationContent @'
 function Push-Migration
 {
     Add-Table -Name 'Replicated' -Column {
@@ -280,7 +280,7 @@ function Pop-Migration
 
 Describe 'Export-Migration.when table has a custom data type as its identity' {
     Init
-    GivenMigration @'
+    GivenMigrationContent @'
 function Push-Migration
 {
     Add-DataType -Name 'SID' -From 'int'
@@ -308,7 +308,7 @@ function Pop-Migration
 
 Describe 'Export-Migration.when XML column has a schema' {
     Init
-    GivenMigration @'
+    GivenMigrationContent @'
 function Push-Migration
 {
     Invoke-Ddl -Query '
@@ -351,7 +351,7 @@ function Pop-Migration
 
 Describe 'Export-Migration.when exporting with wildcards' {
     Init
-    GivenMigration @'
+    GivenMigrationContent @'
 function Push-Migration
 {
     Add-Schema -Name 'export'
@@ -391,7 +391,7 @@ function Pop-Migration
 
 Describe 'Export-Migration.when exporting default constraints' {
     Init
-    GivenMigration @'
+    GivenMigrationContent @'
 function Push-Migration 
 {
     Add-Table 'Fubar' {
@@ -432,7 +432,7 @@ function Pop-Migration
 
 Describe 'Export-Migration.when exporting a primary key' {
     Init
-    GivenMigration @'
+    GivenMigrationContent @'
 function Push-Migration 
 {
     Add-Table 'Fubar' {
@@ -453,7 +453,7 @@ function Pop-Migration
 
 Describe 'Export-Migration.when exporting a non-clustered primary key' {
     Init
-    GivenMigration @'
+    GivenMigrationContent @'
 function Push-Migration 
 {
     Add-Table 'Fubar' {
@@ -475,7 +475,7 @@ function Pop-Migration
 
 Describe 'Export-Migration.when exporting check constraints' {
     Init
-    GivenMigration @'
+    GivenMigrationContent @'
 function Push-Migration
 {
     Add-Table 'CheckConstraint' {
@@ -505,7 +505,7 @@ function Pop-Migration
 
 Describe 'Export-Migration.when exporting a stored procedure' {
     Init
-    GivenMigration @'
+    GivenMigrationContent @'
 function Push-Migration
 {
     Add-StoredProcedure -Name 'DoSomething' -Definition 'as select 1'
@@ -527,7 +527,7 @@ as select 1
 
 Describe 'Export-Migration.when exporting a stored procedure not added with Rivet' {
     Init
-    GivenMigration @'
+    GivenMigrationContent @'
 function Push-Migration
 {
     Invoke-Ddl 'create procedure DoSomething as select 1'
@@ -549,7 +549,7 @@ create procedure DoSomething as select 1
 
 Describe 'Export-Migration.when exporting a view' {
     Init
-    GivenMigration @'
+    GivenMigrationContent @'
 function Push-Migration
 {
     Add-View -Name 'ViewSomething' -Definition 'as select 1 as one'
@@ -571,7 +571,7 @@ as select 1 as one
 
 Describe 'Export-Migration.when exporting a view not added with Rivet' {
     Init
-    GivenMigration @'
+    GivenMigrationContent @'
 function Push-Migration
 {
     Invoke-Ddl 'create view ViewSomething as select 1 as one'
@@ -593,7 +593,7 @@ create view ViewSomething as select 1 as one
 
 Describe 'Export-Migration.when exporting a function' {
     Init
-    GivenMigration @'
+    GivenMigrationContent @'
 function Push-Migration
 {
     Add-UserDefinedFunction -Name 'CallSomething' -Definition '() returns tinyint as begin return 1 end'
@@ -632,7 +632,7 @@ function Pop-Migration
 
 Describe 'Export-Migration.when exporting a function not added with Rivet' {
     Init
-    GivenMigration @'
+    GivenMigrationContent @'
 function Push-Migration
 {
     Invoke-Ddl 'create function CallSomething () returns tinyint as begin return 1 end'
@@ -661,7 +661,7 @@ Describe 'Export-Migration.when exporting entire database' {
 
 Describe 'Export-Migration.when exporting data type' {
     Init
-    GivenMigration @'
+    GivenMigrationContent @'
 function Push-Migration
 {
     Add-Schema 'export'
@@ -724,7 +724,7 @@ function Pop-Migration
 
 Describe 'Export-Migration.when exporting filtered data type' {
     Init
-    GivenMigration @'
+    GivenMigrationContent @'
 function Push-Migration
 {
     Add-Schema 'export'
@@ -748,7 +748,7 @@ function Pop-Migration
 
 Describe 'Export-Migration.when identity has custom seed and increment' {
     Init
-    GivenMigration @'
+    GivenMigrationContent @'
 function Push-Migration
 {
     Add-Table -Name 'SeedAndIncrement' -Column {
@@ -769,7 +769,7 @@ function Pop-Migration
 
 Describe 'Export-Migration.when exporting indexes' {
     Init
-    GivenMigration @'
+    GivenMigrationContent @'
 function Push-Migration
 {
     Add-Table -Name 'Indexes' -Column {
@@ -842,7 +842,7 @@ function Pop-Migration
 
 Describe 'Export-Migration.when exporting unique keys' {
     Init
-    GivenMigration @'
+    GivenMigrationContent @'
 function Push-Migration
 {
     Add-Schema 'export'
@@ -881,7 +881,7 @@ function Pop-Migration
 
 Describe 'Export-Migration.when exporting triggers' {
     Init
-    GivenMigration @'
+    GivenMigrationContent @'
 function Push-Migration
 {
     Add-Table -Name 'TriggerSource' {
@@ -919,7 +919,7 @@ ON [export].[TriggerSource2] for insert as select 1
 
 Describe 'Export-Migration.when exporting synonyms' {
     Init
-    GivenMigration @'
+    GivenMigrationContent @'
 function Push-Migration
 {
     Add-Table -Name 'Target' {
@@ -961,7 +961,7 @@ function Pop-Migration
 
 Describe 'Export-Migration.when synonyms points to internal object' {
     Init
-    GivenMigration @'
+    GivenMigrationContent @'
 function Push-Migration
 {
     Add-Table -Name 'Target' {
@@ -994,7 +994,7 @@ function Pop-Migration
 
 Describe 'Export-Migration.when exporting foreign keys' {
     Init
-    GivenMigration @'
+    GivenMigrationContent @'
 function Push-Migration
 {
     Add-Table 'Table' {
@@ -1047,7 +1047,7 @@ function Pop-Migration
 
 Describe 'Export-Migration.when exporting a table with a custom identity seed or increment' {
     Init
-    GivenMigration @'
+    GivenMigrationContent @'
 function Push-Migration
 {
     Add-Table -Name 'Seed' {
@@ -1075,7 +1075,7 @@ function Pop-Migration
 
 Describe 'Export-Migration.when exporting a table with a custom identity seed or increment' {
     Init
-    GivenMigration @'
+    GivenMigrationContent @'
 function Push-Migration
 {
     Add-Table -Name 'Seed' {
@@ -1103,7 +1103,7 @@ function Pop-Migration
 
 Describe 'Export-Migration.when excluding objects by type' {
     Init
-    GivenMigration @'
+    GivenMigrationContent @'
 function Push-Migration
 {
     Invoke-Ddl -Query '
@@ -1178,7 +1178,7 @@ function Pop-Migration
 
 Describe 'Export-Migration.when excluding objects by name' {
     Init
-    GivenMigration @'
+    GivenMigrationContent @'
 function Push-Migration
 {
     Add-DataType 'SID' -From 'int'

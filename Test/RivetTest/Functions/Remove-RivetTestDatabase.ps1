@@ -20,4 +20,9 @@ function Remove-RivetTestDatabase
 
     Invoke-RivetTestQuery -Query $query -Master
 
+    while( (Test-Database -Name $Name) )
+    {
+        Write-Warning -Verbose "Waiting for $($Name) database to get dropped."
+        Start-Sleep -Milliseconds 100
+    }
 }

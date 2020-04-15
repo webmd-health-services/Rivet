@@ -42,45 +42,41 @@ function New-DateTimeColumn
     #>
     [CmdletBinding(DefaultParameterSetName='Nullable')]
     param(
-        [Parameter(Mandatory=$true,Position=0)]
-        [string]
+        [Parameter(Mandatory,Position=0)]
         # The column's name.
-        $Name,
+        [String]$Name,
 
-        [Parameter(Mandatory=$true,ParameterSetName='NotNull')]
-        [Switch]
+        [Parameter(Mandatory,ParameterSetName='NotNull')]
         # Don't allow `NULL` values in this column.
-        $NotNull,
+        [switch]$NotNull,
 
         [Parameter(ParameterSetName='Nullable')]
-        [Switch]
         # Store nulls as Sparse.
-        $Sparse,
+        [switch]$Sparse,
 
-        [Parameter()]
-        [string]
         # A SQL Server expression for the column's default value 
-        $Default,
-            
-        [Parameter()]
-        [string]
+        [String]$Default,
+
+        # The name of the default constraint for the column's default expression. Required if the Default parameter is given.
+        [String]$DefaultConstraintName,
+
         # A description of the column.
-        $Description
+        [String]$Description
     )
 
     if ($PsCmdlet.ParameterSetName -eq 'Nullable')
     {
         if ($Sparse)
         {
-            New-Column -Name $Name -DataType 'datetime' -Sparse -Default $Default -Description $Description
+            New-Column -Name $Name -DataType 'datetime' -Sparse -Default $Default -DefaultConstraintName $DefaultConstraintName -Description $Description
         }
         else {
-            New-Column -Name $Name -DataType 'datetime' -Default $Default -Description $Description
+            New-Column -Name $Name -DataType 'datetime' -Default $Default -DefaultConstraintName $DefaultConstraintName -Description $Description
         }
     }
     elseif ($PsCmdlet.ParameterSetName -eq 'NotNull')
     {
-        New-Column -Name $Name -DataType 'datetime' -NotNull -Default $Default -Description $Description
+        New-Column -Name $Name -DataType 'datetime' -NotNull -Default $Default -DefaultConstraintName $DefaultConstraintName -Description $Description
     }
 }
     

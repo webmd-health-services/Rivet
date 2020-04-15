@@ -37,50 +37,43 @@ function New-VarBinaryColumn
     #>
     [CmdletBinding(DefaultParameterSetName='NullSize')]
     param(
-        [Parameter(Mandatory=$true,Position=0)]
-        [string]
+        [Parameter(Mandatory,Position=0)]
         # The column's name.
-        $Name,
+        [String]$Name,
 
-        [Parameter(Mandatory=$true,Position=1,ParameterSetName='NullSize')]
-        [Parameter(Mandatory=$true,Position=1,ParameterSetName='NotNullSize')]
-        [Int]
+        [Parameter(Mandatory,Position=1,ParameterSetName='NullSize')]
+        [Parameter(Mandatory,Position=1,ParameterSetName='NotNullSize')]
         # The maximum number of bytes the column will hold.
-        $Size,
+        [int]$Size,
 
-        [Parameter(Mandatory=$true,ParameterSetName='NullMax')]
-        [Parameter(Mandatory=$true,ParameterSetName='NotNullMax')]
-        [Switch]
+        [Parameter(Mandatory,ParameterSetName='NullMax')]
+        [Parameter(Mandatory,ParameterSetName='NotNullMax')]
         # Creates a `varbinary(max)` column.
-        $Max,
+        [switch]$Max,
 
         [Parameter(ParameterSetName='NullMax')]
         [Parameter(ParameterSetName='NotNullMax')]
-        [Switch]
         # Stores the varbinary(max) data in a filestream data container on the file system.  Requires VarBinary(max).
-        $FileStream,
+        [switch]$FileStream,
 
-        [Parameter(Mandatory=$true,ParameterSetName='NotNullSize')]
-        [Parameter(Mandatory=$true,ParameterSetName='NotNullMax')]
-        [Switch]
+        [Parameter(Mandatory,ParameterSetName='NotNullSize')]
+        [Parameter(Mandatory,ParameterSetName='NotNullMax')]
         # Don't allow `NULL` values in this column.
-        $NotNull,
+        [switch]$NotNull,
 
         [Parameter(ParameterSetName='NullSize')]
         [Parameter(ParameterSetName='NullMax')]
-        [Switch]
         # Store nulls as Sparse.
-        $Sparse,
+        [switch]$Sparse,
 
-        [Parameter()]
-        [string]
         # A SQL Server expression for the column's default value 
-        $Default,
+        [String]$Default,
+
+        # The name of the default constraint for the column's default expression. Required if the Default parameter is given.
+        [String]$DefaultConstraintName,
             
-        [Parameter()]
-        [string]
         # A description of the column.
-        $Description
+        [String]$Description
     )
 
     $sizeType = $null
@@ -104,7 +97,7 @@ function New-VarBinaryColumn
         $nullable = 'Sparse'
     }
 
-    [Rivet.Column]::VarBinary($Name, $sizeType, $FileStream, $nullable, $Default, $Description)
+    [Rivet.Column]::VarBinary($Name, $sizeType, $FileStream, $nullable, $Default, $DefaultConstraintName, $Description)
 }
     
 Set-Alias -Name 'VarBinary' -Value 'New-VarBinaryColumn'

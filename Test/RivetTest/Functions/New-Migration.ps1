@@ -3,22 +3,19 @@ function New-TestMigration
 {
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory=$true,ValueFromPipeline=$true)]
-        [string]
+        [Parameter(Mandatory,ValueFromPipeline,Position=0)]
         # The migration contents to output.
-        $InputObject,
+        [String]$InputObject,
 
-        [Parameter(Mandatory=$true)]
-        [string]
+        [Parameter(Mandatory)]
+        [Alias('Name')]
         # The name of the migration.
-        $Name,
+        [String]$Named,
 
-        [string]
         # The name of the database.
-        $DatabaseName = $RTDatabaseName,
+        [String]$DatabaseName = $RTDatabaseName,
 
-        [string]
-        $ConfigFilePath = $RTConfigFilePath
+        [String]$ConfigFilePath = $RTConfigFilePath
     )
 
     Set-StrictMode -Version 'Latest'
@@ -33,7 +30,7 @@ function New-TestMigration
     do
     {
         $script:RTTimestamp++
-        $migrationPath = '{0}_{1}.ps1' -f $RTTimestamp,$Name
+        $migrationPath = '{0}_{1}.ps1' -f $RTTimestamp, $Named
         $migrationPath = Join-Path -Path $migrationsRoot -ChildPath $migrationPath
     }
     while( (Test-Path -Path $migrationPath -PathType Leaf) )
@@ -41,3 +38,5 @@ function New-TestMigration
     $InputObject | Set-Content -Path $migrationPath
     Get-Item -Path $migrationPath
 }
+
+Set-Alias -Name 'GivenMigration' -Value 'New-TestMigration'

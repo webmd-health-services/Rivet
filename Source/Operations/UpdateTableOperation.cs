@@ -42,12 +42,13 @@ namespace Rivet.Operations
 
 			switch (operation)
 			{
-				case AddDefaultConstraintOperation otherAsAddDefaultConstraintOp:
+				case AddDefaultConstraintOperation otherAsAddDefaultConstraintOp when !otherAsAddDefaultConstraintOp.WithValues:
 				{
 					var column = FindColumn(otherAsAddDefaultConstraintOp.ColumnName);
 					if (column != null)
 					{
 						column.DefaultExpression = otherAsAddDefaultConstraintOp.Expression;
+						column.DefaultConstraintName = otherAsAddDefaultConstraintOp.Name;
 						otherAsAddDefaultConstraintOp.Disabled = true;
 						return MergeResult.Continue;
 					}
@@ -230,7 +231,7 @@ namespace Rivet.Operations
 						"if not exists (select * from sys.columns where object_id('{0}.{1}', 'U') = [object_id] and [name]='{2}'){3}\t",
 						SchemaName, Name, column.Name, Environment.NewLine);
 				}
-				var definition = column.GetColumnDefinition(Name, SchemaName, false);
+				var definition = column.GetColumnDefinition(false);
 				query.AppendFormat("alter table [{0}].[{1}] add {2}", SchemaName, Name, definition);
 			}
 
@@ -241,7 +242,7 @@ namespace Rivet.Operations
 					query.AppendLine();
 				}
 
-				var definition = column.GetColumnDefinition(Name, SchemaName, false);
+				var definition = column.GetColumnDefinition(false);
 				query.AppendFormat("alter table [{0}].[{1}] alter column {2}", SchemaName, Name, definition);
 			}
 

@@ -46,8 +46,8 @@ function Remove-Index
     if( $PSCmdlet.ParameterSetName -eq "ByDefaultName" )
     {
         Write-Warning ('Remove-Index''s ColumnName parameter and Unique switch are obsolete and will be removed in a future version of Rivet. Instead, use the Name parameter to remove an index.')
-        $Name = New-Object -TypeName 'Rivet.IndexName' -ArgumentList $SchemaName, $TableName, $ColumnName, $Unique | Select-Object -ExpandProperty 'Name'
+        $Name = New-ConstraintName -Index -SchemaName $SchemaName -TableName $TableName -ColumnName $ColumnName -Unique:$Unique
     }
 
-    New-Object 'Rivet.Operations.RemoveIndexOperation' $SchemaName, $TableName, $Name
+    [Rivet.Operations.RemoveIndexOperation]::new($SchemaName, $TableName, $Name)
 }

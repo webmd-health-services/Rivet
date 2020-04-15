@@ -73,7 +73,7 @@ namespace Rivet.Operations
 					var columnDefinitionList = new List<string>();
 					foreach (Column column in AsTable)
 					{
-						columnDefinitionList.Add(column.GetColumnDefinition(Name,SchemaName,false));
+						columnDefinitionList.Add(column.GetColumnDefinition(false));
 					}
 					string columnDefinitionClause = string.Join(", ", columnDefinitionList.ToArray());
 					var tableConstraintClause = string.Join(", ", TableConstraint.ToArray());

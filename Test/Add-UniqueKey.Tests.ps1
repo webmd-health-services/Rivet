@@ -4,9 +4,19 @@ Set-StrictMode -Version 'Latest'
 
 & (Join-Path -Path $PSScriptRoot -ChildPath 'Initialize-Test.ps1' -Resolve)
 
+function Init
+{
+    Start-RivetTest
+}
+
+function Reset
+{
+    Stop-RivetTest
+}
+
 Describe 'Add-UniqueKey' {
-    BeforeEach { Start-RivetTest }
-    AfterEach { Stop-RivetTest -Pop }
+    BeforeEach { Init }
+    AfterEach { Reset }
 
     It 'should add unique key to one column' {
         # Yes.  Spaces in names so we check that the names get quoted.

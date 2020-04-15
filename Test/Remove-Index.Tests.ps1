@@ -4,15 +4,20 @@ Set-StrictMode -Version 'Latest'
 
 & (Join-Path -Path $PSScriptRoot -ChildPath 'Initialize-Test.ps1' -Resolve)
 
+function Init
+{
+    Start-RivetTest
+}
+
+function Reset
+{
+    Stop-RivetTest
+}
+
 Describe 'Remove-Index' {
-    BeforeEach {
-        Start-RivetTest
-    }
-    
-    AfterEach {
-        Stop-RivetTest -Pop
-    }
-    
+    BeforeEach { Init }
+    AfterEach { Reset }
+
     It 'should remove index' {
         @"
     function Push-Migration()
@@ -24,7 +29,7 @@ Describe 'Remove-Index' {
         #Add an Index to 'IndexMe'
         Add-Index -TableName 'AddIndex' -ColumnName 'IndexMe'
     
-        Remove-Index 'AddIndex' -Name '$(New-ConstraintName -Index 'AddIndex' 'IndexMe')'
+        Remove-Index 'AddIndex' -Name '$(New-RTConstraintName -Index 'AddIndex' 'IndexMe')'
     }
     
     function Pop-Migration()
@@ -48,7 +53,7 @@ Describe 'Remove-Index' {
         }
     
         Add-Index -TableName 'Remove-Index' -ColumnName 'IndexMe'
-        Remove-Index -TableName 'Remove-Index' -Name '$(New-ConstraintName -Index 'Remove-Index' 'IndexMe')'
+        Remove-Index -TableName 'Remove-Index' -Name '$(New-RTConstraintName -Index 'Remove-Index' 'IndexMe')'
     }
     
     function Pop-Migration()
@@ -72,7 +77,7 @@ Describe 'Remove-Index' {
     
         #Add an Index to 'IndexMe'
         Add-Index -TableName 'AddIndex' -ColumnName 'IndexMe' -Unique
-        Remove-Index 'AddIndex' -Name '$(New-ConstraintName -Index -Unique 'AddIndex' 'IndexMe')'
+        Remove-Index 'AddIndex' -Name '$(New-RTConstraintName -Index -Unique 'AddIndex' 'IndexMe')'
     }
     
     function Pop-Migration()

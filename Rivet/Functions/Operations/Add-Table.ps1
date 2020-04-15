@@ -147,7 +147,8 @@ function Add-Table
 
     Set-StrictMode -Version 'Latest'
 
-    $columns = & $Column
+    $columns = & $Column | Set-DefaultConstraintName -SchemaName $SchemaName -TableName $Name
+ 
     $tableOp = New-Object 'Rivet.Operations.AddTableOperation' $SchemaName, $Name, $columns, $FileTable, $FileGroup, $TextImageFileGroup, $FileStreamFileGroup, $Option
 
     $addDescriptionArgs = @{

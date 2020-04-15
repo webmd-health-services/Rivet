@@ -7,10 +7,10 @@ namespace Rivet.Test.Operations
 	[TestFixture]
 	public sealed class UpdateTableOperationTestFixture
 	{
-
-		const string SchemaName = "schemaName";
-		const string Name = "name";
-		static Column column1 = Column.VarChar("name", new CharacterLength(50), null, Nullable.NotNull, "''", "varchar column");
+		private const string SchemaName = "schemaName";
+		private const string Name = "name";
+		private const string DefaultConstraintName = "default constraint name";
+		static Column column1 = Column.VarChar("name", new CharacterLength(50), null, Nullable.NotNull, "''", DefaultConstraintName, "varchar column");
 		static Identity identity = new Identity();
 		static Column column2 = Column.Int("int column", identity, "test int column");
 		private Column[] addColumnList = { column1, column2 };
@@ -27,7 +27,7 @@ namespace Rivet.Test.Operations
 			Assert.AreEqual(addColumnList, op.AddColumns);
 			Assert.AreEqual(updateColumnList, op.UpdateColumns);
 			Assert.That(op.RemoveColumns, Is.EqualTo(removeColumnList));
-			Assert.That(op.ObjectName, Is.EqualTo(string.Format("{0}.{1}", SchemaName, Name)));
+			Assert.That(op.ObjectName, Is.EqualTo($"{SchemaName}.{Name}"));
 		}
 
 		[Test]
@@ -36,7 +36,8 @@ namespace Rivet.Test.Operations
 			var op = new UpdateTableOperation(SchemaName, Name, addColumnList, null, null);
 
 			var expectedQuery =
-				string.Format("alter table [schemaName].[name] add [name] varchar(50) not null constraint [DF_schemaName_name_name] default ''{0}alter table [schemaName].[name] add [int column] int identity not null", Environment.NewLine);
+				$"alter table [schemaName].[name] add [name] varchar(50) not null constraint [{DefaultConstraintName}] default ''{Environment.NewLine}" + 
+				"alter table [schemaName].[name] add [int column] int identity not null";
 
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}
@@ -46,8 +47,9 @@ namespace Rivet.Test.Operations
 		{
 			var op = new UpdateTableOperation(SchemaName, Name, null, updateColumnList, null);
 
-			var expectedQuery = 
-				string.Format("alter table [schemaName].[name] alter column [int column] int identity not null{0}alter table [schemaName].[name] alter column [name] varchar(50) not null constraint [DF_schemaName_name_name] default ''", Environment.NewLine);
+			var expectedQuery =
+				$"alter table [schemaName].[name] alter column [int column] int identity not null{Environment.NewLine}" + 
+				$"alter table [schemaName].[name] alter column [name] varchar(50) not null constraint [{DefaultConstraintName}] default ''";
 
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}
@@ -69,7 +71,11 @@ namespace Rivet.Test.Operations
 			var op = new UpdateTableOperation(SchemaName, Name, addColumnList, updateColumnList, removeColumnList);
 
 			var expectedQuery =
-				string.Format("alter table [schemaName].[name] add [name] varchar(50) not null constraint [DF_schemaName_name_name] default ''{0}alter table [schemaName].[name] add [int column] int identity not null{0}alter table [schemaName].[name] alter column [int column] int identity not null{0}alter table [schemaName].[name] alter column [name] varchar(50) not null constraint [DF_schemaName_name_name] default ''{0}alter table [schemaName].[name] drop column [column 3]{0}alter table [schemaName].[name] drop column [column 4]", Environment.NewLine);
+				$"alter table [schemaName].[name] add [name] varchar(50) not null constraint [{DefaultConstraintName}] default ''{Environment.NewLine}" +
+				$"alter table [schemaName].[name] add [int column] int identity not null{Environment.NewLine}" +
+				$"alter table [schemaName].[name] alter column [int column] int identity not null{Environment.NewLine}" + 
+				$"alter table [schemaName].[name] alter column [name] varchar(50) not null constraint [{DefaultConstraintName}] default ''{Environment.NewLine}" + 
+				$"alter table [schemaName].[name] drop column [column 3]{Environment.NewLine}alter table [schemaName].[name] drop column [column 4]";
 
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}
@@ -79,8 +85,8 @@ namespace Rivet.Test.Operations
 		{
 			var columns = new Column[]
 			{
-				Column.Int("column1", Nullable.NotNull, null, null),
-				Column.Int("column2", Nullable.NotNull, null, null),
+				Column.Int("column1", Nullable.NotNull, null, null, null),
+				Column.Int("column2", Nullable.NotNull, null, null, null),
 			};
 			var op = new UpdateTableOperation("schema", "tableName", columns, new Column[0], new string[0]);
 			var removeDefaultConstraintOp = new RemoveDefaultConstraintOperation("SCHEMA", "TABLENAME", "COLUMN2", "name");
@@ -95,11 +101,11 @@ namespace Rivet.Test.Operations
 		{
 			var columns = new Column[]
 			{
-				Column.Int("column1", Nullable.NotNull, "defaultExpression", "description"),
-				Column.Int("column2", Nullable.NotNull, "defaultExpression", "description"),
+				Column.Int("column1", Nullable.NotNull, "defaultExpression", DefaultConstraintName, "description"),
+				Column.Int("column2", Nullable.NotNull, "defaultExpression", DefaultConstraintName, "description"),
 			};
-			var op = new UpdateTableOperation("schema", "tableName", new Column[0], columns, new string[0]);
-			var removeDefaultConstraintOp = new RemoveDefaultConstraintOperation("SCHEMA", "TABLENAME", "COLUMN2", "name");
+			var op = new UpdateTableOperation("schema", "table Name", new Column[0], columns, new string[0]);
+			var removeDefaultConstraintOp = new RemoveDefaultConstraintOperation("SCHEMA", "TABLE NAME", "COLUMN2", "name");
 			op.Merge(removeDefaultConstraintOp);
 			Assert.That(op.Disabled, Is.False);
 			Assert.That(removeDefaultConstraintOp.Disabled, Is.True);
@@ -107,46 +113,90 @@ namespace Rivet.Test.Operations
 		}
 
 		[Test]
-		public void ShouldAddDefaultExpressionToAddedColumnsAndDisableAddDefaultConstraint()
+		public void ShouldAddDefaultExpressionAndConstraintNameToAddedColumnsAndDisableAddDefaultConstraint()
 		{
-			var columns = new Column[]
+			var columns = new[]
 			{
-				Column.Int("column1", Nullable.NotNull, null, "description"),
-				Column.Int("column2", Nullable.NotNull, null, "description"),
+				Column.Int("column1", Nullable.NotNull, null, null, "description"),
+				Column.Int("column2", Nullable.NotNull, null, null, "description"),
 			};
 			var op = new UpdateTableOperation("schema", "table", columns, new Column[0], new string[0]);
 			var addDefaultConstraintOp =
-				new AddDefaultConstraintOperation("SCHEMA", "TABLE", "expression", "COLUMN2", false);
+				new AddDefaultConstraintOperation("SCHEMA", "TABLE", "NAME", "COLUMN2", "expression", false);
 			op.Merge(addDefaultConstraintOp);
 			Assert.That(op.Disabled, Is.False);
 			Assert.That(addDefaultConstraintOp.Disabled, Is.True);
 			Assert.That(op.AddColumns[0].DefaultExpression, Is.Null);
+			Assert.That(op.AddColumns[0].DefaultConstraintName, Is.Null);
 			Assert.That(op.AddColumns[1].DefaultExpression, Is.EqualTo("expression"));
+			Assert.That(op.AddColumns[1].DefaultConstraintName, Is.EqualTo("NAME"));
 		}
 
 		[Test]
 		public void ShouldAddDefaultExpressionToUpdatedColumnsAndDisableAddDefaultConstraint()
 		{
-			var columns = new Column[]
+			var columns = new[]
 			{
-				Column.Int("column1", Nullable.NotNull, null, "description"),
-				Column.Int("column2", Nullable.NotNull, null, "description"),
+				Column.Int("column1", Nullable.NotNull, null, null, "description"),
+				Column.Int("column2", Nullable.NotNull, null, null, "description"),
 			};
 			var op = new UpdateTableOperation("schema", "table", new Column[0], columns, new string[0]);
 			var addDefaultConstraintOp =
-				new AddDefaultConstraintOperation("SCHEMA", "TABLE", "expression", "COLUMN2", "name", false);
+				new AddDefaultConstraintOperation("SCHEMA", "TABLE", "NAME", "COLUMN2", "expression", false);
 			op.Merge(addDefaultConstraintOp);
 			Assert.That(op.Disabled, Is.False);
 			Assert.That(addDefaultConstraintOp.Disabled, Is.True);
 			Assert.That(op.UpdateColumns[0].DefaultExpression, Is.Null);
+			Assert.That(op.UpdateColumns[0].DefaultConstraintName, Is.Null);
 			Assert.That(op.UpdateColumns[1].DefaultExpression, Is.EqualTo("expression"));
+			Assert.That(op.UpdateColumns[1].DefaultConstraintName, Is.EqualTo("NAME"));
+		}
+
+		[Test]
+		public void ShouldNotAddDefaultExpressionAndConstraintNameToAddedColumnsWhenDefaultConstraintWithValues()
+		{
+			var columns = new Column[]
+			{
+				Column.Int("column1", Nullable.NotNull, null, null, "description"),
+				Column.Int("column2", Nullable.NotNull, null, null, "description"),
+			};
+			var op = new UpdateTableOperation("schema", "table", columns, new Column[0], new string[0]);
+			var addDefaultConstraintOp =
+				new AddDefaultConstraintOperation("SCHEMA", "TABLE", "NAME", "COLUMN2", "expression", true);
+			op.Merge(addDefaultConstraintOp);
+			Assert.That(op.Disabled, Is.False);
+			Assert.That(addDefaultConstraintOp.Disabled, Is.False);
+			Assert.That(op.AddColumns[0].DefaultExpression, Is.Null);
+			Assert.That(op.AddColumns[0].DefaultConstraintName, Is.Null);
+			Assert.That(op.AddColumns[1].DefaultExpression, Is.Null);
+			Assert.That(op.AddColumns[1].DefaultConstraintName, Is.Null);
+		}
+
+		[Test]
+		public void ShouldNotAddDefaultExpressionToUpdatedColumnsWhenDefaultConstraintWithValues()
+		{
+			var columns = new Column[]
+			{
+				Column.Int("column1", Nullable.NotNull, null, null, "description"),
+				Column.Int("column2", Nullable.NotNull, null, null, "description"),
+			};
+			var op = new UpdateTableOperation("schema", "table", new Column[0], columns, new string[0]);
+			var addDefaultConstraintOp =
+				new AddDefaultConstraintOperation("SCHEMA", "TABLE", "NAME", "COLUMN2", "expression", true);
+			op.Merge(addDefaultConstraintOp);
+			Assert.That(op.Disabled, Is.False);
+			Assert.That(addDefaultConstraintOp.Disabled, Is.False);
+			Assert.That(op.UpdateColumns[0].DefaultExpression, Is.Null);
+			Assert.That(op.UpdateColumns[0].DefaultConstraintName, Is.Null);
+			Assert.That(op.UpdateColumns[1].DefaultExpression, Is.Null);
+			Assert.That(op.UpdateColumns[1].DefaultConstraintName, Is.Null);
 		}
 
 		[Test]
 		public void ShouldRemoveUpdateOperationIfTableRemoved()
 		{
-			var op = new UpdateTableOperation("schema", "tableName", new Column[0], new Column[0], new string[0]);
-			var removeTableOp = new RemoveTableOperation("SCHEMA", "TABLENAME");
+			var op = new UpdateTableOperation("schema", "table Name", new Column[0], new Column[0], new string[0]);
+			var removeTableOp = new RemoveTableOperation("SCHEMA", "TABLE NAME");
 			op.Merge(removeTableOp);
 			Assert.That(op.Disabled, Is.True);
 			Assert.That(removeTableOp.Disabled, Is.True);
@@ -168,15 +218,15 @@ namespace Rivet.Test.Operations
 			var columns = new Column[]
 			{
 				Column.Int("id", null, "description"),
-				Column.VarChar("name", new CharacterLength(50), "collation", Nullable.Null, null, "description")
+				Column.VarChar("name", new CharacterLength(50), "collation", Nullable.Null, null, null, "description")
 			};
 			var op = new UpdateTableOperation("schema", "table", columns, new Column[0], new string[0]);
-			var renameColumnOp = new RenameColumnOperation("SCHEMA", "TABLE", "NAME", "newname");
+			var renameColumnOp = new RenameColumnOperation("SCHEMA", "TABLE", "NAME", "new name");
 			op.Merge(renameColumnOp);
 			Assert.That(op.Disabled, Is.False);
 			Assert.That(renameColumnOp.Disabled, Is.True);
 			Assert.That(op.AddColumns[0].Name, Is.EqualTo("id"));
-			Assert.That(op.AddColumns[1].Name, Is.EqualTo("newname"));
+			Assert.That(op.AddColumns[1].Name, Is.EqualTo("new name"));
 		}
 
 		[Test]
@@ -185,15 +235,15 @@ namespace Rivet.Test.Operations
 			var columns = new Column[]
 			{
 				Column.Int("id", null, "description"),
-				Column.VarChar("name", new CharacterLength(50), "collation", Nullable.Null, null, "description")
+				Column.VarChar("name", new CharacterLength(50), "collation", Nullable.Null, null, null, "description")
 			};
 			var op = new UpdateTableOperation("schema", "table", new Column[0], columns, new string[0]);
-			var renameColumnOp = new RenameColumnOperation("SCHEMA", "TABLE", "NAME", "newname");
+			var renameColumnOp = new RenameColumnOperation("SCHEMA", "TABLE", "NAME", "new name");
 			op.Merge(renameColumnOp);
 			Assert.That(op.Disabled, Is.False);
 			Assert.That(renameColumnOp.Disabled, Is.True);
 			Assert.That(op.UpdateColumns[0].Name, Is.EqualTo("id"));
-			Assert.That(op.UpdateColumns[1].Name, Is.EqualTo("newname"));
+			Assert.That(op.UpdateColumns[1].Name, Is.EqualTo("new name"));
 		}
 
 		[Test]
@@ -201,9 +251,9 @@ namespace Rivet.Test.Operations
 		{
 			var columns = new Column[]
 			{
-				Column.UniqueIdentifier("uuid", false, Nullable.Null, null, "description"),
-				Column.UniqueIdentifier("uuid2", false, Nullable.Null, null, "description"),
-				Column.Int("uuid", Nullable.Null, null, "description"),
+				Column.UniqueIdentifier("uuid", false, Nullable.Null, null, null, "description"),
+				Column.UniqueIdentifier("uuid2", false, Nullable.Null, null, null, "description"),
+				Column.Int("uuid", Nullable.Null, null, null, "description"),
 			};
 			columns[2].RowGuidCol = false;
 			var op = new UpdateTableOperation("schema", "table", columns, new Column[0], new string[0]);
@@ -221,9 +271,9 @@ namespace Rivet.Test.Operations
 		{
 			var columns = new Column[]
 			{
-				Column.UniqueIdentifier("uuid", false, Nullable.Null, null, "description"),
-				Column.UniqueIdentifier("uuid2", false, Nullable.Null, null, "description"),
-				Column.Int("uuid", Nullable.Null, null, "description"),
+				Column.UniqueIdentifier("uuid", false, Nullable.Null, null, null, "description"),
+				Column.UniqueIdentifier("uuid2", false, Nullable.Null, null, null, "description"),
+				Column.Int("uuid", Nullable.Null, null, null, "description"),
 			};
 			columns[2].RowGuidCol = false;
 			var op = new UpdateTableOperation("schema", "table", new Column[0], columns, new string[0]);
@@ -241,9 +291,9 @@ namespace Rivet.Test.Operations
 		{
 			var columns = new Column[]
 			{
-				Column.UniqueIdentifier("uuid", false, Nullable.Null, null, "description"),
-				Column.UniqueIdentifier("uuid2", false, Nullable.Null, null, "description"),
-				Column.Int("uuid", Nullable.Null, null, "description"),
+				Column.UniqueIdentifier("uuid", false, Nullable.Null, null, null, "description"),
+				Column.UniqueIdentifier("uuid2", false, Nullable.Null, null, null, "description"),
+				Column.Int("uuid", Nullable.Null, null, null, "description"),
 			};
 			var op = new UpdateTableOperation("schema", "table", new Column[0], columns, new string[0]);
 			var addRowGuidColOp = new AddRowGuidColOperation("SCHEMA", "table2", "UUID");
@@ -260,9 +310,9 @@ namespace Rivet.Test.Operations
 		{
 			var columns = new Column[]
 			{
-				Column.UniqueIdentifier("uuid", true, Nullable.Null, null, "description"),
-				Column.UniqueIdentifier("uuid2", true, Nullable.Null, null, "description"),
-				Column.Int("uuid", Nullable.Null, null, "description"),
+				Column.UniqueIdentifier("uuid", true, Nullable.Null, null, null, "description"),
+				Column.UniqueIdentifier("uuid2", true, Nullable.Null, null, null, "description"),
+				Column.Int("uuid", Nullable.Null, null, null, "description"),
 			};
 			columns[2].RowGuidCol = true;
 			var op = new UpdateTableOperation("schema", "table", columns, new Column[0], new string[0]);
@@ -280,9 +330,9 @@ namespace Rivet.Test.Operations
 		{
 			var columns = new Column[]
 			{
-				Column.UniqueIdentifier("uuid", true, Nullable.Null, null, "description"),
-				Column.UniqueIdentifier("uuid2", true, Nullable.Null, null, "description"),
-				Column.Int("uuid", Nullable.Null, null, "description"),
+				Column.UniqueIdentifier("uuid", true, Nullable.Null, null, null, "description"),
+				Column.UniqueIdentifier("uuid2", true, Nullable.Null, null, null, "description"),
+				Column.Int("uuid", Nullable.Null, null, null, "description"),
 			};
 			columns[2].RowGuidCol = true;
 			var op = new UpdateTableOperation("schema", "table", new Column[0], columns, new string[0]);
@@ -312,9 +362,9 @@ namespace Rivet.Test.Operations
 		public void ShouldMergeAddColumnsAcrossUpdateTableOperations()
 		{
 			var op = new UpdateTableOperation("schema", "name",
-				new[] {Column.Int("column1", Nullable.NotNull, null, null)}, null, null);
+				new[] {Column.Int("column1", Nullable.NotNull, null, null, null)}, null, null);
 			var addColumnOp = new UpdateTableOperation("SCHEMA", "NAME",
-				new[] {Column.Bit("column2", Nullable.NotNull, null, null)}, null, null);
+				new[] {Column.Bit("column2", Nullable.NotNull, null, null, null)}, null, null);
 			op.Merge(addColumnOp);
 			Assert.That(op.Disabled, Is.False);
 			Assert.That(addColumnOp.Disabled, Is.True);
@@ -327,9 +377,9 @@ namespace Rivet.Test.Operations
 		public void ShouldMergeUpdateColumnsAcrossUpdateTableOperations()
 		{
 			var op = new UpdateTableOperation("schema", "name", null,
-				new[] { Column.Int("column1", Nullable.NotNull, null, null) }, null);
+				new[] { Column.Int("column1", Nullable.NotNull, null, null, null) }, null);
 			var updateColumnOp = new UpdateTableOperation("SCHEMA", "NAME", null,
-				new[] { Column.Bit("column2", Nullable.NotNull, null, null) }, null);
+				new[] { Column.Bit("column2", Nullable.NotNull, null, null, null) }, null);
 			op.Merge(updateColumnOp);
 			Assert.That(op.Disabled, Is.False);
 			Assert.That(updateColumnOp.Disabled, Is.True);
@@ -342,12 +392,12 @@ namespace Rivet.Test.Operations
 		public void ShouldMergeAllColumnOperationsAcrossUpdateTableOperations()
 		{
 			var op = new UpdateTableOperation("schema", "name",
-				new[] { Column.Int("column1", new Identity(), null), Column.Bit("column2", Nullable.Null, null, null) },
-				new[] { Column.Int("column3", new Identity(), null), Column.Bit("column4", Nullable.Null, null, null) },
+				new[] { Column.Int("column1", new Identity(), null), Column.Bit("column2", Nullable.Null, null, null, null) },
+				new[] { Column.Int("column3", new Identity(), null), Column.Bit("column4", Nullable.Null, null, null, null) },
 				new[] { "column6", "column7" });
 			var otherUpdateOp = new UpdateTableOperation("SCHEMA", "NAME", 
-				new [] { Column.Int("COLUMN7", Nullable.Null, null, null), Column.Bit("column8", Nullable.NotNull, null, null) },
-				new [] { Column.BigInt("COLUMN1", new Identity(), null), Column.Bit("column9", Nullable.Null, null, null)},
+				new [] { Column.Int("COLUMN7", Nullable.Null, null, null, null), Column.Bit("column8", Nullable.NotNull, null, null, null) },
+				new [] { Column.BigInt("COLUMN1", new Identity(), null), Column.Bit("column9", Nullable.Null, null, null, null)},
 				new [] { "COLUMN2", "COLUMN4", "column10" });
 			op.Merge(otherUpdateOp);
 			Assert.That(op.Disabled, Is.False);
@@ -392,9 +442,9 @@ namespace Rivet.Test.Operations
 		[Test]
 		public void ShouldMergeAllUpdatedColumns()
 		{
-			var op = new UpdateTableOperation("schema", "name", null, new [] { Column.Bit("bit", Nullable.NotNull, null, null)}, null);
+			var op = new UpdateTableOperation("schema", "name", null, new [] { Column.Bit("bit", Nullable.NotNull, null, null, null)}, null);
 			var op2 = new UpdateTableOperation("schema", "name", null, null, null);
-			var op3 = new UpdateTableOperation("schema", "name", null, new[] { Column.Bit("BIT", Nullable.Null, null, null) }, null);
+			var op3 = new UpdateTableOperation("schema", "name", null, new[] { Column.Bit("BIT", Nullable.Null, null, null, null) }, null);
 
 			op2.Merge(op3);
 			op.Merge(op3);

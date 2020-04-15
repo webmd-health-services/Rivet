@@ -83,6 +83,7 @@
         'Assert-UniqueKey',
         'Assert-UserDefinedFunction',
         'Assert-View',
+        'Assert-WroteError',
         'Clear-TestDatabase',
         'Get-ActivityInfo',
         'Get-CheckConstraint',
@@ -111,10 +112,9 @@
         'Invoke-RivetTestQuery',
         'Measure-Migration',
         'Measure-MigrationScript',
-        'New-ConstraintName',
+        'New-RTConstraintName',
         'New-Database',
         'New-File',
-        'New-ForeignKeyConstraintName',
         'New-TestMigration',
         'New-SqlConnection',
         'Remove-RivetTestDatabase',
@@ -165,7 +165,14 @@
     )
 
     # Aliases to export from this module
-    AliasesToExport = 'GivenFile'
+    AliasesToExport = @(
+        'GivenFile',
+        'GivenMigration',
+        'ThenDefaultConstraint',
+        'ThenTable',
+        'ThenWroteError',
+        'WhenMigrating'
+    )
 
     # List of all modules packaged with this module
     ModuleList = @()

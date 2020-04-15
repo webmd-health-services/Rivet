@@ -42,7 +42,7 @@ function Remove-UniqueKey
     if( $PSCmdlet.ParameterSetName -eq 'ByDefaultName' )
     {
         Write-Warning ('Remove-UniqueKey''s ColumnName parameter is obsolete and will be removed in a future version of Rivet. Instead, use the Name parameter to remove a unique key.')
-        $Name = New-Object -TypeName 'Rivet.ConstraintName' -ArgumentList $SchemaName, $TableName, $ColumnName, ([Rivet.ConstraintType]::UniqueKey) | Select-Object -ExpandProperty 'Name'
+        $Name = New-ConstraintName -UniqueKey -SchemaName $SchemaName -TableName $TableName -ColumnName $ColumnName
     }
 
     New-Object 'Rivet.Operations.RemoveUniqueKeyOperation' $SchemaName, $TableName, $Name

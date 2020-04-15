@@ -1,15 +1,23 @@
 
-& (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
+#Requires -Version 5.1
+Set-StrictMode -Version 'Latest'
+
+& (Join-Path -Path $PSScriptRoot -ChildPath 'Initialize-Test.ps1' -Resolve)
+
+function Init
+{
+    Start-RivetTest
+}
+
+function Reset
+{
+    Stop-RivetTest
+}
 
 Describe 'Remove-UniqueKey' {
-    BeforeEach {
-        Start-RivetTest
-    }
-    
-    AfterEach {
-        Stop-RivetTest -Pop
-    }
-    
+    BeforeEach { Init }
+    AfterEach { Reset }
+
     It 'should remove unique key' {
         @"
     function Push-Migration()
@@ -22,7 +30,7 @@ Describe 'Remove-UniqueKey' {
         Add-UniqueKey -TableName 'RemoveUniqueKey' -ColumnName 'RemoveMyUniqueKey'
     
         #Remove Index
-        Remove-UniqueKey -TableName 'RemoveUniqueKey' -Name '$(New-ConstraintName -UniqueKey 'RemoveUniqueKey' 'RemoveMyUniqueKey')'
+        Remove-UniqueKey -TableName 'RemoveUniqueKey' -Name '$(New-RTConstraintName -UniqueKey 'RemoveUniqueKey' 'RemoveMyUniqueKey')'
     }
     
     function Pop-Migration()
@@ -43,7 +51,7 @@ Describe 'Remove-UniqueKey' {
         }
     
         Add-UniqueKey -TableName 'Remove-UniqueKey' -ColumnName 'RemoveMyUniqueKey'
-        Remove-UniqueKey -TableName 'Remove-UniqueKey' -Name '$(New-ConstraintName -UniqueKey 'Remove-UniqueKey' 'RemoveMyUniqueKey')'
+        Remove-UniqueKey -TableName 'Remove-UniqueKey' -Name '$(New-RTConstraintName -UniqueKey 'Remove-UniqueKey' 'RemoveMyUniqueKey')'
     }
     
     function Pop-Migration()

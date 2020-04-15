@@ -4,15 +4,13 @@ function Start-MigrationOperation
     [CmdletBinding()]
     [Rivet.Plugin([Rivet.Events]::BeforeOperationLoad)]
     param(
-        [Parameter(Mandatory=$true)]
-        [Rivet.Migration]
+        [Parameter(Mandatory)]
         # The migration the operation is part of.
-        $Migration,
+        [Rivet.Migration]$Migration,
 
-        [Parameter(Mandatory=$true)]
-        [Rivet.Operation]
+        [Parameter(Mandatory)]
         # The operation which is about to be applied.
-        $Operation
+        [Rivet.Operations.Operation]$Operation
     )
 
     Set-StrictMode -Version 'Latest'
@@ -36,9 +34,14 @@ function Start-MigrationOperation
             $problems = $true
         }
 
+        $defaultConstraintNamePrefix = "DF_$($Operation.Name)_"
+        if( $Operation.SchemaName -ne 'dbo' )
+        {
+            $defaultConstraintNamePrefix = "DF_$($Operation.SchemaName)_$($Operation.Name)_"
+        }
         Invoke-Command {
-            smalldatetime 'CreateDate' -NotNull -Default 'getdate()' -Description 'Record created date'
-            datetime 'LastUpdated' -NotNull -Default 'getdate()' -Description 'Date this record was last updated' 
+            smalldatetime 'CreateDate' -NotNull -Default 'getdate()' -DefaultConstraintName "$($defaultConstraintNamePrefix)CreateDate" -Description 'Record created date'
+            datetime 'LastUpdated' -NotNull -Default 'getdate()' -DefaultConstraintName "$($defaultConstraintNamePrefix)LastUpdated" -Description 'Date this record was last updated' 
         } | ForEach-Object { $Operation.Columns.Add( $_ ) }
 
         $skipRowGuidCol = $Operation.Columns | 
@@ -47,12 +50,12 @@ function Start-MigrationOperation
         if( -not $skipRowGuidCol )
         {
             $Operation.Columns.Add( 
-                (uniqueidentifier 'rowguid' -NotNull -RowGuidCol -Default 'newsequentialid()' -Description 'rowguid column used for replication')
+                (uniqueidentifier 'rowguid' -NotNull -RowGuidCol -Default 'newsequentialid()' -DefaultConstraintName "$($defaultConstraintNamePrefix)rowguid" -Description 'rowguid column used for replication')
             )
 
         }
 
-        $Operation.Columns.Add( (bit 'SkipBit' -Default 0 -Description 'Used to bypass custom triggers') )
+        $Operation.Columns.Add( (bit 'SkipBit' -Default 0 -DefaultConstraintName "$($defaultConstraintNamePrefix)SkipBit" -Description 'Used to bypass custom triggers') )
     }
 
     if( ($Operation -is [Rivet.Operations.AddTableOperation]) -or ($Operation -is [Rivet.Operations.UpdateTableOperation]) )

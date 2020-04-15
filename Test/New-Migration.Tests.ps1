@@ -14,7 +14,6 @@ Describe 'New-Migration' {
     }
     
     AfterEach {
-        Invoke-RTRivet -Pop -All
         Stop-RivetTest
     }
     

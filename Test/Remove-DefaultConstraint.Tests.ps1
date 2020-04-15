@@ -1,15 +1,20 @@
 
 & (Join-Path -Path $PSScriptRoot -ChildPath 'Initialize-Test.ps1' -Resolve)
 
+function Init
+{
+    Start-RivetTest
+}
+
+function Reset
+{
+    Stop-RivetTest
+}
+
 Describe 'Remove-DefaultConstraint' {
-    BeforeEach {
-        Start-RivetTest
-    }
-    
-    AfterEach {
-        Stop-RivetTest -Pop
-    }
-    
+    BeforeEach { Init }
+    AfterEach { Reset }
+
     It 'should remove default constraint' {
         @"
     function Push-Migration()
@@ -19,7 +24,7 @@ Describe 'Remove-DefaultConstraint' {
         }
     
         Add-DefaultConstraint -TableName 'AddDefaultConstraint' -ColumnName 'DefaultConstraintMe' -Expression 101
-        Remove-DefaultConstraint 'AddDefaultConstraint' -Name '$(New-ConstraintName -Default 'AddDefaultConstraint' 'DefaultConstraintMe')'
+        Remove-DefaultConstraint 'AddDefaultConstraint' -Name '$(New-RTConstraintName -Default 'AddDefaultConstraint' 'DefaultConstraintMe')'
     }
     
     function Pop-Migration()
@@ -40,7 +45,7 @@ Describe 'Remove-DefaultConstraint' {
         }
     
         Add-DefaultConstraint -TableName 'Remove-DefaultConstraint' -ColumnName 'DefaultConstraintMe' -Expression 101
-        Remove-DefaultConstraint -TableName 'Remove-DefaultConstraint' -Name '$(New-ConstraintName -Default 'Remove-DefaultConstraint' 'DefaultConstraintMe')'
+        Remove-DefaultConstraint -TableName 'Remove-DefaultConstraint' -Name '$(New-RTConstraintName -Default 'Remove-DefaultConstraint' 'DefaultConstraintMe')'
     }
     
     function Pop-Migration()
