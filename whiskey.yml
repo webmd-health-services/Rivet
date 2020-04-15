@@ -33,6 +33,7 @@ Build:
     - Rivet.dll
 
 - MergeFile:
+    OnlyBy: BuildServer
     Path:
     - Rivet\Functions\*.ps1
     - Rivet\Functions\Columns\*.ps1
@@ -42,6 +43,7 @@ Build:
     TextSeparator: "$(NewLine)$(NewLine)"
 
 - MergeFile:
+    OnlyBy: BuildServer
     Path: 
     - Test\RivetTest\Functions\*.ps1
     - Test\RivetTest\RivetTest.Exports.ps1
