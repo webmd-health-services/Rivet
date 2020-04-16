@@ -1,9 +1,12 @@
 PublishOn:
- - master
+- prerelease
+- master
  
 Build:
 - Version:
     Path: Rivet\Rivet.psd1
+    Prerelease:
+    - develop: beta$(WHISKEY_BUILD_NUMBER)
 
 - DotNet:
     Command: build
@@ -29,6 +32,25 @@ Build:
     - Rivet\bin
     - Rivet.dll
 
+- MergeFile:
+    OnlyBy: BuildServer
+    Path:
+    - Rivet\Functions\*.ps1
+    - Rivet\Functions\Columns\*.ps1
+    - Rivet\Functions\Operations\*.ps1
+    DestinationPath: Rivet\Rivet.psm1
+    DeleteSourceFiles: true
+    TextSeparator: "$(NewLine)$(NewLine)"
+
+- MergeFile:
+    OnlyBy: BuildServer
+    Path: 
+    - Test\RivetTest\Functions\*.ps1
+    - Test\RivetTest\RivetTest.Exports.ps1
+    DestinationPath: Test\RivetTest\RivetTest.psm1
+    DeleteSourceFiles: true
+    TextSeparator: "$(NewLine)$(NewLine)"
+
 - File:
     OnlyBy: BuildServer
     Path: Test\Server.txt
@@ -39,6 +61,7 @@ Build:
     Script: Test\*.Tests.ps1
 
 - PowerShell:
+    OnlyDuring: Build
     Path: test.ps1
 
 - Zip:
@@ -49,8 +72,10 @@ Build:
     - "*.pdb"
     - "*.orig"
 
+
 Publish:
 - PublishPowerShellModule:
+    UnlessExists: env:APPVEYOR_PULL_REQUEST_NUMBER
     RepositoryName: PSGallery
     RepositoryUri: https://powershellgallery.com/api/v2/
     Path: Rivet
@@ -64,6 +89,8 @@ Publish:
                 ReleaseNotes: RELEASE_NOTES
 
 - GitHubRelease:
+    UnlessExists: env:APPVEYOR_PULL_REQUEST_NUMBER
+    OnlyOnBranch: master
     RepositoryName: webmd-health-services/Rivet
     ApiKeyID: github.com
     Tag: $(WHISKEY_SEMVER2_NO_BUILD_METADATA)

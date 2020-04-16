@@ -11,6 +11,8 @@ namespace Rivet.Operations
 
 		public string Name { get; set; }
 
+		public override OperationQueryType QueryType => OperationQueryType.Ddl;
+
 		public override string ToIdempotentQuery()
 		{
 			return string.Format("if exists (select * from sys.schemas where name = '{0}'){1}\t{2}", Name, Environment.NewLine, ToQuery());

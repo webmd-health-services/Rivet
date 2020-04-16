@@ -22,7 +22,8 @@ namespace Rivet.Test.Operations
 			Assert.AreEqual(_schemaName, op.SchemaName);
 			Assert.AreEqual(_tableName, op.TableName);
 			Assert.AreEqual(_constraintName, op.Name);
-			Assert.That(op.ObjectName, Is.EqualTo(string.Format("{0}.{1}.{2}", _schemaName, _tableName, _constraintName)));
+			Assert.That(op.ObjectName, Is.EqualTo($"{_schemaName}.{_constraintName}"));
+			Assert.That(op.TableObjectName, Is.EqualTo($"{_schemaName}.{_tableName}"));
 		}
 
 		[Test]

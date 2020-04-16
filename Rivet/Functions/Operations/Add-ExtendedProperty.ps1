@@ -82,7 +82,7 @@ function Add-ExtendedProperty
         [Alias('View')]
         [string]
         # The table name.
-        $ViewName,        
+        $ViewName,
         
         [Parameter(Mandatory=$true,ParameterSetName='VIEW-COLUMN')]
         [Parameter(Mandatory=$true,ParameterSetName='TABLE-COLUMN')]

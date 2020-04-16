@@ -17,9 +17,21 @@ param(
 #Requires -Version 4
 Set-StrictMode -Version Latest
 
-if( (Get-Module Rivet) )
-{
-    Remove-Module Rivet -Verbose:$false -Confirm:$false -WhatIf:$false
-}
+& {
+    $originalVerbose = $VerbosePreference
+    $Global:VerbosePreference = 'SilentlyContinue'
 
-Import-Module (Join-Path -Path $PSScriptRoot -ChildPath Rivet.psd1 -Resolve) -Verbose:$false
+    try
+    {
+        if( (Get-Module Rivet) )
+        {
+            Remove-Module Rivet -Confirm:$false -WhatIf:$false
+        }
+
+        Import-Module (Join-Path -Path $PSScriptRoot -ChildPath Rivet.psd1 -Resolve)
+    }
+    finally
+    {
+        $Global:VerbosePreference = $originalVerbose
+    }
+}

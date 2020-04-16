@@ -12,7 +12,8 @@ namespace Rivet.Test.Operations
 		private const string From = "uniqueidentifier";
 		private const string AssemblyName = "assemblyName";
 		private const string ClassName = "className";
-		static Column column1 = Column.VarChar("name", new CharacterLength(50), null, Nullable.NotNull, "''", "varchar column");
+		private const string DefaultConstraintName = "default constraint name";
+		static Column column1 = Column.VarChar("name", new CharacterLength(50), null, Nullable.NotNull, "''", DefaultConstraintName, "varchar column");
 		static readonly Identity Identity = new Identity();
 		static Column column2 = Column.Int("int column", Identity, "test int column");
 		static Column[] AsTable = { column1, column2 };
@@ -74,10 +75,22 @@ namespace Rivet.Test.Operations
 		{
 			var op = new AddDataTypeOperation(SchemaName, Name, AsTable, TableConstraint);
 			var expectedQuery =
-				"create type [schemaName].[name] as table ([name] varchar(50) not null constraint [DF_schemaName_name_name] default '', [int column] int identity constraint1, constraint2)";
+				 "create type [schemaName].[name] as table (" + 
+				$"[name] varchar(50) not null constraint [{DefaultConstraintName}] default '', " +
+				 "[int column] int identity not null constraint1, constraint2" + 
+				 ")";
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}
 
+		[Test]
+		public void ShouldMergeIfDataTypeRemoved()
+		{
+			var op = new AddDataTypeOperation("schema", "name", "from");
+			var removeDataTypeOp = new RemoveDataTypeOperation("SCHEMA", "NAME");
+			op.Merge(removeDataTypeOp);
+			Assert.That(op.Disabled, Is.True);
+			Assert.That(removeDataTypeOp.Disabled, Is.True);
+		}
 	}
 
 }

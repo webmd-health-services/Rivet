@@ -121,44 +121,126 @@ function New-Column
     [CmdletBinding(DefaultParameterSetName='Nullable')]
     param(
 
-        [Parameter(Mandatory=$true,Position=0)]
-        [string]
+        [Parameter(Mandatory,Position=0)]
         # The Name of the new column.
-        $Name,
+        [String]$Name,
 
-        [Parameter(Mandatory=$true,Position=1)]
-        [string]
-        # The datatype of the new column, including precision/scale/size specifiers.
-        $DataType,
+        [Parameter(Mandatory,Position=1)]
+        # The datatype of the new column. Scale/size/precision clause is optional. 
+        [String]$DataType,
 
         [Parameter(ParameterSetName='Nullable')]
-        [Switch]
+        [Parameter(ParameterSetName='NotNull')]
+        # Allow the column to be its maximum size. Sets the columnn's size clause to `(max)`. Only use this with columns whose underlying type supports it. If you supply this argument, the `Size`, `Precision`, and `Scale` parameters are ignored.
+        [switch]$Max,
+
+        [Parameter(ParameterSetName='Nullable')]
+        [Parameter(ParameterSetName='NotNull')]
+        # The size/length of the column. Sets the column's size clause to `($Size)`. Ignored if `Max` parameter is used. If provided, the `Precision` and `Scale` parameters are ignored.
+        [int]$Size,
+
+        [Parameter(ParameterSetName='Nullable')]
+        [Parameter(ParameterSetName='NotNull')]
+        # The precision of the column. Set's the columns size clause to `($Precision)`. If `Scale` is also given, the size clause is set to `($Precision,$Scale)`. Ignored if the `Max` or `Size` parameters are used.
+        [int]$Precision,
+
+        [Parameter(ParameterSetName='Nullable')]
+        [Parameter(ParameterSetName='NotNull')]
+        # The scale of the column. Set's the column's size clause to `($Scale)`. If `Precision` is also given, the size clause is set to `($Precision,$Scale)`. Ignored if the `Max` or `Size` parameters are used.
+        [int]$Scale,
+
+        [Parameter(Mandatory,ParameterSetName='Identity')]
+        # Make the column an identity.
+        [switch]$Identity,
+
+        [Parameter(ParameterSetName='Identity')]
+        # The starting value for the identity column.
+        [int]$Seed,
+
+        [Parameter(ParameterSetName='Identity')]
+        # The increment between new identity values. 
+        [int]$Increment,
+
+        [Parameter(ParameterSetName='Identity')]
+        # Don't replicate the identity column value.
+        [switch]$NotForReplication,
+
+        [Parameter(ParameterSetName='Nullable')]
         # Optimizes the column storage for null values. Cannot be used with the `NotNull` switch.
-        $Sparse,
+        [switch]$Sparse,
 
         [Parameter(ParameterSetName='NotNull')]
-        [Switch]
-        # Makes the column not nullable.  Canno be used with the `Sparse` switch.
-        $NotNull,
+        # Makes the column not nullable.  Cannot be used with the `Sparse` switch.
+        [switch]$NotNull,
 
-        [Object]
+        [Parameter(ParameterSetName='Nullable')]
+        [Parameter(ParameterSetName='NotNull')]
+        # The collation of the column.
+        [String]$Collation,
+
+        # Whether or not to make the column a `rowguidcol`.
+        [switch]$RowGuidCol,
+
+        [Parameter(ParameterSetName='Nullable')]
+        [Parameter(ParameterSetName='NotNull')]
         # A SQL Server expression for the column's default value.
-        $Default,
+        [Object]$Default,
 
-        [string]
+        [Parameter(ParameterSetName='Nullable')]
+        [Parameter(ParameterSetName='NotNull')]
+        # The name of the default constraint for the column's default expression. Required if the Default parameter is given.
+        [String]$DefaultConstraintName,
+
         # A description of the column.
-        $Description        
+        [String]$Description,
+        
+        # Whether or not the column is a filestream.
+        [switch]$FileStream       
     )
 
-    $nullable = 'Null'
-    if( $PSCmdlet.ParameterSetName -eq 'NotNull' )
+    [Rivet.ColumnSize]$sizeParam = $null
+    if( $Max )
     {
-        $nullable = 'NotNull'
+        $sizeParam = [Rivet.CharacterLength]::new()
     }
-    elseif( $Sparse )
+    elseif( $PSBoundParameters.ContainsKey('Size') )
     {
-        $nullable = 'Sparse'
+        $sizeParam = [Rivet.CharacterLength]::new($Size)
+    }
+    elseif( $PSBoundParameters.ContainsKey('Precision') -and $PSBoundParameters.ContainsKey('Scale') )
+    {
+        $sizeParam = [Rivet.PrecisionScale]::new($Precision,$Scale)
+    }
+    elseif( $PSBoundParameters.ContainsKey('Precision') )
+    {
+        $sizeParam = [Rivet.PrecisionScale]::new($Precision)
+    }
+    elseif( $PSBoundParameters.ContainsKey('Scale') )
+    {
+        $sizeParam = [Rivet.Scale]::new($Scale)
     }
 
-    New-Object Rivet.Column $Name,$DataType,$nullable,$Default,$Description
+    if( $PSCmdlet.ParameterSetName -eq 'Identity' )
+    {
+        [Rivet.Identity]$identityParam = [Rivet.Identity]::new($NotForReplication)
+        if( $Seed -or $Increment )
+        {
+            $identityParam = [Rivet.Identity]::new($Seed, $Increment, $NotForReplication)
+        }
+        [Rivet.Column]::new($Name, $DataType, $sizeParam, $identityParam, $RowGuidCol, $Description, $FileStream)
+    }
+    else
+    {
+        $nullable = 'Null'
+        if( $PSCmdlet.ParameterSetName -eq 'NotNull' )
+        {
+            $nullable = 'NotNull'
+        }
+        elseif( $Sparse )
+        {
+            $nullable = 'Sparse'
+        }
+
+        [Rivet.Column]::new($Name, $DataType, $sizeParam, $nullable, $Collation, $RowGuidCol, $Default, $DefaultConstraintName, $Description, $FileStream)
+    }
 }

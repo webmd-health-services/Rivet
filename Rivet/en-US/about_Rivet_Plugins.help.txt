@@ -2,11 +2,15 @@ TOPIC
     about_Rivet_Plugins
 
 SHORT DESCRIPTION
-    Explains the Rivet plug-in system
+    Explains the Rivet plug-in system.
 
 LONG DESCRIPTION
-    Rivet plug-ins allow users to modify migration operations or perform other work 
-    before and after an operation is applied to a database.  Examples include:
+
+    ## Why Plugins?
+
+    Rivet plug-ins allow users to modify migration operations or perform other 
+    work when Rivet loads them from your migration scripts. You can also write 
+    your own operatons. Examples include:
 
      * Validating that all tables/columns have descriptions.
      * Automatically adding created and last updated columns to each new table.
@@ -14,94 +18,127 @@ LONG DESCRIPTION
      * Preventing certain operations from being used, e.g. `Rename-Column`.
      * Customizing constraint and index names.
      
-    There are two plug-in points: before an operation is applied to a database and 
-    after an operation is applied to a database.
+    Plugins and custom operations should be packaged into one or more PowerShell 
+    modules. Use the "PluginPaths" configuration option in your rivet.json file
+    to tell Rivet where it can find these modules. It loads them using the
+    `Import-Module` cmdlet.
 
-    In order to cancel a migration, a plug-in *must throw an exception*. For example,
+    To create custom operations, export them from your PowerShell module.
+
+    To create custom plugins, create a function and add the `Rivet.Plugin` 
+    attribute to that function. The constructor for that attribute takes in the
+    event to which your plugin will respond.
+
+    Rivet ships with a sample PowerShell module that contains plug-ins that you
+    can use as a basis for writing your own. See the `RivetSamples` directory.
+
+    ## Events
+
+    Rivet has these events:
+
+    * BeforeOperationLoad
+    * AfterOperationLoad
+
+    ### BeforeOperationLoad
+
+    #### Overview
+
+    The `BeforeOperationLoad` event occurs before each operation is loaded from
+    your migration script. Use this event to modify your operation before it is
+    executed against your database, or to return custom operations you want to
+    run *before* a specific operation.
+
+    It gets passed two parameters: `Migration`, which is the migration object
+    currently being loaded and `Operation`, the operation that is about to
+    be loaded (i.e. saved into Rivet's internal store for later execution).
+
+    Plugins that respond to this event *must* have `Migration` and `Operation`
+    parameters.
+
+    #### Example 1
+
+    This code demonstrates an empty plugin that responds to the 
+    `BeforeOperationLoad` event.
+
+        function Invoke-MyPlugin
+        {
+            [CmdletBinding()]
+            [Rivet.Plugin([Rivet.Events]::BeforeOperationLoad)]
+            param(
+                [Parameter(Mandatory)]
+                [Rivet.Migration]$Migration,
+
+                [Parameter(Mandatory)]
+                [Rivet.Operations.Operation]$Operation
+            )
+
+            # Do stuff.
+        }
+
+    ### AfterOperationLoad
+
+    #### Overview
+
+    The `AfterOperationLoad` event occurs after an operation is loaded and saved
+    to Rivet's internal store for later execution. Use this event to modify the
+    operation before it gets applied, or to add additional operations that you
+    want to run *after* a specific operation.
+
+    These plugins get passed two parameters `Migration`, which is the migration
+    object currently being loaded and `Operation`, the operation that just got
+    loaded.
+
+    Plugins that respond to this event *must* have `Migration` and `Operation`
+    parameters.
+
+    #### Example 1
+
+    This code demonstrates an empty plugin that responds to the 
+    `AfterOperationLoad` event.
+
+        function Invoke-MyPlugin
+        {
+            [CmdletBinding()]
+            [Rivet.Plugin([Rivet.Events]::AfterOperationLoad)]
+            param(
+                [Parameter(Mandatory)]
+                [Rivet.Migration]$Migration,
+
+                [Parameter(Mandatory)]
+                [Rivet.Operations.Operation]$Operation
+            )
+
+            # Do stuff.
+        }
+
+    ## Cancelling a Migration
+
+    In order to cancel a migration, a plug-in *must throw an exception*. For 
+    example,
 
         throw ('Operation is invalid: all tables are required to specify a description. Use the -Description parameter to document this table''s purpose.')
-        
-    To enable plug-ins, you need to configure Rivet so it knows where to look for 
-    them. Set the `plug-insRoot` option to the directory path where you want to put 
-    your plug-ins. For example,
-
-        {
-            "SqlServerName":  "example.com\Rivet",
-            "DatabasesRoot":  "Databases",
-            "PluginsRoot":  "Tools\\Rivet\\Plugins"
-        }
-
-    Paths in rivet.json files are relative to the rivet.json file. See 
-    `about_Rivet_Configuration` for more information.
-
-    Once you've defined your plug-ins directory, you create the plug-in scripts. To 
-    run code *before* an operation is applied to database, create a 
-    `Start-MigrationOperation.ps1` script in your plug-ins directory. It should look 
-    like this:
-
-        function Start-MigrationOperation
-        {
-            [CmdletBinding()]
-            param(
-                [Parameter(Mandatory=$true)]
-                [Rivet.Migration]
-                # The migration the operation is part of.
-                $Migration,
-                
-                [Parameter(Mandatory=$true)]
-                [Rivet.Operation]
-                # The operation which is about to be applied.
-                $Operation
-            )
-            
-            Set-StrictMode -Version 'Latest'
-            
-            # Your plug-in logic goes here.
-        }
-        
-    To run code *after* an operation is applied to a database, create a 
-    `Complete-MigrationOperation.ps1` script in your plug-ins directory. It should 
-    look like this:
-
-        function Complete-MigrationOperation
-        {
-            [CmdletBinding()]
-            param(
-                [Parameter(Mandatory=$true)]
-                [Rivet.Migration]
-                # The migration the operation is part of.
-                $Migration,
-                
-                [Parameter(Mandatory=$true)]
-                [Rivet.Operation]
-                # The operation which was just applied.
-                $Operation
-            )
-            
-            Set-StrictMode -Version 'Latest'
-        
-            # Your plug-in logic goes here.
-        }
-        
-    Rivet ships with some sample plug-ins. Look in the `Extras` directory.
-
-    Each plug-in should have two parameters: the first is a `Rivet.Migration` 
-    object representing the migration getting run. The second is a 
-    `Rivet.Operation` object representing the specific operation getting run. Each 
-    plug-in will get called for each operation in a migration. You'll get the same 
-    migration object for each operation in that migration.
     
-    Each operation in Rivet is represented by a unique C# object that you 
-    can modify. You can't remove operations from being run. Instead, throw an 
-    exception to reject the operation. You are allowed to run additional operations 
-    and/or return additional C# operation objects. See the sample plug-ins in the 
-    Extras directory that ships with Rivet.
+    ## Loading Your Plug-ins
+
+    Use Rivet's `PluginPaths` setting (in your rivet.json file) to tell Rivet
+    where it can find the module(s) that contain your plug-ins. When Rivet runs,
+    it will run `Import-Module` on each of these paths. Make sure each path
+    points to a directory, .psd1 file, or .psm1 file.
+
+        {
+            "SqlServerName":  ".",
+            "DatabasesRoot":  "Databases",
+            "PluginsPath":  "Tools\\Rivet\\RivetSamples"
+        }
+
+    The paths should be relative to the rivet.json file. Wildcards are 
+    supported.
 
     
 SEE ALSO
-    about_Rivet  
-    about_Rivet_Configuration  
-    about_Rivet_Intellisense  
-    about_Rivet_Migrations  
+    about_Rivet
+    about_Rivet_Configuration
+    about_Rivet_Intellisense
+    about_Rivet_Migrations
  
 

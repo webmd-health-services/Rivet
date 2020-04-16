@@ -3,26 +3,25 @@ function Convert-FileInfoToMigration
 {
     <#
     .SYNOPSIS
-    Converts a `System.IO.FileInfo` object containing a migration into a `Rivet.Operation` object.
+    Converts a `System.IO.FileInfo` object containing a migration into a `Rivet.Operations.Operation` object.
     #>
     [CmdletBinding()]
     [OutputType([Rivet.Migration])]
     param(
-        [Parameter(Mandatory=$true)]
-        [Rivet.Configuration.Configuration]
+        [Parameter(Mandatory)]
         # The Rivet configuration to use.
-        $Configuration,
+        [Rivet.Configuration.Configuration]$Configuration,
 
-        [Parameter(Mandatory=$true,ValueFromPipeline=$true)]
-        [IO.FileInfo]
-        # The database whose migrations to get.np
-        $InputObject
+        [Parameter(Mandatory,ValueFromPipeline)]
+        # The database whose migrations to get.
+        [IO.FileInfo]$InputObject
     )
 
     begin
     {
         Set-StrictMode -Version 'Latest'
 
+        Write-Timing -Message 'Convert-FileInfoToMigration  BEGIN' -Indent
         function Clear-Migration
         {
             ('function:Push-Migration','function:Pop-Migration') |
@@ -31,10 +30,6 @@ function Convert-FileInfoToMigration
         }
 
         Clear-Migration
-        if( $Configuration.PluginsRoot )
-        {
-            Import-Plugin -Path $Configuration.PluginsRoot
-        }
     }
 
     process
@@ -46,6 +41,7 @@ function Convert-FileInfoToMigration
                 $dbName = Split-Path -Leaf -Path $dbName
 
                 $m = New-Object 'Rivet.Migration' $_.MigrationID,$_.MigrationName,$_.FullName,$dbName
+                Write-Timing -Message ('Convert-FileInfoToMigration  {0}' -f $m.FullName)
 
                 filter Add-Operation
                 {
@@ -56,7 +52,7 @@ function Convert-FileInfoToMigration
                         $Operation,
 
                         [Parameter(ParameterSetName='Push',Mandatory=$true)]
-                        [Collections.Generic.List[Rivet.Operation]]
+                        [Collections.Generic.List[Rivet.Operations.Operation]]
                         [AllowEmptyCollection()]
                         $OperationsList,
 
@@ -67,22 +63,21 @@ function Convert-FileInfoToMigration
 
                     Set-StrictMode -Version 'Latest'
 
+
                     $Operation |
-                        Where-Object { $_ -is [Rivet.Operation] } |
+                        Where-Object { $_ -is [Rivet.Operations.Operation] } |
                         ForEach-Object {
-                            if( (Test-Path -Path 'function:Start-MigrationOperation') )
-                            {
-                                Start-MigrationOperation -Migration $m -Operation $_
-                            }
+
+                            $pluginParameter = @{ Migration = $m ; Operation = $_ }
+
+                            Invoke-RivetPlugin -Event ([Rivet.Events]::BeforeOperationLoad) -Parameter $pluginParameter
 
                             $_
 
-                            if( (Test-Path -Path 'function:Complete-MigrationOperation') )
-                            {
-                                Complete-MigrationOperation -Migration $m -Operation $_
-                            }
+                            Invoke-RivetPlugin -Event ([Rivet.Events]::AfterOperationLoad) -Parameter $pluginParameter
+
                         } |
-                        Where-Object { $_ -is [Rivet.Operation] } |
+                        Where-Object { $_ -is [Rivet.Operations.Operation] } |
                         ForEach-Object { $OperationsList.Add( $_ ) } |
                         Out-Null
                 }
@@ -168,5 +163,6 @@ Pop-Migration function is empty and contains no operations. Maybe you''d like to
 
     end
     {
+        Write-Timing -Message 'Convert-FileInfoToMigration  END' -Outdent
     }
 }

@@ -8,90 +8,61 @@ namespace Rivet.Test.Operations
 	public sealed class AddIndexOperationTestFixture
 	{
 		[Test]
-		public void ShouldSetPropertiesForAddIndex()
+		public void ShouldSetPropertiesForAddIndexWith()
 		{
 			const string schemaName = "schemaName";
 			const string tableName = "tableName";
 			var columnName = new[] { "column1", "column2" };
 			var smokeColumnName = new[] { "column1" };
+			const string name = "indexName";
 			const bool unique = true;
 			const bool clustered = true;
 			var options = new[] { "option1", "option2" };
 			var smokeOptions = new[] { "option2" };
 			const string whereString = "whereString";
 			const string onString = "onString";
-			const string filestreamonString = "filestreamonString";
+			const string fileStreamOnString = "fileStreamOnString";
             var include = new[] { "include1", "include2" };
 
-			var op = new AddIndexOperation(schemaName, tableName, columnName, unique, clustered, options, whereString, onString, filestreamonString, include);
+			var op = new AddIndexOperation(schemaName, tableName, name, columnName, unique, clustered, options, whereString, onString, fileStreamOnString, include);
 			Assert.AreEqual(schemaName, op.SchemaName);
 			Assert.AreEqual(tableName, op.TableName);
 			Assert.AreEqual(columnName, op.ColumnName);
 			Assert.AreNotEqual(smokeColumnName, op.ColumnName);
+			Assert.AreEqual(name, op.Name.ToString());
 			Assert.AreEqual(unique, op.Unique);
 			Assert.AreEqual(clustered, op.Clustered);
 			Assert.AreEqual(options, op.Options);
 			Assert.AreNotEqual(smokeOptions, op.Options);
 			Assert.AreEqual(whereString, op.Where);
 			Assert.AreEqual(onString, op.On);
-			Assert.AreEqual(filestreamonString, op.FileStreamOn);
-			Assert.That(op.ObjectName, Is.EqualTo(string.Format("{0}.{1}.UIX_{0}_{1}_{2}", schemaName, tableName, String.Join("_", columnName))));
+			Assert.AreEqual(fileStreamOnString, op.FileStreamOn);
 		}
 
 		[Test]
-		public void ShouldSetPropertiesForAddIndexWithOptionalConstraintName()
+		public void ShouldSetPropertiesForAddIndexWithDescendingAnd()
 		{
 			const string schemaName = "schemaName";
 			const string tableName = "tableName";
 			var columnName = new[] { "column1", "column2" };
 			var smokeColumnName = new[] { "column1" };
-			var optionalConstraintName = "optionalConstraintName";
+			var name = "indexName";
+			bool[] descending = { true, false };
 			const bool unique = true;
 			const bool clustered = true;
 			var options = new[] { "option1", "option2" };
 			var smokeOptions = new[] { "option2" };
 			const string whereString = "whereString";
 			const string onString = "onString";
-			const string filestreamonString = "filestreamonString";
+			const string fileStreamOnString = "fileStreamOnString";
             var include = new[] { "include1", "include2" };
 
-			var op = new AddIndexOperation(schemaName, tableName, columnName, optionalConstraintName, unique, clustered, options, whereString, onString, filestreamonString, include);
+			var op = new AddIndexOperation(schemaName, tableName, name, columnName, @descending, unique, clustered, options, whereString, onString, fileStreamOnString, include);
 			Assert.AreEqual(schemaName, op.SchemaName);
 			Assert.AreEqual(tableName, op.TableName);
 			Assert.AreEqual(columnName, op.ColumnName);
 			Assert.AreNotEqual(smokeColumnName, op.ColumnName);
-			Assert.AreEqual(optionalConstraintName, op.Name.ToString());
-			Assert.AreEqual(unique, op.Unique);
-			Assert.AreEqual(clustered, op.Clustered);
-			Assert.AreEqual(options, op.Options);
-			Assert.AreNotEqual(smokeOptions, op.Options);
-			Assert.AreEqual(whereString, op.Where);
-			Assert.AreEqual(onString, op.On);
-			Assert.AreEqual(filestreamonString, op.FileStreamOn);
-		}
-
-		[Test]
-		public void ShouldSetPropertiesForAddIndexWithDescending()
-		{
-			const string schemaName = "schemaName";
-			const string tableName = "tableName";
-			var columnName = new[] { "column1", "column2" };
-			var smokeColumnName = new[] { "column1" };
-			bool[] descending = {true, false};
-			const bool unique = true;
-			const bool clustered = true;
-			var options = new[] { "option1", "option2" };
-			var smokeOptions = new[] { "option2" };
-			const string whereString = "whereString";
-			const string onString = "onString";
-			const string filestreamonString = "filestreamonString";
-            var include = new[] { "include1", "include2" };
-
-			var op = new AddIndexOperation(schemaName, tableName, columnName, descending, unique, clustered, options, whereString, onString, filestreamonString, include);
-			Assert.AreEqual(schemaName, op.SchemaName);
-			Assert.AreEqual(tableName, op.TableName);
-			Assert.AreEqual(columnName, op.ColumnName);
-			Assert.AreNotEqual(smokeColumnName, op.ColumnName);
+			Assert.AreEqual(name, op.Name.ToString());
 			Assert.AreEqual(descending, op.Descending);
 			Assert.AreEqual(unique, op.Unique);
 			Assert.AreEqual(clustered, op.Clustered);
@@ -99,113 +70,50 @@ namespace Rivet.Test.Operations
 			Assert.AreNotEqual(smokeOptions, op.Options);
 			Assert.AreEqual(whereString, op.Where);
 			Assert.AreEqual(onString, op.On);
-			Assert.AreEqual(filestreamonString, op.FileStreamOn);
+			Assert.AreEqual(fileStreamOnString, op.FileStreamOn);
 		}
 
 		[Test]
-		public void ShouldSetPropertiesForAddIndexWithDescendingAndOptionalConstraintName()
+		public void ShouldWriteQueryForAddIndexWithAllOptionsTrueWith()
 		{
 			const string schemaName = "schemaName";
 			const string tableName = "tableName";
 			var columnName = new[] { "column1", "column2" };
-			var smokeColumnName = new[] { "column1" };
-			var optionalConstraintName = "optionalConstraintName";
-			bool[] descending = { true, false };
-			const bool unique = true;
-			const bool clustered = true;
-			var options = new[] { "option1", "option2" };
-			var smokeOptions = new[] { "option2" };
-			const string whereString = "whereString";
-			const string onString = "onString";
-			const string filestreamonString = "filestreamonString";
-            var include = new[] { "include1", "include2" };
-
-			var op = new AddIndexOperation(schemaName, tableName, columnName, optionalConstraintName, descending, unique, clustered, options, whereString, onString, filestreamonString, include);
-			Assert.AreEqual(schemaName, op.SchemaName);
-			Assert.AreEqual(tableName, op.TableName);
-			Assert.AreEqual(columnName, op.ColumnName);
-			Assert.AreNotEqual(smokeColumnName, op.ColumnName);
-			Assert.AreEqual(optionalConstraintName, op.Name.ToString());
-			Assert.AreEqual(descending, op.Descending);
-			Assert.AreEqual(unique, op.Unique);
-			Assert.AreEqual(clustered, op.Clustered);
-			Assert.AreEqual(options, op.Options);
-			Assert.AreNotEqual(smokeOptions, op.Options);
-			Assert.AreEqual(whereString, op.Where);
-			Assert.AreEqual(onString, op.On);
-			Assert.AreEqual(filestreamonString, op.FileStreamOn);
-		}
-
-		[Test]
-		public void ShouldWriteQueryForAddIndexWithAllOptionsTrue()
-		{
-			const string schemaName = "schemaName";
-			const string tableName = "tableName";
-			var columnName = new[] { "column1", "column2" };
+			var name = "";
 			bool[] descending = { true, false };
 			const bool unique = true;
 			const bool clustered = true;
 			var options = new[] { "option1", "option2" };
 			const string whereString = "whereString";
 			const string onString = "onString";
-			const string filestreamonString = "filestreamonString";
+			const string fileStreamOnString = "fileStreamOnString";
             var include = new[] { "include1", "include2" };
 
-			var op = new AddIndexOperation(schemaName, tableName, columnName, descending, unique, clustered, options, whereString, onString, filestreamonString, include);
-			const string expectedQuery = "create unique clustered index [UIX_schemaName_tableName_column1_column2] on [schemaName].[tableName] ([column1] desc, [column2]) include ( [include1], [include2] ) with ( option1, option2 ) where ( whereString ) on onString filestream_on filestreamonString";
+			var op = new AddIndexOperation(schemaName, tableName, name, columnName, @descending, unique, clustered, options, whereString, onString, fileStreamOnString, include);
+			var expectedQuery = $"create unique clustered index [{name}] on [{schemaName}].[{tableName}] ([{columnName[0]}] desc, [{columnName[1]}]) " +
+			                             $"include ( [{string.Join("], [", include)}] ) with ( {string.Join(", ", options)} ) " +
+			                             // ReSharper disable once StringLiteralTypo
+			                             $"where ( {whereString} ) on {onString} filestream_on {fileStreamOnString}";
 
 			Assert.AreEqual(expectedQuery, op.ToQuery());
-		}
-
-		[Test]
-		public void ShouldWriteQueryForAddIndexWithAllOptionsTrueWithOptionalConstraintName()
-		{
-			const string schemaName = "schemaName";
-			const string tableName = "tableName";
-			var columnName = new[] { "column1", "column2" };
-			var optionalConstraintName = "optionalConstraintName";
-			bool[] descending = { true, false };
-			const bool unique = true;
-			const bool clustered = true;
-			var options = new[] { "option1", "option2" };
-			const string whereString = "whereString";
-			const string onString = "onString";
-			const string filestreamonString = "filestreamonString";
-            var include = new[] { "include1", "include2" };
-
-			var op = new AddIndexOperation(schemaName, tableName, columnName, optionalConstraintName, descending, unique, clustered, options, whereString, onString, filestreamonString, include);
-			const string expectedQuery = "create unique clustered index [optionalConstraintName] on [schemaName].[tableName] ([column1] desc, [column2]) include ( [include1], [include2] ) with ( option1, option2 ) where ( whereString ) on onString filestream_on filestreamonString";
-
-			Assert.AreEqual(expectedQuery, op.ToQuery());
-		}
-
-		[Test]
-		public void ShouldWriteQueryForAddIndexWithAllOptionsFalse()
-		{
-			const string schemaName = "schemaName";
-			const string tableName = "tableName";
-			var columnName = new[] { "column1" };
-			bool[] descending = { false };
-			const bool unique = false;
-			const bool clustered = false;
-			var options = new string[] { };
-			const string whereString = "";
-			const string onString = "";
-			const string filestreamonString = "";
-            var include = new string[] { };
-			
-			var op = new AddIndexOperation(schemaName, tableName, columnName, descending, unique, clustered, options, whereString, onString, filestreamonString, include);
-			const string expectedQuery = "create index [IX_schemaName_tableName_column1] on [schemaName].[tableName] ([column1])";
-			Assert.AreEqual(expectedQuery, op.ToQuery());
-			Assert.That(op.ObjectName, Is.EqualTo(string.Format("{0}.{1}.IX_{0}_{1}_{2}", schemaName, tableName, String.Join("_", columnName))));
 		}
 
 		[Test]
 		public void ShouldAllowChangingIndexName()
 		{
-			var op = new AddIndexOperation("schema", "table", new[] {"column"}, false, false, null, null, null, null, null);
+			var op = new AddIndexOperation("schema", "table", "name", new[] {"column"}, false, false, null, null, null, null, null);
 			op.Name = "new name";
 			Assert.That(op.Name, Is.EqualTo("new name"));
+		}
+
+		[Test]
+		public void ShouldDisableWhenMergedWithRemoveOperation()
+		{
+			var op = new AddIndexOperation("schema", "table", "name", new string[0], false, false, new string[0], "where", "on", "filestreamon", new string[0]);
+			var removeOp = new RemoveIndexOperation("SCHEMA", "TABLE", "NAME");
+			op.Merge(removeOp);
+			Assert.That(op.Disabled, Is.True);
+			Assert.That(removeOp.Disabled, Is.True);
 		}
 	}
 }

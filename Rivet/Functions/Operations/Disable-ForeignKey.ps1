@@ -1,4 +1,4 @@
-﻿function Disable-ForeignKey
+function Disable-ForeignKey
 {
     <#
     .SYNOPSIS

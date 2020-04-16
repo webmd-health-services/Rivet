@@ -47,54 +47,48 @@ function New-BigIntColumn
     #>
     [CmdletBinding(DefaultParameterSetName='Nullable')]
     param(
-        [Parameter(Mandatory=$true,Position=0)]
-        [string]
+        [Parameter(Mandatory,Position=0)]
         # The column's name.
-        $Name,
+        [String]$Name,
 
-        [Parameter(Mandatory=$true,ParameterSetName='Identity')]
-        [Parameter(Mandatory=$true,ParameterSetName='IdentityWithSeed')]
-        [Switch]
+        [Parameter(Mandatory,ParameterSetName='Identity')]
+        [Parameter(Mandatory,ParameterSetName='IdentityWithSeed')]
         # The column should be an identity.
-        $Identity,
+        [switch]$Identity,
 
-        [Parameter(Mandatory=$true,ParameterSetName='IdentityWithSeed',Position=1)]
-        [int]
+        [Parameter(Mandatory,ParameterSetName='IdentityWithSeed',Position=1)]
         # The starting value for the identity.
-        $Seed,
+        [int]$Seed,
 
-        [Parameter(Mandatory=$true,ParameterSetName='IdentityWithSeed',Position=2)]
-        [int]
+        [Parameter(Mandatory,ParameterSetName='IdentityWithSeed',Position=2)]
         # The increment between auto-generated identity values.
-        $Increment,
+        [int]$Increment,
 
         [Parameter(ParameterSetName='Identity')]
         [Parameter(ParameterSetName='IdentityWithSeed')]
-        [Switch]
         # Stops the identity from being replicated.
-        $NotForReplication,
+        [switch]$NotForReplication,
 
-        [Parameter(Mandatory=$true,ParameterSetName='NotNull')]
-        [Switch]
+        [Parameter(Mandatory,ParameterSetName='NotNull')]
         # Don't allow `NULL` values in this column.
-        $NotNull,
+        [switch]$NotNull,
 
         [Parameter(ParameterSetName='Nullable')]
-        [Switch]
         # Store nulls as Sparse.
-        $Sparse,
+        [switch]$Sparse,
 
-        [Parameter()]
-        [string]
-        # A SQL Server expression for the column's default value 
-        $Default,
-            
-        [Parameter()]
-        [string]
+        # A SQL Server expression for the column's default value. The DefaultConstraintName parameter is required if this parameter is used.
+        [String]$Default,
+
+        # The name of the default constraint for the column's default expression. Required if the Default parameter is given.
+        [String]$DefaultConstraintName,
+
         # A description of the column.
-        $Description
+        [String]$Description
     )
-        
+
+    Set-StrictMode -Version 'Latest'
+
     switch ($PSCmdlet.ParameterSetName)
     {
         'Nullable'
@@ -104,12 +98,12 @@ function New-BigIntColumn
             {
                 $nullable = 'Sparse'
             }
-            [Rivet.Column]::BigInt($Name, $nullable, $Default, $Description)
+            [Rivet.Column]::BigInt($Name, $nullable, $Default, $DefaultConstraintName, $Description)
         }
             
         'NotNull'
         {
-            [Rivet.Column]::BigInt($Name,'NotNull', $Default, $Description)
+            [Rivet.Column]::BigInt($Name,'NotNull', $Default, $DefaultConstraintName, $Description)
         }
 
         'Identity'
@@ -123,9 +117,7 @@ function New-BigIntColumn
             $i = New-Object 'Rivet.Identity' $Seed, $Increment, $NotForReplication
             [Rivet.Column]::BigInt( $Name, $i, $Description )
         }
-
-            
     }
 }
-    
+
 Set-Alias -Name 'BigInt' -Value 'New-BigIntColumn'

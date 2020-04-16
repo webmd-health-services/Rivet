@@ -2,6 +2,7 @@
 
 namespace Rivet.Operations
 {
+	[ObjectRemovedByOperation(typeof(RemoveTriggerOperation))]
 	public sealed class AddTriggerOperation : ObjectOperation
 	{
 		public AddTriggerOperation(string schemaName, string name, string definition)

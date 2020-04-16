@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 
 namespace Rivet.Operations
 {
@@ -17,9 +18,12 @@ namespace Rivet.Operations
             var namespaceClause = "";
             if (!string.IsNullOrEmpty(Namespace))
             {
-                namespaceClause = string.Format(", @namespace = '{0}'", Namespace);
+                namespaceClause = $", @namespace = '{Namespace}'";
             }
-            return string.Format("declare @result{0} int{1}exec @result{0} = sp_refreshsqlmodule @name = '{2}.{3}'{4}{1}select @result{0}", Guid.NewGuid().ToString("N"), Environment.NewLine, SchemaName, Name, namespaceClause);
+
+            var paramGuid = Path.GetRandomFileName().Remove(8, 1);
+            paramGuid = $"_{paramGuid}";
+            return $"declare @result{paramGuid} int{Environment.NewLine}exec @result{paramGuid} = sp_refreshsqlmodule @name = '{SchemaName}.{Name}'{namespaceClause}{Environment.NewLine}select @result{paramGuid}";
         }
 
         public override string ToIdempotentQuery()

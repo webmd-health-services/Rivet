@@ -147,8 +147,9 @@ function Add-Table
 
     Set-StrictMode -Version 'Latest'
 
-    $columns = & $Column
-    New-Object 'Rivet.Operations.AddTableOperation' $SchemaName, $Name, $columns, $FileTable, $FileGroup, $TextImageFileGroup, $FileStreamFileGroup, $Option, $Description
+    $columns = & $Column | Set-DefaultConstraintName -SchemaName $SchemaName -TableName $Name
+ 
+    $tableOp = New-Object 'Rivet.Operations.AddTableOperation' $SchemaName, $Name, $columns, $FileTable, $FileGroup, $TextImageFileGroup, $FileStreamFileGroup, $Option
 
     $addDescriptionArgs = @{
                                 SchemaName = $SchemaName;
@@ -157,12 +158,20 @@ function Add-Table
 
     if( $Description )
     {
-        Add-Description -Description $Description @addDescriptionArgs
+        $tableDescriptionOp = Add-Description -Description $Description @addDescriptionArgs
+        $tableOp.ChildOperations.Add($tableDescriptionOp)
     }
 
-    $columns | 
-        Where-Object { $_.Description } |
-        ForEach-Object { Add-Description -Description $_.Description -ColumnName $_.Name @addDescriptionArgs }
+    $tableOp | Write-Output
+    $tableOp.ChildOperations | Write-Output
+
+    foreach( $columnItem in $columns )
+    {
+        if( $columnItem.Description )
+        {
+            Add-Description -Description $columnItem.Description -ColumnName $columnItem.Name @addDescriptionArgs | Write-Output
+        }
+    }
 }
 
 
