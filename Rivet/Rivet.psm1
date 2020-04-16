@@ -3,7 +3,7 @@ $Connection = New-Object Data.SqlClient.SqlConnection
 
 $RivetSchemaName = 'rivet'
 $RivetMigrationsTableName = 'Migrations'
-$RivetMigrationsTableFullName = '{0}.{1}' -f $RivetSchemaName,$RivetMigrationsTableName
+$RivetMigrationsTableFullName = "[$($RivetSchemaName)].[$($RivetMigrationsTableName)]"
 $RivetActivityTableName = 'Activity'
 $rivetModuleRoot = $PSScriptRoot
 
