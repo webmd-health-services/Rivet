@@ -15,7 +15,7 @@ function Repair-Operation
 
     process
     {
-        # Currently, the only repairs we need to make are against object that don't have names, so if there is a name, return.
+        # Currently, the only repairs we need to make are against objects that have names, so if there isn't a name, return.
         $name = $Operation | Select-Object -ExpandProperty 'Name' -ErrorAction Ignore
         if( $name -or -not ($Operation | Get-Member 'Name') )
         {
@@ -54,7 +54,7 @@ function Repair-Operation
                                            -ReferencesTableName $Operation.ReferencesTableName
                 $warningMsg = "Foreign key constraint names will be required in a future version of Rivet. Please " +
                               "add a ""Name"" parameter (with a value of ""$($name)"") to the Add-ForeignKey " +
-                              "operation for the $($tableDesc) table's $($columnDesc) column$($pluralSuffix)."
+                              "operation for the $($tableDesc) table's ""$($columnDesc)"" column$($pluralSuffix)."
             }
             'AddIndexOperation'
             {
@@ -68,14 +68,14 @@ function Repair-Operation
                 $name = New-ConstraintName -PrimaryKey -SchemaName $schemaName -TableName $tableName
                 $warningMsg = "Primary key constraint names will be required in a future version of Rivet. Please " +
                               "add a ""Name"" parameter (with a value of ""$($name)"") to the Add-PrimaryKey " +
-                              "operation for the $($tableDesc) table's $($columnDesc) column."
+                              "operation for the $($tableDesc) table's ""$($columnDesc)"" column."
             }
             'AddUniqueKeyOperation'
             {
                 $name = New-ConstraintName -UniqueKey -SchemaName $schemaName -TableName $tableName -ColumnName $columnName
                 $warningMsg = "Unique key constraint names will be required in a future version of Rivet. Please add " +
                               "a ""Name"" parameter (with a value of ""$($name)"") to the Add-UniqueKey " +
-                              "operation on the $($tableDesc) table's $($columnDesc) column$($pluralSuffix)."
+                              "operation for the $($tableDesc) table's ""$($columnDesc)"" column$($pluralSuffix)."
             }
             'RemoveDefaultConstraint'
             {
@@ -131,6 +131,5 @@ function Repair-Operation
 
     end
     {
-
     }
 }

@@ -74,9 +74,8 @@ function Convert-FileInfoToMigration
 
         foreach( $fileInfo in $InputObject )
         {
-            $dbName = Split-Path -Parent -Path $fileInfo.FullName
-            $dbName = Split-Path -Parent -Path $dbName
-            $dbName = Split-Path -Leaf -Path $dbName
+            # Migrations are always in a DATABASE_NAME\Migrations directory, so get that directory's name.
+            $dbName = $fileInfo.FullName | Split-Path -Parent | Split-Path -Parent | Split-Path -Leaf
 
             $m = New-Object 'Rivet.Migration' $fileInfo.MigrationID, $fileInfo.MigrationName, $fileInfo.FullName, $dbName
             Write-Timing -Message ('Convert-FileInfoToMigration  {0}' -f $m.FullName)
