@@ -42,11 +42,5 @@ function Remove-ForeignKey
 
     Set-StrictMode -Version 'Latest'
 
-    if( $PSCmdlet.ParameterSetName -eq 'ByDefaultName' )
-    {
-        Write-Warning ('Remove-ForeignKey''s References and ReferencesSchema parameters are obsolete and will be removed in a future version of Rivet. Please use the Name parameter remove the foreign key.')
-        $Name = New-Object -TypeName 'Rivet.ForeignKeyConstraintName' -ArgumentList $SchemaName, $TableName, $ReferencesSchema, $References | Select-Object -ExpandProperty 'Name'
-    }
-
-    New-Object 'Rivet.Operations.RemoveForeignKeyOperation' $SchemaName, $TableName, $Name
+    [Rivet.Operations.RemoveForeignKeyOperation]::New($SchemaName, $TableName, $Name)
 }

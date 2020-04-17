@@ -23,8 +23,8 @@ Describe 'Remove-DefaultConstraint' {
             Int 'DefaultConstraintMe' -NotNull
         }
     
-        Add-DefaultConstraint -TableName 'AddDefaultConstraint' -ColumnName 'DefaultConstraintMe' -Expression 101
-        Remove-DefaultConstraint 'AddDefaultConstraint' -Name '$(New-RTConstraintName -Default 'AddDefaultConstraint' 'DefaultConstraintMe')'
+        Add-DefaultConstraint -TableName 'AddDefaultConstraint' -Name 'DF_One' -ColumnName 'DefaultConstraintMe' -Expression 101
+        Remove-DefaultConstraint 'AddDefaultConstraint' -Name 'DF_One' -ColumnName 'DefaultConstraintMe'
     }
     
     function Pop-Migration()
@@ -33,7 +33,7 @@ Describe 'Remove-DefaultConstraint' {
     }
 "@ | New-TestMigration -Name 'RemoveDefaultConstraint'
         Invoke-RTRivet -Push 'RemoveDefaultConstraint'
-        (Get-DefaultConstraint 'DF_AddDefaultConstraint_DefaultConstraintMe') | Should -BeNullOrEmpty
+        (Get-DefaultConstraint 'DF_One') | Should -BeNullOrEmpty
     }
     
     It 'should quote default constraint name' {
@@ -44,8 +44,8 @@ Describe 'Remove-DefaultConstraint' {
             Int 'DefaultConstraintMe' -NotNull
         }
     
-        Add-DefaultConstraint -TableName 'Remove-DefaultConstraint' -ColumnName 'DefaultConstraintMe' -Expression 101
-        Remove-DefaultConstraint -TableName 'Remove-DefaultConstraint' -Name '$(New-RTConstraintName -Default 'Remove-DefaultConstraint' 'DefaultConstraintMe')'
+        Add-DefaultConstraint -TableName 'Remove-DefaultConstraint' -Name 'DF_Two' -ColumnName 'DefaultConstraintMe' -Expression 101
+        Remove-DefaultConstraint -TableName 'Remove-DefaultConstraint' -Name 'DF_Two' -ColumnName 'DefaultConstraintMe'
     }
     
     function Pop-Migration()
@@ -54,7 +54,7 @@ Describe 'Remove-DefaultConstraint' {
     }
 "@ | New-TestMigration -Name 'RemoveDefaultConstraint'
         Invoke-RTRivet -Push 'RemoveDefaultConstraint'
-        (Get-DefaultConstraint 'DF_Remove-DefaultConstraint_DefaultConstraintMe') | Should -BeNullOrEmpty
+        (Get-DefaultConstraint 'DF_Two') | Should -BeNullOrEmpty
     }
     
     
@@ -66,8 +66,8 @@ Describe 'Remove-DefaultConstraint' {
             Int 'DefaultConstraintMe' -NotNull
         }
     
-        Add-DefaultConstraint -TableName 'AddDefaultConstraint' -ColumnName 'DefaultConstraintMe' -Expression 101
-        Remove-DefaultConstraint 'AddDefaultConstraint' 'DefaultConstraintMe'
+        Add-DefaultConstraint -TableName 'AddDefaultConstraint' -Name 'DF_Three' -ColumnName 'DefaultConstraintMe' -Expression 101
+        Remove-DefaultConstraint -TableName 'AddDefaultConstraint' -Name 'DF_Three' -ColumnName 'DefaultConstraintMe'
     }
     
     function Pop-Migration()
@@ -76,6 +76,6 @@ Describe 'Remove-DefaultConstraint' {
     }
 "@ | New-TestMigration -Name 'RemoveDefaultConstraint'
         Invoke-RTRivet -Push 'RemoveDefaultConstraint'
-        (Get-DefaultConstraint 'DF_AddDefaultConstraint_DefaultConstraintMe') | Should -BeNullOrEmpty
+        (Get-DefaultConstraint 'DF_Three') | Should -BeNullOrEmpty
     }
 }

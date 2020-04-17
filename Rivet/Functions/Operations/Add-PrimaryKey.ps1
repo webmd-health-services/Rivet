@@ -46,11 +46,5 @@ function Add-PrimaryKey
 
     Set-StrictMode -Version 'Latest'
 
-    if( -not $Name )
-    {
-        $Name = New-ConstraintName -PrimaryKey -SchemaName $SchemaName -TableName $TableName
-        Write-Warning ("Primary key constraint names will be required in a future version of Rivet. Please add a ""Name"" parameter (with a value of ""$($Name)"") to the Add-PrimaryKey operation for the [$($SchemaName)].[$($TableName)].[$($ColumnName)] column.")
-    }
-
     [Rivet.Operations.AddPrimaryKeyOperation]::New($SchemaName, $TableName, $Name, $ColumnName, $NonClustered, $Option)
 }

@@ -39,9 +39,6 @@ function Remove-DefaultConstraint
             Write-Error -Message ('The Name parameter is mandatory. Please pass the name of the default constraint to the Name parameter.') -ErrorAction Stop
             return
         }
-
-        Write-Warning -Message ('Not providing an explicit default constraint name is OBSOLETE. Please add the name of the default constraint you''re removing to the Name parameter.')
-        $Name = New-ConstraintName -Default -SchemaName $SchemaName -TableName $TableName -ColumnName $ColumnName
     }
 
     if( -not $ColumnName )
@@ -49,5 +46,5 @@ function Remove-DefaultConstraint
         Write-Warning -Message ('Not providing the ColumnName parameter is obsolete. This parameter will be mandatory in a future version of Rivet. Please pass the column name whose default constraint is being removed to the ColumnName parameter.')
     }
 
-    New-Object 'Rivet.Operations.RemoveDefaultConstraintOperation' $SchemaName, $TableName, $ColumnName, $Name
+    [Rivet.Operations.RemoveDefaultConstraintOperation]::New($SchemaName, $TableName, $ColumnName, $Name)
 }
