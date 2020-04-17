@@ -11,7 +11,7 @@
     RootModule = 'Rivet.psm1'
 
     # Version number of this module.
-    ModuleVersion = '0.11.0'
+    ModuleVersion = '0.12.0'
 
     # ID used to uniquely identify this module
     GUID = '8af34b47-259b-4630-a945-75d38c33b94d'
@@ -236,6 +236,7 @@ Rivet is a database migration/change management/versioning tool inspired by Ruby
             # A URL to an icon representing this module.
             # IconUri = ''
 
+            # The module's prerelease label. Modified by build process when publishing a prerelease version.
             Prerelease = ''
 
             # ReleaseNotes of this module
