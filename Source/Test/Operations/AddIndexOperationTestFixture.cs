@@ -110,7 +110,7 @@ namespace Rivet.Test.Operations
 		public void ShouldDisableWhenMergedWithRemoveOperation()
 		{
 			var op = new AddIndexOperation("schema", "table", "name", new string[0], false, false, new string[0], "where", "on", "filestreamon", new string[0]);
-			var removeOp = new RemoveIndexOperation("SCHEMA", "TABLE", "NAME");
+			var removeOp = new RemoveIndexOperation("SCHEMA", "TABLE", "NAME", new[] { "COLUMN" }, true);
 			op.Merge(removeOp);
 			Assert.That(op.Disabled, Is.True);
 			Assert.That(removeOp.Disabled, Is.True);

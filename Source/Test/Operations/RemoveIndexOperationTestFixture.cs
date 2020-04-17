@@ -15,7 +15,7 @@ namespace Rivet.Test.Operations
 			const string name = "name";
 
 
-			var op = new RemoveIndexOperation(schemaName, tableName, name);
+			var op = new RemoveIndexOperation(schemaName, tableName, name, new[] { "column" }, true);
 			Assert.AreEqual(schemaName, op.SchemaName);
 			Assert.AreEqual(tableName, op.TableName);
 			Assert.That(op.Name, Is.EqualTo(name));
