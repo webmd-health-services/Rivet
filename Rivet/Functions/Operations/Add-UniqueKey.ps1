@@ -49,11 +49,5 @@ function Add-UniqueKey
 
     Set-StrictMode -Version Latest
 
-    if( -not $Name )
-    {
-        $Name = New-ConstraintName -UniqueKey -SchemaName $SchemaName -TableName $TableName -ColumnName $ColumnName
-        Write-Warning ("Unique key constraint names will be required in a future version of Rivet. Please add a ""Name"" parameter (with a value of ""$($Name)"") to the Add-UniqueKey operation on the [$($SchemaName)].[$($TableName)] table's [$($ColumnName -join '], [')] columns.")
-    }
-
     [Rivet.Operations.AddUniqueKeyOperation]::new($SchemaName, $TableName, $Name, $ColumnName, $Clustered, $FillFactor, $Option, $On)
 }

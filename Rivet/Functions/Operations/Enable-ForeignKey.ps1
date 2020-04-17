@@ -15,44 +15,39 @@ function Enable-ForeignKey
 
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory=$true,Position=0)]
-        [string]
+        [Parameter(Mandatory,Position=0)]
         # The name of the table to alter.
-        $TableName,
+        [String]$TableName,
 
-        [Parameter()]
-        [string]
         # The schema name of the table.  Defaults to `dbo`.
-        $SchemaName = 'dbo',
+        [String]$SchemaName = 'dbo',
 
-        [Parameter(Mandatory=$true,Position=1)]
-        [string[]]
+        [Parameter(Mandatory,Position=1)]
         # The column(s) that should be part of the foreign key.
-        $ColumnName,
+        [String[]]$ColumnName,
 
-        [Parameter(Mandatory=$true,Position=2)]
-        [string]
+        [Parameter(Mandatory,Position=2)]
         # The table that the foreign key references
-        $References,
+        [String]$References,
 
-        [Parameter()]
-        [string]
         # The schema name of the reference table.  Defaults to `dbo`.
-        $ReferencesSchema = 'dbo',
+        [String]$ReferencesSchema = 'dbo',
 
-        [Parameter()]
-        [string]
         # The name for the <object type>. If not given, a sensible name will be created.
-        $Name
+        [String]$Name
     )
 
     Set-StrictMode -Version 'Latest'
 
-    Write-Warning ('Enable-ForeignKey''s is obsolete and will removed in a future version of Rivet. Please use `Enable-Constraint` instead.')
+    Write-Warning ('The "Enable-ForeignKey" operation is obsolete and will removed in a future version of Rivet. Please use "Enable-Constraint" instead.')
 
     if( -not $PSBoundParameters.ContainsKey('Name') )
     {
-        $Name = New-Object 'Rivet.ForeignKeyConstraintName' $SchemaName, $TableName, $ReferencesSchema, $References | Select-Object -ExpandProperty 'Name'
+        $Name = New-ConstraintName -ForeignKey `
+                                   -SchemaName $SchemaName `
+                                   -TableName $TableName `
+                                   -ReferencesSchemaName $ReferencesSchema `
+                                   -ReferencesTableName $References 
     }
 
     Enable-Constraint -SchemaName $SchemaName -TableName $TableName -Name $Name

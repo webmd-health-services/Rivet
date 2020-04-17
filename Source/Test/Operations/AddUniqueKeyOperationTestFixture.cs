@@ -184,7 +184,7 @@ namespace Rivet.Test.Operations
 		public void ShouldDisableWhenMergedWithRemoveOperation()
 		{
 			var op = new AddUniqueKeyOperation("schema", "table", "name", new string[0], false, 0, new string[0], "filegroup");
-			var removeOp = new RemoveUniqueKeyOperation("SCHEMA", "TABLE", "NAME");
+			var removeOp = new RemoveUniqueKeyOperation("SCHEMA", "TABLE", "NAME", new[] { "COLUMN" });
 			op.Merge(removeOp);
 			Assert.That(op.Disabled, Is.True);
 			Assert.That(removeOp.Disabled, Is.True);

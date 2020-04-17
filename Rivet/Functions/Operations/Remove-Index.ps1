@@ -43,11 +43,6 @@ function Remove-Index
 
     Set-StrictMode -Version 'Latest'
 
-    if( $PSCmdlet.ParameterSetName -eq "ByDefaultName" )
-    {
-        Write-Warning ('Remove-Index''s ColumnName parameter and Unique switch are obsolete and will be removed in a future version of Rivet. Instead, use the Name parameter to remove an index.')
-        $Name = New-ConstraintName -Index -SchemaName $SchemaName -TableName $TableName -ColumnName $ColumnName -Unique:$Unique
-    }
-
-    [Rivet.Operations.RemoveIndexOperation]::new($SchemaName, $TableName, $Name)
+    # TODO: once generating constraint names is out, remove $columnName and $unique parameters.
+    [Rivet.Operations.RemoveIndexOperation]::New($SchemaName, $TableName, $Name, $ColumnName, $Unique)
 }

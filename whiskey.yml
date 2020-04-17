@@ -6,7 +6,7 @@ Build:
 - Version:
     Path: Rivet\Rivet.psd1
     Prerelease:
-    - develop: beta$(WHISKEY_BUILD_NUMBER)
+    - prerelease: beta$(WHISKEY_BUILD_NUMBER)
 
 - DotNet:
     Command: build
