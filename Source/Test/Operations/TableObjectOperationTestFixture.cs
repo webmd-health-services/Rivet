@@ -80,10 +80,10 @@ namespace Rivet.Test.Operations
 				new RemoveCheckConstraintOperation("schema", "table", "name"),
 				new RemoveDefaultConstraintOperation("schema", "table", "column", "name"),
 				new RemoveForeignKeyOperation("schema", "table", "name"),
-				new RemoveIndexOperation("schema", "table", "name"),
+				new RemoveIndexOperation("schema", "table", "name", new[] { "column" }, true),
 				new RemovePrimaryKeyOperation("schema", "table", "name"),
 				new RemoveRowGuidColOperation("schema", "table", "name"),
-				new RemoveUniqueKeyOperation("schema", "table", "name"),
+				new RemoveUniqueKeyOperation("schema", "table", "name", new[] { "column" } ),
 			};
 
 			// first, make sure we have them all.

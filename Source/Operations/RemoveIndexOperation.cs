@@ -4,10 +4,16 @@ namespace Rivet.Operations
 {
 	public sealed class RemoveIndexOperation : TableObjectOperation
 	{
-		public RemoveIndexOperation(string schemaName, string tableName, string name)
+		public RemoveIndexOperation(string schemaName, string tableName, string name, string[] columnName, bool unique)
 			: base(schemaName, tableName, name)
 		{
+			ColumnName = columnName;
+			Unique = unique;
 		}
+
+		public string[] ColumnName { get;  }
+
+		public bool Unique { get; }
 
 		public override string ToIdempotentQuery()
 		{

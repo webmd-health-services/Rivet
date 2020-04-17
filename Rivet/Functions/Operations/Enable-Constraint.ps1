@@ -18,25 +18,22 @@ function Enable-Constraint
     #>
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory=$true,Position=0)]
-        [string]
+        [Parameter(Mandatory,Position=0)]
         # The name of the constraint's table.
-        $TableName,
+        [String]$TableName,
         
         [Parameter()]
-        [string]
         # The schema of the table.  Default is `dbo`.
-        $SchemaName = 'dbo',
+        [String]$SchemaName = 'dbo',
         
-        [Parameter(Mandatory=$true,Position=1)]
-        [string]
+        [Parameter(Mandatory,Position=1)]
         # The name of the constraint.
-        $Name
+        [String]$Name
     )
 
     Set-StrictMode -Version 'Latest'
 
-    New-Object 'Rivet.Operations.EnableConstraintOperation' $SchemaName, $TableName, $Name, $false
+    [Rivet.Operations.EnableConstraintOperation]::New($SchemaName, $TableName, $Name, $false)
 }
 
 Set-Alias -Name 'Enable-CheckConstraint' -Value 'Enable-Constraint'

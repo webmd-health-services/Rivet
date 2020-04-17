@@ -4,10 +4,13 @@ namespace Rivet.Operations
 {
 	public sealed class RemoveUniqueKeyOperation : TableObjectOperation
 	{
-		public RemoveUniqueKeyOperation(string schemaName, string tableName, string name)
+		public RemoveUniqueKeyOperation(string schemaName, string tableName, string name, string[] columnName)
 			: base(schemaName, tableName, name)
 		{
+			ColumnName = columnName;
 		}
+
+		public string[] ColumnName { get; }
 
 		public override string ToIdempotentQuery()
 		{
