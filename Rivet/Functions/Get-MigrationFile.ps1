@@ -8,23 +8,19 @@ function Get-MigrationFile
     [CmdletBinding(DefaultParameterSetName='External')]
     [OutputType([IO.FileInfo])]
     param(
-        [Parameter(Mandatory=$true)]
-        [Rivet.Configuration.Configuration]
+        [Parameter(Mandatory)]
         # The configuration to use.
-        $Configuration,
+        [Rivet.Configuration.Configuration]$Configuration,
 
-        [Parameter(Mandatory=$true,ParameterSetName='ByPath')]
-        [string[]]
+        [Parameter(Mandatory,ParameterSetName='ByPath')]
         # The path to a migrations directory to get.
-        $Path,
+        [String[]]$Path,
 
-        [string[]]
         # A list of migrations to include. Matches against the migration's ID or Name or the migration's file name (without extension). Wildcards permitted.
-        $Include,
+        [String[]]$Include,
 
-        [string[]]
         # A list of migrations to exclude. Matches against the migration's ID or Name or the migration's file name (without extension). Wildcards permitted.
-        $Exclude
+        [String[]]$Exclude
     )
 
     Set-StrictMode -Version Latest
@@ -108,14 +104,22 @@ function Get-MigrationFile
             }
 
             $migration = $_
-            $Exclude | Where-Object { $migration.MigrationID -notlike $_ -and $migration.MigrationName -notlike $_ -and $migration.BaseName -notlike $_ }
+            foreach( $pattern in $Exclude )
+            {
+                if( $migration.MigrationID -like $pattern -or $migration.MigrationName -like $pattern -or $migration.BaseName -like $pattern )
+                {
+                    return $false
+                }
+            }
+
+            return $true
         } 
 
     foreach( $requiredMatch in $requiredMatches.Keys )
     {
         if( -not $foundMatches.ContainsKey( $requiredMatch ) )
         {
-            Write-Error ('Migration ''{0}'' not found.' -f $requiredMatch)
+            Write-Error ('Migration "{0}" not found.' -f $requiredMatch)
         }
     }
 
