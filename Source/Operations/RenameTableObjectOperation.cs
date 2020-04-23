@@ -33,7 +33,6 @@ namespace Rivet.Operations
 
             {
                 TableName = otherAsRenameOp.NewName;
-                otherAsRenameOp.Disabled = true;
                 return MergeResult.Continue;
             }
 
