@@ -50,6 +50,6 @@ function Rename-DataType
 
     Set-StrictMode -Version 'Latest'
 
-    [Rivet.Operations.RenameObjectOperation]::New($SchemaName, $Name, $NewName, 'USERDATATYPE')
+    [Rivet.Operations.RenameDataTypeOperation]::New($SchemaName, $Name, $NewName)
 
 }

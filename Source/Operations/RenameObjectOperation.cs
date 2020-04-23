@@ -5,12 +5,7 @@ namespace Rivet.Operations
 	public class RenameObjectOperation : RenameOperation
 	{
 		public RenameObjectOperation(string schemaName, string name, string newName) :
-			this(schemaName, name, newName, "OBJECT")
-		{
-		}
-
-		public RenameObjectOperation(string schemaName, string name, string newName, string objectType) :
-			base(schemaName, name, newName, objectType)
+			base(schemaName, name, newName, "OBJECT")
 		{
 		}
 
@@ -35,6 +30,14 @@ namespace Rivet.Operations
 		protected override string GetSpRenameObjNameParameter()
 		{
 			return $"[{SchemaName}].[{Name}]";
+		}
+
+		public override string ToIdempotentQuery()
+		{
+			return $"if object_id('{SchemaName}.{Name}') is not null and object_id('{SchemaName}.{NewName}') is null{Environment.NewLine}" +
+			       $"begin{Environment.NewLine}" +
+			       $"    {ToIndentedQuery()}{Environment.NewLine}" +
+			       "end";
 		}
 	}
 }
