@@ -90,6 +90,11 @@ namespace Rivet.Operations
 			return MergeResult.Continue;
 		}
 
+		protected string ToIndentedQuery()
+		{
+			return ToQuery().Replace(Environment.NewLine, $"{Environment.NewLine}    ");
+		}
+
 		/// <summary>
 		/// The query to run for this operation.
 		/// </summary>

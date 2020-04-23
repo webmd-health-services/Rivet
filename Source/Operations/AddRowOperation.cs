@@ -103,8 +103,8 @@ namespace Rivet.Operations
 
 				if (withConditionalInserts)
 				{
-					query.AppendFormat("if not exists (select * from [{0}].[{1}] where {2}){3}\t", SchemaName, TableName,
-						String.Join(" and ", whereClauses.ToArray()), Environment.NewLine);
+					query.AppendFormat("if not exists (select * from [{0}].[{1}] where {2}){3}    ", SchemaName, TableName,
+						string.Join(" and ", whereClauses.ToArray()), Environment.NewLine);
 				}
 				query.AppendFormat("insert into [{0}].[{1}] {2} values {3}", SchemaName, TableName, columnClause, valueClause);
 			}

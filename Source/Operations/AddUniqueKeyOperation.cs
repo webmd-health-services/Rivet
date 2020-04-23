@@ -29,7 +29,7 @@ namespace Rivet.Operations
 
 		public override string ToIdempotentQuery()
 		{
-			return string.Format("if object_id('{0}.{1}', 'UQ') is null{2}\t{3}", SchemaName, Name, Environment.NewLine, ToQuery());
+			return $"if object_id('{SchemaName}.{Name}', 'UQ') is null{Environment.NewLine}    {ToQuery()}";
 		}
 
 		public override string ToQuery()
@@ -43,25 +43,24 @@ namespace Rivet.Operations
 			var allOptions = new List<string>(Options);
 			if (FillFactor > 0)
 			{
-				allOptions.Add(string.Format("fillfactor = {0}", FillFactor));
+				allOptions.Add($"fillfactor = {FillFactor}");
 			}
 
 			var optionClause = "";
 			if (allOptions.Count > 0)
 			{
-				optionClause = string.Format(" with ({0})", string.Join(", ", allOptions.ToArray()));
+				optionClause = $" with ({string.Join(", ", allOptions.ToArray())})";
 			}
 
 			var fileGroupClause = "";
 			if (!string.IsNullOrEmpty(FileGroup))
 			{
-				fileGroupClause = string.Format(" on {0}", FileGroup);
+				fileGroupClause = $" on {FileGroup}";
 			}
 
 			var columnClause = string.Join("], [", ColumnName.ToArray());
 
-			return string.Format("alter table [{0}].[{1}] add constraint [{2}] unique{3} ([{4}]){5}{6}", 
-				SchemaName, TableName, Name, clusteredClause, columnClause, optionClause, fileGroupClause);
+			return $"alter table [{SchemaName}].[{TableName}] add constraint [{Name}] unique{clusteredClause} ([{columnClause}]){optionClause}{fileGroupClause}";
 
 		}
 	}

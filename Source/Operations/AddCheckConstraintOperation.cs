@@ -21,7 +21,8 @@ namespace Rivet.Operations
 
 		public override string ToIdempotentQuery()
 		{
-			return $"if object_id('{SchemaName}.{Name}', 'C') is null{Environment.NewLine}\t{ToQuery()}";
+			return $"if object_id('{SchemaName}.{Name}', 'C') is null{Environment.NewLine}" +
+				   $"    {ToQuery()}";
 		}
 
 		public override string ToQuery()

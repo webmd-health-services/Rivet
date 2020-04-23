@@ -228,7 +228,7 @@ namespace Rivet.Operations
 				if (idempotent)
 				{
 					query.AppendFormat(
-						"if not exists (select * from sys.columns where object_id('{0}.{1}', 'U') = [object_id] and [name]='{2}'){3}\t",
+						"if not exists (select * from sys.columns where object_id('{0}.{1}', 'U') = [object_id] and [name]='{2}'){3}    ",
 						SchemaName, Name, column.Name, Environment.NewLine);
 				}
 				var definition = column.GetColumnDefinition(false);
@@ -254,7 +254,7 @@ namespace Rivet.Operations
 				}
 				if (idempotent)
 				{
-					query.AppendFormat("if exists (select * from sys.columns where object_id('{0}.{1}', 'U') = [object_id] and [name]='{2}'){3}\t",
+					query.AppendFormat("if exists (select * from sys.columns where object_id('{0}.{1}', 'U') = [object_id] and [name]='{2}'){3}    ",
 						SchemaName, Name, columnName, Environment.NewLine);
 				}
 				query.AppendFormat("alter table [{0}].[{1}] drop column [{2}]", SchemaName, Name, columnName);

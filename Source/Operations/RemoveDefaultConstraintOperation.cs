@@ -14,12 +14,12 @@ namespace Rivet.Operations
 
 		public override string ToIdempotentQuery()
 		{
-			return String.Format("if object_id('{0}.{1}', 'D') is not null{2}\t{3}", SchemaName, Name, Environment.NewLine, ToQuery());
+			return $"if object_id('{SchemaName}.{Name}', 'D') is not null{Environment.NewLine}    {ToQuery()}";
 		}
 
 		public override string ToQuery()
 		{
-			return string.Format("alter table [{0}].[{1}] drop constraint [{2}]", SchemaName, TableName, Name);
+			return $"alter table [{SchemaName}].[{TableName}] drop constraint [{Name}]";
 		}
 	}
 }

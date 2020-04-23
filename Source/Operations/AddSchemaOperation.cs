@@ -24,15 +24,15 @@ namespace Rivet.Operations
 
 		public override string ToQuery()
 		{
-			var query = string.Format("create schema [{0}]", Name);
+			var query = $"create schema [{Name}]";
 			
 			if (!string.IsNullOrEmpty(Owner)) 
 			{
-				query = string.Format("{0} authorization [{1}]", query, Owner);
+				query = $"{query} authorization [{Owner}]";
 			}
 
-			return string.Format("if not exists (select * from sys.schemas where name = '{0}'){1}\t exec sp_executesql N'{2}'",
-				Name, Environment.NewLine, query);
+			return $"if not exists (select * from sys.schemas where name = '{Name}'){Environment.NewLine}" +
+			       $"    exec sp_executesql N'{query}'";
 		}
 	}
 }
