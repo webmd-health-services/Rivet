@@ -1416,6 +1416,46 @@ function Pop-Migration
     }
 }
 
+Describe 'Convert-Migration.when migrations rename a datatype' {
+    BeforeEach { Init }
+    AfterEach { Reset }
+    It 'should export correct scripts' {
+        @'
+function Push-Migration
+{
+    Add-DataType -Name 'MyInt' -From 'bigint'
+}
+function Pop-Migration
+{
+    Remove-DataType 'MyInt'
+}
+'@ | New-TestMigration -Name 'BaseDataType'
+
+        Invoke-RTRivet -Push
+
+        @'
+function Push-Migration
+{
+    Rename-DataType -Name 'MyInt' -NewName 'MyBigInt'
+}
+function Pop-Migration
+{
+    Rename-DataType -Name 'MyBigInt' -NewName 'MyInt'
+}
+'@ | New-TestMigration -Name 'RenameDataType'
+
+        try
+        {
+            Assert-ConvertMigration -Schema -Include 'RenameDataType'
+            Assert-DataType -Name 'MyBigInt' -BaseTypeName 'bigint' -UserDefined
+        }
+        finally
+        {
+            Pop-ConvertedScripts
+        }
+    }
+}
+
 # These *must* run after all other tests that run migrations because the plug-ins stay loaded and affects other tests.
 Describe 'Convert-Migration.when there are plugins' {
     BeforeEach { Init }

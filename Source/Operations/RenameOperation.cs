@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 
 namespace Rivet.Operations
@@ -42,11 +43,6 @@ namespace Rivet.Operations
 			}
 
 			return MergeResult.Continue;
-		}
-
-		public override string ToIdempotentQuery()
-		{
-			return string.Format("if object_id('{0}.{1}') is not null and object_id('{0}.{2}') is null{3}begin{3}\t{4}{3}end", SchemaName, Name, NewName, Environment.NewLine, ToQuery());
 		}
 
 		public override string ToQuery()
