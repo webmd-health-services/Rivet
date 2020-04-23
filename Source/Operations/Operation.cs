@@ -6,6 +6,8 @@ namespace Rivet.Operations
 {
 	public abstract class Operation
 	{
+		private bool _disabled;
+
 		protected Operation()
 		{
 			CommandTimeout = 30;
@@ -13,12 +15,26 @@ namespace Rivet.Operations
 			ChildOperations = new List<Operation>();
 		}
 
+		public event EventHandler OnDisabled;
+
 		/// <summary>
 		/// The maximum amount of seconds the query should take. Defaults to 30 seconds. If the query takes longer than the timeout, ADO.NET will terminate the query.
 		/// </summary>
 		public int CommandTimeout { get; set; }
 
-		public bool Disabled { get; internal set; }
+		public bool Disabled
+		{
+			get => _disabled;
+			internal set
+			{
+				_disabled = value;
+
+				if (_disabled)
+				{
+					OnDisabled?.Invoke(this, new EventArgs());
+				}
+			}
+		}
 
 		// Any child operations spawned by this operation. These operations are for informational purposes only.
 		public IList<Operation> ChildOperations { get; }
