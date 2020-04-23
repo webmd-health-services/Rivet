@@ -12,14 +12,18 @@ namespace Rivet.Operations
 		public override string ToIdempotentQuery()
 		{
 			return
-				string.Format(
-					"if object_id('{0}.{1}', 'AF') is not null or object_id('{0}.{1}', 'FN') is not null or object_id('{0}.{1}', 'TF') is not null or object_id('{0}.{1}', 'FS') is not null or object_id('{0}.{1}', 'FT') is not null or object_id('{0}.{1}', 'IF') is not null{2}\t{3}",
-					SchemaName, Name, Environment.NewLine, ToQuery());
+				$"if object_id('{SchemaName}.{Name}', 'AF') is not null or{Environment.NewLine}" + 
+				$"   object_id('{SchemaName}.{Name}', 'FN') is not null or{Environment.NewLine}" +
+				$"   object_id('{SchemaName}.{Name}', 'TF') is not null or{Environment.NewLine}" +
+				$"   object_id('{SchemaName}.{Name}', 'FS') is not null or{Environment.NewLine}" +
+				$"   object_id('{SchemaName}.{Name}', 'FT') is not null or{Environment.NewLine}" +
+				$"   object_id('{SchemaName}.{Name}', 'IF') is not null{Environment.NewLine}" +
+				$"    {ToIndentedQuery()}";
 		}
 
 		public override string ToQuery()
 		{
-			return string.Format("drop function [{0}].[{1}]", SchemaName, Name);
+			return $"drop function [{SchemaName}].[{Name}]";
 		}
 	}
 }

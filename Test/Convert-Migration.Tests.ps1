@@ -1004,14 +1004,12 @@ Describe 'Convert-Migration.when there are operations for the same object across
     
         try
         {
-            $schemaPath = Join-Path -Path $outputDir -ChildPath ('{0}.Schema.sql' -f $RTDatabaseName)
-            $content = Get-Content -Path $schemaPath -Raw
             $expectedQuery = @'
-create table [aggregate].[Beta] (
-    [ID] int not null,
-    [Name] nvarchar(500) not null,
-    [LastName] nvarchar(500) not null
-)
+    create table [aggregate].[Beta] (
+        [ID] int not null,
+        [Name] nvarchar(500) not null,
+        [LastName] nvarchar(500) not null
+    )
 '@
             Assert-Query -Schema -ExpectedQuery $expectedQuery
     

@@ -51,7 +51,12 @@ namespace Rivet.Operations
 
 		public override string ToQuery()
 		{
-			return string.Format("declare @result{0} int{1}exec @result{0} = sp_rename @objname = '{2}', @newname = '{3}', @objtype = '{4}'{1}select @result{0}", Guid.NewGuid().ToString("N"), Environment.NewLine, GetSpRenameObjNameParameter(), NewName, Type);
+			var varSuffix = Path.GetRandomFileName().Replace(".", "");
+			var resultVarName = $"@result_{varSuffix}";
+			return
+				$"declare {resultVarName} int{Environment.NewLine}" +
+				$"exec {resultVarName} = sp_rename @objname = '{GetSpRenameObjNameParameter()}', @newname = '{NewName}', @objtype = '{Type}'{Environment.NewLine}" +
+				$"select {resultVarName}";
 		}
 	}
 }

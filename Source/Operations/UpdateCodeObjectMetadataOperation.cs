@@ -21,9 +21,12 @@ namespace Rivet.Operations
                 namespaceClause = $", @namespace = '{Namespace}'";
             }
 
-            var paramGuid = Path.GetRandomFileName().Remove(8, 1);
-            paramGuid = $"_{paramGuid}";
-            return $"declare @result{paramGuid} int{Environment.NewLine}exec @result{paramGuid} = sp_refreshsqlmodule @name = '{SchemaName}.{Name}'{namespaceClause}{Environment.NewLine}select @result{paramGuid}";
+            var varSuffix = Path.GetRandomFileName().Replace(".", "");
+            var resultVarName = $"@result_{varSuffix}";
+            // ReSharper disable once StringLiteralTypo
+            return $"declare {resultVarName} int{Environment.NewLine}" +
+                   $"exec {resultVarName} = sp_refreshsqlmodule @name = '{SchemaName}.{Name}'{namespaceClause}{Environment.NewLine}" +
+                   $"select {resultVarName}";
         }
 
         public override string ToIdempotentQuery()
