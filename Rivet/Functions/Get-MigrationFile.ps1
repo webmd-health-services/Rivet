@@ -86,7 +86,9 @@ function Get-MigrationFile
             $migration = $_
             foreach( $includeItem in $Include )
             {
-                $foundMatch = $migration.MigrationID -like $includeItem -or $migration.MigrationName -like $includeItem -or $migration.BaseName -like $includeItem
+                $foundMatch = $migration.MigrationID -like $includeItem -or `
+                              $migration.MigrationName -like $includeItem -or `
+                              $migration.BaseName -like $includeItem
                 if( $foundMatch )
                 {
                     $foundMatches[$includeItem] = $true
@@ -106,7 +108,10 @@ function Get-MigrationFile
             $migration = $_
             foreach( $pattern in $Exclude )
             {
-                if( $migration.MigrationID -like $pattern -or $migration.MigrationName -like $pattern -or $migration.BaseName -like $pattern )
+                $foundMatch = $migration.MigrationID -like $pattern -or `
+                              $migration.MigrationName -like $pattern -or `
+                              $migration.BaseName -like $pattern
+                if( $foundMatch )
                 {
                     return $false
                 }
