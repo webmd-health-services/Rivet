@@ -18,7 +18,6 @@ namespace Rivet.Operations
 
 			if (operation is RenameTableObjectOperation otherAsRenameTableObjectOp &&
 			    ObjectName.Equals(otherAsRenameTableObjectOp.TableObjectName, StringComparison.InvariantCultureIgnoreCase))
-
 			{
 				otherAsRenameTableObjectOp.TableName = Name;
 				return MergeResult.Continue;
