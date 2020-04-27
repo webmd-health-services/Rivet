@@ -143,16 +143,16 @@ function Update-Table
 
     Set-StrictMode -Version 'Latest'
 
-    $newColumns = @()
-    if ($AddColumn)
+    [Object[]]$newColumns = @()
+    if( $AddColumn )
     {
-        [Object[]]$newColumns = & $AddColumn | Set-DefaultConstraintName -SchemaName $SchemaName -TableName $Name
+        $newColumns = & $AddColumn
     }
-    
-    $updatedColumns = @()
+
+    [Object[]]$updatedColumns = @()
     if ($UpdateColumn)
     {
-        [Object[]]$updatedColumns = & $UpdateColumn
+        $updatedColumns = & $UpdateColumn
         foreach( $column in $updatedColumns )
         {
             if( $column.DefaultExpression -or $column.DefaultConstraintName )

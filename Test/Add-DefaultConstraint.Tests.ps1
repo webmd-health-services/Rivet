@@ -110,8 +110,12 @@ Describe 'Add-DefaultConstraint' {
         Assert-DefaultConstraint -TableName 'AddDefaultConstraint' -ColumnName 'DefaultConstraintMe'
     
     }
-    
-    It 'should support optional constraint name' {
+}
+
+Describe 'Add-DefaultConstraint.when user gives constraint name' {
+    AfterEach { Reset }
+    It 'should use the user''s constraint name' {
+        Init
         @'
     function Push-Migration()
     {
@@ -119,7 +123,7 @@ Describe 'Add-DefaultConstraint' {
             Int 'DefaultConstraintMe' -NotNull
         }
     
-        Add-DefaultConstraint 'AddDefaultConstraint' 'DefaultConstraintMe' 101 -Name 'Optional'
+        Add-DefaultConstraint -TableName 'AddDefaultConstraint' -ColumnName 'DefaultConstraintMe' -Expression 101 -Name 'Optional'
     
     }
     
