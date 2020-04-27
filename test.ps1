@@ -21,7 +21,8 @@ $testRoot = Join-Path -Path $PSScriptRoot -ChildPath 'Test'
 $bladeLogPath = Join-Path -Path $PSScriptRoot -ChildPath '.output\blade.xml'
 & {
     $Global:VerbosePreference = 'SilentlyContinue'
-    & (Join-Path -Path $PSScriptRoot -ChildPath '.\Tools\Blade\blade.ps1' -Resolve) -Path $testRoot -XmlLogPath $bladeLogPath -PassThru
+    & (Join-Path -Path $PSScriptRoot -ChildPath '.\Tools\Blade\blade.ps1' -Resolve) -Path $testRoot -XmlLogPath $bladeLogPath -PassThru |
+        Format-Table -Property 'FixtureName','Name','Passed','Failure','Error','Duration'
 }
 
 if( $uploadTestResults )

@@ -1004,14 +1004,12 @@ Describe 'Convert-Migration.when there are operations for the same object across
     
         try
         {
-            $schemaPath = Join-Path -Path $outputDir -ChildPath ('{0}.Schema.sql' -f $RTDatabaseName)
-            $content = Get-Content -Path $schemaPath -Raw
             $expectedQuery = @'
-create table [aggregate].[Beta] (
-    [ID] int not null,
-    [Name] nvarchar(500) not null,
-    [LastName] nvarchar(500) not null
-)
+    create table [aggregate].[Beta] (
+        [ID] int not null,
+        [Name] nvarchar(500) not null,
+        [LastName] nvarchar(500) not null
+    )
 '@
             Assert-Query -Schema -ExpectedQuery $expectedQuery
     
@@ -1414,6 +1412,46 @@ function Pop-Migration
         {
             Pop-ConvertedScripts
             $migration | Enable-Migration
+        }
+    }
+}
+
+Describe 'Convert-Migration.when migrations rename a datatype' {
+    BeforeEach { Init }
+    AfterEach { Reset }
+    It 'should export correct scripts' {
+        @'
+function Push-Migration
+{
+    Add-DataType -Name 'MyInt' -From 'bigint'
+}
+function Pop-Migration
+{
+    Remove-DataType 'MyInt'
+}
+'@ | New-TestMigration -Name 'BaseDataType'
+
+        Invoke-RTRivet -Push
+
+        @'
+function Push-Migration
+{
+    Rename-DataType -Name 'MyInt' -NewName 'MyBigInt'
+}
+function Pop-Migration
+{
+    Rename-DataType -Name 'MyBigInt' -NewName 'MyInt'
+}
+'@ | New-TestMigration -Name 'RenameDataType'
+
+        try
+        {
+            Assert-ConvertMigration -Schema -Include 'RenameDataType'
+            Assert-DataType -Name 'MyBigInt' -BaseTypeName 'bigint' -UserDefined
+        }
+        finally
+        {
+            Pop-ConvertedScripts
         }
     }
 }

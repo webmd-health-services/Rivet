@@ -11,12 +11,12 @@ namespace Rivet.Operations
 
 		public override string ToIdempotentQuery()
 		{
-			return string.Format("if object_id('{0}.{1}', 'P') is not null or object_id('{0}.{1}', 'PC') is not null{2}\t{3}", SchemaName, Name, Environment.NewLine, ToQuery());
+			return $"if object_id('{SchemaName}.{Name}', 'P') is not null or object_id('{SchemaName}.{Name}', 'PC') is not null{Environment.NewLine}    {ToQuery()}";
 		}
 
 		public override string ToQuery()
 		{
-			return string.Format("drop procedure [{0}].[{1}]", SchemaName, Name);
+			return $"drop procedure [{SchemaName}].[{Name}]";
 		}
 	}
 }

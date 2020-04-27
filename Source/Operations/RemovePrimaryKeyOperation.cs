@@ -11,15 +11,12 @@ namespace Rivet.Operations
 
 		public override string ToIdempotentQuery()
 		{
-			return
-				String.Format(
-					"if exists (select * from sys.indexes where name = '{0}' and object_id = object_id('{1}.{2}', 'U')){3}\t{4}",
-					Name, SchemaName, TableName, Environment.NewLine, ToQuery());
+			return $"if exists (select * from sys.indexes where name = '{Name}' and object_id = object_id('{SchemaName}.{TableName}', 'U')){Environment.NewLine}    {ToQuery()}";
 		}
 
 		public override string ToQuery()
 		{
-			return string.Format("alter table [{0}].[{1}] drop constraint [{2}]", SchemaName, TableName, Name);
+			return $"alter table [{SchemaName}].[{TableName}] drop constraint [{Name}]";
 		}
 	}
 }

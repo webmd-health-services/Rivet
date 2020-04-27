@@ -50,8 +50,8 @@ namespace Rivet.Operations
 
 		public override string ToIdempotentQuery()
 		{
-			return
-				$"if not exists (select * from sys.indexes where name = '{Name}' and (object_id = object_id('{SchemaName}.{TableName}', 'U') or object_id = object_id('{SchemaName}.{TableName}', 'V'))){Environment.NewLine}\t{ToQuery()}";
+			return $"if not exists (select * from sys.indexes where name = '{Name}' and (object_id = object_id('{SchemaName}.{TableName}', 'U') or object_id = object_id('{SchemaName}.{TableName}', 'V'))){Environment.NewLine}" +
+				   $"    {ToQuery()}";
 		}
 
 		public override string ToQuery()

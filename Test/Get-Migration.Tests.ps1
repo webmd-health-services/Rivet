@@ -4,6 +4,22 @@ Set-StrictMode -Version 'Latest'
 
 & (Join-Path -Path $PSScriptRoot -ChildPath 'Initialize-Test.ps1' -Resolve)
 
+$pluginModuleName = 'GetMigrationPlugins'
+$pluginModulePath = '{0}\{0}.psm1' -f $pluginModuleName
+$migrations = $null
+
+$noOpMigration = @'
+function Push-Migration
+{
+    Invoke-Ddl 'select 1'
+}
+
+function Pop-Migration
+{
+    Invoke-Ddl 'select 1'
+}
+'@
+
 function Assert-GetMigration
 {
     param(
@@ -29,15 +45,43 @@ function Assert-GetMigration
     
 }
 
+function Init
+{
+    param(
+        [switch]$WithPlugin
+    )
+
+    $Global:Error.Clear()
+
+    $conditionalParams = @{}
+    if( $WithPlugin )
+    {
+        $conditionalParams['PluginPath'] = $pluginModuleName
+    }
+    Start-RivetTest @conditionalParams
+}
+
+function Reset
+{
+    Stop-RivetTest
+    if( (Get-Module $pluginModuleName) )
+    {
+        Remove-Module $pluginModuleName
+    }
+}
+
+function WhenGettingMigrations
+{
+    [CmdletBinding()]
+    param(
+    )
+
+    $script:migrations = Get-Migration -ConfigFilePath $RTConfigFilePath
+}
+
 Describe 'Get-Migration' {
-    BeforeEach {
-        $Global:Error.Clear()
-        Start-RivetTest
-    }
-    
-    AfterEach {
-        Stop-RivetTest
-    }
+    BeforeEach { Init }
+    AfterEach { Reset }
     
     It 'should get migrations using current rivet json file' {
         New-Item -Path (Join-Path -Path $TestDrive.FullName -ChildPath ('Databases\{0}\Migrations' -f $RTDatabaseName)) -ItemType 'Directory' -Force
@@ -194,7 +238,7 @@ Describe 'Get-Migration' {
         $result = Get-Migration -ConfigFilePath $RTConfigFilePath -Include 'nomigrationbythisname' -ErrorAction SilentlyContinue
         $result | Should -BeNullOrEmpty
         $Global:Error.Count | Should -BeGreaterThan 0
-        $Global:Error[0] | Should -Match 'Migration ''nomigrationbythisname'' not found\.'
+        $Global:Error[0] | Should -Match 'Migration "nomigrationbythisname" not found\.'
     }
     
     It 'should not write an error if included wildcarded migration not found' {
@@ -296,122 +340,39 @@ Describe 'Get-Migration' {
         'ShouldGetAMigrationByBaseNameWithWildcard' | Should -Be $result.Name
         $m.BaseName | Should -Be $result.FullName
     }
-    
-    It 'should exclude migration by name or ID' {
-        $m = @'
-    function Push-Migration
-    {
-        Invoke-Ddl 'select 1'
-    }
-    
-    function Pop-Migration
-    {
-        Invoke-Ddl 'select 1'
-    }
-'@ | New-TestMigration -Name 'ShouldExcludeMigrationByNameOrID'
-    
-    
-        $result = Get-Migration -ConfigFilePath $RTConfigFilePath -Exclude 'ShouldExcludeMigrationByNameOrID'
-        $Global:Error.Count | Should -Be 0
-        $result | Should -BeNullOrEmpty
-    
-        $id = ($m.BaseName -split '_')[0]
-        $result = Get-Migration -ConfigFilePath $RTConfigFilePath -Exclude $id
-        $Global:Error.Count | Should -Be 0
-        $result | Should -BeNullOrEmpty
-    }
-    
-    It 'should exclude migration wildcard ID' {
-        $m = @'
-    function Push-Migration
-    {
-        Invoke-Ddl 'select 1'
-    }
-    
-    function Pop-Migration
-    {
-        Invoke-Ddl 'select 1'
-    }
-'@ | New-TestMigration -Name 'ShouldExcludeMigrationWildcardID'
-    
-        $id = ($m.BaseName -split '_')[0]
-    
-        $result = Get-Migration -ConfigFilePath $RTConfigFilePath -Exclude ('{0}*' -f $id.Substring(0,10))
-        $Global:Error.Count | Should -Be 0
-        $result | Should -BeNullOrEmpty
-    }
-    
-    It 'should exclude a migration by base name' {
-        $m = @'
-    function Push-Migration
-    {
-        Invoke-Ddl 'select 1'
-    }
-    
-    function Pop-Migration
-    {
-        Invoke-Ddl 'select 1'
-    }
-'@ | New-TestMigration -Name 'ShouldExcludeAMigrationByBaseName'
-    
-        $id = ($m.BaseName -split '_')[0]
-    
-        $result = Get-Migration -ConfigFilePath $RTConfigFilePath -Exclude $m.BaseName
-        $Global:Error.Count | Should -Be 0
-        $result | Should -BeNullOrEmpty
-    }
-    
-    It 'should exclude a migration by base name with wildcard' {
-        $m = @'
-    function Push-Migration
-    {
-        Invoke-Ddl 'select 1'
-    }
-    
-    function Pop-Migration
-    {
-        Invoke-Ddl 'select 1'
-    }
-'@ | New-TestMigration -Name 'ShouldExcludeAMigrationByBaseNameWithWildcard'
-    
-        $id = ($m.BaseName -split '_')[0]
-    
-        $result = Get-Migration -ConfigFilePath $RTConfigFilePath -Exclude ('{0}*' -f $m.BaseName.Substring(0,20))
-        $Global:Error.Count | Should -Be 0
-        $result | Should -BeNullOrEmpty
-    }    
 }
 
-$pluginModuleName = 'GetMigrationPlugins'
-$pluginModulePath = '{0}\{0}.psm1' -f $pluginModuleName
-$migrations = $null
+Describe 'Get-Migration.when excluding migrations' {
+    AfterEach { Reset }
+    It 'should match against ID, name, and base name and support wildcards' {
+        Init
+        $m = $noOpMigration | New-TestMigration -Name 'ShouldExcludeMigrationByNameOrID'
+        $id = ($m.BaseName -split '_')[0]
 
-function Init
-{
-    $Global:Error.Clear()
-    Start-RivetTest -PluginPath $pluginModuleName
-}
+        $noOpMigration | New-TestMigration -Name 'ShouldInclude'
+        $noOpMigration | New-TestMigration -Name 'ShouldExcludeIfUsingWildcards'
+    
+        # When excluding a specific migration by name.
+        Get-Migration -ConfigFilePath $RTConfigFilePath -Exclude 'ShouldExcludeMigrationByNameOrID' | Should -HaveCount 2
+        Get-Migration -ConfigFilePath $RTConfigFilePath -Exclude 'ShouldExclude*'  | Should -HaveCount 1
 
-function Reset
-{
-    Stop-RivetTest
-    if( (Get-Module $pluginModuleName) )
-    {
-        Remove-Module $pluginModuleName
+        # Should match against base name.
+        Get-Migration -ConfigFilePath $RTConfigFilePath -Exclude $m.BaseName | Should -HaveCount 2
+        Get-Migration -ConfigFilePath $RTConfigFilePath -Exclude "$($id.Substring(0, 4))*_ShouldExcludeMig*" | Should -HaveCount 2
+    
+        # Should match against ID.
+        Get-Migration -ConfigFilePath $RTConfigFilePath -Exclude $id | Should -HaveCount 2
+        Get-Migration -ConfigFilePath $RTConfigFilePath -Exclude "$($id.Substring(0, 4))*" | Should -BeNullOrEmpty
+
+        # should match multiple exclude patterns
+        Get-Migration -ConfigFilePath $RTConfigFilePath -Exclude '*Wildcards','*ID' | Should -HaveCount 1
+
+        $Global:Error | Should -BeNullOrEmpty
     }
-}
-
-function WhenGettingMigrations
-{
-    [CmdletBinding()]
-    param(
-    )
-
-    $script:migrations = Get-Migration -ConfigFilePath $RTConfigFilePath
 }
 
 Describe 'Get-Migration.when there is a BeforeOperationLoad plugin' {
-    BeforeEach { Init }
+    BeforeEach { Init -WithPlugin }
     AfterEach { Reset }
     It ('should run the plugin') {
         GivenFile $pluginModulePath @'
@@ -446,7 +407,7 @@ function Pop-Migration
 }
 
 Describe 'Get-Migration.when there are multiple BeforeOperationLoad plugins' {
-    BeforeEach { Init }
+    BeforeEach { Init -WithPlugin }
     AfterEach { Reset }
     It ('should run all the plugins') {
         GivenFile $pluginModulePath @'
@@ -490,7 +451,7 @@ function Pop-Migration
 }
 
 Describe 'Get-Migration.when BeforeOperationLoad plugin missing Migration parameter' {
-    BeforeEach { Init }
+    BeforeEach { Init -WithPlugin }
     AfterEach { Reset }
     It ('should fail') {
         GivenFile $pluginModulePath @'
@@ -522,7 +483,7 @@ function Pop-Migration
 
 
 Describe 'Get-Migration.when BeforeOperationLoad plugin missing Operation parameter' {
-    BeforeEach { Init }
+    BeforeEach { Init -WithPlugin }
     AfterEach { Reset }
     It ('should fail') {
         GivenFile $pluginModulePath @'
@@ -553,7 +514,7 @@ function Pop-Migration
 }
 
 Describe 'Get-Migration.when there is an AfterOperationLoad plugin' {
-    BeforeEach { Init }
+    BeforeEach { Init -WithPlugin }
     AfterEach { Reset }
     It ('should run the plugin') {
         GivenFile $pluginModulePath @'
@@ -588,7 +549,7 @@ function Pop-Migration
 }
 
 Describe 'Get-Migration.when there are multiple AfterOperationLoad plugins' {
-    BeforeEach { Init }
+    BeforeEach { Init -WithPlugin }
     AfterEach { Reset }
     It ('should run all the plugins') {
         GivenFile $pluginModulePath @'
@@ -632,7 +593,7 @@ function Pop-Migration
 }
 
 Describe 'Get-Migration.when AfterOperationLoad plugin missing Migration parameter' {
-    BeforeEach { Init }
+    BeforeEach { Init -WithPlugin }
     AfterEach { Reset }
     It ('should fail') {
         GivenFile $pluginModulePath @'
@@ -664,7 +625,7 @@ function Pop-Migration
 
 
 Describe 'Get-Migration.when AfterOperationLoad plugin missing Operation parameter' {
-    BeforeEach { Init }
+    BeforeEach { Init -WithPlugin }
     AfterEach { Reset }
     It ('should fail') {
         GivenFile $pluginModulePath @'
@@ -695,7 +656,7 @@ function Pop-Migration
 }
 
 Describe 'Get-Migration.when a plugin returns a non-operation' {
-    BeforeEach { Init }
+    BeforeEach { Init -WithPlugin }
     AfterEach { Reset }
     It ('should run the plugin') {
         GivenFile $pluginModulePath @'

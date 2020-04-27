@@ -12,9 +12,11 @@ namespace Rivet.Operations
 		public override string ToIdempotentQuery()
 		{
 			return
-				String.Format(
-					"if exists (select * from sys.indexes where ([object_id] = object_id('{0}.{1}', 'U') or [object_id] = object_id('{0}.{1}', 'V')) and [name] = '{2}') and not exists (select * from sys.indexes where ([object_id] = object_id('{0}.{1}', 'U') or [object_id] = object_id('{0}.{1}', 'V')) and [name] = '{3}'){4}begin{4}\t{5}{4}end",
-					SchemaName, TableName, Name, NewName, Environment.NewLine, ToQuery());
+				$"if exists (select * from sys.indexes where ([object_id] = object_id('{SchemaName}.{TableName}', 'U') or [object_id] = object_id('{SchemaName}.{TableName}', 'V')) and [name] = '{Name}') and{Environment.NewLine}" +
+				$"   not exists (select * from sys.indexes where ([object_id] = object_id('{SchemaName}.{TableName}', 'U') or [object_id] = object_id('{SchemaName}.{TableName}', 'V')) and [name] = '{NewName}'){Environment.NewLine}" +
+				$"begin{Environment.NewLine}" +
+				$"    {ToIndentedQuery()}{Environment.NewLine}" +
+				"end";
 		}
 	}
 }

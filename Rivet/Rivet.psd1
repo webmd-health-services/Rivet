@@ -270,6 +270,8 @@ See `about_Rivet_Plugins` for more information.
 * Primary key constraint names are now required. You must pass a constraint name to the Add-PrimaryKey operation's Name parameter.
 * Foreign key constraint names are now required. You must pass a constraint name to the Add-ForeignKey operation's Name parameter.
 * Index names are now required. You must pass an index name to the Add-Index operation's Name parameter.
+* Fixed: Get-Migration and Get-MigrationFile don't properly exclude migrations in some situations.
+* Fixed: the idempotent queries for renaming a data type and index don't work.
 '@
         } # End of PSData hashtable
 

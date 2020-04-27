@@ -15,15 +15,18 @@ namespace Rivet.Operations
 
 		public override string ToIdempotentQuery()
 		{
-			return
-				string.Format(
-					"if object_id('{0}.{1}', 'AF') is null and object_id('{0}.{1}', 'FN') is null and object_id('{0}.{1}', 'TF') is null and object_id('{0}.{1}', 'FS') is null and object_id('{0}.{1}', 'FT') is null and object_id('{0}.{1}', 'IF') is null{2}\texec sp_executesql N'{3}'",
-					SchemaName, Name, Environment.NewLine, ToQuery().Replace("'", "''"));
+			return $"if object_id('{SchemaName}.{Name}', 'AF') is null and{Environment.NewLine}" +
+			       $"   object_id('{SchemaName}.{Name}', 'FN') is null and{Environment.NewLine}" +
+			       $"   object_id('{SchemaName}.{Name}', 'TF') is null and{Environment.NewLine}" +
+			       $"   object_id('{SchemaName}.{Name}', 'FS') is null and{Environment.NewLine}" +
+			       $"   object_id('{SchemaName}.{Name}', 'FT') is null and{Environment.NewLine}" +
+			       $"   object_id('{SchemaName}.{Name}', 'IF') is null{Environment.NewLine}" +
+			       $"    exec sp_executesql N'{ToQuery().Replace("'", "''")}'";
 		}
 
 		public override string ToQuery()
 		{
-			return string.Format("create function [{0}].[{1}] {2}", SchemaName, Name, Definition);
+			return $"create function [{SchemaName}].[{Name}] {Definition}";
 		}
 	}
 }

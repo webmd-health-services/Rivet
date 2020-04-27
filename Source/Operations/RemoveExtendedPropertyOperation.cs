@@ -30,25 +30,23 @@ namespace Rivet.Operations
 			if (ForTable)
 			{
 				level1Type = "'TABLE'";
-				level1Name = string.Format("'{0}'", TableViewName);
+				level1Name = $"'{TableViewName}'";
 			}
 
 			if (ForView)
 			{
 				level1Type = "'VIEW'";
-				level1Name = string.Format("'{0}'", TableViewName);
+				level1Name = $"'{TableViewName}'";
 			}
 
 			if (ForColumn)
 			{
 				level2Type = "'COLUMN'";
-				level2Name = string.Format("'{0}'", ColumnName);
+				level2Name = $"'{ColumnName}'";
 			}
 
 			return
-				string.Format(
-					"if exists (select * from fn_listextendedproperty ('{0}', 'schema', '{1}', {2}, {3}, {4}, {5})){6}\t{7}",
-					Name, SchemaName, level1Type, level1Name, level2Type, level2Name, Environment.NewLine, ToQuery());
+				$"if exists (select * from fn_listextendedproperty ('{Name}', 'schema', '{SchemaName}', {level1Type}, {level1Name}, {level2Type}, {level2Name})){Environment.NewLine}    {ToQuery()}";
 		}
 	}
 }

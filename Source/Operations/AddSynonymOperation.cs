@@ -42,16 +42,16 @@ namespace Rivet.Operations
 
 		public override string ToIdempotentQuery()
 		{
-			return string.Format("if object_id('{0}.{1}', 'SN') is null{2}\t{3}", SchemaName, Name, Environment.NewLine, ToQuery());
+			return $"if object_id('{SchemaName}.{Name}', 'SN') is null{Environment.NewLine}    {ToQuery()}";
 		}
 
 		public override string ToQuery()
 		{
 			if (string.IsNullOrEmpty(TargetDatabaseName))
 			{
-				return string.Format("create synonym [{0}].[{1}] for [{2}].[{3}]", SchemaName, Name, TargetSchemaName, TargetObjectName);
+				return $"create synonym [{SchemaName}].[{Name}] for [{TargetSchemaName}].[{TargetObjectName}]";
 			}
-			return string.Format("create synonym [{0}].[{1}] for [{2}].[{3}].[{4}]", SchemaName, Name, TargetDatabaseName, TargetSchemaName, TargetObjectName);
+			return $"create synonym [{SchemaName}].[{Name}] for [{TargetDatabaseName}].[{TargetSchemaName}].[{TargetObjectName}]";
 		}
 	}
 }
