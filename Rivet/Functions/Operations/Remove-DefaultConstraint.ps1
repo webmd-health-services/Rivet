@@ -43,7 +43,15 @@ function Remove-DefaultConstraint
 
     if( -not $ColumnName )
     {
-        Write-Warning -Message ('Not providing the ColumnName parameter is obsolete. This parameter will be mandatory in a future version of Rivet. Please pass the column name whose default constraint is being removed to the ColumnName parameter.')
+        $nameMsg = ''
+        if( $Name )
+        {
+            $nameMsg = "'s $($Name) constraint"
+        }
+        $msg = ('The ColumnName parameter will be required in a future version of Rivet. Add a ""ColumnName"" ' +
+                "parameter to the Remove-DefaulConstraint operation for the [$($SchemaName)].[$($TableName)] " +
+                "table$($nameMsg).")
+        Write-Warning -Message $msg
     }
 
     [Rivet.Operations.RemoveDefaultConstraintOperation]::New($SchemaName, $TableName, $ColumnName, $Name)
