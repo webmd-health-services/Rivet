@@ -91,9 +91,9 @@ function Get-RivetConfig
             # Set the configuration value as an integer.
             [switch]$AsInt,
 
-            [Parameter(Mandatory,ParameterSetName='AsList')]
+            [Parameter(Mandatory,ParameterSetName='AsArray')]
             # Set the configuration value as a list of strings.
-            [switch]$AsList,
+            [switch]$AsArray,
 
             [Parameter(Mandatory,ParameterSetName='AsPath')]
             # Set the configuration value as a path.
@@ -113,7 +113,6 @@ function Get-RivetConfig
         )
         
         $value = $null
-        $currentPropertyName = $Name
 
         if( $rawConfig | Get-Member -Name $Name )
         {
@@ -146,9 +145,9 @@ function Get-RivetConfig
                 }
                 return $value
             }
-            'AsList'
+            'AsArray'
             {
-                return [Object[]]$value
+                return [String[]]$value
             }
             'AsPath'
             {
@@ -264,17 +263,18 @@ function Get-RivetConfig
     }
     $pluginPaths = Get-ConfigProperty -Name 'PluginPaths' -AsPath -Resolve
 
-    $ignoredDatabases = Get-ConfigProperty -Name 'IgnoreDatabases' -AsList
+    $ignoredDatabases = Get-ConfigProperty -Name 'IgnoreDatabases' -AsArray
     $targetDatabases = Get-ConfigProperty -Name 'TargetDatabases' -AsHashtable
     if( $null -eq $targetDatabases )
     {
         $targetDatabases = @{ }
     }
 
-    $order = Get-ConfigProperty -Name 'DatabaseOrder' -AsList
+    $order = Get-ConfigProperty -Name 'DatabaseOrder' -AsArray
+    $pluginModules = Get-ConfigProperty -Name 'PluginModules' -AsArray
 
     [Rivet.Configuration.Configuration]$configuration = 
-        [Rivet.Configuration.Configuration]::New($Path, $Environment, $sqlServerName, $dbsRoot, $connectionTimeout, $commandTimeout, $pluginPaths, $null)
+        [Rivet.Configuration.Configuration]::New($Path, $Environment, $sqlServerName, $dbsRoot, $connectionTimeout, $commandTimeout, $pluginPaths, $pluginModules)
 
     if( $Global:Error.Count -ne $errorCount )
     {

@@ -20,8 +20,11 @@ LONG DESCRIPTION
      
     Plugins and custom operations should be packaged into one or more PowerShell 
     modules. Use the "PluginPaths" configuration option in your rivet.json file
-    to tell Rivet where it can find these modules. It loads them using the
-    `Import-Module` cmdlet.
+    to tell Rivet where it can find these modules. It imports the modules using 
+    the `Import-Module` cmdlet. If you want to import the modules, set the 
+    "PluginModules" setting to a list of modules that contain your plug-ins. If
+    the modules listed in "PluginModules" aren't loaded when Rivet runs, Rivet
+    will fail with an error.
 
     To create custom operations, export them from your PowerShell module.
 
