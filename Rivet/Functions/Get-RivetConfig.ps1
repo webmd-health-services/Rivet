@@ -24,19 +24,14 @@ function Get-RivetConfig
     [CmdletBinding()]
     [OutputType([Rivet.Configuration.Configuration])]
     param(
-        [Parameter()]
-        [string[]]
         # The list of specific database names being operated on.
-        $Database,
+        [String[]]$Database,
 
-        [Parameter()]
         # The name of the environment whose settings to return.  If not provided, uses the default settings.
-        $Environment,
+        [String]$Environment,
 
-        [Parameter()]
-        [string]
         # The path to the Rivet configuration file to load.  Defaults to `rivet.json` in the current directory.
-        $Path
+        [String]$Path
     )
 
     Set-StrictMode -Version 'Latest'
@@ -47,13 +42,11 @@ function Get-RivetConfig
         [CmdletBinding()]
         param(
             [Parameter(Mandatory,ValueFromPipeline)]
-            [string]
             # The path from the rivet config file to resolve.
-            $ConfigPath,
+            [String]$ConfigPath,
 
-            [Switch]
             # The path *must* exist, so resolve it.
-            $Resolve
+            [switch]$Resolve
         )
 
         process
@@ -87,48 +80,39 @@ function Get-RivetConfig
     {
         [CmdletBinding()]
         param(
-            [Parameter(Mandatory=$true)]
-            [string]
+            [Parameter(Mandatory)]
             # The name of the property to get.
-            $Name,
+            [String]$Name,
 
-            [Switch]
             # The configuration value is required.
-            $Required,
+            [switch]$Required,
 
             [Parameter(Mandatory,ParameterSetName='AsInt')]
-            [Switch]
             # Set the configuration value as an integer.
-            $AsInt,
+            [switch]$AsInt,
 
-            [Parameter(Mandatory,ParameterSetName='AsList')]
-            [Switch]
+            [Parameter(Mandatory,ParameterSetName='AsArray')]
             # Set the configuration value as a list of strings.
-            $AsList,
+            [switch]$AsArray,
 
             [Parameter(Mandatory,ParameterSetName='AsPath')]
-            [Switch]
             # Set the configuration value as a path.
-            $AsPath,
+            [switch]$AsPath,
 
             [Parameter(ParameterSetName='AsPath')]
-            [Switch]
             # Resolves the path to an actual path. 
-            $Resolve,
+            [switch]$Resolve,
 
             [Parameter(Mandatory,ParameterSetName='AsString')]
-            [Switch]
             # Set the configuration value as a string.
-            $AsString,
+            [switch]$AsString,
 
             [Parameter(Mandatory,ParameterSetName='AsHashtable')]
-            [Switch]
             # Set the configuration value as a hashtable.
-            $AsHashtable
+            [switch]$AsHashtable
         )
         
         $value = $null
-        $currentPropertyName = $Name
 
         if( $rawConfig | Get-Member -Name $Name )
         {
@@ -161,9 +145,9 @@ function Get-RivetConfig
                 }
                 return $value
             }
-            'AsList'
+            'AsArray'
             {
-                return [Object[]]$value
+                return [String[]]$value
             }
             'AsPath'
             {
@@ -196,10 +180,9 @@ function Get-RivetConfig
     function Write-ValidationError
     {
         param(
-            [Parameter(Mandatory=$true,Position=1)]
-            [string]
+            [Parameter(Mandatory,Position=1)]
             # The error message to write.
-            $Message
+            [String]$Message
         )
         $envMsg = ''
         if( $Environment )
@@ -268,35 +251,37 @@ function Get-RivetConfig
     $sqlServerName = Get-ConfigProperty -Name 'SqlServerName' -Required -AsString
     $dbsRoot = Get-ConfigProperty -Name 'DatabasesRoot' -Required -AsPath
     $connectionTimeout = Get-ConfigProperty -Name 'ConnectionTimeout' -AsInt
-    if( $connectionTimeout -eq $null )
+    if( $null -eq $connectionTimeout )
     {
         $connectionTimeout = 15
     }
 
     $commandTimeout = Get-ConfigProperty -Name 'CommandTimeout' -AsInt
-    if( $commandTimeout -eq $null )
+    if( $null -eq $commandTimeout )
     {
         $commandTimeout = 30
     }
     $pluginPaths = Get-ConfigProperty -Name 'PluginPaths' -AsPath -Resolve
 
-    $ignoredDatabases = Get-ConfigProperty -Name 'IgnoreDatabases' -AsList
+    $ignoredDatabases = Get-ConfigProperty -Name 'IgnoreDatabases' -AsArray
     $targetDatabases = Get-ConfigProperty -Name 'TargetDatabases' -AsHashtable
-    if( $targetDatabases -eq $null )
+    if( $null -eq $targetDatabases )
     {
         $targetDatabases = @{ }
     }
 
-    $order = Get-ConfigProperty -Name 'DatabaseOrder' -AsList
+    $order = Get-ConfigProperty -Name 'DatabaseOrder' -AsArray
+    $pluginModules = Get-ConfigProperty -Name 'PluginModules' -AsArray
 
-    [Rivet.Configuration.Configuration]$configuration = New-Object 'Rivet.Configuration.Configuration' $Path,$Environment,$sqlServerName,$dbsRoot,$connectionTimeout,$commandTimeout,$pluginPaths
+    [Rivet.Configuration.Configuration]$configuration = 
+        [Rivet.Configuration.Configuration]::New($Path, $Environment, $sqlServerName, $dbsRoot, $connectionTimeout, $commandTimeout, $pluginPaths, $pluginModules)
 
     if( $Global:Error.Count -ne $errorCount )
     {
         return
     }
 
-    Invoke-Command {
+    $databaseInfos = Invoke-Command {
             # Get user-specified databases first
             if( $Database )
             {
@@ -328,22 +313,27 @@ function Get-RivetConfig
             $dbName = $_.Name                                        
             $ignore = $ignoredDatabases | Where-Object { $dbName -like $_ }
             return -not $ignore
-        } |
-        ForEach-Object {
-            $dbName = $_.Name
+        }
+
+    foreach( $databaseInfo in $databaseInfos )
+    {
+        $dbName = $databaseInfo.Name
+        [Rivet.Configuration.Database[]]$rivetDatabases = & {
             if( $targetDatabases.ContainsKey( $dbName ) )
             {
                 foreach( $targetDBName in $targetDatabases[$dbName] )
                 {
-                    New-Object 'Rivet.Configuration.Database' $targetDBName,$_.FullName
+                    [Rivet.Configuration.Database]::New($targetDBName, $databaseInfo.FullName) | Write-Output
                 }
             }
             else
             {
-                New-Object 'Rivet.Configuration.Database' $dbName,$_.FullName
+                [Rivet.Configuration.Database]::New($dbName, $databaseInfo.FullName) | Write-Output
             }
-        } | 
-        ForEach-Object { $configuration.Databases.Add( $_ ) }
+        }
+
+        [void]$configuration.Databases.AddRange( $rivetDatabases )
+    } 
 
     return $configuration
 }

@@ -109,12 +109,7 @@ function WhenGettingConfig
 }
 
 Describe 'Get-RivetConfig' {
-    BeforeEach {
-        Init
-    }
-    
-    AfterEach {
-    }
+    BeforeEach { Init }
     
     It 'should handle relative path' {
         $otherDir = Join-Path -Path $TestDrive.FullName -ChildPath ([IO.Path]::GetRandomFileName())
@@ -159,6 +154,8 @@ Describe 'Get-RivetConfig' {
         $config.Databases[0].MigrationsRoot | Should -Be (Join-Path -Path $tempDir -ChildPath "Databases\$dbName\Migrations")
         ,$config.PluginPaths | Should -BeOfType ([string[]])
         $config.PluginPaths[0] | Should -Be (Join-Path -Path $tempDir -ChildPath "Plugins")
+        ,$config.PluginModules | Should  -BeOfType ([string[]])
+        $config.PluginModules | Should -HaveCount 0
     }
     
     It 'should validate databases directory exists' {
@@ -549,5 +546,37 @@ Describe 'Get-RivetConfig.when there are multiple plugin paths' {
         $root = $rivetConfigPath | Split-Path -Parent
         $config.PluginPaths[0] | Should -Be (Join-Path -Path $root -ChildPath 'PluginOne')
         $config.PluginPaths[1] | Should -Be (Join-Path -Path $root -ChildPath 'PluginTwo')
+    }
+}
+
+Describe 'Get-RivetConfig.when user has multiple plugin modules' {
+    It 'should set PluginModules setting' {
+        Init
+        GivenConfig @'
+{
+    "SqlServerName": ".\\Rivet",
+    "DatabasesRoot": "Databases",
+    "PluginModules": [ "RivetSamples", "TestPlugins" ]
+}
+'@
+        $config = WhenGettingConfig
+        ,$config.PluginModules | Should -BeOfType ([string[]])
+        $config.PluginModules | Should -Be @('RivetSamples','TestPlugins')
+    }
+}
+
+Describe 'Get-RivetConfig.when user has single plugin module' {
+    It 'should set PluginModules setting' {
+        Init
+        GivenConfig @'
+{
+    "SqlServerName": ".\\Rivet",
+    "DatabasesRoot": "Databases",
+    "PluginModules": "RivetSamples"
+}
+'@
+        $config = WhenGettingConfig
+        ,$config.PluginModules | Should -BeOfType ([string[]])
+        $config.PluginModules | Should -Be @('RivetSamples')
     }
 }

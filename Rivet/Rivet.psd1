@@ -248,7 +248,7 @@ This version of Rivet is backwards-incompatible. It changes the way plug-ins wor
 1. Package your plugins into a PowerShell module. Make sure your plug-in functions are exported by your module.
 2. Add the attribute `[Rivet.Plugin([Rivet.Event]::BeforeOperationLoad)]` to any existing `Start-MigrationOperation` functions.
 3. Add the attribute `[Rivet.Plugin([Rivet.Event]::AfterOperationLoad)]` to any existing `Complete-MigrationOperation` functions.
-4. Change the `PluginsRoot` setting in your rivet.json file to `PluginPaths`. Change its value to the path to the module you created in step 1.
+4. Change the `PluginsRoot` setting in your rivet.json file to `PluginPaths`. Change its value to the path to the module you created in step 1. Rivet will import the module into the global scope for you. Or, if you want to import the module, set the `PluginModules` property to a list of module names that contain the plug-ins to use.
 
 See `about_Rivet_Plugins` for more information.
 

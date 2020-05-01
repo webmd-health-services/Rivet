@@ -104,7 +104,7 @@ Found no databases to migrate. This can be a few things:
         return
     }
 
-    Import-RivetPlugin -Path $settings.PluginPaths
+    Import-RivetPlugin -Path $settings.PluginPaths -ModuleName $settings.PluginModules
 
     try
     {

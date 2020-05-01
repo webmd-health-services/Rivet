@@ -123,7 +123,7 @@ function Get-Migration
         return
     }
 
-    Import-RivetPlugin -Path $Configuration.PluginPaths
+    Import-RivetPlugin -Path $Configuration.PluginPaths -ModuleName $Configuration.PluginModules
     Write-Timing -Message 'Get-Migration  Import-RivetPlugin'
 
     $getMigrationFileParams = @{}
