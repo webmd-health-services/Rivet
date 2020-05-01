@@ -48,7 +48,7 @@ function Remove-DefaultConstraint
         {
             $nameMsg = "'s $($Name) constraint"
         }
-        $msg = ('The ColumnName parameter will be required in a future version of Rivet. Add a ""ColumnName"" ' +
+        $msg = ('The ColumnName parameter will be required in a future version of Rivet. Add a "ColumnName" ' +
                 "parameter to the Remove-DefaulConstraint operation for the [$($SchemaName)].[$($TableName)] " +
                 "table$($nameMsg).")
         Write-Warning -Message $msg
