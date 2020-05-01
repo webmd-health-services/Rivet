@@ -31,7 +31,6 @@ function Import-RivetPlugin
                 Select-Object -ExpandProperty 'Name' |
                 Write-Output
             Write-Timing -Message "  Import  END    $($pluginPath)"
-
         }
 
         $ModuleName | Write-Output
@@ -45,7 +44,7 @@ function Import-RivetPlugin
             {
                 $msg = ("Unable to load plugins from module ""$($moduleName)"": the module is not loaded. Please " +
                         'call "Import-Module" to load this module before running Rivet. If you want Rivet to load the ' +
-                        'module for you, use the ""PluginPaths"" setting and set it to a list of paths to modules ' +
+                        'module for you, use the "PluginPaths" setting and set it to a list of paths to modules ' +
                         'that Rivet should import.')
                 Write-Error -Message $msg -ErrorAction Stop
                 continue
