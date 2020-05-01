@@ -318,7 +318,7 @@ function Get-RivetConfig
     foreach( $databaseInfo in $databaseInfos )
     {
         $dbName = $databaseInfo.Name
-        $rivetDatabases = & {
+        [Rivet.Configuration.Database[]]$rivetDatabases = & {
             if( $targetDatabases.ContainsKey( $dbName ) )
             {
                 foreach( $targetDBName in $targetDatabases[$dbName] )
@@ -332,10 +332,7 @@ function Get-RivetConfig
             }
         }
 
-        foreach( $rivetDatabase in $rivetDatabases )
-        {
-            [void]$configuration.Databases.Add( $rivetDatabase )
-        }
+        [void]$configuration.Databases.AddRange( $rivetDatabases )
     } 
 
     return $configuration
