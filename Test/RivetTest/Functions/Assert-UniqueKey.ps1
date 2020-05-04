@@ -5,40 +5,40 @@ function Assert-UniqueKey
     .SYNOPSIS
     Tests that a unique Key exists for a particular column and table.
     #>
-    [CmdletBinding()]
+    [CmdletBinding(DefaultParameterSetName='ByDefaultName')]
     param(
-        [Parameter()]
-        [string]
+        [Parameter(ParameterSetName='ByDefaultName')]
         # The table's schema.  Default is `dbo`.
-        $SchemaName = 'dbo',
+        [String]$SchemaName = 'dbo',
 
-        [Parameter(Mandatory=$true)]
-        [string]
+        [Parameter(Mandatory,ParameterSetName='ByDefaultName')]
         # The name of the table
-        $TableName,
+        [String]$TableName,
 
-        [string[]]
+        [Parameter(Mandatory,ParameterSetName='ByCustomName')]
+        [String]$Name,
+
         # Array of Column Names
-        $ColumnName,
+        [String[]]$ColumnName,
 
-        [Switch]
         # Index Created Should be Clustered
-        $Clustered,
+        [switch]$Clustered,
 
-        [Int]
         # Index Created Should have a Fill Factor
-        $FillFactor,
+        [int]$FillFactor,
 
-        [Switch]
-        $IgnoreDupKey,
+        [switch]$IgnoreDupKey,
 
-        [Switch]
-        $DenyRowLocks
+        [switch]$DenyRowLocks
     )
     
     Set-StrictMode -Version Latest
 
-    $key = Get-UniqueKey -SchemaName $SchemaName -TableName $TableName -ColumnName $ColumnName
+    if( -not $Name )
+    {
+        $Name = New-RTConstraintName -SchemaName $SchemaName -TableName $TableName -ColumnName $ColumnName -UniqueKey
+    }
+    $key = Get-UniqueKey -Name $Name
 
     if( (Test-Pester) )
     {

@@ -67,5 +67,16 @@ namespace Rivet.Test.Operations
 			Assert.That(op.Disabled, Is.True);
 			Assert.That(removeOp.Disabled, Is.True);
 		}
+
+		[Test]
+		public void ShouldRenameConstraintWhenMergedWithRename()
+		{
+			var op = new AddDefaultConstraintOperation("schema", "table", "name", "column", "expression", false);
+			var renameOp = new RenameObjectOperation("SCHEMA", "NAME", "NEW NAME");
+			op.Merge(renameOp);
+			Assert.That(op.Name, Is.EqualTo("NEW NAME"));
+			Assert.That(op.Disabled, Is.False);
+			Assert.That(renameOp.Disabled, Is.True);
+		}
 	}
 }

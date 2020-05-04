@@ -17,7 +17,7 @@ function Assert-Table
     
     Set-StrictMode -Version Latest
 
-    $table = Get-Table -Name $Name -SchemaName $SchemaName
+    $table = Get-Table -Name $Name -SchemaName $SchemaName | Select-Object -First 1
 
     if( (Test-Pester) )
     {
