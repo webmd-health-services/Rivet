@@ -163,6 +163,20 @@ namespace Rivet.Operations
 
 					break;
 				}
+
+				case RenameObjectOperation otherAsRenameObjectOp:
+				{
+					var column = Columns.FirstOrDefault(c => null != c.DefaultConstraintName &&
+																   c.DefaultConstraintName.Equals(otherAsRenameObjectOp.Name, StringComparison.InvariantCultureIgnoreCase));
+					if (null != column)
+					{
+						column.DefaultConstraintName = otherAsRenameObjectOp.NewName;
+						otherAsRenameObjectOp.Disabled = true;
+						return MergeResult.Stop;
+					}
+
+					break;
+				}
 			}
 
 			return MergeResult.Continue;

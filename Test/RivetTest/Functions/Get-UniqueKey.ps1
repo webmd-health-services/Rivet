@@ -5,24 +5,29 @@ function Get-UniqueKey
     .SYNOPSIS
     Gets a unique key.
     #>
-    [CmdletBinding()]
+    [CmdletBinding(DefaultParameterSetName='ByDefaultName')]
     param(
-        [string]
-        $SchemaName = 'dbo',
+        [Parameter(ParameterSetName='ByDefaultName')]
+        [String]$SchemaName = 'dbo',
 
-        [Parameter(Mandatory=$true)]
-        [string]
+        [Parameter(Mandatory,ParameterSetName='ByDefaultName')]
         # The name of the table whose primary key to get.
-        $TableName,
+        [String]$TableName,
 
-        [string[]]
+        [Parameter(ParameterSetName='ByDefaultName')]
         # Columns that are part of the key.
-        $ColumnName
+        [String[]]$ColumnName,
+
+        [Parameter(Mandatory,ParameterSetName='ByCustomName')]
+        [String]$Name
     )
     
     Set-StrictMode -Version Latest
 
-    $name = New-RTConstraintName @PSBoundParameters -UniqueKey
+    if( -not $Name )
+    {
+        $Name = New-RTConstraintName @PSBoundParameters -UniqueKey
+    }
 
     $query = @'
     select

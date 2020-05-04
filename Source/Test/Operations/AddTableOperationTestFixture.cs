@@ -485,5 +485,25 @@ namespace Rivet.Test.Operations
 			Assert.That(op.Columns[1].DefaultExpression, Is.Null);
 			Assert.That(op.Columns[1].DefaultConstraintName, Is.Null);
 		}
+
+		[Test]
+		public void ShouldRenameColumnDefaultConstraintIfMergedWithRenameOperation()
+		{
+			var columns = new[]
+			{
+				Column.Bit("no default", Nullable.NotNull, null, null, null),
+				Column.Int("Name", Nullable.NotNull, null, "DF_ID", null),
+				Column.VarChar("ID2", new CharacterLength(500), null, Nullable.NotNull, null, "name", null),
+			};
+			var op = new AddTableOperation("schema", "table", columns, false, null, null, null, new string[0]);
+			var renameOp = new RenameObjectOperation("SCHEMA", "NAME", "NEW NAME");
+			op.Merge(renameOp);
+			Assert.That(op.Name, Is.EqualTo("table"));
+			Assert.That(op.Columns[0].DefaultConstraintName, Is.Null);
+			Assert.That(op.Columns[1].DefaultConstraintName, Is.EqualTo("DF_ID"));
+			Assert.That(op.Columns[2].DefaultConstraintName, Is.EqualTo("NEW NAME"));
+			Assert.That(op.Disabled, Is.False);
+			Assert.That(renameOp.Disabled, Is.True);
+		}
 	}
 }

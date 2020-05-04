@@ -31,6 +31,7 @@ function Merge-Migration
 
         # Collect all the migrations. We can't merge anything until we get to the end.
         [Collections.ArrayList]$migrations = [Collections.ArrayList]::New()
+        [Collections.Generic.List[Rivet.Operations.Operation]]$allOperations = [Collections.Generic.List[Rivet.Operations.Operation]]::New()
     }
 
     process
@@ -38,28 +39,21 @@ function Merge-Migration
         foreach( $migrationItem in $Migration )
         {
             [void]$migrations.Add($migrationItem)
+
+            foreach( $op in $migrationItem.PushOperations )
+            {
+                for( $idx = $allOperations.Count - 1; $idx -ge 0; --$idx)
+                {
+                    $allOperations[$idx].Merge($op)
+                }
+
+                [void]$allOperations.Add($op)
+            }
         }
     }
 
     end
     {
-        [Rivet.Operations.Operation[]]$operations = $migrations | Select-Object -ExpandProperty 'PushOperations'
-
-        if( $operations )
-        {
-            # Merge each operation with all the operations that preceded it (so don't include the first).
-            for( $currentOpIdx = $operations.Count - 1; $currentOpIdx -gt 0; --$currentOpIdx )
-            {
-                $currentOp = $operations[$currentOpIdx]
-
-                for( $visitingIdx = $currentOpIdx - 1; $visitingIdx -ge 0; --$visitingIdx )
-                {
-                    $operations[$visitingIdx].Merge($currentOp)
-                }
-            }
-        }
-
-        # Now, remove all the disabled operations.
         foreach( $migrationItem in $migrations )
         {
             for( $idx = $migrationItem.PushOperations.Count - 1; $idx -ge 0 ; --$idx )
@@ -70,8 +64,7 @@ function Merge-Migration
                     $migrationItem.PushOperations.RemoveAt($idx)    
                 }
             }
+            $migrationItem | Write-Output
         }
-
-        Write-Output $migrations.ToArray()
     }
 }
