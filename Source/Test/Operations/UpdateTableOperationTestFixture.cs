@@ -474,7 +474,35 @@ namespace Rivet.Test.Operations
 			Assert.That(op.AddColumns.Count, Is.Zero);
 			Assert.That(op.UpdateColumns.Count, Is.Zero);
 			Assert.That(op.RemoveColumns.Count, Is.Zero);
+		}
 
+		[Test]
+		public void ShouldRenameColumnDefaultConstraintIfMergedWithRenameOperation()
+		{
+			var op = new UpdateTableOperation("schema", "table",
+				new[]
+				{
+					Column.Bit("no default", Nullable.NotNull, null, null, null),
+					Column.Int("name2", Nullable.NotNull, "1", "name", null)
+				},
+				new[]
+				{
+					Column.Bit("no default2", Nullable.NotNull, null, null, null),
+					Column.Int("name", Nullable.NotNull, "2", "name2", null)
+				},
+				null);
+			var renameOp = new RenameObjectOperation("SCHEMA", "NAME", "NEW NAME");
+			var rename2Op = new RenameObjectOperation("SCHEMA", "NAME2", "NEW NAME2");
+			op.Merge(renameOp);
+			op.Merge(rename2Op);
+			Assert.That(op.Disabled, Is.False);
+			Assert.That(op.Name, Is.EqualTo("table"));
+			Assert.That(op.AddColumns[1].Name, Is.EqualTo("name2"));
+			Assert.That(op.AddColumns[1].DefaultConstraintName, Is.EqualTo("NEW NAME"));
+			Assert.That(op.UpdateColumns[1].Name, Is.EqualTo("name"));
+			Assert.That(op.UpdateColumns[1].DefaultConstraintName, Is.EqualTo("NEW NAME2"));
+			Assert.That(renameOp.Disabled, Is.True);
+			Assert.That(rename2Op.Disabled, Is.True);
 		}
 	}
 }

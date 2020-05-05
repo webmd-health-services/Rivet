@@ -50,7 +50,15 @@ namespace Rivet.Operations
 					operation.Disabled = true;
 					return MergeResult.Stop;
 				}
+
+				if (ObjectName.Equals(otherAsRenameOp.ObjectName, StringComparison.InvariantCultureIgnoreCase))
+				{
+					Name = otherAsRenameOp.NewName;
+					operation.Disabled = true;
+					return MergeResult.Stop;
+				}
 			}
+
 
 			return MergeResult.Continue;
 		}

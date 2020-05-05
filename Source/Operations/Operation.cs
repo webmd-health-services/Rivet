@@ -57,7 +57,7 @@ namespace Rivet.Operations
 				case ObjectOperation objectOp:
 					return objectOp.ObjectName;
 				case TableObjectOperation tableObjectOp:
-					return tableObjectOp.TableObjectName;
+					return tableObjectOp.ObjectName;
 				case AddSchemaOperation schemaOp:
 					return schemaOp.Name;
 				case RemoveSchemaOperation schemaOp:
