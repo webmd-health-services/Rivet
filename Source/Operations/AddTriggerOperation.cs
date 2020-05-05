@@ -2,6 +2,7 @@
 
 namespace Rivet.Operations
 {
+	[ObjectRemovedByOperation(typeof(RemoveTriggerOperation))]
 	public sealed class AddTriggerOperation : ObjectOperation
 	{
 		public AddTriggerOperation(string schemaName, string name, string definition)
@@ -14,12 +15,14 @@ namespace Rivet.Operations
 
 		public override string ToIdempotentQuery()
 		{
-			return String.Format("if object_id('{0}.{1}', 'TR') is null{2}\texec sp_executesql N'{3}'", SchemaName, Name, Environment.NewLine, ToQuery().Replace("'", "''"));
+			return
+				$"if object_id('{SchemaName}.{Name}', 'TR') is null{Environment.NewLine}" +
+				$"    exec sp_executesql N'{ToQuery().Replace("'", "''")}'";
 		}
 
 		public override string ToQuery()
 		{
-			return string.Format("create trigger [{0}].[{1}] {2}", SchemaName, Name, Definition);
+			return $"create trigger [{SchemaName}].[{Name}] {Definition}";
 		}
 	}
 }

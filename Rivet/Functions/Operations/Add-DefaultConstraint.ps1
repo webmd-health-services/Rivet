@@ -17,44 +17,29 @@ function Add-DefaultConstraint
     #>
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory=$true,Position=0)]
-        [string]
+        [Parameter(Mandatory,Position=0)]
         # The name of the target table.
-        $TableName,
+        [String]$TableName,
 
-        [Parameter()]
-        [string]
         # The schema name of the target table.  Defaults to `dbo`.
-        $SchemaName = 'dbo',
+        [String]$SchemaName = 'dbo',
 
-        [Parameter(Mandatory=$true,Position=1)]
-        [string]
+        [Parameter(Mandatory,Position=1)]
         # The column on which to add the default constraint
-        $ColumnName,
+        [String]$ColumnName,
 
-        [string]
-        # The name for the <object type>. If not given, a sensible name will be created.
-        $Name,
+        # The name for the default constraint.
+        [String]$Name,
 
-        [Parameter(Mandatory=$true,Position=2)]
-        [string]
+        [Parameter(Mandatory,Position=2)]
         #The default expression
-        $Expression,
+        [String]$Expression,
 
-        [Switch]
         # WithValues
-        $WithValues
+        [switch]$WithValues
     )
 
     Set-StrictMode -Version 'Latest'
 
-    if ($PSBoundParameters.containskey("Name"))
-    {
-        New-Object 'Rivet.Operations.AddDefaultConstraintOperation' $SchemaName, $TableName, $Expression, $ColumnName, $Name, $WithValues
-    }
-    else 
-    {
-        New-Object 'Rivet.Operations.AddDefaultConstraintOperation' $SchemaName, $TableName, $Expression, $ColumnName, $WithValues
-    }
-
+    [Rivet.Operations.AddDefaultConstraintOperation]::new($SchemaName, $TableName, $Name, $ColumnName, $Expression, $WithValues)
 }

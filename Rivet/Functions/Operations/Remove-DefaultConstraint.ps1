@@ -9,40 +9,50 @@ function Remove-DefaultConstraint
     The `Remove-DefaultConstraint` operation removes a default constraint from a table.
 
     .EXAMPLE
-    Remove-DefaultConstraint 'Cars' -Name 'Cars_Year_DefaultConstraint'
+    Remove-DefaultConstraint 'Cars' -ColumnName 'Year' -Name 'Cars_Year_DefaultConstraint'
 
-    Demonstrates how to remove a default constraint. IN this case, the `Cars_Year_DefaultConstraint` constraint will be removed from the `Cars` table.
+    Demonstrates how to remove a default constraint. In this case, the `Cars_Year_DefaultConstraint` constraint will be removed from the `Cars` table.
     #>
-    [CmdletBinding(DefaultParameterSetName='ByDefaultName')]
+    [CmdletBinding()]
     param(
-        [Parameter(Mandatory=$true,Position=0)]
-        [string]
+        [Parameter(Mandatory,Position=0)]
         # The name of the target table.
-        $TableName,
+        [String]$TableName,
 
-        [Parameter()]
-        [string]
         # The schema name of the target table.  Defaults to `dbo`.
-        $SchemaName = 'dbo',
+        [String]$SchemaName = 'dbo',
 
-        [Parameter(Mandatory=$true,Position=1,ParameterSetName='ByDefaultName')]
-        [string]
-        # OBSOLETE. Use the `Name` parameter to remove a default constraint.
-        $ColumnName,
+        [Parameter(Position=1)]
+        # The column name.
+        [String]$ColumnName,
 
-        [Parameter(Mandatory=$true,ParameterSetName='ByCustomName')]
-        [string]
         # The name of the default constraint to remove.
-        $Name
+        [String]$Name
     )
 
     Set-StrictMode -Version 'Latest'
 
-    if( $PSCmdlet.ParameterSetName -eq 'ByDefaultName' )
+    if( -not $Name )
     {
-        Write-Warning ('Remove-DefaultConstraint''s ColumnName parameter is obsolete and will be removed in a future version of Rivet. Instead, use the Name parameter to remove a default constraint.')
-        $Name = New-Object -TypeName 'Rivet.ConstraintName' -ArgumentList $SchemaName, $TableName, $ColumnName, ([Rivet.ConstraintType]::Default) | Select-Object -ExpandProperty 'Name'
+        if( -not $ColumnName )
+        {
+            Write-Error -Message ('The Name parameter is mandatory. Please pass the name of the default constraint to the Name parameter.') -ErrorAction Stop
+            return
+        }
     }
 
-    New-Object 'Rivet.Operations.RemoveDefaultConstraintOperation' $SchemaName, $TableName, $Name
+    if( -not $ColumnName )
+    {
+        $nameMsg = ''
+        if( $Name )
+        {
+            $nameMsg = "'s $($Name) constraint"
+        }
+        $msg = ('The ColumnName parameter will be required in a future version of Rivet. Add a "ColumnName" ' +
+                "parameter to the Remove-DefaulConstraint operation for the [$($SchemaName)].[$($TableName)] " +
+                "table$($nameMsg).")
+        Write-Warning -Message $msg
+    }
+
+    [Rivet.Operations.RemoveDefaultConstraintOperation]::New($SchemaName, $TableName, $ColumnName, $Name)
 }

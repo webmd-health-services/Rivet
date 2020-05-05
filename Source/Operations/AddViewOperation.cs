@@ -2,6 +2,7 @@
 
 namespace Rivet.Operations
 {
+	[ObjectRemovedByOperation(typeof(RemoveViewOperation))]
 	public sealed class AddViewOperation : ObjectOperation
 	{
 		public AddViewOperation(string schemaName, string name, string definition)
@@ -14,13 +15,14 @@ namespace Rivet.Operations
 
 		public override string ToIdempotentQuery()
 		{
-			return string.Format("if object_id('{0}.{1}', 'V') is null{2}\texec sp_executesql N'{3}'", SchemaName, Name,
-				Environment.NewLine, ToQuery().Replace("'", "''"));
+			return
+				$"if object_id('{SchemaName}.{Name}', 'V') is null{Environment.NewLine}" +
+				$"    exec sp_executesql N'{ToQuery().Replace("'", "''")}'";
 		}
 
 		public override string ToQuery()
 		{
-			return string.Format("create view [{0}].[{1}] {2}", SchemaName, Name, Definition);
+			return $"create view [{SchemaName}].[{Name}] {Definition}";
 		}
 	}
 }

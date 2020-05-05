@@ -51,7 +51,7 @@ function Update-Description
         $optionalArgs.ColumnName = $ColumnName
     }
 
-    Update-ExtendedProperty -Name 'MS_Description' `
+    Update-ExtendedProperty -Name ([Rivet.Operations.ExtendedPropertyOperation]::DescriptionPropertyName) `
                             -Value $Description `
                             -SchemaName $SchemaName `
                             -TableName $TableName `

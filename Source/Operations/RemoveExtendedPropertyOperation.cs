@@ -18,6 +18,8 @@ namespace Rivet.Operations
 		{
 		}
 
+		protected override string StoredProcedureName => "sp_dropextendedproperty";
+
 		public override string ToIdempotentQuery()
 		{
 			var level1Type = "null";
@@ -28,47 +30,23 @@ namespace Rivet.Operations
 			if (ForTable)
 			{
 				level1Type = "'TABLE'";
-				level1Name = string.Format("'{0}'", TableViewName);
+				level1Name = $"'{TableViewName}'";
 			}
 
 			if (ForView)
 			{
 				level1Type = "'VIEW'";
-				level1Name = string.Format("'{0}'", TableViewName);
+				level1Name = $"'{TableViewName}'";
 			}
 
 			if (ForColumn)
 			{
 				level2Type = "'COLUMN'";
-				level2Name = string.Format("'{0}'", ColumnName);
+				level2Name = $"'{ColumnName}'";
 			}
 
 			return
-				string.Format(
-					"if exists (select * from fn_listextendedproperty ('{0}', 'schema', '{1}', {2}, {3}, {4}, {5})){6}\t{7}",
-					Name, SchemaName, level1Type, level1Name, level2Type, level2Name, Environment.NewLine, ToQuery());
-		}
-
-		public override string ToQuery()
-		{
-			var query = string.Format("exec sys.sp_dropextendedproperty @name=N'{0}',{2}@level0type=N'SCHEMA', @level0name=N'{1}'", Name, SchemaName, Environment.NewLine);
-
-			if (ForTable)
-			{
-				query += string.Format(",{1}                                 @level1type=N'TABLE', @level1name='{0}'", TableViewName, Environment.NewLine);
-			}
-
-			if (ForView)
-			{
-				query += string.Format(",{1}                                 @level1type=N'VIEW', @level1name='{0}'", TableViewName, Environment.NewLine);
-			}
-
-			if (ForColumn)
-			{
-				query += string.Format(",{1}                                 @level2type=N'COLUMN', @level2name='{0}'", ColumnName, Environment.NewLine);
-			}
-
-			return query;
+				$"if exists (select * from fn_listextendedproperty ('{Name}', 'schema', '{SchemaName}', {level1Type}, {level1Name}, {level2Type}, {level2Name})){Environment.NewLine}    {ToQuery()}";
 		}
 	}
 }

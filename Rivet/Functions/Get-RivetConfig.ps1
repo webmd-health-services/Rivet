@@ -24,81 +24,92 @@ function Get-RivetConfig
     [CmdletBinding()]
     [OutputType([Rivet.Configuration.Configuration])]
     param(
-        [Parameter()]
-        [string[]]
         # The list of specific database names being operated on.
-        $Database,
+        [String[]]$Database,
 
-        [Parameter()]
         # The name of the environment whose settings to return.  If not provided, uses the default settings.
-        $Environment,
+        [String]$Environment,
 
-        [Parameter()]
-        [string]
         # The path to the Rivet configuration file to load.  Defaults to `rivet.json` in the current directory.
-        $Path
+        [String]$Path
     )
 
     Set-StrictMode -Version 'Latest'
+    Use-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
     function Resolve-RivetConfigPath
     {
         [CmdletBinding()]
         param(
-            [Parameter(Mandatory=$true,ValueFromPipeline=$true)]
-            [string]
+            [Parameter(Mandatory,ValueFromPipeline)]
             # The path from the rivet config file to resolve.
-            $Path
+            [String]$ConfigPath,
+
+            # The path *must* exist, so resolve it.
+            [switch]$Resolve
         )
+
         process
         {
-            if( [IO.Path]::IsPathRooted( $Path ) )
+            $originalPath = $ConfigPath
+            if( -not [IO.Path]::IsPathRooted( $ConfigPath ) )
             {
-                return [IO.Path]::GetFullPath( $Path )
+                $ConfigPath = Join-Path -Path $configRoot -ChildPath $ConfigPath
             }
 
-            $Path = Join-Path -Path $configRoot -ChildPath $Path
-            return [IO.Path]::GetFullPath( $Path )
+            if( $Resolve )
+            {
+                $resolvedPath = Resolve-Path -Path $ConfigPath | Select-Object -ExpandProperty 'Path'
+                if( ($resolvedPath | Measure-Object).Count -gt 1 )
+                {
+                    Write-ValidationError -Message ('path "{0}" resolves to multiple items: "{1}". Please update the path so that it resolves to only one item, or remove items so that only one remains.' -f $originalPath,($resolvedPath -join '", "'))
+                    return
+                }
+                return $resolvedPath
+            }
+            else
+            {
+                return [IO.Path]::GetFullPath( $ConfigPath )
+            }
         }
     }
+
+    $currentPropertyName = $null
 
     filter Get-ConfigProperty
     {
         [CmdletBinding()]
         param(
-            [Parameter(Mandatory=$true)]
-            [string]
+            [Parameter(Mandatory)]
             # The name of the property to get.
-            $Name,
+            [String]$Name,
 
-            [Switch]
             # The configuration value is required.
-            $Required,
+            [switch]$Required,
 
-            [Parameter(Mandatory=$true,ParameterSetName='AsInt')]
-            [Switch]
+            [Parameter(Mandatory,ParameterSetName='AsInt')]
             # Set the configuration value as an integer.
-            $AsInt,
+            [switch]$AsInt,
 
-            [Parameter(Mandatory=$true,ParameterSetName='AsList')]
-            [Switch]
+            [Parameter(Mandatory,ParameterSetName='AsArray')]
             # Set the configuration value as a list of strings.
-            $AsList,
+            [switch]$AsArray,
 
-            [Parameter(Mandatory=$true,ParameterSetName='AsPath')]
-            [Switch]
+            [Parameter(Mandatory,ParameterSetName='AsPath')]
             # Set the configuration value as a path.
-            $AsPath,
+            [switch]$AsPath,
 
-            [Parameter(Mandatory=$true,ParameterSetName='AsString')]
-            [Switch]
+            [Parameter(ParameterSetName='AsPath')]
+            # Resolves the path to an actual path. 
+            [switch]$Resolve,
+
+            [Parameter(Mandatory,ParameterSetName='AsString')]
             # Set the configuration value as a string.
-            $AsString,
+            [switch]$AsString,
 
-            [Parameter(Mandatory=$true,ParameterSetName='AsHashtable')]
-            [Switch]
+            [Parameter(Mandatory,ParameterSetName='AsHashtable')]
             # Set the configuration value as a hashtable.
-            $AsHashtable
+            [switch]$AsHashtable
         )
         
         $value = $null
@@ -118,7 +129,7 @@ function Get-RivetConfig
         {
             if( $Required )
             {
-                Write-ValidationError ('setting ''{0}'' is missing.' -f $Name)
+                Write-ValidationError ('is required.')
             }
             return
         }
@@ -129,24 +140,28 @@ function Get-RivetConfig
             {
                 if( -not ($value -is [int] -or $value -is [int64]) )
                 {
-                    Write-ValidationError -Message ('Setting "{0}" is invalid. It should be an integer but we found a "{1}".' -f $Name,$value.GetType().FullName)
+                    Write-ValidationError -Message ('is invalid. It should be an integer but we found a "{0}".' -f $value.GetType().FullName)
                     return
                 }
                 return $value
             }
-            'AsList'
+            'AsArray'
             {
-                return [Object[]]$value
+                return [String[]]$value
             }
             'AsPath'
             {
-                $path = $value  | Resolve-RivetConfigPath
-                if( -not (Test-Path -Path $path -PathType Container) )
+                $configPath = $value | Resolve-RivetConfigPath -Resolve:$Resolve
+                if( -not $configPath )
                 {
-                    Write-ValidationError ('path {0} ''{1}'' not found.' -f $Name,$path)
                     return
                 }
-                return $path
+                if( -not (Test-Path -Path $configPath) )
+                {
+                    Write-ValidationError ('path "{0}" not found.' -f $configPath)
+                    return
+                }
+                return $configPath
             }
             'AsString'
             {
@@ -165,17 +180,21 @@ function Get-RivetConfig
     function Write-ValidationError
     {
         param(
-            [Parameter(Mandatory=$true,Position=1)]
-            [string]
+            [Parameter(Mandatory,Position=1)]
             # The error message to write.
-            $Message
+            [String]$Message
         )
         $envMsg = ''
         if( $Environment )
         {
-            $envMsg = 'environment ''{0}'': ' -f $Environment
+            $envMsg = 'environment "{0}": ' -f $Environment
         }
-        Write-Error -Message ('Invalid Rivet configuration file ''{0}'': {1}{2} See about_Rivet_Configuration for more information.' -f $Path,$envMsg,$Message)
+        $nameMsg = ''
+        if( $currentPropertyName )
+        {
+            $nameMsg = 'property "{0}": ' -f $currentPropertyName
+        }
+        Write-Error -Message ('Invalid Rivet configuration file "{0}": {1}{2}{3} See about_Rivet_Configuration for more information.' -f $Path,$envMsg,$nameMsg,$Message)
     }
 
 
@@ -208,7 +227,7 @@ function Get-RivetConfig
     ## Check for existence of rivet.json
     if( -not (Test-Path -Path $Path -PathType Leaf) )
     {
-        Write-Error ('Rivet configuration file ''{0}'' not found.' -f $Path)
+        Write-Error ('Rivet configuration file "{0}" not found.' -f $Path)
         return
     }
 
@@ -217,13 +236,13 @@ function Get-RivetConfig
     $rawConfig = Get-Content -Raw -Path $Path | ConvertFrom-Json
     if( -not $rawConfig )
     {
-        Write-Error -Message ('Rivet configuration file ''{0}'' contains invalid JSON.' -f $Path)
+        Write-Error -Message ('Rivet configuration file "{0}" contains invalid JSON.' -f $Path)
         return
     }
 
     if( $Environment -and -not (Get-Environment) )
     {
-        Write-Error ('Environment ''{0}'' not found in ''{1}''.' -f $Environment,$Path)
+        Write-Error ('Environment "{0}" not found in "{1}".' -f $Environment,$Path)
         return
     }
 
@@ -232,35 +251,37 @@ function Get-RivetConfig
     $sqlServerName = Get-ConfigProperty -Name 'SqlServerName' -Required -AsString
     $dbsRoot = Get-ConfigProperty -Name 'DatabasesRoot' -Required -AsPath
     $connectionTimeout = Get-ConfigProperty -Name 'ConnectionTimeout' -AsInt
-    if( $connectionTimeout -eq $null )
+    if( $null -eq $connectionTimeout )
     {
         $connectionTimeout = 15
     }
 
     $commandTimeout = Get-ConfigProperty -Name 'CommandTimeout' -AsInt
-    if( $commandTimeout -eq $null )
+    if( $null -eq $commandTimeout )
     {
         $commandTimeout = 30
     }
-    $pluginsRoot = Get-ConfigProperty -Name 'PluginsRoot' -AsPath
+    $pluginPaths = Get-ConfigProperty -Name 'PluginPaths' -AsPath -Resolve
 
-    $ignoredDatabases = Get-ConfigProperty -Name 'IgnoreDatabases' -AsList
+    $ignoredDatabases = Get-ConfigProperty -Name 'IgnoreDatabases' -AsArray
     $targetDatabases = Get-ConfigProperty -Name 'TargetDatabases' -AsHashtable
-    if( $targetDatabases -eq $null )
+    if( $null -eq $targetDatabases )
     {
         $targetDatabases = @{ }
     }
 
-    $order = Get-ConfigProperty -Name 'DatabaseOrder' -AsList
+    $order = Get-ConfigProperty -Name 'DatabaseOrder' -AsArray
+    $pluginModules = Get-ConfigProperty -Name 'PluginModules' -AsArray
 
-    [Rivet.Configuration.Configuration]$configuration = New-Object 'Rivet.Configuration.Configuration' $Path,$Environment,$sqlServerName,$dbsRoot,$connectionTimeout,$commandTimeout,$pluginsRoot
+    [Rivet.Configuration.Configuration]$configuration = 
+        [Rivet.Configuration.Configuration]::New($Path, $Environment, $sqlServerName, $dbsRoot, $connectionTimeout, $commandTimeout, $pluginPaths, $pluginModules)
 
     if( $Global:Error.Count -ne $errorCount )
     {
         return
     }
 
-    Invoke-Command {
+    $databaseInfos = Invoke-Command {
             # Get user-specified databases first
             if( $Database )
             {
@@ -292,22 +313,27 @@ function Get-RivetConfig
             $dbName = $_.Name                                        
             $ignore = $ignoredDatabases | Where-Object { $dbName -like $_ }
             return -not $ignore
-        } |
-        ForEach-Object {
-            $dbName = $_.Name
+        }
+
+    foreach( $databaseInfo in $databaseInfos )
+    {
+        $dbName = $databaseInfo.Name
+        [Rivet.Configuration.Database[]]$rivetDatabases = & {
             if( $targetDatabases.ContainsKey( $dbName ) )
             {
                 foreach( $targetDBName in $targetDatabases[$dbName] )
                 {
-                    New-Object 'Rivet.Configuration.Database' $targetDBName,$_.FullName
+                    [Rivet.Configuration.Database]::New($targetDBName, $databaseInfo.FullName) | Write-Output
                 }
             }
             else
             {
-                New-Object 'Rivet.Configuration.Database' $dbName,$_.FullName
+                [Rivet.Configuration.Database]::New($dbName, $databaseInfo.FullName) | Write-Output
             }
-        } | 
-        ForEach-Object { $configuration.Databases.Add( $_ ) }
+        }
+
+        [void]$configuration.Databases.AddRange( $rivetDatabases )
+    } 
 
     return $configuration
 }

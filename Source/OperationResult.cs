@@ -1,4 +1,6 @@
-﻿namespace Rivet
+﻿using Rivet.Operations;
+
+namespace Rivet
 {
 	public sealed class OperationResult
 	{

@@ -36,23 +36,20 @@ function Rename-DataType
     [CmdletBinding()]
     param(
         [Parameter()]
-        [string]
         # The schema of the table.  Default is `dbo`.
-        $SchemaName = "dbo",
+        [String]$SchemaName = "dbo",
 
-        [Parameter(Mandatory=$true,Position=0)]
-        [string]
+        [Parameter(Mandatory,Position=0)]
         # The current name of the table.
-        $Name,
+        [String]$Name,
         
-        [Parameter(Mandatory=$true,Position=1)]
-        [string]
+        [Parameter(Mandatory,Position=1)]
         # The new name of the table.
-        $NewName
+        [String]$NewName
     )
 
     Set-StrictMode -Version 'Latest'
 
-    New-Object 'Rivet.Operations.RenameOperation' $SchemaName, $Name, $NewName, 'USERDATATYPE'
+    [Rivet.Operations.RenameDataTypeOperation]::New($SchemaName, $Name, $NewName)
 
 }

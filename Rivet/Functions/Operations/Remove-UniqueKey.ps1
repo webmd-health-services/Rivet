@@ -16,34 +16,25 @@ function Remove-UniqueKey
 
     [CmdletBinding(DefaultParameterSetName='ByDefaultName')]
     param(
-        [Parameter(Mandatory=$true,Position=0)]
-        [string]
+        [Parameter(Mandatory,Position=0)]
         # The name of the target table.
-        $TableName,
+        [String]$TableName,
 
         [Parameter()]
-        [string]
+        [String]
         # The schema name of the target table.  Defaults to `dbo`.
         $SchemaName = 'dbo',
 
-        [Parameter(Mandatory=$true,Position=1,ParameterSetName='ByDefaultName')]
-        [string[]]
+        [Parameter(Mandatory,Position=1,ParameterSetName='ByDefaultName')]
         # OBSOLETE. Use the `Name` parameter to specify the name of the unique key to remove.
-        $ColumnName,
+        [String[]]$ColumnName,
 
-        [Parameter(Mandatory=$true,Position=1,ParameterSetName='ByExplicitName')]
-        [string]
+        [Parameter(Mandatory,Position=1,ParameterSetName='ByExplicitName')]
         # The name of the unique key to remove.
-        $Name
+        [String]$Name
     )
 
     Set-StrictMode -Version 'Latest'
 
-    if( $PSCmdlet.ParameterSetName -eq 'ByDefaultName' )
-    {
-        Write-Warning ('Remove-UniqueKey''s ColumnName parameter is obsolete and will be removed in a future version of Rivet. Instead, use the Name parameter to remove a unique key.')
-        $Name = New-Object -TypeName 'Rivet.ConstraintName' -ArgumentList $SchemaName, $TableName, $ColumnName, ([Rivet.ConstraintType]::UniqueKey) | Select-Object -ExpandProperty 'Name'
-    }
-
-    New-Object 'Rivet.Operations.RemoveUniqueKeyOperation' $SchemaName, $TableName, $Name
+    New-Object 'Rivet.Operations.RemoveUniqueKeyOperation' $SchemaName, $TableName, $Name, $ColumnName
 }

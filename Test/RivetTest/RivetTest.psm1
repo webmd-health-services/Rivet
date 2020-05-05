@@ -1,8 +1,6 @@
 
 param(
-    [Parameter(Mandatory=$true)]
-    [string]
-    $RivetRoot
+    [String]$RivetRoot
 )
 
 $RTConfigFilePath = 
@@ -13,12 +11,15 @@ $RTConfigFilePath =
     $RTRivetPath = 
     $RTRivetSchemaName = 
     $RTDatabaseName =
-    $RTDatabaseConnection = 
-    $RTRivetRoot = $null
+    $RTTestRoot = 
+    $RTLastMigrationFailed = $null
 
 $RTTimestamp = 20150101000000
 
-$RTRivetRoot = $RivetRoot
+if( -not $RivetRoot )
+{
+    $RivetRoot = Join-Path -Path $PSScriptRoot -ChildPath '..\..\Rivet' -Resolve
+}
                   
 $RTRivetSchemaName = 'rivet'
 $RTDatabaseName = 'RivetTest'
@@ -35,7 +36,7 @@ $serverFilePath = $serverFileDirs |
                       Select-Object -First 1
 if( -not $serverFilePath )
 {
-    throw ('File ''Server.txt'' not found. Please create this file. It should contain the name of the SQL Server instance tests should use. It should be in one of these directories:{0} * {1}' -f [Environment]::NewLine,($serverFileDirs -join ('{0} * ' -f[Environment]::NewLine)))
+    throw ('File "Server.txt" not found. Please create this file. It should contain the name of the SQL Server instance tests should use. It should be in one of these directories:{0} * {1}' -f [Environment]::NewLine,($serverFileDirs -join ('{0} * ' -f[Environment]::NewLine)))
 }
 else
 {
@@ -43,22 +44,29 @@ else
     $RTServer = Get-Content $serverFilePath -TotalCount 1
     if( -not $RTServer )
     {
-        throw ('Database server not found. Please update ''{0}'' with the name of the SQL Server instance tests should use.' -f $serverFilePath)
+        throw ('Database server not found. Please update "{0}" with the name of the SQL Server instance tests should use.' -f $serverFilePath)
     }
+}
+
+if( -not $RivetRoot )
+{
+    $RivetRoot = Join-Path -Path $PSScriptRoot -ChildPath '..\..\Rivet' -Resolve
 }
 
 $RTRivetPath = Join-Path -Path $RivetRoot -ChildPath 'rivet.ps1' -Resolve
 
-dir $PSScriptRoot *-*.ps1 |
-    Where-Object { $_.BaseName -ne 'Import-RivetTest' } |
-    ForEach-Object { . $_.FullName }
 
-if( -not $RTDatabaseConnection -or $RTDatabaseConnection.State -ne [Data.ConnectionSTate]::Open )
+$functionsDir = Join-Path -Path $PSScriptRoot -ChildPath 'Functions'
+if( (Test-Path -Path $functionsDir -PathType Container) )
 {
-    $RTDatabaseConnection = New-SqlConnection -Database 'master'
+    Get-ChildItem -Path $functionsDir -Filter '*.ps1' |
+        Where-Object { $_.BaseName -ne 'Import-RivetTest' } |
+        ForEach-Object { . $_.FullName }
+
 }
 
-. (Join-Path $PSScriptRoot '..\..\Test\RivetTest\New-ConstraintName.ps1')
-. (Join-Path $PSScriptRoot '..\..\Test\RivetTest\New-ForeignKeyConstraintName.ps1')
-    
-Export-ModuleMember -Function * -Alias * -Variable *
+$exportsPath = Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest.Exports.ps1'
+if( (Test-Path -Path $exportsPath -PathType Leaf) )
+{
+    . $exportsPath
+}

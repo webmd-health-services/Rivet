@@ -19,7 +19,7 @@ namespace Rivet.Test.Operations
 			Assert.That(op.Owner, Is.EqualTo(schemaOwner));
 			//Assert.That(op.ObjectName, Is.EqualTo(schemaName));
 
-			var expectedQuery = string.Format("if not exists (select * from sys.schemas where name = '{0}'){1}\t exec sp_executesql N'create schema [{0}] authorization [{2}]'", schemaName, Environment.NewLine, schemaOwner);
+			var expectedQuery = string.Format("if not exists (select * from sys.schemas where name = '{0}'){1}    exec sp_executesql N'create schema [{0}] authorization [{2}]'", schemaName, Environment.NewLine, schemaOwner);
 			Assert.That(op.ToQuery(), Is.EqualTo(expectedQuery));
 
 			//Test for Input with Schema Only
@@ -27,9 +27,19 @@ namespace Rivet.Test.Operations
 			Assert.That(op.Name, Is.EqualTo(schemaName));
 			Assert.That(op.Owner, Is.EqualTo(null));
 
-			expectedQuery = string.Format("if not exists (select * from sys.schemas where name = '{0}'){1}\t exec sp_executesql N'create schema [{0}]'", schemaName,Environment.NewLine);
+			expectedQuery = string.Format("if not exists (select * from sys.schemas where name = '{0}'){1}    exec sp_executesql N'create schema [{0}]'", schemaName,Environment.NewLine);
 			Assert.That(op.ToQuery(), Is.EqualTo(expectedQuery));
 
+		}
+
+		[Test]
+		public void ShouldDisableWhenMergedWithRemoveOperation()
+		{
+			var op = new AddSchemaOperation("name", "owner");
+			var removeOp = new RemoveSchemaOperation("NAME");
+			op.Merge(removeOp);
+			Assert.That(op.Disabled, Is.True);
+			Assert.That(removeOp.Disabled, Is.True);
 		}
 	}
 }

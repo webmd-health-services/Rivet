@@ -5,6 +5,7 @@ using Rivet.Operations;
 namespace Rivet.Commands
 {
 	[Cmdlet("Add", "Index")]
+	// ReSharper disable once UnusedMember.Global
 	public sealed class AddIndexObjectCommand : TableObjectCommand
 	{
 		[Parameter]
@@ -16,7 +17,7 @@ namespace Rivet.Commands
 		[Parameter]
 		public string[] Include { get; set; }
 
-		[Parameter(ParameterSetName = "Descending")]
+		[Parameter(ParameterSetName="Descending")]
 		public bool[] Descending { get; set; }
 
 		[Parameter]
@@ -46,21 +47,12 @@ namespace Rivet.Commands
 					"Descending parameter has {0} items. ColumnName parameter has {1} items. There should be the same number of items in each parameter.");
 			}
 
-			var customIndexName = !string.IsNullOrEmpty(Name);
 			if (usingDescendingParamSet)
 			{
-				if (customIndexName)
-				{
-					return new AddIndexOperation(SchemaName, TableName, ColumnName, Name, Descending, Unique, Clustered, Option, Where, On, FileStreamOn, Include);
-				}
-				return new AddIndexOperation(SchemaName, TableName, ColumnName, Descending, Unique, Clustered, Option, Where, On, FileStreamOn, Include);
+				return new AddIndexOperation(SchemaName, TableName, Name, ColumnName, Descending, Unique, Clustered, Option, Where, On, FileStreamOn, Include);
 			}
 
-			if (customIndexName)
-			{
-				return new AddIndexOperation(SchemaName, TableName, ColumnName, Name, Unique, Clustered, Option, Where, On, FileStreamOn, Include);
-			}
-			return new AddIndexOperation(SchemaName, TableName, ColumnName, Unique, Clustered, Option, Where, On, FileStreamOn, Include);
+			return new AddIndexOperation(SchemaName, TableName, Name, ColumnName, Unique, Clustered, Option, Where, On, FileStreamOn, Include);
 		}
 	}
 }

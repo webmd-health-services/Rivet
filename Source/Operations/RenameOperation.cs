@@ -1,38 +1,58 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Text;
 
 namespace Rivet.Operations
 {
-	public class RenameOperation : Operation
+	public abstract class RenameOperation : Operation
 	{
-		public RenameOperation(string schemaName, string name, string newName, string type)
+		protected RenameOperation(string schemaName, string name, string newName, string type)
 		{
 			SchemaName = schemaName;
 			Name = name;
 			NewName = newName;
-		    Type = type;
+			Type = type;
 		}
-
-		public string SchemaName { get; set; }
 
 		public string Name { get; set; }
 
 		public string NewName { get; set; }
 
-        public string Type { get; set; }
+		public string SchemaName { get; set; }
 
-		protected virtual string GetObjectName()
-		{
-			return string.Format("[{0}].[{1}]", SchemaName, Name);
-		}
+		public abstract string ObjectName { get; }
 
-		public override string ToIdempotentQuery()
+		public override OperationQueryType QueryType => OperationQueryType.Scalar;
+
+		public string Type { get; set; }
+
+		protected abstract string GetSpRenameObjNameParameter();
+
+		protected override MergeResult DoMerge(Operation operation)
 		{
-			return string.Format("if object_id('{0}.{1}') is not null and object_id('{0}.{2}') is null{3}begin{3}\t{4}{3}end", SchemaName, Name, NewName, Environment.NewLine, ToQuery());
+			if (base.DoMerge(operation) == MergeResult.Stop)
+				return MergeResult.Stop;
+
+			if (operation is RenameOperation otherAsRenameOp &&
+				ObjectName.Equals(otherAsRenameOp.ObjectName, StringComparison.InvariantCultureIgnoreCase) )
+			{
+				Name = otherAsRenameOp.NewName;
+				otherAsRenameOp.Disabled = true;
+				return MergeResult.Continue;
+			}
+
+			return MergeResult.Continue;
 		}
 
 		public override string ToQuery()
 		{
-			return string.Format("declare @result{0} int{1}exec @result{0} = sp_rename @objname = '{2}', @newname = '{3}', @objtype = '{4}'{1}select @result{0}", Guid.NewGuid().ToString("N"), Environment.NewLine, GetObjectName(), NewName, Type);
+			var varSuffix = Path.GetRandomFileName().Replace(".", "");
+			var resultVarName = $"@result_{varSuffix}";
+			return
+				$"declare {resultVarName} int{Environment.NewLine}" +
+				$"exec {resultVarName} = sp_rename @objname = '{GetSpRenameObjNameParameter()}', @newname = '{NewName}', @objtype = '{Type}'{Environment.NewLine}" +
+				$"select {resultVarName}";
 		}
 	}
 }

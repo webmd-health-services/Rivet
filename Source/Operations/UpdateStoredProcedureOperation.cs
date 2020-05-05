@@ -1,5 +1,6 @@
 ﻿namespace Rivet.Operations
 {
+	[ObjectRemovedByOperation(typeof(RemoveStoredProcedureOperation))]
 	public sealed class UpdateStoredProcedureOperation : ObjectOperation
 	{
 		public UpdateStoredProcedureOperation(string schemaName, string name, string definition)

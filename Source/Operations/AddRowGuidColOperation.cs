@@ -2,6 +2,7 @@
 
 namespace Rivet.Operations
 {
+	[ObjectRemovedByOperation(typeof(RemoveRowGuidColOperation))]
 	public sealed class AddRowGuidColOperation : TableObjectOperation
 	{
 		public AddRowGuidColOperation(string schemaName, string tableName, string columnName) : base(schemaName, tableName, columnName)
@@ -11,17 +12,33 @@ namespace Rivet.Operations
 
 		public string ColumnName { get; set; }
 
-		public override string ToQuery()
+		protected override MergeResult DoMerge(Operation operation)
 		{
-			return string.Format("alter table [{0}].[{1}] alter column [{2}] add rowguidcol", SchemaName, TableName, ColumnName);
+			if (base.DoMerge(operation) == MergeResult.Stop)
+				return MergeResult.Stop;
+
+			if (operation is RenameColumnOperation otherAsRenameColumnOp &&
+				TableObjectName.Equals(otherAsRenameColumnOp.TableObjectName, StringComparison.InvariantCultureIgnoreCase) &&
+				ColumnName.Equals(otherAsRenameColumnOp.Name, StringComparison.InvariantCultureIgnoreCase))
+			{
+				ColumnName = otherAsRenameColumnOp.NewName;
+				otherAsRenameColumnOp.Disabled = true;
+				return MergeResult.Continue;
+			}
+
+			return MergeResult.Continue;
 		}
 
 		public override string ToIdempotentQuery()
 		{
-			return
-				string.Format(
-					"if( exists(select * from sys.schemas s inner join sys.tables t on s.schema_id=t.schema_id inner join sys.columns c on c.object_id = t.object_id where s.name = '{0}' and t.name = '{1}' and c.name = '{2}' and c.is_rowguidcol = 0) ){3}\t{4}",
-					SchemaName, TableName, ColumnName, Environment.NewLine, ToQuery());
+			return $"if exists(select * from sys.schemas s inner join sys.tables t on s.schema_id=t.schema_id inner join sys.columns c on c.object_id = t.object_id " +
+			       $"where s.name = '{SchemaName}' and t.name = '{TableName}' and c.name = '{ColumnName}' and c.is_rowguidcol = 0){Environment.NewLine}" +
+			       $"    {ToQuery()}";
+		}
+
+		public override string ToQuery()
+		{
+			return $"alter table [{SchemaName}].[{TableName}] alter column [{ColumnName}] add rowguidcol";
 		}
 	}
 }

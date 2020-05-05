@@ -120,44 +120,54 @@ function Update-Table
     #>
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory=$true,Position=0)]
-        [string]
+        [Parameter(Mandatory,Position=0)]
         # The name of the table.
-        $Name,
+        [String]$Name,
 
-        [string]
         # The table's schema.  Defaults to `dbo`.
-        $SchemaName = 'dbo',
+        [String]$SchemaName = 'dbo',
 
         [Alias('Add')]
-        [ScriptBlock]
         # A script block that returns the new columns to add to a table.
-        $AddColumn,
+        [scriptblock]$AddColumn,
         
         [Alias('Update')]
         [Alias('Alter')]
-        [ScriptBlock]
         # A script block that returns new column definitions for existing columns
-        $UpdateColumn,
+        [scriptblock]$UpdateColumn,
 
         [Alias('Remove')]
-        [string[]]
         # Columns to remove.
-        $RemoveColumn
+        [String[]]$RemoveColumn
     )
 
     Set-StrictMode -Version 'Latest'
 
-    $newColumns = @()
-    if ($AddColumn)
+    [Object[]]$newColumns = @()
+    if( $AddColumn )
     {
-        [Object[]]$newColumns = & $AddColumn
+        $newColumns = & $AddColumn
     }
-    
-    $updatedColumns = @()
+
+    [Object[]]$updatedColumns = @()
     if ($UpdateColumn)
     {
-        [Object[]]$updatedColumns = & $UpdateColumn
+        $updatedColumns = & $UpdateColumn
+        foreach( $column in $updatedColumns )
+        {
+            if( $column.DefaultExpression -or $column.DefaultConstraintName )
+            {
+                Write-Error -Message ("You're attempting to add a default constraint to existing column [$($column.Name)] on table [$($SchemaName)].[$($Name)]. SQL Server doesn't support adding default constraints on existing columns. Remove the -Default and -DefaultConstraintName parameters on this column and use the Add-DefaultConstraint operation to add a default constraint to this column.") -ErrorAction Stop
+                return
+            }
+
+            if( $column.Identity )
+            {
+                Write-Error -Message ("You're attempting to add identity to existing column [$($Column.Name)] on table [$($SchemaName)].[$($Name)]. This is not supported by SQL Server. You'll need to drop and re-create the column.") -ErrorAction Stop
+                return
+            }
+        }
+
     }
 
     New-Object 'Rivet.Operations.UpdateTableOperation' $SchemaName,$Name,$newColumns,$updatedColumns,$RemoveColumn

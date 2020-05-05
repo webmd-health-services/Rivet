@@ -23,46 +23,28 @@ function Add-PrimaryKey
     #>
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory=$true,Position=0)]
-        [string]
-        # The name of the table.
-        $TableName,
-
-        [Parameter()]
-        [string]
         # The schema name of the table.  Defaults to `dbo`.
-        $SchemaName = 'dbo',
+        [String]$SchemaName = 'dbo',
 
-        [Parameter(Mandatory=$true,Position=1)]
-        [string[]]
+        # The name for the primary key constraint.
+        [String]$Name,
+
+        [Parameter(Mandatory,Position=0)]
+        # The name of the table.
+        [String]$TableName,
+
+        [Parameter(Mandatory,Position=1)]
         # The column(s) that should be part of the primary key.
-        $ColumnName,
+        [String[]]$ColumnName,
 
-        [Switch]
         # Create a non-clustered primary key.
-        $NonClustered,
+        [switch]$NonClustered,
 
-        [string[]]
         # An array of primary key options.
-        $Option,
-
-        [Parameter()]
-        [string]
-        # The name for the <object type>. If not given, a sensible name will be created.
-        $Name
+        [String[]]$Option
     )
 
     Set-StrictMode -Version 'Latest'
 
-    $columns = $ColumnName -join ','
-
-    if ($PSBoundParameters.ContainsKey("Name"))
-    {
-        New-Object 'Rivet.Operations.AddPrimaryKeyOperation' $SchemaName, $TableName, $ColumnName, $Name, $NonClustered, $Option
-    }
-    else 
-    {
-        New-Object 'Rivet.Operations.AddPrimaryKeyOperation' $SchemaName, $TableName, $ColumnName, $NonClustered, $Option
-    }
-
+    [Rivet.Operations.AddPrimaryKeyOperation]::New($SchemaName, $TableName, $Name, $ColumnName, $NonClustered, $Option)
 }

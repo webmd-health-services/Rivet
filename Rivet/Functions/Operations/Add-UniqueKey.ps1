@@ -20,56 +20,34 @@ function Add-UniqueKey
     #>
     [CmdletBinding()]
     param(
-        [string]
         # The schema name of the target table.  Defaults to `dbo`.
-        $SchemaName = 'dbo',
+        [String]$SchemaName = 'dbo',
 
-        [Parameter(Mandatory=$true,Position=0)]
-        [string]
+        [Parameter(Mandatory,Position=0)]
         # The name of the target table.
-        $TableName,
+        [String]$TableName,
 
-        [Parameter(Mandatory=$true,Position=1)]
-        [string[]]
-        # The column(s) on which the index is based
-        $ColumnName,
-
-        [Switch]
-        # Creates a clustered index, otherwise non-clustered
-        $Clustered,
-
-        [Int]
-        # FillFactor as Integer
-        $FillFactor,
-
-        [string[]]
-        # An array of index options.
-        $Option,
-
-        [string]
-        # The value of the `ON` clause, which controls the filegroup/partition to use for the index.
-        $On,
-
-        [Parameter()]
-        [string]
         # The name for the <object type>. If not given, a sensible name will be created.
-        $Name
-        
+        [String]$Name,
+
+        [Parameter(Mandatory,Position=1)]
+        # The column(s) on which the index is based
+        [String[]]$ColumnName,
+
+        # Creates a clustered index, otherwise non-clustered
+        [switch]$Clustered,
+
+        # FillFactor as Integer
+        [int]$FillFactor,
+
+        # An array of index options.
+        [String[]]$Option,
+
+        # The value of the `ON` clause, which controls the filegroup/partition to use for the index.
+        [String]$On
     )
 
     Set-StrictMode -Version Latest
 
-    ## Construct Comma Separated List of Columns
-
-    $ColumnClause = $ColumnName -join ','
-
-    if ($PSBoundParameters.ContainsKey("Name"))
-    {
-        New-Object 'Rivet.Operations.AddUniqueKeyOperation' $SchemaName, $TableName, $ColumnName, $Name, $Clustered, $FillFactor, $Option, $On
-    }
-    else 
-    {
-        New-Object 'Rivet.Operations.AddUniqueKeyOperation' $SchemaName, $TableName, $ColumnName, $Clustered, $FillFactor, $Option, $On
-    }
-
+    [Rivet.Operations.AddUniqueKeyOperation]::new($SchemaName, $TableName, $Name, $ColumnName, $Clustered, $FillFactor, $Option, $On)
 }
