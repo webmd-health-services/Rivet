@@ -6,7 +6,8 @@ Build:
 - Version:
     Path: Rivet\Rivet.psd1
     Prerelease:
-    - develop: beta$(WHISKEY_BUILD_NUMBER)
+    - "*/*": alpha$(WHISKEY_BUILD_NUMBER)
+    - develop: rc$(WHISKEY_BUILD_NUMBER)
 
 - DotNet:
     Command: build
@@ -32,8 +33,15 @@ Build:
     - Rivet\bin
     - Rivet.dll
 
+# Update the AppVeyor build/version number.
+- Exec:
+      OnlyBy: BuildServer
+      Path: appveyor
+      Argument: [ UpdateBuild, -Version, $(WHISKEY_SEMVER2) ]
+
 - MergeFile:
     OnlyBy: BuildServer
+    IfExists: Rivet\Functions\*.ps1
     Path:
     - Rivet\Functions\*.ps1
     - Rivet\Functions\Columns\*.ps1
@@ -44,6 +52,7 @@ Build:
 
 - MergeFile:
     OnlyBy: BuildServer
+    IfExists: Rivet\Functions\*.ps1
     Path: 
     - Test\RivetTest\Functions\*.ps1
     - Test\RivetTest\RivetTest.Exports.ps1
@@ -51,53 +60,56 @@ Build:
     DeleteSourceFiles: true
     TextSeparator: "$(NewLine)$(NewLine)"
 
-- File:
-    OnlyBy: BuildServer
-    Path: Test\Server.txt
-    Content: ".\\SQL2017"
-
-- Pester4:
-    Verbose: false  # Rivet is super chatty with Verbose messages.
-    Script: Test\*.Tests.ps1
+- PowerShell:
+    ExceptDuring: Clean
+    Path: init.ps1
 
 - PowerShell:
     OnlyDuring: Build
     Path: test.ps1
 
+# Build runs twice on some servers, so delete any ZIP file created by another build.
+- Delete:
+    Path: .output\*.zip
+
+- File:
+    OnlyBy: BuildServer
+    Path: Test\Server.txt
+    Content: ".\\SQL2017"
+
+- CopyFile:
+    Path:
+    - README.md
+    - LICENSE
+    - NOTICE
+    DestinationDirectory: Rivet
+
 - Zip:
-    ArchivePath: $(WHISKEY_OUTPUT_DIRECTORY)\Rivet.zip
+    ArchivePath: .output\Rivet-$(WHISKEY_SEMVER2).zip
     Path:
     - Rivet
     Exclude:
     - "*.pdb"
     - "*.orig"
 
+- Exec:
+    OnlyBy: BuildServer
+    Path: appveyor
+    Argument: [ 'PushArtifact', '.output/Rivet-$(WHISKEY_SEMVER2).zip', '-DeploymentName', 'GitHub' ]
 
-Publish:
 - PublishPowerShellModule:
-    UnlessExists: env:APPVEYOR_PULL_REQUEST_NUMBER
-    RepositoryName: PSGallery
-    RepositoryUri: https://powershellgallery.com/api/v2/
     Path: Rivet
-    ApiKeyID: PowerShellGallery
 
-- SetVariableFromPowerShellDataFile:
-    Path: Rivet\Rivet.psd1
-    Variables:
-        PrivateData:
-            PSData:
-                ReleaseNotes: RELEASE_NOTES
+- Exec:
+    OnlyBy: BuildServer
+    Path: appveyor
+    Argument: [
+        'PushArtifact',
+        '.output/Rivet.$(WHISKEY_SEMVER2_NO_BUILD_METADATA).nupkg',
+        '-DeploymentName',
+        'PowerShellGallery'
+    ]
 
-- GitHubRelease:
-    UnlessExists: env:APPVEYOR_PULL_REQUEST_NUMBER
-    OnlyOnBranch: master
-    RepositoryName: webmd-health-services/Rivet
-    ApiKeyID: github.com
-    Tag: $(WHISKEY_SEMVER2_NO_BUILD_METADATA)
-    Commitish: $(WHISKEY_SCM_COMMIT_ID)
-    Name: $(WHISKEY_SEMVER2_NO_BUILD_METADATA)
-    Description: $(RELEASE_NOTES)
-    Assets:
-    - Path: .output\Rivet.zip
-      ContentType: application/zip
-      Name: Rivet-$(WHISKEY_SEMVER2_NO_BUILD_METADATA).zip
+- Pester4:
+    Verbose: false  # Rivet is super chatty with Verbose messages.
+    Script: Test\*.Tests.ps1
