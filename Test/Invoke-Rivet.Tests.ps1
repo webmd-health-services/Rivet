@@ -198,6 +198,59 @@ Describe 'Invoke-Rivet' {
         $result[0].Migration.Name | Should -Be 'Three'
         $result[1].Migration.Name | Should -Be 'One'
     }
+
+    It 'should drop all databases given -DropDatabase with no databases specified' {
+        Remove-RivetTestDatabase
+        Remove-RivetTestDatabase -Name $RTDatabase2Name
+    
+        $config = Get-Content -Raw -Path $RTConfigFilePath | ConvertFrom-Json
+        $config | Add-Member -MemberType NoteProperty -Name 'TargetDatabases' -Value @{ $RTDatabaseName = @( $RTDatabaseName, $RTDatabase2Name ) }
+        $config | ConvertTo-Json | Set-Content -Path $RTConfigFilePath
+    
+        # Create databases first
+        Invoke-RTRivet -Push -Database $RTDatabaseName
+        $Global:Error.Count | Should -Be 0
+        (Test-Database) | Should -BeTrue
+        (Test-Database $RTDatabase2Name) | Should -BeTrue
+
+        # Now drop the databases
+        Invoke-RTRivet -DropDatabase -Force
+        $Global:Error.Count | Should -Be 0
+        (Test-Database) | Should -BeFalse
+        (Test-Database $RTDatabase2Name) | Should -BeFalse
+    }
+
+    It 'should drop a specific database given -DropDatabase with a database name' {
+        Remove-RivetTestDatabase
+        Remove-RivetTestDatabase -Name $RTDatabase2Name
+    
+        $config = Get-Content -Raw -Path $RTConfigFilePath | ConvertFrom-Json
+        $config | Add-Member -MemberType NoteProperty -Name 'TargetDatabases' -Value @{ $RTDatabaseName = @( $RTDatabaseName, $RTDatabase2Name ) }
+        $config | ConvertTo-Json | Set-Content -Path $RTConfigFilePath
+    
+        # Create databases first
+        Invoke-RTRivet -Push -Database $RTDatabaseName
+        $Global:Error.Count | Should -Be 0
+        (Test-Database) | Should -BeTrue
+        (Test-Database $RTDatabase2Name) | Should -BeTrue
+
+        # Now drop the database
+        Invoke-RTRivet -DropDatabase -Force -Database 'RivetTest2'
+        $Global:Error.Count | Should -Be 0
+        (Test-Database) | Should -BeTrue
+        (Test-Database $RTDatabase2Name) | Should -BeFalse
+    }
+
+    It 'should do nothing when given -DropDatabase with a database name that doesn''t exist' {
+        Remove-RivetTestDatabase
+        # Check that database doesn't exist first
+        (Test-Database) | Should -BeFalse
+
+        # Now drop the database
+        Invoke-RTRivet -DropDatabase -Force -Database 'RivetTest'
+        $Global:Error.Count | Should -Be 0
+        (Test-Database) | Should -BeFalse
+    }
 }
 
 function Init

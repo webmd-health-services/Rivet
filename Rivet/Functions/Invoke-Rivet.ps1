@@ -48,6 +48,7 @@ function Invoke-Rivet
         [Parameter(ParameterSetName='PopByCount')]
         [Parameter(ParameterSetName='PopByName')]
         [Parameter(ParameterSetName='PopAll')]
+        [Parameter(ParameterSetName='DropDatabase')]
         [Switch]
         # Force popping a migration you didn't apply or that is old.
         $Force,
@@ -59,6 +60,7 @@ function Invoke-Rivet
         [Parameter(ParameterSetName='PopByName')]
         [Parameter(ParameterSetName='PopAll')]
         [Parameter(ParameterSetName='Redo')]
+        [Parameter(ParameterSetName='DropDatabase')]
         [string[]]
         # The database(s) to migrate. Optional.  Will operate on all databases otherwise.
         $Database,
@@ -70,6 +72,7 @@ function Invoke-Rivet
         [Parameter(ParameterSetName='PopByName')]
         [Parameter(ParameterSetName='PopAll')]
         [Parameter(ParameterSetName='Redo')]
+        [Parameter(ParameterSetName='DropDatabase')]
         [string]
         # The environment you're working in.  Controls which settings Rivet loads from the `rivet.json` configuration file.
         $Environment,
@@ -81,9 +84,15 @@ function Invoke-Rivet
         [Parameter(ParameterSetName='PopByName')]
         [Parameter(ParameterSetName='PopAll')]
         [Parameter(ParameterSetName='Redo')]
+        [Parameter(ParameterSetName='DropDatabase')]
         [string]
         # The path to the Rivet configuration file.  Default behavior is to look in the current directory for a `rivet.json` file.  See `about_Rivet_Configuration` for more information.
-        $ConfigFilePath
+        $ConfigFilePath,
+
+        [Parameter(ParameterSetName='DropDatabase')]
+        [Switch]
+        # Drops the database(s) for the current environment when given. User will be prompted for confirmation when used.
+        $DropDatabase
     )
 
     Set-StrictMode -Version 'Latest'
@@ -113,6 +122,39 @@ Found no databases to migrate. This can be a few things:
             $settings.Databases | 
                 Select-Object -ExpandProperty 'MigrationsRoot' -Unique |
                 ForEach-Object { New-Migration -Name $Name -Path $_ }
+            return
+        }
+
+        if( $DropDatabase )
+        {
+            # Connect to master as we cannot drop a database if we're connected to it
+            Connect-Database -SqlServerName $settings.SqlServerName `
+                                    -Database 'Master' `
+                                    -ConnectionTimeout $settings.ConnectionTimeout
+
+            $databaseString = $settings.Databases | Join-String -Property Name -SingleQuote -Separator ', '
+            $query = "select name from sys.databases where name in ({0})" -f $databaseString
+            $databaseList = Invoke-Query -Query $query
+
+            if( $databaseList )
+            {
+                $confirmDropDatabase = $false
+                if( -not $Force)
+                {
+                    $confirmQuery = "Using the `DropDatabase` switch will drop the database(s) for the current environment. Do you want to proceed?"
+                    $confirmCaption = "Drop the following database(s)? {0}" -f ($databaseList | Join-String -Property Name -Separator ', ')
+                    $confirmDropDatabase = $PSCmdlet.ShouldContinue( $confirmQuery, $confirmCaption )
+                }
+
+                if( $confirmDropDatabase -or $Force )
+                {
+                    foreach( $databaseItem in $databaseList )
+                    {
+                        $query = "DROP DATABASE {0}" -f $databaseItem.Name
+                        Invoke-Query -Query $query
+                    }
+                }
+            }
             return
         }
 
