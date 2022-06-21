@@ -28,6 +28,7 @@ function Invoke-RTRivet
         [Parameter(ParameterSetName='PopByName')]
         [Parameter(ParameterSetName='PopByCount')]
         [Parameter(ParameterSetName='PopAll')]
+        [Parameter(ParameterSetName='DropDatabase')]
         [switch]$Force,
 
         [Parameter(ParameterSetName='Redo')]
@@ -35,7 +36,12 @@ function Invoke-RTRivet
 
         [String[]]$Database,
 
-        [String]$ConfigFilePath
+        [String]$ConfigFilePath,
+
+        [Parameter(ParameterSetName='DropDatabase')]
+        [Switch]
+        # Drops the database(s) for the current environment when given. User will be prompted for confirmation when used.
+        $DropDatabase
     )
     
     Set-StrictMode -Version Latest
