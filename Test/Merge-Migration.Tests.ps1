@@ -425,12 +425,12 @@ Describe 'Merge-Migration.when adding removing and adding an object' {
                     nvarchar 'RemoveMe' -Size 10
                 }
 
-                Add-PrimaryKey -SchemaName 'aggregate' -TableName 'Beta' -ColumnName 'ID'
+                Add-PrimaryKey -SchemaName 'aggregate' -TableName 'Beta' -ColumnName 'ID' -Name 'PK_aggregate_Beta'
             }
 
             New-MigrationObject 'UpdateTable' {
-                Remove-PrimaryKey -SchemaName 'aggregate' -TableName 'Beta' -Name (New-RTConstraintName -PrimaryKey -SchemaName 'aggregate' -TableName 'Beta')
-                Add-PrimaryKey -SchemaName 'aggregate' -TableName 'Beta' -ColumnName 'Name'
+                Remove-PrimaryKey -SchemaName 'aggregate' -TableName 'Beta' -Name 'PK_aggregate_Beta'
+                Add-PrimaryKey -SchemaName 'aggregate' -TableName 'Beta' -ColumnName 'Name' -Name 'PK_aggregate_Beta'
             }
         }
 
@@ -518,18 +518,18 @@ Describe 'Merge-Migration.when adding removing different objects multiple times'
     It 'should use the last added objects' {
         $result = Invoke-MergeMigration {
             New-MigrationObject 'AddPrimaryKeyAndSynonym' {
-                Add-PrimaryKey -TableName 'CoachMessagingPractice_RefOnly' -ColumnName AgentId,PracticeId
-                Add-Synonym -Name 'CoachMessagingPractice' -TargetDatabaseName 'hcUser' -TargetObjectName 'CoachMessagingPractice_RefOnly'
+                Add-PrimaryKey -TableName 'RefOnly' -ColumnName AgentId,PracticeId -Name 'PK_RefOnly'
+                Add-Synonym -Name 'Source' -TargetDatabaseName 'other' -TargetObjectName 'RefOnly'
             }
 
             New-MigrationObject 'RemoveAndAddPrimaryKey' {
-                Remove-PrimaryKey -TableName 'CoachMessagingPractice_RefOnly' -Name 'PK_CoachMessagingPractice_RefOnly'
-                Add-PrimaryKey -TableName 'CoachMessagingPractice_RefOnly' -ColumnName Id
+                Remove-PrimaryKey -TableName 'RefOnly' -Name 'PK_RefOnly'
+                Add-PrimaryKey -TableName 'RefOnly' -ColumnName Id
             }
 
             New-MigrationObject 'RemoveAndAddSynonym' {
-                Remove-Synonym 'CoachMessagingPractice'
-                Add-Synonym -Name 'CoachMessagingPractice' -TargetDatabaseName 'hcUser' -TargetObjectName 'CoachMessagingPractice_RefOnly'
+                Remove-Synonym 'Source'
+                Add-Synonym -Name 'Source' -TargetDatabaseName 'other' -TargetObjectName 'RefOnly'
             }
         }
 
@@ -784,6 +784,33 @@ as
 
         $result | Should -HaveCount 2
         $result[0].PushOperations | Should -HaveCount 0
+        $result[1].PushOperations | Should -HaveCount 0
+    }
+}
+
+Describe 'Merge-Migration.when adding columns to a renamed table' {
+    It 'should add the columns to original add table operation' {
+        $result = Invoke-MergeMigration {
+            New-MigrationObject 'one' {
+                Add-Table -Name 'original' {
+                    int 'id'
+                }
+            }
+            New-MigrationObject 'rename_and_update' {
+                Rename-Object -Name 'original' -NewName 'new'
+
+                Update-Table -Name 'new' -AddColumn {
+                    tinyint 'errorId'
+                }
+            }
+        }
+        $result | Should -HaveCount 2
+        $pushes = $result[0].PushOperations
+        $pushes | Should -HaveCount 1
+        $columns = $pushes[0].Columns
+        $columns | Should -HaveCount 2
+        $columns[0].Name | Should -Be 'id'
+        $columns[1].Name | Should -Be 'errorId'
         $result[1].PushOperations | Should -HaveCount 0
     }
 }

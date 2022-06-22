@@ -11,7 +11,7 @@
     RootModule = 'Rivet.psm1'
 
     # Version number of this module.
-    ModuleVersion = '0.11.0'
+    ModuleVersion = '0.13.0'
 
     # ID used to uniquely identify this module
     GUID = '8af34b47-259b-4630-a945-75d38c33b94d'
@@ -236,6 +236,7 @@ Rivet is a database migration/change management/versioning tool inspired by Ruby
             # A URL to an icon representing this module.
             # IconUri = ''
 
+            # The module's prerelease label. Modified by build process when publishing a prerelease version.
             Prerelease = ''
 
             # ReleaseNotes of this module
@@ -247,7 +248,7 @@ This version of Rivet is backwards-incompatible. It changes the way plug-ins wor
 1. Package your plugins into a PowerShell module. Make sure your plug-in functions are exported by your module.
 2. Add the attribute `[Rivet.Plugin([Rivet.Event]::BeforeOperationLoad)]` to any existing `Start-MigrationOperation` functions.
 3. Add the attribute `[Rivet.Plugin([Rivet.Event]::AfterOperationLoad)]` to any existing `Complete-MigrationOperation` functions.
-4. Change the `PluginsRoot` setting in your rivet.json file to `PluginPaths`. Change its value to the path to the module you created in step 1.
+4. Change the `PluginsRoot` setting in your rivet.json file to `PluginPaths`. Change its value to the path to the module you created in step 1. Rivet will import the module into the global scope for you. Or, if you want to import the module, set the `PluginModules` property to a list of module names that contain the plug-ins to use.
 
 See `about_Rivet_Plugins` for more information.
 
@@ -269,6 +270,8 @@ See `about_Rivet_Plugins` for more information.
 * Primary key constraint names are now required. You must pass a constraint name to the Add-PrimaryKey operation's Name parameter.
 * Foreign key constraint names are now required. You must pass a constraint name to the Add-ForeignKey operation's Name parameter.
 * Index names are now required. You must pass an index name to the Add-Index operation's Name parameter.
+* Fixed: Get-Migration and Get-MigrationFile don't properly exclude migrations in some situations.
+* Fixed: the idempotent queries for renaming a data type and index don't work.
 '@
         } # End of PSData hashtable
 

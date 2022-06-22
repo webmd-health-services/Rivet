@@ -1,16 +1,24 @@
 
+#Requires -Version 5.1
+Set-StrictMode -Version 'Latest'
+
 & (Join-Path -Path $PSScriptRoot -ChildPath 'Initialize-Test.ps1' -Resolve)
 
+function Init
+{
+    Start-RivetTest
+}
+
+function Reset
+{
+    Stop-RivetTest
+}
+
 Describe 'Rename-DataType' {
-    BeforeEach {
-        Start-RivetTest
-    }
-    
-    AfterEach {
-        Stop-RivetTest
-    }
+    AfterEach { Reset }
     
     It 'should update metadata' {
+        Init
         @'
     function Push-Migration
     {
@@ -47,3 +55,40 @@ Describe 'Rename-DataType' {
         Assert-DataType -SchemaName 'refresh.part2' -Name 'myoldtype' -BaseType 'nvarchar' -UserDefined
     }
 }
+
+Describe 'Rename-DataType.when creating idempotent query' {
+    AfterEach { 
+        Reset 
+    }
+    It 'should create a valid query' {
+        Init
+        GivenMigration -Named 'CreateMyBigIntType' -InputObject @'
+function Push-Migration
+{
+    Add-DataType -Name 'MyInt' -From 'bigint'
+}
+function Pop-Migration
+{
+    Remove-DataType -Name 'MyInt'
+}
+'@
+        WhenMigrating -Push
+        Assert-DataType -Name 'MyInt' -BaseType 'bigint' -UserDefined
+
+        $op = Rename-DataType -Name 'MyInt' -NewName 'MyBigInt'
+        try
+        {
+            # Run twice to make sure it is really idempotent
+            Invoke-RivetTestQuery -Query $op.ToIdempotentQuery()
+            Invoke-RivetTestQuery -Query $op.ToIdempotentQuery()
+            Assert-DataType -Name 'MyBigInt' -BaseType 'bigint' -UserDefined
+        }
+        finally
+        {
+            $op = Rename-DataType -Name 'MyBigInt' -NewName 'MyInt'
+            Invoke-RivetTestQuery -Query $op.ToIdempotentQuery()
+            Invoke-RivetTestQuery -Query $op.ToIdempotentQuery()
+        }
+    }
+}
+

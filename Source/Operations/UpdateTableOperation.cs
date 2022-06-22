@@ -69,19 +69,6 @@ namespace Rivet.Operations
 					break;
 				}
 
-				case RenameColumnOperation otherAsRenameColumnOp:
-				{
-					var column = FindColumn(otherAsRenameColumnOp.Name);
-					if (column != null)
-					{
-						column.Name = otherAsRenameColumnOp.NewName;
-						otherAsRenameColumnOp.Disabled = true;
-						return MergeResult.Continue;
-					}
-
-					break;
-				}
-
 				case RemoveDefaultConstraintOperation otherAsRemoveDefaultConstraintOp:
 				{
 					var column = FindColumn(otherAsRemoveDefaultConstraintOp.ColumnName);
@@ -103,6 +90,36 @@ namespace Rivet.Operations
 						column.RowGuidCol = false;
 						otherAsRemoveRowGuidColOp.Disabled = true;
 						return MergeResult.Continue;
+					}
+
+					break;
+				}
+
+				case RenameColumnOperation otherAsRenameColumnOp:
+				{
+					var column = FindColumn(otherAsRenameColumnOp.Name);
+					if (column != null)
+					{
+						column.Name = otherAsRenameColumnOp.NewName;
+						otherAsRenameColumnOp.Disabled = true;
+						return MergeResult.Continue;
+					}
+
+					break;
+				}
+
+				case RenameObjectOperation otherAsRenameObjectOp:
+				{
+					var column = AddColumns
+						.Concat(UpdateColumns)
+						.FirstOrDefault(c => null != c.DefaultConstraintName &&
+						                           c.DefaultConstraintName.Equals(otherAsRenameObjectOp.Name, StringComparison.InvariantCultureIgnoreCase));
+
+					if (null != column)
+					{
+						column.DefaultConstraintName = otherAsRenameObjectOp.NewName;
+						otherAsRenameObjectOp.Disabled = true;
+						return MergeResult.Stop;
 					}
 
 					break;
@@ -228,7 +245,7 @@ namespace Rivet.Operations
 				if (idempotent)
 				{
 					query.AppendFormat(
-						"if not exists (select * from sys.columns where object_id('{0}.{1}', 'U') = [object_id] and [name]='{2}'){3}\t",
+						"if not exists (select * from sys.columns where object_id('{0}.{1}', 'U') = [object_id] and [name]='{2}'){3}    ",
 						SchemaName, Name, column.Name, Environment.NewLine);
 				}
 				var definition = column.GetColumnDefinition(false);
@@ -254,7 +271,7 @@ namespace Rivet.Operations
 				}
 				if (idempotent)
 				{
-					query.AppendFormat("if exists (select * from sys.columns where object_id('{0}.{1}', 'U') = [object_id] and [name]='{2}'){3}\t",
+					query.AppendFormat("if exists (select * from sys.columns where object_id('{0}.{1}', 'U') = [object_id] and [name]='{2}'){3}    ",
 						SchemaName, Name, columnName, Environment.NewLine);
 				}
 				query.AppendFormat("alter table [{0}].[{1}] drop column [{2}]", SchemaName, Name, columnName);

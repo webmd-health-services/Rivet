@@ -2,14 +2,16 @@
 function Set-PluginPath
 {
     param(
-        [Parameter(Mandatory)]
-        [string[]]
+        [Parameter(Mandatory,ParameterSetName='PluginPaths')]
         # Path to any plugins that should get loaded in the test.
-        $PluginPath,
+        [String[]]$PluginPath,
 
-        [string]
+        [Parameter(Mandatory,ParameterSetName='PluginModules')]
+        # Path to any modules that contain plug-ins.
+        [String[]]$PluginModule,
+
         # Path to the rivet.json configuration file. Defaults to the one created by the RivetTest module.
-        $ConfigPath = $RTConfigFilePath
+        [String]$ConfigPath = $RTConfigFilePath
     )
 
     Set-StrictMode -Version 'Latest'
@@ -25,12 +27,19 @@ function Set-PluginPath
             return
         }
 
-        if( -not ($rivetJson | Get-Member -Name 'PluginPaths') )
+        $propertyName = $PSCmdlet.ParameterSetName
+        $value = $PluginModule
+        if( $propertyName -eq 'PluginPaths' )
         {
-            $rivetJson | Add-Member -MemberType NoteProperty -Name 'PluginPaths' -Value ''
+            $value = $PluginPath | Resolve-Path -Relative
         }
 
-        $rivetJson.PluginPaths = $PluginPath | Resolve-Path -Relative
+        if( -not ($rivetJson | Get-Member -Name $propertyName) )
+        {
+            $rivetJson | Add-Member -MemberType NoteProperty -Name $propertyName -Value ''
+        }
+
+        $rivetJson.$propertyName = $value
 
         $rivetJson | ConvertTo-Json -Depth 100 | Set-Content -Path $ConfigPath
     }

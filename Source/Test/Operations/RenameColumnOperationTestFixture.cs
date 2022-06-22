@@ -29,7 +29,7 @@ namespace Rivet.Test.Operations
 		}
 
 		[Test]
-		public void ShouldRenameTableIfTableIsRenamed()
+		public void ShouldNotRenameTableIfTableIsRenamedAfterColumnsAreRenamed()
 		{
 			var columns = new[]
 			{
@@ -59,6 +59,25 @@ namespace Rivet.Test.Operations
 			Assert.That(renameColumn2Op.TableName, Is.EqualTo("T1New"));
 			Assert.That(renameColumn1Op.TableName, Is.EqualTo("T1New"));
 			Assert.That(op.Name, Is.EqualTo("T1New"));
+		}
+
+		[Test]
+		public void ShouldNotRenameTableIfRenamedTableNotAddedDuringMerge()
+		{
+			var renameColumn1Op = new RenameColumnOperation("SCHEMA", "TABLE", "C1", "C1New");
+			var renameColumn2Op = new RenameColumnOperation("SCHEMA", "TABLE", "C2", "C2New");
+			var renameTableOp = new RenameObjectOperation("SCHEMA", "TABLE", "T1New");
+
+			renameColumn2Op.Merge(renameTableOp);
+			renameColumn1Op.Merge(renameTableOp);
+
+			renameColumn1Op.Merge(renameColumn2Op);
+
+			Assert.That(renameColumn1Op.Disabled, Is.False);
+			Assert.That(renameColumn2Op.Disabled, Is.False);
+			Assert.That(renameTableOp.Disabled, Is.False);
+			Assert.That(renameColumn2Op.TableName, Is.EqualTo("TABLE"));
+			Assert.That(renameColumn1Op.TableName, Is.EqualTo("TABLE"));
 		}
 
 		[Test]

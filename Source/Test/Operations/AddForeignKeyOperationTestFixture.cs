@@ -160,5 +160,30 @@ namespace Rivet.Test.Operations
 			Assert.That(renameTableOp.Disabled, Is.False);
 			Assert.That(op.ReferencesTableName, Is.EqualTo("ref table"));
 		}
+
+		[Test]
+		public void ShouldChangeConstraintName()
+		{
+			var op = new AddForeignKeyOperation("schema", "table", "name", new string[0], "ref schema", "ref table",
+				new string[0], "on delete", "on update", false, false);
+			var renameOp = new RenameObjectOperation("SCHEMA", "NAME", "new name");
+			op.Merge(renameOp);
+			Assert.That(op.Name, Is.EqualTo("new name"));
+			Assert.That(renameOp.Disabled);
+			Assert.That(op.Disabled, Is.False);
+		}
+
+		[Test]
+		public void ShouldNotDisableAddIfRemovingAForeignKeyOnTheSameTable()
+		{
+			var op = new AddForeignKeyOperation("schema", "table", "name", new string[0], "ref schema", "ref table",
+				new string[0], "on delete", "on update", false, false);
+			var removeOp = new RemoveForeignKeyOperation("schema", "table", "name2");
+
+			op.Merge(removeOp);
+
+			Assert.That(removeOp.Disabled, Is.False);
+			Assert.That(op.Disabled, Is.False);
+		}
 	}
 }

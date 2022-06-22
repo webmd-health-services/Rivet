@@ -4,19 +4,22 @@ namespace Rivet.Operations
 {
 	public sealed class RemoveUniqueKeyOperation : TableObjectOperation
 	{
-		public RemoveUniqueKeyOperation(string schemaName, string tableName, string name)
+		public RemoveUniqueKeyOperation(string schemaName, string tableName, string name, string[] columnName)
 			: base(schemaName, tableName, name)
 		{
+			ColumnName = columnName;
 		}
+
+		public string[] ColumnName { get; }
 
 		public override string ToIdempotentQuery()
 		{
-			return string.Format("if object_id('{0}.{1}', 'UQ') is not null{2}\t{3}", SchemaName, Name, Environment.NewLine, ToQuery());
+			return $"if object_id('{SchemaName}.{Name}', 'UQ') is not null{Environment.NewLine}    {ToQuery()}";
 		}
 
 		public override string ToQuery()
 		{
-			return string.Format("alter table [{0}].[{1}] drop constraint [{2}]", SchemaName, TableName, Name);
+			return $"alter table [{SchemaName}].[{TableName}] drop constraint [{Name}]";
 		}
 	}
 }

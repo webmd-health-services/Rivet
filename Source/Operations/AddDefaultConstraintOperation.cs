@@ -22,7 +22,8 @@ namespace Rivet.Operations
 
 		public override string ToIdempotentQuery()
 		{
-			return $"if object_id('{SchemaName}.{Name}', 'D') is null{Environment.NewLine}\t{ToQuery()}";
+			return $"if object_id('{SchemaName}.{Name}', 'D') is null{Environment.NewLine}" +
+				   $"    {ToQuery()}";
 		}
 
 		public override string ToQuery()
@@ -33,8 +34,7 @@ namespace Rivet.Operations
 				withValuesClause = " with values";
 			}
 
-			return
-				$"alter table [{SchemaName}].[{TableName}] add constraint [{Name}] default {Expression} for [{ColumnName}]{withValuesClause}";
+			return $"alter table [{SchemaName}].[{TableName}] add constraint [{Name}] default {Expression} for [{ColumnName}]{withValuesClause}";
 		}
 	}
 }

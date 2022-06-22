@@ -32,8 +32,11 @@ namespace Rivet.Operations
                 TableObjectName.Equals(otherAsRenameOp.ObjectName, StringComparison.InvariantCultureIgnoreCase))
 
             {
-                TableName = otherAsRenameOp.NewName;
-                otherAsRenameOp.Disabled = true;
+                otherAsRenameOp.OnDisabled += (sender, args) =>
+                {
+                    if (sender is RenameOperation disabledRenameTableOp) 
+                        TableName = disabledRenameTableOp.NewName;
+                };
                 return MergeResult.Continue;
             }
 

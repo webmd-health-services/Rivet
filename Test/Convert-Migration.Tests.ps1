@@ -384,80 +384,82 @@ Describe 'Convert-Migration.when scripts are run multiple times' {
     {
         Add-Schema 'idempotent'
         
-        $idempotent = @{ SchemaName = 'idempotent' }
-        $crops = @{ TableName = 'Crops' }
-        $farmers = @{ TableName = 'Farmers' }
-    
-        Add-Table @idempotent $farmers.TableName {
+        Add-Table -SchemaName 'idempotent' -Name 'Farmers' {
             int 'ID' -NotNull
             varchar 'Name' -NotNull -Size 500
         }
-        Add-PrimaryKey @idempotent @farmers -ColumnName 'ID'
-        Add-Row @idempotent @farmers -Column @{ 'ID' = 1; 'Name' = 'Blackbird' }
+        Add-PrimaryKey -SchemaName 'idempotent' -TableName 'Farmers' -ColumnName 'ID' -Name 'PK_idempotent_Farmers'
+        Add-Row -SchemaName 'idempotent' -TableName 'Farmers' -Column @{ 'ID' = 1; 'Name' = 'Blackbird' }
     
-        Update-Table @idempotent $farmers.TableName -UpdateColumn {
+        Update-Table -SchemaName 'idempotent' -Name 'Farmers' -UpdateColumn {
             varchar 'Name' -NotNull -Size 50
         } 
     
-        Update-Table @idempotent $farmers.TableName -AddColumn {
+        Update-Table -SchemaName 'idempotent' -Name 'Farmers' -AddColumn {
             varchar 'Zip' -Size 10
         }
-        Rename-Column @idempotent @farmers -Name 'Zip' -NewName 'ZipCode'
+        Rename-Column -SchemaName 'idempotent' -TableName 'Farmers' -Name 'Zip' -NewName 'ZipCode'
     
-        Add-Table @idempotent $crops.TableName {
+        Add-Table -SchemaName 'idempotent' 'Crops' {
             int 'ID' -Identity
             varchar 'Name' -Size 50
             int 'FarmerID' -NotNull
         }
-        Add-CheckConstraint @idempotent @crops -Name 'CK_Farmers_AllowedCrops' -Expression 'Name = ''Strawberries'' or Name = ''Rasberries'''
-        Rename-Object @idempotent -Name 'CK_Farmers_AllowedCrops' -NewName 'CK_Crops_AllowedCrops'
-        Add-DefaultConstraint @idempotent @crops -ColumnName 'Name' -Expression '''StrawBerries'''
-        Add-Description @idempotent @crops -ColumnName 'Name' 'Yumm!'
-        Update-Description @idempotent @crops -ColumnName 'Name' 'Yummy!'
-        Add-ForeignKey @idempotent @crops -ColumnName 'FarmerID' `
-                       -ReferencesSchema $idempotent.SchemaName -References $farmers.TableName -ReferencedColumn 'ID'
-        Add-Index @idempotent @crops -ColumnName 'Name'
-        Rename-Index @idempotent @crops 'IX_idempotent_Crops_Name' 'IX_Crops_Name2'
-        Add-UniqueKey @idempotent @crops 'Name'
+        Add-CheckConstraint -SchemaName 'idempotent' `
+                            -TableName 'Crops' `
+                            -Name 'CK_Farmers_AllowedCrops' `
+                            -Expression 'Name = ''Strawberries'' or Name = ''Rasberries'''
+        Rename-Object -SchemaName 'idempotent' -Name 'CK_Farmers_AllowedCrops' -NewName 'CK_Crops_AllowedCrops'
+        Add-DefaultConstraint -SchemaName 'idempotent' `
+                              -TableName 'Crops' `
+                              -ColumnName 'Name' `
+                              -Name 'DF_idempotent_Crops_Name' `
+                              -Expression '''StrawBerries'''
+        Add-Description -SchemaName 'idempotent' -TableName 'Crops' -ColumnName 'Name' 'Yumm!'
+        Update-Description -SchemaName 'idempotent' -TableName 'Crops' -ColumnName 'Name' 'Yummy!'
+        Add-Description -SchemaName 'idempotent' -TableName 'Crops' -Description 'Old'
+        Update-Description -SchemaName 'idempotent' -TableName 'Crops' -Description 'New'
+        Add-ForeignKey -SchemaName 'idempotent' `
+                       -TableName 'Crops' `
+                       -ColumnName 'FarmerID' `
+                       -ReferencesSchema 'idempotent' -References 'Farmers' -ReferencedColumn 'ID' `
+                       -Name 'FK_idempotent_Crops_idempotent_Farmers'
+        Add-Index -SchemaName 'idempotent' -TableName 'Crops' -ColumnName 'Name' -Name 'IX_idempotent_Crops_Name'
+        Rename-Index -SchemaName 'idempotent' -TableName 'Crops' 'IX_idempotent_Crops_Name' 'IX_Crops_Name2'
+        Add-UniqueKey -SchemaName 'idempotent' -TableName 'Crops' 'Name' -Name 'AK_idempotent_Crops_Name'
     
+        Add-DataType -SchemaName 'idempotent' -Name 'GUID' -From 'uniqueidentifier'
     
-        Add-DataType @idempotent -Name 'GUID' -From 'uniqueidentifier'
+        Add-StoredProcedure 'GetFarmers' -SchemaName 'idempotent' -Definition 'AS select * from Crops'
+        Update-StoredProcedure 'GetFarmers' -SchemaName 'idempotent' -Definition 'AS select * from Farmers'
     
-        Add-StoredProcedure 'GetFarmers' @idempotent -Definition 'AS select * from Crops'
-        Update-StoredProcedure 'GetFarmers' @idempotent -Definition 'AS select * from Farmers'
+        Add-Synonym -Name 'Crop' -SchemaName 'idempotent' -TargetSchemaName 'idempotent' 'Crops'
     
-        Add-Synonym -Name 'Crop' @idempotent -TargetSchemaName $idempotent.SchemaName 'Crops'
+        Add-Trigger 'CropActivity' -SchemaName 'idempotent' -Definition "on idempotent.Crops after insert as return"
+        Update-Trigger 'CropActivity' -SchemaName 'idempotent' -Definition "on idempotent.Crops after insert, update as return"
     
-        Add-Trigger 'CropActivity' @idempotent -Definition "on idempotent.Crops after insert as return"
-        Update-Trigger 'CropActivity' @idempotent -Definition "on idempotent.Crops after insert, update as return"
+        Add-UserDefinedFunction 'GetInteger' -SchemaName 'idempotent' -Definition '(@Number int) returns int as begin return @Number end'
+        Update-UserDefinedFunction 'GetInteger' -SchemaName 'idempotent' -Definition '(@Number int) returns int as begin return @Number + @Number end'
     
-        Add-UserDefinedFunction 'GetInteger' @idempotent -Definition '(@Number int) returns int as begin return @Number end'
-        Update-UserDefinedFunction 'GetInteger' @idempotent -Definition '(@Number int) returns int as begin return @Number + @Number end'
-    
-        Add-View 'FarmerCrops' @idempotent -Definition "as select Farmers.Name CropName, Crops.Name FarmersName from Crops join Farmers on Crops.FarmerID = Farmers.ID"
-        Update-View 'FarmerCrops' @idempotent -Definition "as select Farmers.Name FarmerName, Crops.Name CropName from Crops join Farmers on Crops.FarmerID = Farmers.ID"
+        Add-View 'FarmerCrops' -SchemaName 'idempotent' -Definition "as select Farmers.Name CropName, Crops.Name FarmersName from Crops join Farmers on Crops.FarmerID = Farmers.ID"
+        Update-View 'FarmerCrops' -SchemaName 'idempotent' -Definition "as select Farmers.Name FarmerName, Crops.Name CropName from Crops join Farmers on Crops.FarmerID = Farmers.ID"
     
         Invoke-Ddl 'select 1'
     
-        Update-CodeObjectMetadata @idempotent 'FarmerCrops'
+        Update-CodeObjectMetadata -SchemaName 'idempotent' 'FarmerCrops'
     
         Invoke-SqlScript -Path 'query.sql'
     }
     
     function Pop-Migration
     {
-        $idempotent = @{ SchemaName = 'idempotent' }
-        $crops = @{ TableName = 'Crops' }
-        $farmers = @{ TableName = 'Farmers' }
-    
-        Remove-View 'FarmerCrops' @idempotent
-        Remove-UserDefinedFunction @idempotent 'GetInteger'
-        Remove-Synonym @idempotent 'Crop'
-        Remove-StoredProcedure @idempotent 'GetFarmers'
-        Remove-DataType @idempotent 'GUID'
-        Remove-Table @idempotent $crops.TableName
-        Remove-Table @idempotent $farmers.TableName
-    
+        Remove-View 'FarmerCrops' -SchemaName 'idempotent'
+        Remove-UserDefinedFunction -SchemaName 'idempotent' 'GetInteger'
+        Remove-Synonym -SchemaName 'idempotent' 'Crop'
+        Remove-StoredProcedure -SchemaName 'idempotent' 'GetFarmers'
+        Remove-DataType -SchemaName 'idempotent' 'GUID'
+        Remove-Table -SchemaName 'idempotent' -Name 'Crops'
+        Remove-Table -SchemaName 'idempotent' -Name 'Farmers'
         Remove-Schema 'idempotent'
     }
 '@ | New-TestMigration -Name 'ShouldCreateIdempotentQueryForAddOperations'
@@ -470,29 +472,26 @@ Describe 'Convert-Migration.when scripts are run multiple times' {
     
         try
         {
-            $schema = @{ SchemaName = 'idempotent' }
-            $crops = @{ TableName = 'Crops' }
-            $farmers = @{ TableName = 'Farmers' }
-    
-            Assert-Schema -Name $schema.SchemaName
-            Assert-Table @schema $farmers.TableName
-            Assert-Column @schema @farmers -Name 'Name' -DataType 'varchar' -NotNull -Size 50
-            Assert-Column @schema @farmers -Name 'ZipCode' -DataType 'varchar' -Size 10
-            Assert-PrimaryKey @schema @farmers -ColumnName 'ID'
-            (Invoke-RivetTestQuery -Query ('select * from {0}.{1} where ID = 1 and Name = ''Blackbird''' -f $schema.SchemaName,$farmers.TableName)) | Should -Not -BeNullOrEmpty
+            Assert-Schema -Name 'idempotent'
+            Assert-Table -SchemaName 'idempotent' -Name 'Farmers'
+            Assert-Column -SchemaName 'idempotent' -TableName 'Farmers' -Name 'Name' -DataType 'varchar' -NotNull -Size 50
+            Assert-Column -SchemaName 'idempotent' -TableName 'Farmers' -Name 'ZipCode' -DataType 'varchar' -Size 10
+            Assert-PrimaryKey -Name 'PK_idempotent_Farmers' -ColumnName 'ID'
+            (Invoke-RivetTestQuery -Query 'select * from idempotent.Farmers where ID = 1 and Name = ''Blackbird''') | Should -Not -BeNullOrEmpty
         
-            Assert-Table @schema -Name $crops.TableName -Descriptoin 'Yummy!'
-            Assert-CheckConstraint -Name 'CK_Farmers_AllowedCrops' -Definition '([Name]=''Strawberries'' or [Name]=''Rasberries'')'
-            Assert-DefaultConstraint @schema @crops -ColumnName 'Name' -Definition '(''Strawberries'')'
-            Assert-ForeignKey @schema @crops -ReferencesSchema $schema.SchemaName -References $farmers.TableName
+            Assert-Table -SchemaName 'idempotent' -Name 'Crops' -Description 'New'
+            Assert-Column -SchemaName 'idempotent' -TableName 'Crops' -Name 'Name' -DataType 'varchar' -Description 'Yummy!'
+            Assert-CheckConstraint -Name 'CK_Crops_AllowedCrops' -Definition '([Name]=''Strawberries'' or [Name]=''Rasberries'')'
+            Assert-DefaultConstraint -Name 'DF_idempotent_Crops_Name' -Definition '(''Strawberries'')'
+            Assert-ForeignKey -Name 'FK_idempotent_Crops_idempotent_Farmers'
             Assert-Index -Name 'IX_Crops_Name2' -ColumnName 'Name'
-            Assert-UniqueKey @schema @crops -ColumnName 'Name'
-            Assert-DataType @schema -Name 'GUID' -BaseTypeName 'uniqueidentifier' -UserDefined
-            Assert-StoredProcedure @schema -Name 'GetFarmers' -Definition 'AS select * from Farmers'
-            Assert-Synonym @schema -Name 'Crop' -TargetObjectName '[idempotent].[Crops]'
-            Assert-Trigger @schema -Name 'CropActivity' -Definition 'on idempotent.Crops after insert, update as return'
-            Assert-UserDefinedFunction @schema -Name 'GetInteger' -Definition '(@Number int) returns int as begin return @Number + @Number end'
-            Assert-View @schema -Name 'FarmerCrops' -Definition "as select Farmers.Name FarmerName, Crops.Name CropName from Crops join Farmers on Crops.FarmerID = Farmers.ID"
+            Assert-UniqueKey -Name 'AK_idempotent_Crops_Name' -ColumnName 'Name'
+            Assert-DataType -SchemaName 'idempotent' -Name 'GUID' -BaseTypeName 'uniqueidentifier' -UserDefined
+            Assert-StoredProcedure -SchemaName 'idempotent' -Name 'GetFarmers' -Definition 'AS select * from Farmers'
+            Assert-Synonym -SchemaName 'idempotent' -Name 'Crop' -TargetObjectName '[idempotent].[Crops]'
+            Assert-Trigger -SchemaName 'idempotent' -Name 'CropActivity' -Definition 'on idempotent.Crops after insert, update as return'
+            Assert-UserDefinedFunction -SchemaName 'idempotent' -Name 'GetInteger' -Definition '(@Number int) returns int as begin return @Number + @Number end'
+            Assert-View -SchemaName 'idempotent' -Name 'FarmerCrops' -Definition "as select Farmers.Name FarmerName, Crops.Name CropName from Crops join Farmers on Crops.FarmerID = Farmers.ID"
             (Test-Schema 'convertmigrationquery') | Should -BeFalse
     
             $scriptQuery = Get-Content -Path (Join-Path $outputDir -ChildPath ('{0}.Unknown.sql' -f $RTDatabaseName)) |
@@ -1004,14 +1003,12 @@ Describe 'Convert-Migration.when there are operations for the same object across
     
         try
         {
-            $schemaPath = Join-Path -Path $outputDir -ChildPath ('{0}.Schema.sql' -f $RTDatabaseName)
-            $content = Get-Content -Path $schemaPath -Raw
             $expectedQuery = @'
-create table [aggregate].[Beta] (
-    [ID] int not null,
-    [Name] nvarchar(500) not null,
-    [LastName] nvarchar(500) not null
-)
+    create table [aggregate].[Beta] (
+        [ID] int not null,
+        [Name] nvarchar(500) not null,
+        [LastName] nvarchar(500) not null
+    )
 '@
             Assert-Query -Schema -ExpectedQuery $expectedQuery
     
@@ -1414,6 +1411,46 @@ function Pop-Migration
         {
             Pop-ConvertedScripts
             $migration | Enable-Migration
+        }
+    }
+}
+
+Describe 'Convert-Migration.when migrations rename a datatype' {
+    BeforeEach { Init }
+    AfterEach { Reset }
+    It 'should export correct scripts' {
+        @'
+function Push-Migration
+{
+    Add-DataType -Name 'MyInt' -From 'bigint'
+}
+function Pop-Migration
+{
+    Remove-DataType 'MyInt'
+}
+'@ | New-TestMigration -Name 'BaseDataType'
+
+        Invoke-RTRivet -Push
+
+        @'
+function Push-Migration
+{
+    Rename-DataType -Name 'MyInt' -NewName 'MyBigInt'
+}
+function Pop-Migration
+{
+    Rename-DataType -Name 'MyBigInt' -NewName 'MyInt'
+}
+'@ | New-TestMigration -Name 'RenameDataType'
+
+        try
+        {
+            Assert-ConvertMigration -Schema -Include 'RenameDataType'
+            Assert-DataType -Name 'MyBigInt' -BaseTypeName 'bigint' -UserDefined
+        }
+        finally
+        {
+            Pop-ConvertedScripts
         }
     }
 }

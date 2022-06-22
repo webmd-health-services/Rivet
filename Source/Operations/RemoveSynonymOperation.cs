@@ -11,12 +11,12 @@ namespace Rivet.Operations
 
 		public override string ToIdempotentQuery()
 		{
-			return string.Format("if object_id('{0}.{1}', 'SN') is not null{2}\t{3}", SchemaName, Name, Environment.NewLine, ToQuery());
+			return $"if object_id('{SchemaName}.{Name}', 'SN') is not null{Environment.NewLine}    {ToQuery()}";
 		}
 
 		public override string ToQuery()
 		{
-			return string.Format("drop synonym [{0}].[{1}]", SchemaName, Name);
+			return $"drop synonym [{SchemaName}].[{Name}]";
 		}
 	}
 }

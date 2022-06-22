@@ -2,6 +2,7 @@
 using Rivet.Operations;
 using System;
 using System.Collections;
+using System.ComponentModel.Design;
 using System.Linq;
 
 namespace Rivet.Test
@@ -93,7 +94,7 @@ namespace Rivet.Test
 			{
 				new AddCheckConstraintOperation("schema", "table", "name", "expression", false, false),
 				new AddDataTypeOperation("schema", "name", "from"),
-				new AddDefaultConstraintOperation("schema", "table", "expression", "column", "name", false),
+				new AddDefaultConstraintOperation("schema", "table", "name", "column", "expression", false),
 				new AddForeignKeyOperation("schema", "table", "name", new string[0], "ref schema", "ref table", new string[0], "on delete", "on update", false, false), 
 				new AddIndexOperation("schema", "table", "name", new string[0], false, false, new string[0], "where", "on", "file stream on", new string[0]), 
 				new AddPrimaryKeyOperation("schema", "table", "name", new string[0], false, new string[0]),
@@ -118,7 +119,7 @@ namespace Rivet.Test
 				new RemoveDataTypeOperation("SCHEMA", "NAME"),
 				new RemoveDefaultConstraintOperation("SCHEMA", "TABLE", "COLUMN", "NAME"),
 				new RemoveForeignKeyOperation("SCHEMA", "TABLE", "NAME"),
-				new RemoveIndexOperation("SCHEMA", "TABLE", "NAME"),
+				new RemoveIndexOperation("SCHEMA", "TABLE", "NAME", new[] { "COLUMN" }, true),
 				new RemovePrimaryKeyOperation("SCHEMA", "TABLE", "NAME"),
 				new RemoveRowGuidColOperation("SCHEMA", "TABLE", "COLUMN"),
 				new RemoveSchemaOperation("SCHEMA"),
@@ -126,7 +127,7 @@ namespace Rivet.Test
 				new RemoveSynonymOperation("SCHEMA", "NAME"),
 				new RemoveTableOperation("SCHEMA", "NAME"),
 				new RemoveTriggerOperation("SCHEMA", "NAME"),
-				new RemoveUniqueKeyOperation("SCHEMA", "TABLE", "NAME"),
+				new RemoveUniqueKeyOperation("SCHEMA", "TABLE", "NAME", new[] { "COLUMN" } ),
 				new RemoveUserDefinedFunctionOperation("SCHEMA", "NAME"),
 				new RemoveViewOperation("SCHEMA", "NAME"),
 				new RemoveStoredProcedureOperation("SCHEMA", "NAME"),
@@ -150,9 +151,35 @@ namespace Rivet.Test
 				var addOp = addOps[idx];
 				var removeOp = removeOps[idx];
 				addOp.Merge(removeOp);
-				Assert.That(addOp.Disabled, Is.True);
+				Assert.That(addOp.Disabled, Is.True, () => $"{addOp.GetType().FullName}; {removeOp.GetType().FullName}");
 				Assert.That(removeOp.Disabled, Is.True);
 			}
+		}
+
+		[Test]
+		public void ShouldAddNewColumnsToARenamedTable()
+		{
+			var addTableOp = new AddTableOperation("schema", "name", null, false, "file group", "text image file group",
+				"file stream file group", null);
+			var renameTableOp = new RenameObjectOperation("schema", "name", "new table");
+			var newColumns = new[]
+			{
+				Column.TinyInt("errorId", Nullable.Null, null, null, "some description")
+			};
+			var updateTableOp = new UpdateTableOperation("schema", "new table", newColumns, null, null);
+
+			addTableOp.Merge(renameTableOp);
+
+			renameTableOp.Merge(updateTableOp);
+			addTableOp.Merge(updateTableOp);
+
+			Assert.That(renameTableOp.Disabled, Is.True);
+			Assert.That(updateTableOp.Disabled, Is.True);
+			Assert.That(addTableOp.Disabled, Is.False);
+			Assert.That(addTableOp.Columns, Is.Not.Empty);
+			Assert.That(addTableOp.Columns, Has.Count.EqualTo(1));
+			Assert.That(addTableOp.Columns[0], Is.SameAs(newColumns[0]));
+			Assert.That(addTableOp.Name, Is.EqualTo("new table"));
 		}
 	}
 }

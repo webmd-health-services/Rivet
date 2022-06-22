@@ -41,11 +41,5 @@ function Add-DefaultConstraint
 
     Set-StrictMode -Version 'Latest'
 
-    if( -not $Name )
-    {
-        $Name = New-ConstraintName -Default -SchemaName $SchemaName -TableName $TableName -ColumnName $ColumnName
-        Write-Warning ("Default constraint names will be required in a future version of Rivet. Please add a ""Name"" parameter (with a value of ""$($Name)"") to the Add-DefaultConstraint operation for the [$($SchemaName)].[$($TableName)].[$($ColumnName)] column.") 
-    }
-
     [Rivet.Operations.AddDefaultConstraintOperation]::new($SchemaName, $TableName, $Name, $ColumnName, $Expression, $WithValues)
 }

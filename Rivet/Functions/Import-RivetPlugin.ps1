@@ -5,32 +5,53 @@ function Import-RivetPlugin
     param(
         [Parameter(Mandatory)]
         [AllowEmptyCollection()]
-        [String[]]$Path
+        [String[]]$Path,
+
+        [Parameter(Mandatory)]
+        [AllowEmptyCollection()]
+        [String[]]$ModuleName
     )
 
     Set-StrictMode -Version 'Latest'
     Use-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     
-    # $DebugPreference = 'Continue'
-
     Write-Timing -Message 'Import-RivetPlugin  BEGIN' -Indent
 
-    $commands = & {
+    $moduleNames = & {
         foreach( $pluginPath in $Path )
         {
             if( [IO.Path]::GetExtension($pluginPath) -eq '.ps1' )
             {
-                Write-Error -Message ('Unable to import Rivet plugin "{0}": invalid plugin file extension. A Rivet plugin must be a PowerShell module. The path to your plugin must be to a directory that is importable by the `Import-Module` command, or to a .psd1 or .psm1 file.' -f $pluginPath) -ErrorAction $ErrorActionPreference
+                Write-Error -Message ('Unable to import Rivet plugin "{0}": invalid plugin file extension. A Rivet plugin must be a PowerShell module. The path to your plugin must be to a directory that is importable by the `Import-Module` command, or to a .psd1 or .psm1 file.' -f $pluginPath) -ErrorAction Stop
                 continue
             }
 
-            Write-Timing -Message ('  Import {0}  BEGIN' -f $pluginPath)
-            $module = Import-Module -Name $pluginPath -Global -Force -PassThru
-            Write-Timing -Message ('  Import {0}  END' -f $pluginPath)
+            Write-Timing -Message "  Import  BEGIN  $($pluginPath)"
+            Import-Module -Name $pluginPath -Global -Force -PassThru |
+                Select-Object -ExpandProperty 'Name' |
+                Write-Output
+            Write-Timing -Message "  Import  END    $($pluginPath)"
+        }
 
-            Write-Timing -Message ('  Get Commands  BEGIN')
-            Get-Command -Module $module.Name
-            Write-Timing -Message ('  Get Commands  END')
+        $ModuleName | Write-Output
+    }
+
+    $commands = & {
+        foreach( $moduleName in $moduleNames )
+        {
+            Write-Timing -Message "  Get Commands  BEGIN  $($moduleName)"
+            if( -not (Get-Module -Name $moduleName) )
+            {
+                $msg = ("Unable to load plugins from module ""$($moduleName)"": the module is not loaded. Please " +
+                        'call "Import-Module" to load this module before running Rivet. If you want Rivet to load the ' +
+                        'module for you, use the "PluginPaths" setting and set it to a list of paths to modules ' +
+                        'that Rivet should import.')
+                Write-Error -Message $msg -ErrorAction Stop
+                continue
+            }
+
+            Get-Command -Module $moduleName
+            Write-Timing -Message "  Get Commands  END    $($moduleName)"
         }
 
         # Get any global functions that may be plugins.

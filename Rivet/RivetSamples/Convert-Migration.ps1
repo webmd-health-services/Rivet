@@ -194,7 +194,7 @@ foreach( $migration in $mergedMigrations )
                 break
             }
 
-            'Rename(Column|Constraint|Index|Object)?Operation'
+            'Rename(Column|Constraint|DataType|Index|Object)?Operation'
             {
                 $schemaScriptPath
             }

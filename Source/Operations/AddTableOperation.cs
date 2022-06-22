@@ -163,6 +163,20 @@ namespace Rivet.Operations
 
 					break;
 				}
+
+				case RenameObjectOperation otherAsRenameObjectOp:
+				{
+					var column = Columns.FirstOrDefault(c => null != c.DefaultConstraintName &&
+																   c.DefaultConstraintName.Equals(otherAsRenameObjectOp.Name, StringComparison.InvariantCultureIgnoreCase));
+					if (null != column)
+					{
+						column.DefaultConstraintName = otherAsRenameObjectOp.NewName;
+						otherAsRenameObjectOp.Disabled = true;
+						return MergeResult.Stop;
+					}
+
+					break;
+				}
 			}
 
 			return MergeResult.Continue;
@@ -170,7 +184,7 @@ namespace Rivet.Operations
 
 		public override string ToIdempotentQuery()
 		{
-			return $"if object_id('{SchemaName}.{Name}', 'U') is null{Environment.NewLine}\t{ToQuery()}";
+			return $"if object_id('{SchemaName}.{Name}', 'U') is null{Environment.NewLine}    {ToIndentedQuery()}";
 		}
 
 		public override string ToQuery()
@@ -189,7 +203,7 @@ namespace Rivet.Operations
 				}
 
 				columnDefinitionClause = string.Join($",{Environment.NewLine}    ", columnDefinitionList.ToArray());
-				columnDefinitionClause = string.Format("({0}    {1}{0})", Environment.NewLine, columnDefinitionClause);
+				columnDefinitionClause = $"({Environment.NewLine}    {columnDefinitionClause}{Environment.NewLine})";
 			}
 
 			var fileGroupClause = "";
