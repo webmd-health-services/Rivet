@@ -62,6 +62,11 @@ Reverts the last migration script, then reapplies its.  Equivalent to
 rivet.ps1 -Push -Environment Production
 
 Demonstrates how to migrate databases in a different environment.  The `Production` environment should be specified in the `rivet.json` configuration file.
+
+.EXAMPLE
+rivet.ps1 -DropDatabase
+
+Demonstrates how to drop the database(s) for the current environment. Using this switch will require confirmation from the user but it can be bypassed when given the -Force switch as well.
 #>
 #Requires -Version 3
 [CmdletBinding(DefaultParameterSetName='ShowHelp', SupportsShouldProcess=$True)]
@@ -111,6 +116,7 @@ param(
     [Parameter(ParameterSetName='PopByCount')]
     [Parameter(ParameterSetName='PopByName')]
     [Parameter(ParameterSetName='PopAll')]
+    [Parameter(ParameterSetName='DropDatabase')]
     [Switch]
     # Force popping a migration you didn't apply or that is old.
     $Force,
@@ -122,6 +128,7 @@ param(
     [Parameter(ParameterSetName='PopByName')]
     [Parameter(ParameterSetName='PopAll')]
     [Parameter(ParameterSetName='Redo')]
+    [Parameter(ParameterSetName='DropDatabase')]
     [string[]]
     # The database(s) to migrate. Optional.  Will operate on all databases otherwise.
     $Database,
@@ -133,6 +140,7 @@ param(
     [Parameter(ParameterSetName='PopByName')]
     [Parameter(ParameterSetName='PopAll')]
     [Parameter(ParameterSetName='Redo')]
+    [Parameter(ParameterSetName='DropDatabase')]
     [string]
     # The environment you're working in.  Controls which settings Rivet loads from the `rivet.json` configuration file.
     $Environment,
@@ -144,9 +152,15 @@ param(
     [Parameter(ParameterSetName='PopByName')]
     [Parameter(ParameterSetName='PopAll')]
     [Parameter(ParameterSetName='Redo')]
+    [Parameter(ParameterSetName='DropDatabase')]
     [string]
     # The path to the Rivet configuration file.  Default behavior is to look in the current directory for a `rivet.json` file.  See `about_Rivet_Configuration` for more information.
-    $ConfigFilePath
+    $ConfigFilePath,
+
+    [Parameter(ParameterSetName='DropDatabase')]
+    [Switch]
+    # Drops the database(s) for the current environment when given. User will be prompted for confirmation when used.
+    $DropDatabase
 )
 
 Set-StrictMode -Version Latest
