@@ -132,8 +132,8 @@ Found no databases to migrate. This can be a few things:
                                     -Database 'Master' `
                                     -ConnectionTimeout $settings.ConnectionTimeout
 
-            $databaseString = $settings.Databases | Join-String -Property Name -SingleQuote -Separator ', '
-            $query = "select name from sys.databases where name in ({0})" -f $databaseString
+            $databaseString = ($settings.Databases | Select-Object -ExpandProperty 'Name') -join "', '"
+            $query = "select name from sys.databases where name in ('$($databaseString)')"
             $databaseList = Invoke-Query -Query $query
 
             if( $databaseList )
@@ -141,8 +141,12 @@ Found no databases to migrate. This can be a few things:
                 $confirmDropDatabase = $false
                 if( -not $Force)
                 {
-                    $confirmQuery = "Using the `DropDatabase` switch will drop the database(s) for the current environment. Do you want to proceed?"
-                    $confirmCaption = "Drop the following database(s)? {0}" -f ($databaseList | Join-String -Property Name -Separator ', ')
+                    $confirmQuery = 'Using the `DropDatabase` switch will drop the database(s) for the current ' +
+                                    'environment. Do you want to proceed?'
+                    
+                    $confirmCaption = 'Drop the following database(s)? ' +
+                                      (($databaseList | Select-Object -ExpandProperty 'Name') -join ', ')
+                    
                     $confirmDropDatabase = $PSCmdlet.ShouldContinue( $confirmQuery, $confirmCaption )
                 }
 

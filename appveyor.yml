@@ -1,0 +1,65 @@
+version: 0.0.0+{build}
+
+skip_tags: true
+
+skip_branch_with_pr: true
+
+build:
+  verbosity: minimal
+
+test: off
+
+environment:
+  WHISKEY_DISABLE_ERROR_FORMAT: True
+  matrix:
+  - job_name: SQL Server 2012 R2
+    job_group: ps
+    appveyor_build_worker_image: Visual Studio 2015
+    MSSQL_INSTANCE_NAME: (local)\SQL2012SP1
+    MSSQL_SERVICE_NAME: MSSQL$SQL2012SP1
+
+  - job_name: SQL Server 2014/PowerShell 6
+    job_group: pwsh
+    appveyor_build_worker_image: Visual Studio 2015
+    MSSQL_INSTANCE_NAME: (local)\SQL2014
+    MSSQL_SERVICE_NAME: MSSQL$SQL2014
+
+  - job_name: SQL Server 2016
+    job_group: ps
+    appveyor_build_worker_image: Visual Studio 2015
+    MSSQL_INSTANCE_NAME: (local)\SQL2016
+    MSSQL_SERVICE_NAME: MSSQL$SQL2016
+
+  - job_name: SQL Server 2017
+    job_group: ps
+    appveyor_build_worker_image: Visual Studio 2015
+    MSSQL_INSTANCE_NAME: (local)\SQL2017
+    MSSQL_SERVICE_NAME: MSSQL$SQL2017
+
+  - job_name: SQL Server 2019/PowerShell 7
+    job_group: pwsh
+    appveyor_build_worker_image: Visual Studio 2019
+    MSSQL_INSTANCE_NAME: (local)\SQL2019
+    MSSQL_SERVICE_NAME: MSSQL$SQL2019
+
+
+artifacts:
+- path: .output\*
+
+
+for:
+# Build in Windows PowerShell
+- matrix:
+    only:
+    - job_group: ps
+  build_script:
+  - ps: .\init.ps1 -SqlServerName "$($env:MSSQL_INSTANCE_NAME)"
+  - ps: .\build.ps1
+
+# Build in PowerShell
+- matrix:
+    only:
+    - job_group: pwsh
+  build_script:
+  - pwsh: ./init.ps1 -SqlServerName "$($env:MSSQL_INSTANCE_NAME)"
+  - pwsh: ./build.ps1

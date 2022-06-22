@@ -36,6 +36,12 @@ function Pop-Migration
     }
 
     It 'should add data type by assembly' {
+        $oid = Invoke-RivetTestQuery -Query 'select isnull(object_id(''sys.trusted_assemblies''), 0)' -AsScalar
+        if( -not $oid )
+        {
+            return
+        }
+
         $assemblyPath = Join-Path -Path $PSScriptRoot -ChildPath '..\Source\Rivet.Test.Fake\bin\*\Rivet.Test.Fake.dll' -Resolve -ErrorAction Ignore |
                         Select-Object -First 1
         $assemblyHash = Get-FileHash -Path $assemblyPath -Algorithm SHA512 | Select-Object -ExpandProperty 'Hash'
