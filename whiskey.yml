@@ -3,11 +3,24 @@ PublishOn:
 - master
  
 Build:
+- PowerShell:
+    IfExists: env:MSSQL_SERVICE_NAME
+    ScriptBlock: |
+        Get-ChildItem -Path 'env:MSSQL_*' | Format-Table -Auto
+        Start-Service -Name $env:MSSQL_SERVICE_NAME -PassThru | Format-Table -Auto
+
 - Version:
     Path: Rivet\Rivet.psd1
+    PowerShellModuleName: Rivet
     Prerelease:
-    - "*/*": alpha$(WHISKEY_BUILD_NUMBER)
-    - develop: rc$(WHISKEY_BUILD_NUMBER)
+    - "*/*": alpha1
+    - develop: rc1
+
+# Update the AppVeyor build/version number.
+- Exec:
+      OnlyBy: BuildServer
+      Path: appveyor
+      Argument: [ UpdateBuild, -Version, "$(WHISKEY_SEMVER2)+$(WHISKEY_BUILD_NUMBER)" ]
 
 - DotNet:
     Command: build
@@ -33,12 +46,6 @@ Build:
     - Rivet\bin
     - Rivet.dll
 
-# Update the AppVeyor build/version number.
-- Exec:
-      OnlyBy: BuildServer
-      Path: appveyor
-      Argument: [ UpdateBuild, -Version, $(WHISKEY_SEMVER2) ]
-
 - MergeFile:
     OnlyBy: BuildServer
     IfExists: Rivet\Functions\*.ps1
@@ -59,11 +66,6 @@ Build:
     DestinationPath: Test\RivetTest\RivetTest.psm1
     DeleteSourceFiles: true
     TextSeparator: "$(NewLine)$(NewLine)"
-
-- File:
-    OnlyBy: BuildServer
-    Path: Test\Server.txt
-    Content: ".\\SQL2017"
 
 - Pester4:
     Verbose: false  # Rivet is super chatty with Verbose messages.

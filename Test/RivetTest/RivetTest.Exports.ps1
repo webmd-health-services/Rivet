@@ -3,4 +3,5 @@
 $module = Test-ModuleManifest -Path (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest.psd1' -Resolve)
 [String[]]$variablesToExport = $module.ExportedVariables.Keys 
 [String[]]$aliasesToExport = $module.ExportedAliases.Keys
-Export-ModuleMember -Variable $variablesToExport -Alias $aliasesToExport
+[String[]]$functionsToExport = $module.ExportedFunctions.Keys
+Export-ModuleMember -Variable $variablesToExport -Alias $aliasesToExport -Function $functionsToExport
