@@ -142,6 +142,9 @@ Pop-Migration function is empty and contains no operations. Maybe you''d like to
     }
 '@)
                 }
+
+                $afterMigrationLoadParameter = @{ Migration = $m }
+                & { Invoke-RivetPlugin -Event ([Rivet.Events]::AfterMigrationLoad) -Parameter $afterMigrationLoadParameter }
                 $m | Write-Output
             }
             catch
