@@ -41,6 +41,7 @@ LONG DESCRIPTION
 
     * BeforeOperationLoad
     * AfterOperationLoad
+    * AfterMigrationLoad
 
     ### BeforeOperationLoad
 
@@ -58,7 +59,7 @@ LONG DESCRIPTION
     Plugins that respond to this event *must* have `Migration` and `Operation`
     parameters.
 
-    #### Example 1
+    #### Example
 
     This code demonstrates an empty plugin that responds to the 
     `BeforeOperationLoad` event.
@@ -94,7 +95,7 @@ LONG DESCRIPTION
     Plugins that respond to this event *must* have `Migration` and `Operation`
     parameters.
 
-    #### Example 1
+    #### Example
 
     This code demonstrates an empty plugin that responds to the 
     `AfterOperationLoad` event.
@@ -109,6 +110,36 @@ LONG DESCRIPTION
 
                 [Parameter(Mandatory)]
                 [Rivet.Operations.Operation]$Operation
+            )
+
+            # Do stuff.
+        }
+
+    ### AfterMigrationLoad
+
+    #### Overview
+
+    The `AfterMigrationLoad` event occurs after all operations in a migration
+    have been applied, but before the transaction has been commited. Use this
+    event for any validations that require a fully loaded migration.
+
+    These plugins get passed the `Migration` parameter which is the migration
+    object currently being loaded.
+
+    Plugins that respond to this event *must* have the `Migration` parameter.
+
+    #### Example
+
+    This code demonstrates an empty plugin that responds to the 
+    `AfterMigrationLoad` event.
+
+        function Invoke-MyPlugin
+        {
+            [CmdletBinding()]
+            [Rivet.Plugin([Rivet.Events]::AfterMigrationLoad)]
+            param(
+                [Parameter(Mandatory)]
+                [Rivet.Migration]$Migration
             )
 
             # Do stuff.

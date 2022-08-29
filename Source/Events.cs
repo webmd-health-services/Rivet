@@ -4,6 +4,7 @@
     {
         None = 0,
         BeforeOperationLoad,
-        AfterOperationLoad
+        AfterOperationLoad,
+        AfterMigrationLoad
     }
 }

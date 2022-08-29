@@ -71,6 +71,7 @@ An example PowerShell module that demonstrates how to write Rivet plugins.
 
     # Functions to export from this module
     FunctionsToExport = @(
+                            'Complete-Migration',
                             'Complete-MigrationOperation',
                             'Start-MigrationOperation'
                          )
