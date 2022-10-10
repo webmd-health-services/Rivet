@@ -29,6 +29,7 @@ function Invoke-RTRivet
         [Parameter(ParameterSetName='PopByCount')]
         [Parameter(ParameterSetName='PopAll')]
         [Parameter(ParameterSetName='DropDatabase')]
+        [Parameter(ParameterSetName='Checkpoint')]
         [switch]$Force,
 
         [Parameter(ParameterSetName='Redo')]
@@ -41,7 +42,16 @@ function Invoke-RTRivet
         [Parameter(ParameterSetName='DropDatabase')]
         [Switch]
         # Drops the database(s) for the current environment when given. User will be prompted for confirmation when used.
-        $DropDatabase
+        $DropDatabase,
+
+        [Parameter(ParameterSetName='Checkpoint')]
+        [Switch]
+        # Checkpoints the current state of the database so that it can be re-created.
+        $Checkpoint,
+
+        [Parameter(ParameterSetName='Checkpoint')]
+        # The output path for the schema.ps1 file that will be generated when using the -Checkpoint switch. If not provided the path will default to the same directory as the `rivet.json` file.
+        [String] $CheckpointOutputPath
     )
     
     Set-StrictMode -Version Latest
