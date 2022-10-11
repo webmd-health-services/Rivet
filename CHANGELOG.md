@@ -1,4 +1,9 @@
 
+# 0.15.0
+
+* Added `Checkpoint-Migration` function that checkpoints the current state of the database so that it can be re-created.
+
+
 # 0.14.0
 
 * Added an `AfterMigrationLoad` Rivet event that occurs after all operations in a migration have been applied, but
