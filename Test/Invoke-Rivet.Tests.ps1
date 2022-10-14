@@ -251,6 +251,50 @@ Describe 'Invoke-Rivet' {
         $Global:Error.Count | Should -Be 0
         (Test-Database) | Should -BeFalse
     }
+    
+    It 'should initialize databases when a schema.ps1 file exists.' {
+        $schemaFileContents = @'
+        function Push-Migration
+        {
+            Add-Table -Name 'Replicated' -Column {
+                int 'ID' -Identity
+            }
+            Add-Table -Name 'NotReplicated' -Column {
+                int 'ID' -Identity -NotForReplication
+            }
+        }
+        function Pop-Migration
+        {
+            Remove-Table 'Replicated'
+            Remove-Table 'NotReplicated'
+        }
+'@
+
+        $testDriveDirectory = (Get-ChildItem -Path $TestDrive | Sort-Object LastWriteTime -Desc | Select-Object -First 1).FullName
+        $schemaFilePath = Join-Path -Path $testDriveDirectory -ChildPath 'schema.ps1'
+        $schemaFileContents | Out-File -FilePath $schemaFilePath
+        $rivetJsonPath = Join-Path -Path $testDriveDirectory -ChildPath 'rivet.json'
+        Invoke-RTRivet -Initialize -ConfigFilePath $rivetJsonPath
+        Invoke-RTRivet -Push
+        Assert-Table 'Replicated'
+        Assert-Table 'NotReplicated'
+
+        # Making sure that tables created from the schema.ps1 script still exists after popping
+        Invoke-RTRivet -Pop
+        Assert-Table 'Replicated'
+        Assert-Table 'NotReplicated'
+
+        # Now drop the tables to avoid error from Clear-TestDatbase
+        $query = 'DROP TABLE Replicated'
+        Invoke-RivetTestQuery -Query $query -DatabaseName 'RivetTest'
+        $query = 'DROP TABLE NotReplicated'
+        Invoke-RivetTestQuery -Query $query -DatabaseName 'RivetTest'
+    }
+
+    It 'should fail given the -Initialize switch and a schema.ps1 doesn''t file exists.' {
+        Invoke-RTRivet -Initialize -ErrorAction SilentlyContinue
+        $Global:Error | Should -Match 'The databases could not be initialized. A schema.ps1 file doesn''t exist'
+    }
 }
 
 function Init
@@ -335,4 +379,3 @@ function NewMyPlugin
 
     }
 }
-

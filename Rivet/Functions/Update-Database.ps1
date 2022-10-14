@@ -139,7 +139,7 @@ function Update-Database
     }
 
     $migrations = 
-        Get-MigrationFile -Path $Path -Configuration $Configuration @byName -ErrorAction Stop |
+        Get-MigrationFile -Path $Path -Configuration $Configuration -Pop:$Pop @byName -ErrorAction Stop |
         Sort-Object -Property 'MigrationID' -Descending:$popping |
         Where-Object {
             if( $RivetSchema )

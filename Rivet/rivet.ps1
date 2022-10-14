@@ -130,6 +130,7 @@ param(
     [Parameter(ParameterSetName='Redo')]
     [Parameter(ParameterSetName='DropDatabase')]
     [Parameter(ParameterSetName='Checkpoint')]
+    [Parameter(ParameterSetName='Initialize')]
     [string[]]
     # The database(s) to migrate. Optional.  Will operate on all databases otherwise.
     $Database,
@@ -143,6 +144,7 @@ param(
     [Parameter(ParameterSetName='Redo')]
     [Parameter(ParameterSetName='DropDatabase')]
     [Parameter(ParameterSetName='Checkpoint')]
+    [Parameter(ParameterSetName='Initialize')]
     [string]
     # The environment you're working in.  Controls which settings Rivet loads from the `rivet.json` configuration file.
     $Environment,
@@ -156,6 +158,7 @@ param(
     [Parameter(ParameterSetName='Redo')]
     [Parameter(ParameterSetName='DropDatabase')]
     [Parameter(ParameterSetName='Checkpoint')]
+    [Parameter(ParameterSetName='Initialize')]
     [string]
     # The path to the Rivet configuration file.  Default behavior is to look in the current directory for a `rivet.json` file.  See `about_Rivet_Configuration` for more information.
     $ConfigFilePath,
@@ -171,8 +174,14 @@ param(
     $Checkpoint,
 
     [Parameter(ParameterSetName='Checkpoint')]
+    [String]
     # The output path for the schema.ps1 file that will be generated when using the -Checkpoint switch. If not provided the path will default to the same directory as the `rivet.json` file.
-    [String] $CheckpointOutputPath
+    $CheckpointOutputPath,
+
+    [Parameter(ParameterSetName='Initialize')]
+    [Switch]
+    # Initializes a database for a migration by applying contents of the schema.ps1 file located at the same directory as the rivet.json file.
+    $Initialize
 )
 
 Set-StrictMode -Version Latest

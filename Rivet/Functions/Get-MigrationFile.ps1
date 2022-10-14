@@ -20,7 +20,9 @@ function Get-MigrationFile
         [String[]]$Include,
 
         # A list of migrations to exclude. Matches against the migration's ID or Name or the migration's file name (without extension). Wildcards permitted.
-        [String[]]$Exclude
+        [String[]]$Exclude,
+
+        [Switch] $Pop
     )
 
     Set-StrictMode -Version Latest
@@ -41,6 +43,29 @@ function Get-MigrationFile
     }
 
     $foundMatches = @{ }
+    $schemaMigrationPath = Join-Path -Path $Path -ChildPath '01000000000000_schema.ps1'
+
+    if( -not $Pop )
+    {
+        $schemaFilePath = Join-Path -Path $Path -ChildPath 'schema.ps1'
+        if( (Test-Path -Path $schemaFilePath) -and -not (Test-Path -Path $schemaMigrationPath) )
+        {
+            Copy-Item -Path $schemaFilePath -Destination $schemaMigrationPath
+        }
+    }
+    else
+    {
+        if( Test-Path -Path $schemaMigrationPath )
+        {
+            if( -not $PSBoundParameters.ContainsKey('Exclude') )
+            {
+                # needed for check below
+                $PSBoundParameters['Exclude'] = $true
+            }
+
+            $Exclude += '01000000000000_schema'
+        }
+    }
     
     Invoke-Command -ScriptBlock {
             if( $PSCmdlet.ParameterSetName -eq 'ByPath' )

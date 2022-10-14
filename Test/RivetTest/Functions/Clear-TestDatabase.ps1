@@ -22,7 +22,7 @@ function Clear-TestDatabase
 
     if( Test-Database -Name $Name )
     {
-        $query = "select * from [$($Name)].[rivet].[Migrations] where ID > 1000000000 order by ID"
+        $query = "select * from [$($Name)].[rivet].[Migrations] where ID > 1000000000000 order by ID"
         [object[]]$migrations = Invoke-RivetTestQuery -Query $query -DatabaseName $Name
         if( ($migrations | Measure-Object).Count )
         {

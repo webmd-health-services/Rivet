@@ -50,8 +50,14 @@ function Invoke-RTRivet
         $Checkpoint,
 
         [Parameter(ParameterSetName='Checkpoint')]
+        [String]
         # The output path for the schema.ps1 file that will be generated when using the -Checkpoint switch. If not provided the path will default to the same directory as the `rivet.json` file.
-        [String] $CheckpointOutputPath
+        $CheckpointOutputPath,
+
+        [Parameter(ParameterSetName='Initialize')]
+        [Switch]
+        # Initializes a database for a migration by applying contents of the schema.ps1 file located at the same directory as the rivet.json file.
+        $Initialize
     )
     
     Set-StrictMode -Version Latest

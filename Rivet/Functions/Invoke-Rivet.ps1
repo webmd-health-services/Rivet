@@ -63,6 +63,7 @@ function Invoke-Rivet
         [Parameter(ParameterSetName='Redo')]
         [Parameter(ParameterSetName='DropDatabase')]
         [Parameter(ParameterSetName='Checkpoint')]
+        [Parameter(ParameterSetName='Initialize')]
         [string[]]
         # The database(s) to migrate. Optional.  Will operate on all databases otherwise.
         $Database,
@@ -76,6 +77,7 @@ function Invoke-Rivet
         [Parameter(ParameterSetName='Redo')]
         [Parameter(ParameterSetName='DropDatabase')]
         [Parameter(ParameterSetName='Checkpoint')]
+        [Parameter(ParameterSetName='Initialize')]
         [string]
         # The environment you're working in.  Controls which settings Rivet loads from the `rivet.json` configuration file.
         $Environment,
@@ -89,6 +91,7 @@ function Invoke-Rivet
         [Parameter(ParameterSetName='Redo')]
         [Parameter(ParameterSetName='DropDatabase')]
         [Parameter(ParameterSetName='Checkpoint')]
+        [Parameter(ParameterSetName='Initialize')]
         [string]
         # The path to the Rivet configuration file.  Default behavior is to look in the current directory for a `rivet.json` file.  See `about_Rivet_Configuration` for more information.
         $ConfigFilePath,
@@ -104,8 +107,14 @@ function Invoke-Rivet
         $Checkpoint,
 
         [Parameter(ParameterSetName='Checkpoint')]
+        [String]
         # The output path for the schema.ps1 file that will be generated when using the -Checkpoint switch. If not provided the path will default to the same directory as the `rivet.json` file.
-        [String] $CheckpointOutputPath
+        $CheckpointOutputPath,
+
+        [Parameter(ParameterSetName='Initialize')]
+        [Switch]
+        # Initializes a database for a migration by applying contents of the schema.ps1 file located at the same directory as the rivet.json file.
+        $Initialize
     )
 
     Set-StrictMode -Version 'Latest'
@@ -130,6 +139,23 @@ Found no databases to migrate. This can be a few things:
 
     try
     {
+        if( $Initialize )
+        {
+            $schemaFilePath = Join-Path -Path (Split-Path -Path $settings.Path) -ChildPath "schema.ps1"
+            if( -not (Test-Path $schemaFilePath -PathType Leaf) )
+            {
+                Write-Error "The databases could not be initialized. A schema.ps1 file doesn't exist at: $schemaFilePath"
+                return
+            }
+
+            # Copy schema.ps1 file to migration directory of each database
+            $settings.Databases | 
+                Select-Object -ExpandProperty 'MigrationsRoot' -Unique |
+                ForEach-Object { Copy-Item -Path $schemaFilePath -Destination (Join-Path -Path $_ -ChildPath 'schema.ps1') }
+            
+            return
+        }
+
         if( $PSCmdlet.ParameterSetName -eq 'New' )
         {
             $settings.Databases | 

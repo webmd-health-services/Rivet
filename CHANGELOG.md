@@ -1,4 +1,10 @@
 
+# 0.16.0
+
+* Added an `Initialize` switch which initializes a database by applying the contents of the `schema.ps1` file located
+at the same directory as the `rivet.json` file.
+
+
 # 0.15.0
 
 * Added `Checkpoint-Migration` function that checkpoints the current state of the database so that it can be re-created.
