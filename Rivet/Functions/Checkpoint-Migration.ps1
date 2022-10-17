@@ -8,7 +8,7 @@ function Checkpoint-Migration
     .DESCRIPTION
     The `Checkpoint-Migration` function captures the state of a database after all migrations have been applied. The
     captured state is exported to a `schema.ps1` file that can be applied with Rivet to re-create that state of the
-    database. Before capturing the current state, a Rivet Push is invoked to ensure all migrations have been applied.
+    database. Migrations must be pushed before they can be checkpointed.
 
     .EXAMPLE
     Checkpoint-Migration -Database $Database -Environment $Environment -ConfigFilePath $ConfigFilePath
@@ -27,9 +27,6 @@ function Checkpoint-Migration
         # The path to the Rivet configuration file. Default behavior is to look in the current directory for a `rivet.json` file.
         [String] $ConfigFilePath,
 
-        # The output path for the schema.ps1 file. If not provided the path will default to the same directory as the `rivet.json` file.
-        [String] $OutputPath,
-
         # If a schema.ps1 script already exists at the output path it will be overwritten when Force is given.
         [Switch] $Force
     )
@@ -39,29 +36,45 @@ function Checkpoint-Migration
 
     [Rivet.Configuration.Configuration]$settings = Get-RivetConfig -Database $Database -Path $ConfigFilePath -Environment $Environment
 
-    if( -not $OutputPath )
+    foreach( $databaseItem in $settings.Databases )
     {
-        # If no output path put schema.ps1 file in same directory as the rivet.json file.
-        $OutputPath = Join-Path -Path (Split-Path -Path $settings.Path) -ChildPath "schema.ps1"
+        $OutputPath = Join-Path -Path $databaseItem.MigrationsRoot -ChildPath "schema.ps1"
+
+        if ( (Test-Path -Path $OutputPath) -and -not $Force )
+        {
+            Write-Error "Checkpoint output path ""$($OutputPath)"" already exists. Use the -Force switch to overwrite."
+            return
+        }
+
+        $query = @"
+        SELECT CONCAT( FORMAT(ID, '00000000000000'), '_', Name) as MigrationFileName
+        FROM rivet.Migrations
+        WHERE ID > 00010101000000
+"@
+
+        Connect-Database -SqlServerName $settings.SqlServerName `
+                            -Database $databaseItem.Name `
+                            -ConnectionTimeout $settings.ConnectionTimeout
+
+        $pushedMigrations = Invoke-Query -Query $query
+
+        Disconnect-Database
+
+        if( -not $pushedMigrations -and -not $Force)
+        {
+            Write-Error "There are currently no pushed migrations to checkpoint. Please push migrations before checkpointing."
+            return
+        }
+
+        Write-Debug "Checkpoint-Migration: Exporting migration on database $($databaseItem.Name)"
+        $migration = Export-Migration -SqlServerName $settings.SqlServerName -Database $databaseItem.Name
+        $migration = $migration -join [Environment]::NewLine
+        $migration | Out-File -FilePath $OutputPath
+
+        foreach( $migration in $pushedMigrations )
+        {
+            $migrationFilePath = Join-Path -Path $databaseItem.MigrationsRoot -ChildPath "$($migration.MigrationFileName).ps1"
+            Remove-Item -Path $migrationFilePath
+        }
     }
-
-    if ( (Test-Path -Path $OutputPath) -and -not $Force )
-    {
-        Write-Error "Checkpoint output path ""$($OutputPath)"" already exists. Use the -Force switch to overwrite."
-        return
-    }
-
-    $params = @{
-        Database = $Database;
-        Environment = $Environment;
-        ConfigFilePath = $ConfigFilePath;
-    }
-
-    Write-Debug "Checkpoint-Migration: Invoke-Rivet -Push on database(s) ($($settings.Databases.Name -join ', '))"
-    Invoke-Rivet -Push @params | Write-Debug
-
-    Write-Debug "Checkpoint-Migration: Exporting migration on database(s) ($($settings.Databases.Name -join ', '))"
-    $migration = Export-Migration -SqlServerName $settings.SqlServerName -Database $settings.Databases[0].Name
-    $migration = $migration -join [Environment]::NewLine
-    $migration | Out-File -FilePath $OutputPath
 }
