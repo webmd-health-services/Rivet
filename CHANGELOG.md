@@ -1,4 +1,14 @@
 
+# 0.16.0
+
+* Updated `Checkpoint-Migration` function:
+
+    * The `schema.ps1` file generated from `Checkpoint-Migration` is saved to the Migrations directory of each database
+    that is being checkpointed.
+    * Only migrations that have been applied to the database will be exported to the `schema.ps1` file.
+    * Migrations that have been checkpointed will be removed from the Migrations directory.
+
+
 # 0.15.0
 
 * Added `Checkpoint-Migration` function that checkpoints the current state of the database so that it can be re-created.
