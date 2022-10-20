@@ -14,7 +14,7 @@ function Get-MigrationInfo
     Set-StrictMode -Version Latest
 
     # Exclude Rivet's internal migrations.
-    $query = 'select * from {0}.Migrations where ID >= 01000000000000' -f $RTRivetSchemaName
+    $query = 'select * from {0}.Migrations where ID >= 00010101000000' -f $RTRivetSchemaName
     if( $Name )
     {
         $query = '{0} and  name = ''{1}''' -f $query,$Name

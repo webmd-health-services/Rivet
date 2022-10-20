@@ -66,6 +66,7 @@ function Update-Database
     )
 
     Set-StrictMode -Version 'Latest'
+    Use-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
     function ConvertTo-RelativeTime
     {
@@ -147,9 +148,9 @@ function Update-Database
                 return $true
             }
 
-            if( [int64]$_.MigrationID -lt 1000000000000 )
+            if( [int64]$_.MigrationID -lt $script:firstMigrationId )
             {
-                Write-Error ('Migration "{0}" has an invalid ID. IDs lower than 01000000000000 are reserved for internal use.' -f $_.FullName) -ErrorAction Stop
+                Write-Error "Migration ""$($_.FullName)"" has an invalid ID. IDs lower than $($script:firstMigrationId) are reserved for internal use." -ErrorAction Stop
                 return $false
             }
             return $true
