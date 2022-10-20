@@ -1,4 +1,13 @@
 
+# 0.17.0
+
+## Changes 
+
+* The reserved migration IDs threshold has been changed from anything below `10000000000000` to anything below
+`00010101000000`.
+* `Initialize-Database` will now include the `schema.ps1` file from the database's migration directory if it exists.
+
+
 # 0.16.0
 
 * Updated `Checkpoint-Migration` function:

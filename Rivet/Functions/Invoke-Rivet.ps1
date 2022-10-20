@@ -192,7 +192,7 @@ Found no databases to migrate. This can be a few things:
         
             try
             {
-                Initialize-Database -Configuration $settings
+                Initialize-Database -Configuration $settings -Pop:$Pop
 
                 $updateParams = @{
                                     Path = $dbMigrationsPath;
