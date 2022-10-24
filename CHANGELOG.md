@@ -1,4 +1,13 @@
 
+# 0.17.0
+
+## Changes 
+
+* When initializing a database, Rivet now runs the migrations found in the schema.ps1 file, which contains the baseline
+database schema upon which all migrations should be applied. You can use the `Checkpoint-Migration` function to create
+a baseline `schema.ps1` file for your database(s).
+
+
 # 0.16.0
 
 * Updated `Checkpoint-Migration` function:
