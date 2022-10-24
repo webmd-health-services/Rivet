@@ -6,7 +6,7 @@ $RivetMigrationsTableName = 'Migrations'
 $RivetMigrationsTableFullName = "[$($RivetSchemaName)].[$($RivetMigrationsTableName)]"
 $RivetActivityTableName = 'Activity'
 $rivetModuleRoot = $PSScriptRoot
-[Int64] $script:firstMigrationId = 00010101000000
+$script:firstMigrationId = [Int64]'00010101000000' # 1/1/1 00:00:00
 
 $timer = New-Object 'Diagnostics.Stopwatch'
 $timerForWrites = New-Object 'Diagnostics.Stopwatch'
