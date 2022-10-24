@@ -140,3 +140,46 @@ Describe 'Initialize-Database.when a database was initialized with an early vers
         Assert-Column -DataType 'datetime2' @assertColumnParams
     }
 }
+
+Describe 'Initialize-Database.when a schema.ps1 file exists' {
+    BeforeEach { Init }
+    AfterEach { Reset }
+    It 'should initialize databases with schema.ps1 file' {
+        $schemaFileContents = @'
+        function Push-Migration
+        {
+            Add-Table -Name 'Replicated' -Column {
+                int 'ID' -Identity
+            }
+            Add-Table -Name 'NotReplicated' -Column {
+                int 'ID' -Identity -NotForReplication
+            }
+        }
+        function Pop-Migration
+        {
+            Remove-Table 'Replicated'
+            Remove-Table 'NotReplicated'
+        }
+'@
+
+        $config = Get-RivetConfig -Path $RTConfigFilePath -Database $RTDatabaseName
+        $migrationsDirectory = Join-Path -Path $config.DatabasesRoot -ChildPath "$($RTDatabaseName)\Migrations"
+        $schemaFilePath = Join-Path -Path $migrationsDirectory -ChildPath 'schema.ps1'
+        Set-Content -Path $schemaFilePath -Value $schemaFileContents
+
+        Invoke-RTRivet -Push
+        Assert-Table 'Replicated'
+        Assert-Table 'NotReplicated'
+
+        # Making sure that tables created from the schema.ps1 script still exists after popping
+        Invoke-RTRivet -Pop
+        Assert-Table 'Replicated'
+        Assert-Table 'NotReplicated'
+
+        # Now drop the tables to avoid error from Clear-TestDatbase
+        $query = 'DROP TABLE Replicated'
+        Invoke-RivetTestQuery -Query $query -DatabaseName 'RivetTest'
+        $query = 'DROP TABLE NotReplicated'
+        Invoke-RivetTestQuery -Query $query -DatabaseName 'RivetTest'
+    }
+}

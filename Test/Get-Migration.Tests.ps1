@@ -140,11 +140,11 @@ Describe 'Get-Migration' {
         $m | Should -BeOfType ([Rivet.Migration])
     }
     
-    It 'should reject migration with empty push' {
+    It 'should ignore migration with empty push' {
         $m = @'
     function Push-Migration
     {
-        # I'm empty. That is bad!
+        # I'm empty.
     }
     
     function Pop-Migration
@@ -157,8 +157,7 @@ Describe 'Get-Migration' {
         {
             $result = Get-Migration -ConfigFilePath $RTConfigFilePath -ErrorAction SilentlyContinue
             $result | Should -BeNullOrEmpty
-            $Global:Error.Count | Should -BeGreaterThan 0
-            $Global:Error[0] | Should -Match 'Push-Migration.*empty'
+            $Global:Error | Should -BeNullOrEmpty
         }
         finally
         {
@@ -166,7 +165,7 @@ Describe 'Get-Migration' {
         }
     }
     
-    It 'should reject migration with empty pop' {
+    It 'should ignore migration with empty pop' {
         $m = @'
     function Push-Migration
     {
@@ -175,7 +174,7 @@ Describe 'Get-Migration' {
     
     function Pop-Migration
     {
-        # I'm empty. That is bad!
+        # I'm empty.
     }
 '@ | New-TestMigration -Name 'EmptyPop'
     
@@ -183,8 +182,7 @@ Describe 'Get-Migration' {
         {
             $result = Get-Migration -ConfigFilePath $RTConfigFilePath -ErrorAction SilentlyContinue
             $result | Should -BeNullOrEmpty
-            $Global:Error.Count | Should -BeGreaterThan 0
-            $Global:Error[0] | Should -Match 'Pop-Migration.*empty'
+            $Global:Error | Should -BeNullOrEmpty
         }
         finally
         {
