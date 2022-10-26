@@ -24,6 +24,7 @@ if( -not $RivetRoot )
 $RTRivetSchemaName = 'rivet'
 $RTDatabaseName = 'RivetTest'
 $RTDatabase2Name = 'RivetTest2'
+$script:firstMigrationId = [Int64]'00010101000000' # 1/1/1 00:00:00
 
 $serverFileDirs = @( 
                         (Join-Path -Path $PSScriptRoot -ChildPath '..' -Resolve),

@@ -20,6 +20,9 @@ function New-Migration
         $Path
     )
 
+    Set-StrictMode -Version 'Latest'
+    Use-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+
     foreach( $nameItem in $Name )
     {
         $id = $null
@@ -37,6 +40,15 @@ function New-Migration
         $migrationPath = Join-Path -Path $Path -ChildPath $filename
         $migrationPath = [IO.Path]::GetFullPath( $migrationPath )
         New-Item -Path $migrationPath -Force -ItemType File
+
+        $schemaPs1Path = Join-Path -Path $Path -ChildPath $script:schemaFileName
+        if (-not (Test-Path -Path $schemaPs1Path))
+        {
+            $script:defaultSchemaPs1Content | Set-Content -Path $schemaPs1Path
+            $msg = "Rivet created ""$($schemaPs1Path | Resolve-Path -Relative)"", a file where Rivet stores the " +
+                   'database''s baseline schema. PLEASE CHECK THIS FILE INTO SOURCE CONTROL.'
+            Write-Warning $msg
+        }
 
         $template = @"
 <#

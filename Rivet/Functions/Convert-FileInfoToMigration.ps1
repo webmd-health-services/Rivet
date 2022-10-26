@@ -105,16 +105,7 @@ Push-Migration function not found. All migrations are required to have a Push-Mi
                 Push-Migration | Add-Operation -OperationsList $m.PushOperations
                 if( $m.PushOperations.Count -eq 0 )
                 {
-                    throw (@'
-Push-Migration function is empty and contains no operations. Maybe you''d like to create a table? Here's some sample code to get you started:
-
-    function Push-Migration
-    {
-        Add-Table 'LetsCreateATable' {
-            int 'ID' -NotNull
-        }
-    }
-'@)
+                    return
                 }
             
                 if( -not (Test-Path -Path 'function:Pop-Migration') )
@@ -133,14 +124,7 @@ Pop-Migration function not found. All migrations are required to have a Pop-Migr
                 Pop-Migration | Add-Operation -OperationsList $m.PopOperations
                 if( $m.PopOperations.Count -eq 0 )
                 {
-                    throw (@'
-Pop-Migration function is empty and contains no operations. Maybe you''d like to drop a table? Here's some sample code to get you started:
-
-    function Pop-Migration
-    {
-        Remove-Table 'LetsCreateATable'
-    }
-'@)
+                    return
                 }
 
                 $afterMigrationLoadParameter = @{ Migration = $m }

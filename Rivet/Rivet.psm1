@@ -6,7 +6,22 @@ $RivetMigrationsTableName = 'Migrations'
 $RivetMigrationsTableFullName = "[$($RivetSchemaName)].[$($RivetMigrationsTableName)]"
 $RivetActivityTableName = 'Activity'
 $rivetModuleRoot = $PSScriptRoot
-[Int64] $script:firstMigrationId = 00010101000000
+$script:firstMigrationId = [Int64]'00010101000000' # 1/1/1 00:00:00
+$script:schemaMigrationId = [Int64]'00010000000000' # Special ID for schema.ps1, 1/0/0 00:00:00.
+$script:schemaFileName = 'schema.ps1'
+$script:defaultSchemaPs1Content = @"
+# DO NOT MODIFY THIS FILE. The current database schema is saved to this file as a Rivet migration when you checkpoint
+# your database. Any changes manually made to this file will eventually be lost. This file should be checked into source
+# control alongside normal database migrations.
+
+function Push-Migration
+{
+}
+
+function Pop-Migration
+{
+}
+"@
 
 $timer = New-Object 'Diagnostics.Stopwatch'
 $timerForWrites = New-Object 'Diagnostics.Stopwatch'
