@@ -45,7 +45,7 @@ function New-Migration
         if (-not (Test-Path -Path $schemaPs1Path))
         {
             $script:defaultSchemaPs1Content | Set-Content -Path $schemaPs1Path
-            $msg = "Rivet created ""$($schemaPs1Path | Resolve-Path -Relative)"", a file where Rivet to stores the " +
+            $msg = "Rivet created ""$($schemaPs1Path | Resolve-Path -Relative)"", a file where Rivet stores the " +
                    'database''s baseline schema. PLEASE CHECK THIS FILE INTO SOURCE CONTROL.'
             Write-Warning $msg
         }
