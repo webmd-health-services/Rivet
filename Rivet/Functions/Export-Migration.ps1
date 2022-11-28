@@ -1163,12 +1163,18 @@ where
 -- SCHEMAS
 select 
     sys.schemas.name, 
-    sys.sysusers.name as owner 
+    sys.sysusers.name as owner,
+    sys.extended_properties.value as description
 from 
     sys.schemas 
         join 
     sys.sysusers 
-        on sys.schemas.principal_id = sys.sysusers.uid'
+            on sys.schemas.principal_id = sys.sysusers.uid
+        left join
+    sys.extended_properties
+            on sys.extended_properties.class = 3
+            and sys.extended_properties.major_id = sys.schemas.schema_id
+            and sys.extended_properties.name = ''MS_Description'''
     function Export-Schema
     {
         param(
@@ -1187,9 +1193,14 @@ from
         {
             return
         }
+        $description = $schema.description
+        if( $description )
+        {
+            $description = ' -Description ''{0}''' -f ($description -replace '''','''''')
+        }
 
         Write-ExportingMessage -Schema $Object.schema_name -Type Schema
-        '    Add-Schema -Name ''{0}'' -Owner ''{1}''' -f $schema.name,$schema.owner
+        '    Add-Schema -Name ''{0}'' -Owner ''{1}''{2}' -f $schema.name,$schema.owner, $description
         $exportedSchemas[$schema.name] = $true
         Push-PopOperation ('Remove-Schema -Name ''{0}''' -f $schema.name)
     }
@@ -1534,8 +1545,22 @@ where
         Write-ExportingMessage -Schema $Object.schema_name -Name $Object.name -Type View
         if( $view -match $createPreambleRegex )
         {
+            $description = $Object.description
+            if( $description )
+            {
+                $description = ' -Description ''{0}''' -f ($description -replace '''','''''')
+            }
+    
             $view = $view -replace $createPreambleRegex,''
-            '    Add-View{0} -Name ''{1}'' -Definition @''{2}{3}{2}''@' -f $schema,$Object.name,[Environment]::NewLine,$view
+            '    Add-View{0} -Name ''{1}''{2} -Definition @''{3}{4}{3}''@' -f $schema,$Object.name,$description,[Environment]::NewLine,$view
+
+            # Get view's columns that have extended properties
+            $viewColumns = Invoke-Query -Query $columnsQuery | Where-Object { $_.object_id -eq $Object.object_id -and $_.description }
+            foreach( $column in $viewColumns )
+            {
+                $colDescription = ' -Description ''{0}''' -f ($column.description -replace '''','''''')
+                '    Add-ExtendedProperty -SchemaName ''{0}'' -ViewName ''{1}'' -ColumnName ''{2}'' -Value {3}' -f $Object.schema_name,$Object.object_name,$column.column_name,$colDescription
+            }
         }
         else
         {

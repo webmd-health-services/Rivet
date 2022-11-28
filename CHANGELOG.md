@@ -1,4 +1,9 @@
 
+# 0.18.0
+
+* `Export-Migration` will now include extended properties on schemas, views, and view columns.
+
+
 # 0.17.0
 
 ## Changes 

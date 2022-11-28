@@ -1236,3 +1236,77 @@ function Pop-Migration
     ThenMigration -HasContent 'Add-Index -TableName ''Table1'' -ColumnName ''AnotherID'''
 }
 
+Describe 'Export-Migration.when schema has an extended property' {
+    Init
+    GivenMigrationContent @'
+    function Push-Migration
+    {
+        Add-Schema 'snap'
+        Add-ExtendedProperty -Name 'MS_Description' -Value 'This is the MS Description for the schema snap' -SchemaName 'snap'
+        Add-Table -Schema 'snap' -Name 'SnapTable' -Column {
+            int 'ID' -NotNull
+        }
+    }
+    
+    function Pop-Migration
+    {
+        Remove-Table -Schema 'snap' -Name 'SnapTable'
+        Remove-Schema -Name 'snap'
+    }
+'@
+    
+    WhenExporting
+    ThenMigration -HasContent 'Add-Schema -Name ''snap'' -Owner ''dbo'' -Description ''This is the MS Description for the schema snap'''
+    ThenMigration -HasContent 'Add-Table -SchemaName ''snap'' -Name ''SnapTable'''
+}
+
+Describe 'Export-Migration.when view has an extended property' {
+    Init
+    GivenMigrationContent @'
+    function Push-Migration
+    {
+        Add-Schema 'crackle'
+        Add-View -SchemaName 'crackle' -Name 'CrackleView' -Definition 'as select 1 as one'
+        Add-ExtendedProperty -Name 'MS_Description' -SchemaName 'crackle' -ViewName 'CrackleView' -Value 'This is the MS Description for the view CrackleView'
+    }
+    
+    function Pop-Migration
+    {
+        Remove-View -SchemaName 'crackle' -Name 'CrackleView'
+        Remove-Schema 'crackle'
+    }
+'@
+    
+    WhenExporting
+    ThenMigration -HasContent 'Add-Schema -Name ''crackle'''
+    ThenMigration -HasContent 'Add-View -SchemaName ''crackle'' -Name ''CrackleView'''
+    ThenMigration -HasContent 'Add-View -SchemaName ''crackle'' -Name ''CrackleView'' -Description ''This is the MS Description for the view CrackleView'''
+}
+
+Describe 'Export-Migration.when view column has an extended property' {
+    Init
+    GivenMigrationContent @'
+    function Push-Migration
+    {
+        Add-Schema 'pop'
+        Add-Table -Schema 'pop' -Name 'PopTable' -Column {
+            int 'ID' -NotNull
+        }
+        Add-View -Name 'PopView' -SchemaName 'pop' -Definition 'as select * from PopTable'
+        Add-ExtendedProperty -Name 'MS_Description' -SchemaName 'pop' -ViewName 'PopView' -ColumnName 'ID' -Value 'This is the MS Description for column ID in the view PopView'
+    }
+    
+    function Pop-Migration
+    {
+        Remove-Table -SchemaName 'pop' -Name 'PopTable'
+        Remove-View -SchemaName 'pop' -Name 'PopView'
+        Remove-Schema 'pop'
+    }
+'@
+    
+    WhenExporting
+    ThenMigration -HasContent 'Add-Schema -Name ''pop'''
+    ThenMigration -HasContent 'Add-Table -SchemaName ''pop'' -Name ''PopTable'''
+    ThenMigration -HasContent 'Add-View -SchemaName ''pop'' -Name ''PopView'''
+    ThenMigration -HasContent 'Add-ExtendedProperty -SchemaName ''pop'' -ViewName ''PopView'' -ColumnName ''ID'' -Value  -Description ''This is the MS Description for column ID in the view PopView'''
+}
