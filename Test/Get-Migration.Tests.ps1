@@ -140,11 +140,11 @@ Describe 'Get-Migration' {
         $m | Should -BeOfType ([Rivet.Migration])
     }
     
-    It 'should reject migration with empty push' {
+    It 'should ignore migration with empty push' {
         $m = @'
     function Push-Migration
     {
-        # I'm empty. That is bad!
+        # I'm empty.
     }
     
     function Pop-Migration
@@ -157,8 +157,7 @@ Describe 'Get-Migration' {
         {
             $result = Get-Migration -ConfigFilePath $RTConfigFilePath -ErrorAction SilentlyContinue
             $result | Should -BeNullOrEmpty
-            $Global:Error.Count | Should -BeGreaterThan 0
-            $Global:Error[0] | Should -Match 'Push-Migration.*empty'
+            $Global:Error | Should -BeNullOrEmpty
         }
         finally
         {
@@ -166,7 +165,7 @@ Describe 'Get-Migration' {
         }
     }
     
-    It 'should reject migration with empty pop' {
+    It 'should ignore migration with empty pop' {
         $m = @'
     function Push-Migration
     {
@@ -175,7 +174,7 @@ Describe 'Get-Migration' {
     
     function Pop-Migration
     {
-        # I'm empty. That is bad!
+        # I'm empty.
     }
 '@ | New-TestMigration -Name 'EmptyPop'
     
@@ -183,8 +182,7 @@ Describe 'Get-Migration' {
         {
             $result = Get-Migration -ConfigFilePath $RTConfigFilePath -ErrorAction SilentlyContinue
             $result | Should -BeNullOrEmpty
-            $Global:Error.Count | Should -BeGreaterThan 0
-            $Global:Error[0] | Should -Match 'Pop-Migration.*empty'
+            $Global:Error | Should -BeNullOrEmpty
         }
         finally
         {
@@ -685,5 +683,96 @@ function Pop-Migration
         $migrations | Should -Not -BeNullOrEmpty
         $migrations.PushOperations | Should -BeOfType ([Rivet.Operations.Operation])
         $migrations.PopOperations | Should -BeOfType ([Rivet.Operations.Operation])
+    }
+}
+
+Describe 'Get-Migration.when there is an AfterMigrationLoad plugin that requires you to add a schema' {
+    BeforeEach { Init -WithPlugin }
+    AfterEach { Reset }
+    It ('should run the plugin when an AddSchemaOperation exists') {
+        GivenFile $pluginModulePath @'
+function OnAdd
+{
+    [Rivet.Plugin([Rivet.Events]::BeforeOperationLoad)]
+    param(
+        $Migration,
+        $Operation
+    )
+
+    Add-Schema 'boom'
+}
+
+function AfterMigration
+{
+
+    [Rivet.Plugin([Rivet.Events]::AfterMigrationLoad)]
+    param(
+        $Migration
+    )
+
+    $addSchemaOperation = $Migration.PushOperations | Where-Object{ $_ -is [Rivet.Operations.AddSchemaOperation]}
+
+    if( -not $addSchemaOperation )
+    {
+        Write-Error 'Please add a schema!'
+    }
+}
+
+'@
+        @'
+function Push-Migration
+{
+    Invoke-Ddl 'select 1'
+}
+function Pop-Migration
+{
+    Invoke-Ddl 'select 2'
+}
+'@ | New-TestMigration -Name 'One'
+        WhenGettingMigrations
+        $migrations | Should -Not -BeNullOrEmpty
+        $migrations.PushOperations | Where-Object { $_ -is [Rivet.Operations.AddSchemaOperation] } | Should -Not -BeNullOrEmpty
+        $migrations.PushOperations[1] | Should -BeOfType ([Rivet.Operations.RawDdlOperation])
+        $migrations.PopOperations | Where-Object { $_ -is [Rivet.Operations.AddSchemaOperation] } | Should -Not -BeNullOrEmpty
+        $migrations.PopOperations[1] | Should -BeOfType ([Rivet.Operations.RawDdlOperation])
+    }
+}
+
+Describe 'Get-Migration.when there is an AfterMigrationLoad plugin that requires you to add a schema' {
+    BeforeEach { Init -WithPlugin }
+    AfterEach { Reset }
+    It ('should throw an error when AddSchemaOperation doesn''t exist') {
+        GivenFile $pluginModulePath @'
+function AfterMigration
+{
+
+    [Rivet.Plugin([Rivet.Events]::AfterMigrationLoad)]
+    param(
+        $Migration
+    )
+
+    $problems = $false
+    $addSchemaOperation = $Migration.PushOperations | Where-Object{ $_ -is [Rivet.Operations.AddSchemaOperation]}
+
+    if( -not $addSchemaOperation )
+    {
+        throw ('Please add a schema!')
+    }
+}
+
+'@
+        @'
+function Push-Migration
+{
+    Invoke-Ddl 'select 1'
+}
+function Pop-Migration
+{
+    Invoke-Ddl 'select 2'
+}
+'@ | New-TestMigration -Name 'One'
+        WhenGettingMigrations -ErrorAction SilentlyContinue
+        $migrations | Should -BeNullOrEmpty
+        $Global:Error | Should -Match 'Please add a schema!'
     }
 }

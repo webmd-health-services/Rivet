@@ -3,6 +3,6 @@ function Measure-Migration
 {
     Set-StrictMode -Version Latest
     
-    $query = 'select count(*) from {0}.Migrations where ID >= 01000000000000' -f $RTRivetSchemaName
+    $query = "select count(*) from $($RTRivetSchemaName).Migrations where ID >= $($script:firstMigrationId)"
     Invoke-RivetTestQuery -Query $query -AsScalar
 }

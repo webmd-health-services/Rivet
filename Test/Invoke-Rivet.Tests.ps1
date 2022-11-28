@@ -121,7 +121,7 @@ Describe 'Invoke-Rivet' {
 '@ | New-TestMigration -Name 'HasReservedID' -Database $RTDatabaseName    
     
         $file | Should -Not -BeNullOrEmpty
-        $file = Rename-Item -Path $file -NewName ('00999999999999_HasReservedID.ps1') -PassThru
+        $file = Rename-Item -Path $file -NewName ('00010100999999_HasReservedID.ps1') -PassThru
     
         Invoke-RTRivet -Push -ErrorAction SilentlyContinue
         $Global:Error.Count | Should -BeGreaterThan 0
@@ -129,7 +129,7 @@ Describe 'Invoke-Rivet' {
         (Test-Schema -Name 'fubar') | Should -BeFalse
     
         $Global:Error.Clear()
-        Rename-Item -Path $file -NewName ('01000000000000_HasReservedID.ps1')
+        Rename-Item -Path $file -NewName ('00010101000000_HasReservedID.ps1')
         Invoke-RTRivet -Push 
         $Global:Error.Count | Should -Be 0
         Assert-Schema -Name 'fubar'

@@ -11,7 +11,7 @@
     RootModule = 'Rivet.psm1'
 
     # Version number of this module.
-    ModuleVersion = '0.13.0'
+    ModuleVersion = '0.17.0'
 
     # ID used to uniquely identify this module
     GUID = '8af34b47-259b-4630-a945-75d38c33b94d'
@@ -92,6 +92,7 @@ Rivet is a database migration/change management/versioning tool inspired by Ruby
         'Add-UniqueKey',
         'Add-UserDefinedFunction',
         'Add-View',
+        'Checkpoint-Migration',
         'Disable-Constraint',
         'Enable-Constraint',
         'Export-Migration',
@@ -240,39 +241,7 @@ Rivet is a database migration/change management/versioning tool inspired by Ruby
             Prerelease = ''
 
             # ReleaseNotes of this module
-            ReleaseNotes = @'
-## Upgrade Instructions
-
-This version of Rivet is backwards-incompatible. It changes the way plug-ins work. In order to upgrade to this version, you'll need to update your plugins and your rivet.json file.
-
-1. Package your plugins into a PowerShell module. Make sure your plug-in functions are exported by your module.
-2. Add the attribute `[Rivet.Plugin([Rivet.Event]::BeforeOperationLoad)]` to any existing `Start-MigrationOperation` functions.
-3. Add the attribute `[Rivet.Plugin([Rivet.Event]::AfterOperationLoad)]` to any existing `Complete-MigrationOperation` functions.
-4. Change the `PluginsRoot` setting in your rivet.json file to `PluginPaths`. Change its value to the path to the module you created in step 1. Rivet will import the module into the global scope for you. Or, if you want to import the module, set the `PluginModules` property to a list of module names that contain the plug-ins to use.
-
-See `about_Rivet_Plugins` for more information.
-
-## Changes
-
-* Created `Export-Migration` function for exporting database objects as Rivet migrations.
-* Rivet can now add XML columns that don't have schema associated with them.
-* `New-Column` can now be used to create columns on tables that have custom size specifications, are rowguidcol, are identities, custom collations, and are file stream.
-* Fixed: `Merge-Migration` doesn't merge `Add-RowGuidCol` and `Remove-RowGuidCol` operations into `Add-Table`/`Update-Table` operations.
-* ***Breaking Change***: Rivet plug-ins must now be packaged as/in PowerShell modules. The `PluginsRoot` configuration option has been renamed to `PluginPaths` and should be a list of paths were Rivet can find the PowerShell modules containing your plug-ins. These paths are imported using the `Import-Module` command. See `about_Rivet_Plugins` for more information.
-* The `PluginsPath` (fka `PluginsRoot`) configuration setting is now allowed to have wildcards.
-* Completely re-architected how `Merge-Migration` merges migrations together. This fixed a lot of bugs where many operations were not merging correctly. 
-* The Convert-Migration.ps1 sample script no longer include a header for all migrations that affected an operation, since Rivet no longer exposes this information. Instead, it only adds an author header for the migration an operation ends up in.
-* The `Remove-DefaultConstraint` operation's `ColumnName` parameter is now required. When merging operations, Rivet needs to know what column a default expression operates on. You'll get a warning if it isn't provided. In a future version of Rivet, this parameter will be made mandatory.
-* Default constraint names are now required. You must pass a constraint name to the Add-DefaultConstraint operator's Name parameter and to the DefaultConstraintName parameter on any column definition that has a default value.
-* Performance improvement: Rivet now only queries once for the state of all applied migrations instead of querying for every migration.
-* Performance improvement: Rivet only reads migration files that haven't been applied to a database. This should help with backwards-compatability. If Rivet's API changes only migrations you want to push/pop will need to get updated to match the new API.
-* Unique key constraint names are now required. You must pass a constraint name to the Add-UniqueKey operation's Name parameter.
-* Primary key constraint names are now required. You must pass a constraint name to the Add-PrimaryKey operation's Name parameter.
-* Foreign key constraint names are now required. You must pass a constraint name to the Add-ForeignKey operation's Name parameter.
-* Index names are now required. You must pass an index name to the Add-Index operation's Name parameter.
-* Fixed: Get-Migration and Get-MigrationFile don't properly exclude migrations in some situations.
-* Fixed: the idempotent queries for renaming a data type and index don't work.
-'@
+            ReleaseNotes = 'https://github.com/webmd-health-services/Rivet/blob/master/CHANGELOG.md'
         } # End of PSData hashtable
 
     } # End of PrivateData hashtable

@@ -64,14 +64,21 @@ function Get-MigrationFile
             }
         } | 
         ForEach-Object {
-            if( $_.BaseName -notmatch '^(\d{14})_(.+)' )
+            if( $_.BaseName -eq 'schema' )
+            {
+                $id = $script:schemaMigrationId # midnight on year 1, month 0, day 0.
+                $name = $_.BaseName
+            }
+            elseif( $_.BaseName -notmatch '^(\d{14})_(.+)' )
             {
                 Write-Error ('Migration {0} has invalid name.  Must be of the form `YYYYmmddhhMMss_MigrationName.ps1' -f $_.FullName)
                 return
             }
-        
-            $id = [int64]$matches[1]
-            $name = $matches[2]
+            else
+            {
+                $id = [int64]$matches[1]
+                $name = $matches[2]
+            }
         
             $_ | 
                 Add-Member -MemberType NoteProperty -Name 'MigrationID' -Value $id -PassThru |

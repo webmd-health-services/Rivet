@@ -129,6 +129,7 @@ param(
     [Parameter(ParameterSetName='PopAll')]
     [Parameter(ParameterSetName='Redo')]
     [Parameter(ParameterSetName='DropDatabase')]
+    [Parameter(ParameterSetName='Checkpoint')]
     [string[]]
     # The database(s) to migrate. Optional.  Will operate on all databases otherwise.
     $Database,
@@ -141,6 +142,7 @@ param(
     [Parameter(ParameterSetName='PopAll')]
     [Parameter(ParameterSetName='Redo')]
     [Parameter(ParameterSetName='DropDatabase')]
+    [Parameter(ParameterSetName='Checkpoint')]
     [string]
     # The environment you're working in.  Controls which settings Rivet loads from the `rivet.json` configuration file.
     $Environment,
@@ -153,6 +155,7 @@ param(
     [Parameter(ParameterSetName='PopAll')]
     [Parameter(ParameterSetName='Redo')]
     [Parameter(ParameterSetName='DropDatabase')]
+    [Parameter(ParameterSetName='Checkpoint')]
     [string]
     # The path to the Rivet configuration file.  Default behavior is to look in the current directory for a `rivet.json` file.  See `about_Rivet_Configuration` for more information.
     $ConfigFilePath,
@@ -160,7 +163,12 @@ param(
     [Parameter(ParameterSetName='DropDatabase')]
     [Switch]
     # Drops the database(s) for the current environment when given. User will be prompted for confirmation when used.
-    $DropDatabase
+    $DropDatabase,
+
+    [Parameter(ParameterSetName='Checkpoint')]
+    [Switch]
+    # Checkpoints the current state of the database so that it can be re-created.
+    $Checkpoint
 )
 
 Set-StrictMode -Version Latest
