@@ -479,7 +479,25 @@ Describe 'Get-RivetConfig.when databases have a custom order' {
 {
     "SqlServerName": ".\\Rivet",
     "DatabasesRoot": "Databases",
-    "DatabaseOrder": [ "CCC", "BBB", "ZZZ" ]
+    "Databases": [ "CCC", "BBB" ]
+}
+'@
+    $config = WhenGettingConfig
+    It ('should order databases') {
+        $config.Databases.Count | Should -Be 2
+        $config.Databases[0].Name | Should -Be 'CCC'
+        $config.Databases[1].Name | Should -Be 'BBB'
+    }
+}
+
+Describe 'Get-RivetConfig.when databases have a custom order with a wild card' {
+    Init
+    GivenDatabase 'AAA','BBB','CCC','DDD'
+    GivenConfig @'
+{
+    "SqlServerName": ".\\Rivet",
+    "DatabasesRoot": "Databases",
+    "Databases": [ "CCC", "BBB", "*" ]
 }
 '@
     $config = WhenGettingConfig
@@ -490,6 +508,45 @@ Describe 'Get-RivetConfig.when databases have a custom order' {
         $config.Databases[2].Name | Should -Be 'AAA'
         $config.Databases[3].Name | Should -Be 'DDD'
     }
+}
+
+Describe 'Get-RivetConfig.when databases have no custom order' {
+    Init
+    GivenDatabase 'AAA','BBB','CCC','DDD'
+    GivenConfig @'
+{
+    "SqlServerName": ".\\Rivet",
+    "DatabasesRoot": "Databases"
+}
+'@
+    $config = WhenGettingConfig
+    It ('should order databases') {
+        $config.Databases.Count | Should -Be 4
+        $config.Databases[0].Name | Should -Be 'AAA'
+        $config.Databases[1].Name | Should -Be 'BBB'
+        $config.Databases[2].Name | Should -Be 'CCC'
+        $config.Databases[3].Name | Should -Be 'DDD'
+    }
+}
+
+Describe 'Get-RivetConfig.when databases have a custom order but one doesn''t exist' {
+    Init
+    GivenDatabase 'AAA','BBB','CCC','DDD'
+    GivenConfig @'
+{
+    "SqlServerName": ".\\Rivet",
+    "DatabasesRoot": "Databases",
+    "Databases": [ "CCC", "BBB", "ZZZ" ]
+}
+'@
+    $config = WhenGettingConfig -ErrorAction SilentlyContinue
+    It ('should order databases') {
+        $config.Databases.Count | Should -Be 2
+        $config.Databases[0].Name | Should -Be 'CCC'
+        $config.Databases[1].Name | Should -Be 'BBB'
+    }
+    $errorMessage = Join-Path -Path $config.DatabasesRoot -ChildPath 'ZZZ'
+    $Global:Error | Should -Match "database named ""ZZZ"" at ""$($errorMessage.replace('\','\\'))"" does not exist"
 }
 
 Describe 'Get-RivetConfig.when plugins root has a wildcard' {

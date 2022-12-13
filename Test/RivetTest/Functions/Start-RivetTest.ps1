@@ -4,11 +4,14 @@ function Start-RivetTest
     [CmdletBinding()]
     param(
         # Optional Parameter to specify a plugin Path
-        [String[]]$PluginPath,
+        [String[]] $PluginPath,
 
-        [String[]]$IgnoredDatabase,
+        [String[]] $IgnoredDatabase,
 
-        [String[]]$DatabaseName = $RTDatabaseName
+        [Alias('DatabaseName')]
+        [String[]] $PhysicalDatabase = $RTDatabaseName,
+
+        [String[]] $ConfigurationDatabase
     )
     
     Set-StrictMode -Version Latest
@@ -28,7 +31,7 @@ function Start-RivetTest
     }
 
     $script:RTDatabasesRoot = Join-Path -Path $RTTestRoot -ChildPath 'Databases'
-    foreach( $name in $DatabaseName )
+    foreach( $name in $PhysicalDatabase )
     {
         $script:RTDatabaseRoot = Join-Path $RTDatabasesRoot $name
         $script:RTDatabaseMigrationRoot = Join-Path -Path $RTDatabaseRoot -ChildPath 'Migrations'
@@ -65,14 +68,26 @@ function Start-RivetTest
         $IgnoreClause = ',IgnoreDatabases: [ "{0}" ]' -f ($IgnoredDatabase -join '", "')
     }
 
-    @"
+    $content = @"
 {
     SqlServerName: '$($RTServer.Replace('\', '\\'))',
     DatabasesRoot: '$($RTDatabasesRoot.Replace('\','\\'))'
+"@
+
+    if( $ConfigurationDatabase )
+    {
+        $content += @"
+,
+    Databases: [ "$($ConfigurationDatabase -join """, """)" ]
+"@
+    }
+
+    $content += @"
     $PluginPathClause
     $IgnoreClause
 }
-"@ | Set-Content -Path $RTConfigFilePath
+"@
+    $content | Set-Content -Path $RTConfigFilePath
 
     Write-RTTiming ('Start-RivetTest  END')
 }

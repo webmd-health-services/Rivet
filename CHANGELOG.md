@@ -1,4 +1,10 @@
 
+# 0.19.0
+
+* `Export-Migration` will now allow references to objects in databases that have been applied before it.
+* The `DatabaseOrder` setting in the rivet.json file has now been renamed to `Databases`.
+
+
 # 0.18.0
 
 * `Export-Migration` will now include extended properties on schemas, views, and view columns.

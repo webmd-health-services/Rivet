@@ -66,7 +66,7 @@ function Checkpoint-Migration
         }
 
         Write-Debug "Checkpoint-Migration: Exporting migration on database $($databaseItem.Name)"
-        $migration = Export-Migration -SqlServerName $settings.SqlServerName -Database $databaseItem.Name
+        $migration = Export-Migration -SqlServerName $settings.SqlServerName -Database $databaseItem.Name -ConfigFilePath $ConfigFilePath
         $migration = $migration -join [Environment]::NewLine
         Set-Content -Path $OutputPath -Value $migration
 
