@@ -57,7 +57,7 @@ LONG DESCRIPTION
     The amount of time, in seconds, to wait for a database connection to open.  The 
     default is 15 seconds.
 
-    ### DatabaseOrder
+    ### Databases
 
     A list of database names in the order in which Rivet should apply migrations. The 
     default is alphabetical order. If a database is listed here but doesn't exist on the
@@ -166,7 +166,7 @@ LONG DESCRIPTION
             "ConnectionTimeout": 5,
             "CommandTimeout": 300,
             "IgnoreDatabases": [ "Shared" ],
-            "DatabaseOrder": [ "Xanadu", "Q" ]
+            "Databases": [ "Xanadu", "Q" ]
         }
     
     This example demonstrates how to use all the configuration options.  This 
