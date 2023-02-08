@@ -11,7 +11,9 @@ function Start-RivetTest
         [Alias('DatabaseName')]
         [String[]] $PhysicalDatabase = $RTDatabaseName,
 
-        [String[]] $ConfigurationDatabase
+        [String[]] $ConfigurationDatabase,
+
+        [int] $CommandTimeout = 30
     )
     
     Set-StrictMode -Version Latest
@@ -71,7 +73,8 @@ function Start-RivetTest
     $content = @"
 {
     SqlServerName: '$($RTServer.Replace('\', '\\'))',
-    DatabasesRoot: '$($RTDatabasesRoot.Replace('\','\\'))'
+    DatabasesRoot: '$($RTDatabasesRoot.Replace('\','\\'))',
+    CommandTimeout: $($CommandTimeout)
 "@
 
     if( $ConfigurationDatabase )
