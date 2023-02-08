@@ -1,4 +1,9 @@
 
+# 0.19.1
+
+* Fixed: Rivet doesn't use the CommandTimeout property in rivet.json configuration file.
+
+
 # 0.19.0
 
 * `Export-Migration` will now allow references to objects in databases that have been applied before it.

@@ -338,6 +338,45 @@ Describe 'Get-Migration' {
         'ShouldGetAMigrationByBaseNameWithWildcard' | Should -Be $result.Name
         $m.BaseName | Should -Be $result.FullName
     }
+
+    It 'should set timeout duration to default 30 seconds on Rivet operations when CommandTimeout isn''t specified in the Rivet configuration' {
+        @'
+        function Push-Migration
+        {
+            Invoke-Ddl 'select 1'
+        }
+        function Pop-Migration
+        {
+            Invoke-Ddl 'select 1'
+        }
+'@ | New-TestMigration -Name 'SetCommandTimeout'
+        
+        $m = Get-Migration -ConfigFilePath $RTConfigFilePath
+        $Global:Error.Count | Should -Be 0
+        $m | Should -BeOfType ([Rivet.Migration])
+        $m.PopOperations[0].CommandTimeout | Should -Be 30
+        $m.PushOperations[0].CommandTimeout | Should -Be 30
+    }
+    
+    It 'should set timeout duration on Rivet operations when CommandTimeout is specified in the Rivet configuration' {
+        Start-RivetTest -CommandTimeout 60
+        @'
+        function Push-Migration
+        {
+            Invoke-Ddl 'select 1'
+        }
+        function Pop-Migration
+        {
+            Invoke-Ddl 'select 1'
+        }
+'@ | New-TestMigration -Name 'SetCommandTimeout'
+        
+        $m = Get-Migration -ConfigFilePath $RTConfigFilePath
+        $Global:Error.Count | Should -Be 0
+        $m | Should -BeOfType ([Rivet.Migration])
+        $m.PopOperations[0].CommandTimeout | Should -Be 60
+        $m.PushOperations[0].CommandTimeout | Should -Be 60
+    }
 }
 
 Describe 'Get-Migration.when excluding migrations' {
