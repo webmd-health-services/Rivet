@@ -270,7 +270,7 @@ function Get-RivetConfig
         $targetDatabases = @{ }
     }
 
-    $order = Get-ConfigProperty -Name 'DatabaseOrder' -AsArray
+    $order = Get-ConfigProperty -Name 'Databases' -AsArray
     $pluginModules = Get-ConfigProperty -Name 'PluginModules' -AsArray
 
     [Rivet.Configuration.Configuration]$configuration = 
@@ -285,22 +285,30 @@ function Get-RivetConfig
             # Get user-specified databases first
             if( $Database )
             {
-                $Database | 
+                return $Database | 
                     Add-Member -MemberType ScriptProperty -Name Name -Value { $this } -PassThru |
                     Add-Member -MemberType ScriptProperty -Name FullName -Value { Join-Path -Path $configuration.DatabasesRoot -ChildPath $this.Name } -PassThru
             }
-            else
-            {                                    
-                # Then get all of them in the order requested
-                if( $order )
-                {
-                    foreach( $dbName in $order )
-                    {
-                        Get-ChildItem -Path $configuration.DatabasesRoot -Filter $dbName -Directory
-                    }
-                }
 
-                Get-ChildItem -Path $configuration.DatabasesRoot -Exclude $order -Directory
+            # Default alphabetical order
+            if (-not $order)
+            {
+                return Get-ChildItem -Path $configuration.DatabasesRoot -Directory
+            }
+
+            # User specified order
+            foreach( $dbName in $order )
+            {
+                $dbPath = Join-Path -Path $configuration.DatabasesRoot -ChildPath $dbName
+                if (-not (Test-Path -Path $dbPath -PathType Container))
+                {
+                    if (-not [wildcardpattern]::ContainsWildcardCharacters($dbName))
+                    {
+                        Write-ValidationError  "database named ""$($dbName)"" at ""$($dbPath)"" does not exist"
+                    }
+                    continue
+                }
+                Get-Item -Path $dbPath
             }
         } |
         Select-Object -Property Name,FullName -Unique |

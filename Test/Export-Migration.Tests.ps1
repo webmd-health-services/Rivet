@@ -16,8 +16,7 @@ function GivenDatabase
 {
     param(
         [Parameter(Mandatory)]
-        [string[]]
-        $Name
+        [String[]] $Name
     )
 
     $script:databases += $Name
@@ -27,8 +26,7 @@ function GivenMigrationContent
 {
     param(
         [Parameter(Mandatory)]
-        [string]
-        $Content
+        [String] $Content
     )
 
     $script:originalMigration = $Content
@@ -44,12 +42,10 @@ function ThenNoErrors
 function ThenMigration
 {
     param(
-        [Switch]
-        $Not,
+        [Switch] $Not,
 
         [Parameter(Mandatory)]
-        [string]
-        $HasContent
+        [String] $HasContent
     )
 
     It ('should export operations') {
@@ -68,29 +64,35 @@ function WhenExporting
 {
     [CmdletBinding()]
     param(
-        [string[]]
-        $Include,
+        [String[]] $Include,
 
-        [Switch]
-        $SkipVerification,
+        [Switch] $SkipVerification,
 
-        [string[]]
-        $ExcludeType,
+        [String[]] $ExcludeType,
 
-        [string[]]
-        $Exclude
+        [String[]] $Exclude,
+
+        [String] $Database
     )
 
-    Start-RivetTest
+    if( -not $Database )
+    {
+        $Database = $RTDatabaseName
+    }
+
+    Start-RivetTest -DatabaseName $Database
     try
     {
+        $testDirectory = Get-ChildItem -Path $TestDrive.FullName | Sort-Object -Property LastWriteTime | Select-Object -Last 1
+        $configFilePath = Join-Path -Path $testDirectory.FullName -ChildPath 'rivet.json'
+
         $migrationPath = ''
         if( $originalMigration )
         {
-            $migrationPath = $originalMigration | New-TestMigration -Name 'ExportMigration'
+            $migrationPath = $originalMigration | New-TestMigration -Name 'ExportMigration' -DatabaseName $Database -ConfigFilePath $configFilePath
         }
 
-        Invoke-RTRivet -Push
+        Invoke-RTRivet -Push -ConfigFilePath $configFilePath -Database $Database
         $optionalParams = @{}
         if( $PSBoundParameters.ContainsKey('Include') )
         {
@@ -109,7 +111,7 @@ function WhenExporting
 
         $Global:Error.Clear()
 
-        $script:migration = Export-Migration -SqlServerName $RTServer -Database $RTDatabaseName @optionalParams
+        $script:migration = Export-Migration -SqlServerName $RTServer -Database $Database -ConfigFilePath $configFilePath @optionalParams
         Write-Debug -Message ($migration -join [Environment]::NewLine)
 
         if( -not $SkipVerification )
@@ -126,9 +128,8 @@ function WhenExporting
     }
     finally
     {
-        Stop-RivetTest
+        Stop-RivetTest -DatabaseName $Database
     }
-
 }
 
 Describe 'Export-Migration.when exporting a table' {
@@ -1236,3 +1237,211 @@ function Pop-Migration
     ThenMigration -HasContent 'Add-Index -TableName ''Table1'' -ColumnName ''AnotherID'''
 }
 
+Describe 'Export-Migration.when schema has an extended property' {
+    Init
+    GivenMigrationContent @'
+    function Push-Migration
+    {
+        Add-Schema 'snap'
+        Add-ExtendedProperty -Name 'MS_Description' -Value 'This is the MS Description for the schema snap' -SchemaName 'snap'
+        Add-Table -Schema 'snap' -Name 'SnapTable' -Column {
+            int 'ID' -NotNull
+        }
+    }
+    
+    function Pop-Migration
+    {
+        Remove-Table -Schema 'snap' -Name 'SnapTable'
+        Remove-Schema -Name 'snap'
+    }
+'@
+    
+    WhenExporting
+    ThenMigration -HasContent 'Add-Schema -Name ''snap'' -Owner ''dbo'' -Description ''This is the MS Description for the schema snap'''
+    ThenMigration -HasContent 'Add-Table -SchemaName ''snap'' -Name ''SnapTable'''
+}
+
+Describe 'Export-Migration.when view has an extended property' {
+    Init
+    GivenMigrationContent @'
+    function Push-Migration
+    {
+        Add-Schema 'crackle'
+        Add-View -SchemaName 'crackle' -Name 'CrackleView' -Definition 'as select 1 as one'
+        Add-ExtendedProperty -Name 'MS_Description' -SchemaName 'crackle' -ViewName 'CrackleView' -Value 'This is the MS Description for the view CrackleView'
+    }
+    
+    function Pop-Migration
+    {
+        Remove-View -SchemaName 'crackle' -Name 'CrackleView'
+        Remove-Schema 'crackle'
+    }
+'@
+    
+    WhenExporting
+    ThenMigration -HasContent 'Add-Schema -Name ''crackle'''
+    ThenMigration -HasContent 'Add-View -SchemaName ''crackle'' -Name ''CrackleView'''
+    ThenMigration -HasContent 'Add-View -SchemaName ''crackle'' -Name ''CrackleView'' -Description ''This is the MS Description for the view CrackleView'''
+}
+
+Describe 'Export-Migration.when view column has an extended property' {
+    Init
+    GivenMigrationContent @'
+    function Push-Migration
+    {
+        Add-Schema 'pop'
+        Add-Table -Schema 'pop' -Name 'PopTable' -Column {
+            int 'ID' -NotNull
+        }
+        Add-View -Name 'PopView' -SchemaName 'pop' -Definition 'as select * from PopTable'
+        Add-ExtendedProperty -Name 'MS_Description' -SchemaName 'pop' -ViewName 'PopView' -ColumnName 'ID' -Value 'This is the MS Description for column ID in the view PopView'
+    }
+    
+    function Pop-Migration
+    {
+        Remove-Table -SchemaName 'pop' -Name 'PopTable'
+        Remove-View -SchemaName 'pop' -Name 'PopView'
+        Remove-Schema 'pop'
+    }
+'@
+    
+    WhenExporting
+    ThenMigration -HasContent 'Add-Schema -Name ''pop'''
+    ThenMigration -HasContent 'Add-Table -SchemaName ''pop'' -Name ''PopTable'''
+    ThenMigration -HasContent 'Add-View -SchemaName ''pop'' -Name ''PopView'''
+    ThenMigration -HasContent 'Add-ExtendedProperty -SchemaName ''pop'' -ViewName ''PopView'' -ColumnName ''ID'' -Value  -Description ''This is the MS Description for column ID in the view PopView'''
+}
+
+Describe 'Export-Migration.when an object references another database that was applied before it' {
+    Init
+    $Databases = @($RTDatabaseName, $RTDatabase2Name)
+
+    # Has Database Order
+    Start-RivetTest -PhysicalDatabase $Databases -ConfigurationDatabase $Databases
+    $testDirectory = Get-ChildItem -Path $TestDrive.FullName
+    $configFilePath = Join-Path -Path $testDirectory.FullName -ChildPath 'rivet.json'
+
+    $db1Migration = @'
+    function Push-Migration
+    {
+        Add-Table -Name 'Table1DB1' -Column {
+            int 'ID' -NotNull
+        }
+    }
+    
+    function Pop-Migration
+    {
+        Remove-Table -Name 'Table1DB1'
+    }
+'@
+    $db1Migration | New-TestMigration -Name 'ExportMigration' -DatabaseName $RTDatabaseName -ConfigFilePath $configFilePath
+    Invoke-RTRivet -Push -ConfigFilePath $configFilePath -Database $RTDatabaseName
+
+    $db2Migration = @"
+    function Push-Migration
+    {
+        Add-View -Name 'ViewOfTable1DB1' -Definition 'as select * from $($RTDatabaseName).dbo.Table1DB1'
+    }
+    
+    function Pop-Migration
+    {
+        Remove-View -Name 'ViewOfTable1DB1'
+    }
+"@
+    $db2Migration | New-TestMigration -Name 'ExportMigration' -DatabaseName $RTDatabase2Name -ConfigFilePath $configFilePath
+    Invoke-RTRivet -Push -ConfigFilePath $configFilePath -Database $RTDatabase2Name
+
+    $script:migration = Export-Migration -SqlServerName $RTServer -Database $RTDatabase2Name -ConfigFilePath $configFilePath
+    ThenMigration -HasContent 'Add-View -Name ''ViewOfTable1DB1'''
+    Stop-RivetTest -DatabaseName $Databases
+    ThenNoErrors
+}
+
+Describe 'Export-Migration.when an object references another database that was applied after it' {
+    Init
+    $Databases = @($RTDatabase2Name, $RTDatabaseName)
+
+    # Has Database Order
+    Start-RivetTest -PhysicalDatabase $Databases -ConfigurationDatabase $Databases
+    $testDirectory = Get-ChildItem -Path $TestDrive.FullName
+    $configFilePath = Join-Path -Path $testDirectory.FullName -ChildPath 'rivet.json'
+
+    $db1Migration = @'
+    function Push-Migration
+    {
+        Add-Table -Name 'Table1DB1' -Column {
+            int 'ID' -NotNull
+        }
+    }
+    
+    function Pop-Migration
+    {
+        Remove-Table -Name 'Table1DB1'
+    }
+'@
+    $db1Migration | New-TestMigration -Name 'ExportMigration' -DatabaseName $RTDatabaseName -ConfigFilePath $configFilePath
+    Invoke-RTRivet -Push -ConfigFilePath $configFilePath -Database $RTDatabaseName
+
+    $db2Migration = @"
+    function Push-Migration
+    {
+        Add-View -Name 'ViewOfTable1DB1' -Definition 'as select * from $($RTDatabaseName).dbo.Table1DB1'
+    }
+    
+    function Pop-Migration
+    {
+        Remove-View -Name 'ViewOfTable1DB1'
+    }
+"@
+    $db2Migration | New-TestMigration -Name 'ExportMigration' -DatabaseName $RTDatabase2Name -ConfigFilePath $configFilePath
+    Invoke-RTRivet -Push -ConfigFilePath $configFilePath -Database $RTDatabase2Name
+
+    $script:migration = Export-Migration -SqlServerName $RTServer -Database $RTDatabase2Name -ConfigFilePath $configFilePath
+    ThenMigration -Not -HasContent 'Add-View -Name ''ViewOfTable1DB1'''
+    Stop-RivetTest -DatabaseName $Databases
+}
+
+Describe 'Export-Migration.when an object references another database and no ConfigurationDatabase is specified' {
+    Init
+    $Databases = @($RTDatabase2Name, $RTDatabaseName)
+
+    # No Database Order
+    Start-RivetTest -PhysicalDatabase $Databases
+    $testDirectory = Get-ChildItem -Path $TestDrive.FullName
+    $configFilePath = Join-Path -Path $testDirectory.FullName -ChildPath 'rivet.json'
+
+    $db1Migration = @'
+    function Push-Migration
+    {
+        Add-Table -Name 'Table1DB1' -Column {
+            int 'ID' -NotNull
+        }
+    }
+    
+    function Pop-Migration
+    {
+        Remove-Table -Name 'Table1DB1'
+    }
+'@
+    $db1Migration | New-TestMigration -Name 'ExportMigration' -DatabaseName $RTDatabaseName -ConfigFilePath $configFilePath
+    Invoke-RTRivet -Push -ConfigFilePath $configFilePath -Database $RTDatabaseName
+
+    $db2Migration = @"
+    function Push-Migration
+    {
+        Add-View -Name 'ViewOfTable1DB1' -Definition 'as select * from $($RTDatabaseName).dbo.Table1DB1'
+    }
+    
+    function Pop-Migration
+    {
+        Remove-View -Name 'ViewOfTable1DB1'
+    }
+"@
+    $db2Migration | New-TestMigration -Name 'ExportMigration' -DatabaseName $RTDatabase2Name -ConfigFilePath $configFilePath
+    Invoke-RTRivet -Push -ConfigFilePath $configFilePath -Database $RTDatabase2Name
+
+    $script:migration = Export-Migration -SqlServerName $RTServer -Database $RTDatabase2Name -ConfigFilePath $configFilePath
+    ThenMigration -HasContent 'Add-View -Name ''ViewOfTable1DB1'''
+    Stop-RivetTest -DatabaseName $Databases
+    ThenNoErrors
+}

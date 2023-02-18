@@ -8,8 +8,6 @@ function Export-Migration
     .DESCRIPTION
     The `Export-Migration` function exports database objects, schemas, and data types as a Rivet migration. By default, it exports *all* non-system, non-Rivet objects, data types, and schemas. You can filter specific objects by passing their full name to the `Include` parameter. Wildcards are supported. Objects are matched on their schema *and* name.
 
-    Extended properties are *not* exported, except table and column descriptions.
-
     .EXAMPLE
     Export-Migration -SqlServerName 'some\instance' -Database 'database'
 
@@ -17,37 +15,39 @@ function Export-Migration
     #>
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory)]
-        [string]
         # The connection string for the database to connect to.
-        $SqlServerName,
-
         [Parameter(Mandatory)]
-        [string]
-        # The database to connect to.
-        $Database,
+        [String] $SqlServerName,
 
-        [string[]]
+        # The database to connect to.
+        [Parameter(Mandatory)]
+        [String] $Database,
+        
         # The names of the objects to export. Must include the schema if exporting a specific object. Wildcards supported.
         #
         # The default behavior is to export all non-system objects.
-        $Include,
+        [String[]] $Include,
+        
+        # The name of the environment whose settings to return. If not provided, uses the default settings.
+        [String] $Environment,
 
-        [string[]]
         # The names of any objects *not* to export. Matches the object name *and* its schema name, i.e. `schema.name`. Wildcards supported.
-        $Exclude,
+        [String[]] $Exclude,
 
-        [string[]]
-        [ValidateSet('CheckConstraint','DataType','DefaultConstraint','ForeignKey','Function','Index','PrimaryKey','Schema','StoredProcedure','Synonym','Table','Trigger','UniqueKey','View','XmlSchema')]
         # Any object types to exclude.
-        $ExcludeType,
+        [ValidateSet('CheckConstraint','DataType','DefaultConstraint','ForeignKey','Function','Index','PrimaryKey','Schema','StoredProcedure','Synonym','Table','Trigger','UniqueKey','View','XmlSchema')]
+        [String[]] $ExcludeType,
 
-        [Switch]
-        $NoProgress
+        # The path to the Rivet configuration file to load. Defaults to `rivet.json` in the current directory.
+        [String] $ConfigFilePath,
+
+        [Switch] $NoProgress
     )
 
     Set-StrictMode -Version 'Latest'
     Use-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+
+    [Rivet.Configuration.Configuration]$settings = Get-RivetConfig -Path $ConfigFilePath -Environment $Environment
 
     $pops = New-Object 'Collections.Generic.Stack[string]'
     $popsHash = @{}
@@ -971,9 +971,17 @@ where
 
             if( $externalDependencies.ContainsKey($object.object_id) )
             {
-                Write-Warning -Message ('Unable to export {0} {1}: it depends on external object {2}.' -f $object.type_desc,$object.full_name,$externalDependencies[$object.object_id])
-                $exportedObjects[$object.object_id] = $true
-                continue
+                $indexOfReferencedDatabase = [array]::IndexOf($settings.Databases.Name, $externalDependencies[$object.object_id].DatabaseName)
+                $indexOfCurrentDatabase = [array]::IndexOf($settings.Databases.Name, $Database)
+
+                # If the external depenedency's database does not get applied BEFORE the current database, do not allow
+                # references to the external dependency.
+                if( ($indexOfReferencedDatabase -gt $indexOfCurrentDatabase) -or ($indexOfReferencedDatabase -lt 0) -or ($indexOfCurrentDatabase -lt 0) )
+                {
+                    Write-Warning -Message ('Unable to export {0} {1}: it depends on external object {2}.' -f $object.type_desc,$object.full_name,$externalDependencies[$object.object_id].ExternalName)
+                    $exportedObjects[$object.object_id] = $true
+                    continue
+                }
             }
 
             switch ($object.type_desc)
@@ -1163,12 +1171,18 @@ where
 -- SCHEMAS
 select 
     sys.schemas.name, 
-    sys.sysusers.name as owner 
+    sys.sysusers.name as owner,
+    sys.extended_properties.value as description
 from 
     sys.schemas 
         join 
     sys.sysusers 
-        on sys.schemas.principal_id = sys.sysusers.uid'
+            on sys.schemas.principal_id = sys.sysusers.uid
+        left join
+    sys.extended_properties
+            on sys.extended_properties.class = 3
+            and sys.extended_properties.major_id = sys.schemas.schema_id
+            and sys.extended_properties.name = ''MS_Description'''
     function Export-Schema
     {
         param(
@@ -1187,9 +1201,14 @@ from
         {
             return
         }
+        $description = $schema.description
+        if( $description )
+        {
+            $description = ' -Description ''{0}''' -f ($description -replace '''','''''')
+        }
 
         Write-ExportingMessage -Schema $Object.schema_name -Type Schema
-        '    Add-Schema -Name ''{0}'' -Owner ''{1}''' -f $schema.name,$schema.owner
+        '    Add-Schema -Name ''{0}'' -Owner ''{1}''{2}' -f $schema.name,$schema.owner, $description
         $exportedSchemas[$schema.name] = $true
         Push-PopOperation ('Remove-Schema -Name ''{0}''' -f $schema.name)
     }
@@ -1534,8 +1553,22 @@ where
         Write-ExportingMessage -Schema $Object.schema_name -Name $Object.name -Type View
         if( $view -match $createPreambleRegex )
         {
+            $description = $Object.description
+            if( $description )
+            {
+                $description = ' -Description ''{0}''' -f ($description -replace '''','''''')
+            }
+    
             $view = $view -replace $createPreambleRegex,''
-            '    Add-View{0} -Name ''{1}'' -Definition @''{2}{3}{2}''@' -f $schema,$Object.name,[Environment]::NewLine,$view
+            '    Add-View{0} -Name ''{1}''{2} -Definition @''{3}{4}{3}''@' -f $schema,$Object.name,$description,[Environment]::NewLine,$view
+
+            # Get view's columns that have extended properties
+            $viewColumns = Invoke-Query -Query $columnsQuery | Where-Object { $_.object_id -eq $Object.object_id -and $_.description }
+            foreach( $column in $viewColumns )
+            {
+                $colDescription = ' -Description ''{0}''' -f ($column.description -replace '''','''''')
+                '    Add-ExtendedProperty -SchemaName ''{0}'' -ViewName ''{1}'' -ColumnName ''{2}'' -Value {3}' -f $Object.schema_name,$Object.object_name,$column.column_name,$colDescription
+            }
         }
         else
         {
@@ -1796,7 +1829,7 @@ where
         if( $objectTypes -contains 'SQL_TRIGGER' )
         {
             $triggers = Invoke-Query -Query $triggersQuery
-            $triggers | ForEach-Object { $triggersByID[$_.object_id] = $_ }        
+            $triggers | ForEach-Object { $triggersByID[$_.object_id] = $_ }
             $triggers | Group-Object -Property 'parent_id' | ForEach-Object { $triggersByTable[[int]$_.Name] = $_.Group }
         }
 
@@ -1806,7 +1839,7 @@ where
             $uniqueKeys =  Invoke-Query -Query $uniqueKeysQuery
             $uniqueKeys | ForEach-Object { $uniqueKeysByID[$_.object_id] = $_ }
             $uniqueKeys | Group-Object -Property 'parent_object_id' | ForEach-Object { $uniqueKeysByTable[[int]$_.Name] = $_.Group }
-        
+    
             # UNIQUE KEY COLUMNS
             $uniqueKeyColumns = Invoke-Query -Query $uniqueKeysColumnsQuery
             $uniqueKeyColumns | Group-Object -Property 'object_id' | ForEach-Object { $uniqueKeyColumnsByObjectID[[int]$_.Name] = $_.Group }
@@ -1862,7 +1895,7 @@ where
 
             if( $row.referenced_server_name -or ($row.referenced_database_name -ne $null -and $row.referenced_database_name -ne $Database) )
             {
-                $externalDependencies[$row.referencing_id] = $externalName
+                $externalDependencies[$row.referencing_id] = @{ ExternalName = $externalName; DatabaseName = $row.referenced_database_name }
             }
             else
             {
@@ -1882,21 +1915,21 @@ where
                                     $schemas
                                     $indexes
                                     $dataTypes
-                                } | 
-            Measure-Object | 
+                                } |
+            Measure-Object |
             Select-Object -ExpandProperty 'Count'
 
         if( $writeProgress )
         {
-            Write-Progress -Activity $activity 
+            Write-Progress -Activity $activity
         }
 
-        $timer | 
+        $timer |
             Add-Member -Name 'ExportCount' -Value 0 -MemberType NoteProperty -PassThru |
             Add-Member -MemberType NoteProperty -Name 'Activity' -Value $activity -PassThru |
             Add-Member -MemberType NoteProperty -Name 'CurrentOperation' -Value '' -PassThru |
             Add-Member -MemberType NoteProperty -Name 'TotalCount' -Value $totalOperationCount
-        
+    
         if( $writeProgress )
         {
             # Write-Progress is *expensive*. Only do it if the user is interactive and only every 1/10th of a second.
