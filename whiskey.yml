@@ -1,7 +1,7 @@
 PublishOn:
 - prerelease
 - master
- 
+
 Build:
 - PowerShell:
     IfExists: env:MSSQL_SERVICE_NAME
@@ -13,8 +13,9 @@ Build:
     Path: Rivet\Rivet.psd1
     PowerShellModuleName: Rivet
     Prerelease:
-    - "*/*": alpha1
-    - develop: rc1
+    - main: ""
+    - master: ""
+    - "*": rc1
 
 # Update the AppVeyor build/version number.
 - Exec:
@@ -60,7 +61,7 @@ Build:
 - MergeFile:
     OnlyBy: BuildServer
     IfExists: Rivet\Functions\*.ps1
-    Path: 
+    Path:
     - Test\RivetTest\Functions\*.ps1
     - Test\RivetTest\RivetTest.Exports.ps1
     DestinationPath: Test\RivetTest\RivetTest.psm1
