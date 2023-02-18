@@ -1,3 +1,5 @@
+<!--markdownlint-disable MD012 no-multiple-blanks -->
+<!--markdownlint-disable MD024 no-duplicate-heading/no-duplicate-header -->
 
 # 0.19.1
 
@@ -17,7 +19,7 @@
 
 # 0.17.0
 
-## Changes 
+## Changes
 
 * When initializing a database, Rivet now runs the migrations found in the schema.ps1 file, which contains the baseline
 database schema upon which all migrations should be applied. You can use the `Checkpoint-Migration` function to create
@@ -28,10 +30,10 @@ a baseline `schema.ps1` file for your database(s).
 
 * Updated `Checkpoint-Migration` function:
 
-    * The `schema.ps1` file generated from `Checkpoint-Migration` is saved to the Migrations directory of each database
-    that is being checkpointed.
-    * Only migrations that have been applied to the database will be exported to the `schema.ps1` file.
-    * Migrations that have been checkpointed will be removed from the Migrations directory.
+* The `schema.ps1` file generated from `Checkpoint-Migration` is saved to the Migrations directory of each database
+that is being checkpointed.
+* Only migrations that have been applied to the database will be exported to the `schema.ps1` file.
+* Migrations that have been checkpointed will be removed from the Migrations directory.
 
 
 # 0.15.0
@@ -130,7 +132,7 @@ order. See `help about_Rivet_Configuration` for more information.
 ## Enhancements
 
 * Created `Merge-Migration` function for creating cumulative, roll up migrations.
- 
+
 
 # 0.7.0
 
@@ -167,7 +169,7 @@ for half a second.
 * Obsoleted the parameter sets of the `Remove-CheckConstraint`, `Remove-DefaulConstraint`, `Remove-ForeignKey`,
 `Remove-Index`, `Remove-PrimaryKey`, and `Remove-UniqueKey` operations that use an inferred constraint/index name.
 These operations now expect the name of the constraint/index to drop with the `Name` parameter.
-* Improved object model so that customizing index/constraint names is easier. 
+* Improved object model so that customizing index/constraint names is easier.
 * Added `about_Rivet_Cookbook` help topic to showing how to customize index/constraint names.
 * Updated and improved the `about_Rivet_Plugins` help topic.
 * Obsoleted the `Enable-ForeignKey` and `Disable-ForeignKey` operations. Use the `Enable-Constraint` and
@@ -183,8 +185,8 @@ multiple names, IDs, or file names).
 
 * Results from `Invoke-SqlScript` operations cause silent error when formatted as a table.
 * Path to rivet.json file not showing in an error message when using implicit path.
- 
- 
+
+
 # 0.5.1
 
 ## Enhancements
@@ -197,8 +199,8 @@ all operations.
 ## Bug Fixes
 
 * Get-Migration fails when run from Convert-Migration: it doesn't know the path to use to load migrations from.
- 
- 
+
+
 # 0.5.0
 
 ## Enhancements
@@ -219,7 +221,7 @@ output replaces the old Write-Host output).
 * NOCHECK parameter has been added to `Add-ForeignKey` and `Add-CheckConstraint` operations
 * `Disable-CheckConstraint` and `Enable-CheckConstraint` functions have been added.
 * `Disable-ForeignKey` and `Enable-ForeignKey` functions have been added.
- 
+
 ## Bug Fixes
 
 * Convert-Migration.ps1 generates incorrect SQL if a migration removes then re-adds a column.
@@ -245,7 +247,7 @@ output replaces the old Write-Host output).
 * `Get-RivetConfig` is now a publicly exposed function.  Use this method to parse a Rivet JSON configuration file.
 It returns a `Rivet.Configuration.Configuration` object.
 
- 
+
 # 0.3.0
 
 ## Enhancements
