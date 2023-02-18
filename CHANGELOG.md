@@ -1,19 +1,12 @@
 <!--markdownlint-disable MD012 no-multiple-blanks -->
 <!--markdownlint-disable MD024 no-duplicate-heading/no-duplicate-header -->
 
-# 0.19.1
-
-* Fixed: Rivet doesn't use the CommandTimeout property in rivet.json configuration file.
-
-
-# 0.19.0
-
-* `Export-Migration` will now allow references to objects in databases that have been applied before it.
-* The `DatabaseOrder` setting in the rivet.json file has now been renamed to `Databases`.
-
-
 # 0.18.0
 
+* Fixed: Rivet doesn't use the CommandTimeout property in rivet.json configuration file.
+* `Export-Migration` will now allow references to objects in databases that have been applied before it.
+* The `DatabaseOrder` setting in the rivet.json file has been removed in favor of a new `Databases` property that should
+be the ordered-list of databases to migrate.
 * `Export-Migration` will now include extended properties on schemas, views, and view columns.
 
 
