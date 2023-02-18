@@ -53,13 +53,19 @@ for:
     only:
     - job_group: ps
   build_script:
-  - ps: .\init.ps1 -SqlServerName "$($env:MSSQL_INSTANCE_NAME)"
-  - ps: .\build.ps1
+  - ps: |
+        $ProgressPreference = 'SilentlyContinue'
+        iwr https://raw.githubusercontent.com/webmd-health-services/Prism/main/Scripts/init.ps1 | iex | Format-Table
+        .\init.ps1 -SqlServerName "$($env:MSSQL_INSTANCE_NAME)"
+        .\build.ps1
 
 # Build in PowerShell
 - matrix:
     only:
     - job_group: pwsh
   build_script:
-  - pwsh: ./init.ps1 -SqlServerName "$($env:MSSQL_INSTANCE_NAME)"
-  - pwsh: ./build.ps1
+  - pwsh: |
+        $ProgressPreference = 'SilentlyContinue'
+        iwr https://raw.githubusercontent.com/webmd-health-services/Prism/main/Scripts/init.ps1 | iex | Format-Table
+        ./init.ps1 -SqlServerName "$($env:MSSQL_INSTANCE_NAME)"
+        ./build.ps1
