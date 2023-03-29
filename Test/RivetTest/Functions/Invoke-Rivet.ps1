@@ -47,7 +47,12 @@ function Invoke-RTRivet
         [Parameter(ParameterSetName='Checkpoint')]
         [Switch]
         # Checkpoints the current state of the database so that it can be re-created.
-        $Checkpoint
+        $Checkpoint,
+
+        [Parameter(ParameterSetName='InitializeSchema')]
+        [Switch]
+        # Initializes the database using the contents of the schema.ps1 file that was created from checkpoint.
+        $InitializeSchema
     )
     
     Set-StrictMode -Version Latest

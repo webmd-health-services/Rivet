@@ -126,8 +126,8 @@ function ThenSchemaFileRunnable
         $script:checkpointedMigrations.Add($checkpointedMigration)
         It ('should export a runnable migration') {
             Remove-RivetTestDatabase -Name $databaseName
-            # Now, check that the migration is runnable
-            Invoke-RTRivet -Push -Database $databaseName -ErrorAction Stop
+            # Now, check that the schema.ps1 script is runnable
+            Invoke-RTRivet -InitializeSchema -Database $databaseName -ErrorAction Stop
             Invoke-RTRivet -Pop -Database $databaseName -ErrorAction Stop
         }
     }
@@ -203,6 +203,9 @@ function Pop-Migration
         int 'ID' -Identity -NotForReplication
     }
 '@ -Database ('RivetTest', 'RivetTest2')
+    ThenMigration -HasContent @'
+    Add-Row -SchemaName 'rivet' -TableName 'Migrations' -Column @{
+'@ -Database ('RivetTest', 'RivetTest2')
     ThenNoErrors
     Reset -Database ('RivetTest', 'RivetTest2')
 }
@@ -250,6 +253,9 @@ function Pop-Migration
     Add-Table -Name 'NotReplicated' -Column {
         int 'ID' -Identity -NotForReplication
     }
+'@ -Database $RTDatabaseName
+    ThenMigration -HasContent @'
+    Add-Row -SchemaName 'rivet' -TableName 'Migrations' -Column @{
 '@ -Database $RTDatabaseName
     ThenNoErrors
     Reset
@@ -361,6 +367,9 @@ function Pop-Migration
     ThenMigration -HasContent 'Add-Trigger -Name ''MigrationsTrigger'' -Definition @''
 ON [dbo].[Migrations] for insert as select 1
 ''@' -Database $RTDatabaseName
+    ThenMigration -HasContent @'
+    Add-Row -SchemaName 'rivet' -TableName 'Migrations' -Column @{
+'@ -Database $RTDatabaseName
     
     ThenMigration -HasContent 'Remove-Table -Name ''Migrations''' -Database $RTDatabaseName
     ThenMigration -Not -HasContent 'Remove-Schema' -Database $RTDatabaseName
@@ -414,6 +423,9 @@ function Pop-Migration
     Add-Table -Name 'Test2' -Column {
         int 'ID' -Identity
     }
+'@ -Database $RTDatabaseName
+    ThenMigration -HasContent @'
+    Add-Row -SchemaName 'rivet' -TableName 'Migrations' -Column @{
 '@ -Database $RTDatabaseName
     ThenNoErrors
     Reset

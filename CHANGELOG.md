@@ -1,6 +1,14 @@
 <!--markdownlint-disable MD012 no-multiple-blanks -->
 <!--markdownlint-disable MD024 no-duplicate-heading/no-duplicate-header -->
 
+# 0.19.0
+
+* `Checkpoint-Migration` will no longer delete migration scripts that have been pushed to the database. Instead it
+  will now export rows from the `rivet.Migrations` table and include them in the `schema.ps1` file.
+* Added an `Initialize-Schema` switch to the `Invoke-Rivet` script that is used to initialize database(s) with the
+  `schema.ps1` file that is generated from `Checkpoint-Migration`.
+
+
 # 0.18.0
 
 * Fixed: Rivet doesn't use the CommandTimeout property in rivet.json configuration file.

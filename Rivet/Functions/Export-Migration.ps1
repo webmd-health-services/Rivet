@@ -41,7 +41,10 @@ function Export-Migration
         # The path to the Rivet configuration file to load. Defaults to `rivet.json` in the current directory.
         [String] $ConfigFilePath,
 
-        [Switch] $NoProgress
+        [Switch] $NoProgress,
+
+        # Checkpoints the current state of the database so that it can be re-created.
+        [Switch] $Checkpoint
     )
 
     Set-StrictMode -Version 'Latest'
@@ -1619,6 +1622,27 @@ where
         $exportedXmlSchemas[$ID] = $true
     }
 
+    $rivetMigrationsTableQuery = "
+    SELECT *
+    FROM rivet.Migrations
+    WHERE ID > $($script:firstMigrationId)"
+    function Export-RivetMigrationsTable
+    {
+        [CmdletBinding()]
+        param()
+
+        foreach( $row in $rivetMigrationsTableData )
+        {
+            "    Add-Row -SchemaName 'rivet' -TableName 'Migrations' -Column @{"
+            "        ID = '$($row.Id)';"
+            "        Name = '$($row.Name)';"
+            "        Who = '$($row.Who)';"
+            "        ComputerName = '$($row.ComputerName)';"
+            "        AtUtc = '$($row.AtUtc.ToString("MM/dd/yyyy HH:mm:ss.fffffff"))';"
+            "    }"
+        }
+    }
+
     function Push-PopOperation
     {
         param(
@@ -1949,6 +1973,11 @@ where
             Export-DataType
             Export-Object
             Export-Index
+            if( $Checkpoint )
+            {
+                $rivetMigrationsTableData = Invoke-Query -Query $rivetMigrationsTableQuery
+                Export-RivetMigrationsTable
+            }
         '}'
         ''
         'function Pop-Migration'
