@@ -46,34 +46,13 @@ function Checkpoint-Migration
             return
         }
 
-        $query = @"
-        SELECT CONCAT( FORMAT(ID, '00000000000000'), '_', Name) as MigrationFileName
-        FROM rivet.Migrations
-        WHERE ID > $($script:firstMigrationId)
-"@
-
-        try
-        {
-            Connect-Database -SqlServerName $settings.SqlServerName `
-                            -Database $databaseItem.Name `
-                            -ConnectionTimeout $settings.ConnectionTimeout
-
-            $pushedMigrations = Invoke-Query -Query $query
-        }
-        finally
-        {
-            Disconnect-Database
-        }
-
         Write-Debug "Checkpoint-Migration: Exporting migration on database $($databaseItem.Name)"
-        $migration = Export-Migration -SqlServerName $settings.SqlServerName -Database $databaseItem.Name -ConfigFilePath $ConfigFilePath
+        $migration = Export-Migration -SqlServerName $settings.SqlServerName `
+                                      -Database $databaseItem.Name `
+                                      -ConfigFilePath $ConfigFilePath `
+                                      -Checkpoint
+                                      
         $migration = $migration -join [Environment]::NewLine
         Set-Content -Path $OutputPath -Value $migration
-
-        foreach( $migration in $pushedMigrations )
-        {
-            $migrationFilePath = Join-Path -Path $databaseItem.MigrationsRoot -ChildPath "$($migration.MigrationFileName).ps1"
-            Remove-Item -Path $migrationFilePath
-        }
     }
 }

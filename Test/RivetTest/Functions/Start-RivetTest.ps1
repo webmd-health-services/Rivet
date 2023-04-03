@@ -24,7 +24,13 @@ function Start-RivetTest
 
     if( (Test-Pester) )
     {
-        $script:RTTestRoot = Join-Path -Path $TestDrive.FullName -ChildPath ([IO.Path]::GetRandomFileName())
+        $testDirectory = $TestDrive
+        if( $testDirectory | Get-Member -Name 'FullName' )
+        {
+            $testDirectory = $testDirectory.FullName
+        }
+        
+        $script:RTTestRoot = Join-Path -Path $testDirectory -ChildPath ([IO.Path]::GetRandomFileName())
         New-Item -Path $RTTestRoot -ItemType 'Directory' | Out-Null
     }
     else

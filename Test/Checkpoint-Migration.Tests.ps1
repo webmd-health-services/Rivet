@@ -1,105 +1,98 @@
 #Requires -Version 5.1
 Set-StrictMode -Version 'Latest'
 
-& (Join-Path -Path $PSScriptRoot -ChildPath 'Initialize-Test.ps1' -Resolve)
+BeforeAll {
+    & (Join-Path -Path $PSScriptRoot -ChildPath 'Initialize-Test.ps1' -Resolve)
 
-$checkpointedMigrations = [System.Collections.ArrayList]::new()
-$migrationPaths = [System.Collections.ArrayList]::new()
-$existingSchemaContents = @"
-function Push-Migration
-{
-    Add-Table -Name 'Existing' -Column {
-        int 'ID' -Identity
-    }
-}
-
-function Pop-Migration
-{
-    Remove-Table 'Existing'
-}
-"@
-
-function Init
-{
-    $Global:Error.Clear()
     $script:checkpointedMigrations = [System.Collections.ArrayList]::new()
     $script:migrationPaths = [System.Collections.ArrayList]::new()
-    Start-RivetTest
-}
-
-function GivenMigrationContent
-{
-    param(
-        [Parameter(Mandatory)]
-        [String] $Content,
-
-        [String[]] $Database
-    )
-
-    if(-not $Database )
+    $script:database = [System.Collections.ArrayList]::new()
+    $existingSchemaContents = @"
+    function Push-Migration
     {
-        $Database = $RTDatabaseName
+        Add-Table -Name 'Existing' -Column {
+            int 'ID' -Identity
+        }
     }
 
-    foreach( $databaseName in $Database )
+    function Pop-Migration
     {
-        $path = $Content | New-TestMigration -Name 'CheckpointMigration' -DatabaseName $databaseName
-        $script:migrationPaths.Add($path)
+        Remove-Table 'Existing'
     }
-}
+"@
 
-function Reset
-{
-    param(
-        [String[]] $Database
-    )
-
-    if( -not $Database )
+    function GivenMigrationContent
     {
-        $Database = $RTDatabaseName
+        param(
+            [Parameter(Mandatory)]
+            [String] $Content,
+
+            [String[]] $Database,
+
+            [String] $Name
+        )
+
+        if(-not $Database )
+        {
+            $Database = $RTDatabaseName
+        }
+
+        foreach( $databaseName in $Database )
+        {
+            $path = $Content | New-TestMigration -Name $Name -DatabaseName $databaseName
+            $script:migrationPaths.Add($path)
+        }
     }
 
-    foreach( $databaseItem in $Database )
+    function Reset
     {
-        Remove-RivetTestDatabase -Name $databaseItem
+        param(
+        )
+
+        $database = $script:database
+        if( -not $database )
+        {
+            $database = $RTDatabaseName
+        }
+
+        foreach( $databaseItem in $database )
+        {
+            Remove-RivetTestDatabase -Name $databaseItem
+        }
     }
-}
 
-function ThenFailed
-{
-    param(
-        [String] $WithError
-    )
+    function ThenFailed
+    {
+        param(
+            [String] $WithError
+        )
 
-    It ('should fail') {
         $Global:Error | Should -Match $WithError
     }
-}
 
-function ThenNoErrors
-{
-    It ('should not write any errors') {
+    function ThenNoErrors
+    {
         $Global:Error | Should -BeNullOrEmpty
     }
-}
 
-function ThenMigration
-{
-    param(
-        [Switch] $Not,
-
-        [Parameter(Mandatory)]
-        [String] $HasContent,
-
-        [Parameter(Mandatory)]
-        [String[]] $Database
-    )
-
-    foreach( $databaseItem in $Database )
+    function ThenSchema
     {
-        $migration = $script:checkpointedMigrations | Where-Object {$_.Database -eq $databaseItem}
+        param(
+            [Switch] $Not,
 
-        It ('should checkpoint migration') {
+            [Parameter(Mandatory)]
+            [String] $HasContent,
+
+            [Parameter(Mandatory)]
+            [String[]] $Database,
+
+            [String[]] $ContainsRowsFor
+        )
+
+        foreach( $databaseItem in $Database )
+        {
+            $migration = $script:checkpointedMigrations | Where-Object {$_.Database -eq $databaseItem}
+
             if( $Not )
             {
                 ($migration.Migration -join [Environment]::NewLine) | Should -Not -BeLike ('*{0}*' -f [wildcardpattern]::Escape($HasContent))
@@ -108,72 +101,89 @@ function ThenMigration
             {
                 ($migration.Migration -join [Environment]::NewLine) | Should -BeLike ('*{0}*' -f [wildcardpattern]::Escape($HasContent))
             }
+
+            foreach( $row in $ContainsRowsFor )
+            {
+                ($migration.Migration -join [Environment]::NewLine) | Should -BeLike ('*{0}*' -f [wildcardpattern]::Escape($row))
+            }
         }
     }
-}
 
-function ThenSchemaFileRunnable
-{
-    foreach( $path in $script:migrationPaths )
-    {
-        $databaseName = $path.Directory.Parent.Name
-        $schemaFilePath = Join-Path -Path (Split-Path $path) -ChildPath 'schema.ps1'
-        $schemaFileContents = Get-Content -Path $schemaFilePath
-        $checkpointedMigration = @{
-            Database = $path.Directory.Parent.Name;
-            Migration = $schemaFileContents
-        }
-        $script:checkpointedMigrations.Add($checkpointedMigration)
-        It ('should export a runnable migration') {
-            Remove-RivetTestDatabase -Name $databaseName
-            # Now, check that the migration is runnable
-            Invoke-RTRivet -Push -Database $databaseName -ErrorAction Stop
-            Invoke-RTRivet -Pop -Database $databaseName -ErrorAction Stop
-        }
-    }
-}
-
-function WhenCheckpointingMigration
-{
-    [CmdletBinding()]
-    param(
-        [String[]] $Database,
-
-        [Switch] $Force,
-
-        [Switch] $ExistingSchemaFile,
-
-        [String[]] $Exclude
-    )
-
-    if(-not $Database )
-    {
-        $Database = $RTDatabaseName
-    }
-
-    if( $ExistingSchemaFile )
+    function ThenSchemaFileRunnable
     {
         foreach( $path in $script:migrationPaths )
         {
-            Set-Content -Path (Join-Path -Path $path.Directory.FullName -ChildPath 'schema.ps1') -Value $existingSchemaContents 
+            $databaseName = $path.Directory.Parent.Name
+            $schemaFilePath = Join-Path -Path (Split-Path $path) -ChildPath 'schema.ps1'
+            $schemaFileContents = Get-Content -Path $schemaFilePath
+            $checkpointedMigration = @{
+                Database = $path.Directory.Parent.Name;
+                Migration = $schemaFileContents
+            }
+            $script:checkpointedMigrations.Add($checkpointedMigration)
+            
+            Remove-RivetTestDatabase -Name $databaseName
+            # Now, check that the schema.ps1 script is runnable
+            Invoke-RTRivet -InitializeSchema -Database $databaseName -ErrorAction Stop
+            Invoke-RTRivet -Pop -Database $databaseName -ErrorAction Stop
         }
     }
 
-    foreach( $migration in $Exclude )
+    function WhenCheckpointingMigration
     {
-        $migrationPathToRemove = $script:migrationPaths | Where-Object {$_ -like $migration}
-        if( $migrationPathToRemove )
-        {
-            $script:migrationPaths.Remove($migrationPathToRemove)
-        }
-    }
+        [CmdletBinding()]
+        param(
+            [String[]] $Database,
 
-    Invoke-RTRivet -Checkpoint -Database $Database -Force:$Force
+            [Switch] $Force,
+
+            [Switch] $ExistingSchemaFile,
+
+            [String[]] $Exclude
+        )
+
+        if(-not $Database )
+        {
+            $Database = $RTDatabaseName
+        }
+
+        if( $ExistingSchemaFile )
+        {
+            foreach( $path in $script:migrationPaths )
+            {
+                Set-Content -Path (Join-Path -Path $path.Directory.FullName -ChildPath 'schema.ps1') -Value $existingSchemaContents 
+            }
+        }
+
+        foreach( $migration in $Exclude )
+        {
+            $migrationPathToRemove = $script:migrationPaths | Where-Object {$_ -like $migration}
+            if( $migrationPathToRemove )
+            {
+                $script:migrationPaths.Remove($migrationPathToRemove)
+            }
+        }
+
+        Invoke-RTRivet -Checkpoint -Database $Database -Force:$Force
+    }
 }
 
-Describe 'Checkpoint-Migration.when there are multiple databases' {
-    Init
-    GivenMigrationContent -Content @'
+Describe 'Checkpoint-Migration' {
+    BeforeEach {
+        $Global:Error.Clear()
+        $script:checkpointedMigrations = [System.Collections.ArrayList]::new()
+        $script:migrationPaths = [System.Collections.ArrayList]::new()
+        $script:database = [System.Collections.ArrayList]::new()
+        Start-RivetTest
+    }
+
+    AfterEach {
+        Reset
+    }
+
+    It 'should successfuly checkpoint migrations when there are multiple databases' {
+        $script:database = 'RivetTest', 'RivetTest2'
+        GivenMigrationContent -Name 'CheckpointMigration' -Content @'
 function Push-Migration
 {
     Add-Table -Name 'Replicated' -Column {
@@ -189,27 +199,28 @@ function Pop-Migration
     Remove-Table 'Replicated'
     Remove-Table 'NotReplicated'
 }
-'@ -Database ('RivetTest', 'RivetTest2')
-    Invoke-RTRivet -Push -Database ('RivetTest', 'RivetTest2')
-    WhenCheckpointingMigration -Database ('RivetTest', 'RivetTest2')
-    ThenSchemaFileRunnable
-    ThenMigration -HasContent @'
+'@ -Database ($script:database)
+        Invoke-RTRivet -Push -Database ($script:database)
+        WhenCheckpointingMigration -Database ($script:database)
+        ThenSchemaFileRunnable
+        ThenSchema -HasContent @'
     Add-Table -Name 'Replicated' -Column {
         int 'ID' -Identity
     }
-'@ -Database ('RivetTest', 'RivetTest2')
-    ThenMigration -HasContent @'
+'@ -Database ($script:database)
+        ThenSchema -HasContent @'
     Add-Table -Name 'NotReplicated' -Column {
         int 'ID' -Identity -NotForReplication
     }
-'@ -Database ('RivetTest', 'RivetTest2')
-    ThenNoErrors
-    Reset -Database ('RivetTest', 'RivetTest2')
-}
-
-Describe 'Checkpoint-Migration.when schema.ps1 file already exists' {
-    Init
-    GivenMigrationContent @'
+'@ -Database ($script:database)
+        ThenSchema -HasContent @'
+    Add-Row -SchemaName 'rivet' -TableName 'Migrations' -Column @{
+'@ -ContainsRowsFor 'CheckpointMigration' -Database ($script:database)
+        ThenNoErrors
+    }
+    
+    It 'should fail when schema.ps1 file already exists' {
+        GivenMigrationContent -Name 'CheckpointMigration' -Content @'
 function Push-Migration
 {
     Add-Table -Name 'NotReplicated' -Column {
@@ -222,15 +233,13 @@ function Pop-Migration
     Remove-Table 'NotReplicated'
 }
 '@
-    Invoke-RTRivet -Push -Database $RTDatabaseName
-    WhenCheckpointingMigration -ExistingSchemaFile -ErrorAction SilentlyContinue
-    ThenFailed -WithError 'schema.ps1" already exists.'
-    Reset
-}
-
-Describe 'Checkpoint-Migration.when schema.ps1 file already exists but -Force switch is given' {
-    Init
-    GivenMigrationContent @'
+        Invoke-RTRivet -Push -Database $RTDatabaseName
+        WhenCheckpointingMigration -ExistingSchemaFile -ErrorAction SilentlyContinue
+        ThenFailed -WithError 'schema.ps1" already exists.'
+    }
+    
+    It 'should overwrite contents when schema.ps1 file already exists but -Force switch is given' {
+        GivenMigrationContent -Name 'CheckpointMigration' -Content @'
 function Push-Migration
 {
     Add-Table -Name 'NotReplicated' -Column {
@@ -243,21 +252,22 @@ function Pop-Migration
     Remove-Table 'NotReplicated'
 }
 '@
-    Invoke-RTRivet -Push -Database $RTDatabaseName
-    WhenCheckpointingMigration -ExistingSchemaFile -Force
-    ThenSchemaFileRunnable
-    ThenMigration -HasContent @'
+        Invoke-RTRivet -Push -Database $RTDatabaseName
+        WhenCheckpointingMigration -ExistingSchemaFile -Force
+        ThenSchemaFileRunnable
+        ThenSchema -HasContent @'
     Add-Table -Name 'NotReplicated' -Column {
         int 'ID' -Identity -NotForReplication
     }
 '@ -Database $RTDatabaseName
-    ThenNoErrors
-    Reset
-}
-
-Describe 'Checkpoint-Migration.when checkpointing a migration' {
-    Init
-    GivenMigrationContent @'
+        ThenSchema -HasContent @'
+    Add-Row -SchemaName 'rivet' -TableName 'Migrations' -Column @{
+'@ -ContainsRowsFor 'CheckpointMigration' -Database $RTDatabaseName
+        ThenNoErrors
+    }
+    
+    It 'should pass when checkpointing a migration' {
+        GivenMigrationContent -Name 'CheckpointMigration' -Content @'
 function Push-Migration
 {
     Add-DataType -Name 'CID' -From 'char(8)'
@@ -308,11 +318,11 @@ function Pop-Migration
     Remove-DataType 'CID'
 }
 '@
-    Invoke-RTRivet -Push -Database $RTDatabaseName
-    WhenCheckpointingMigration
-    ThenSchemaFileRunnable
-    ThenMigration -Not -HasContent 'Add-Schema -Name ''dbo''' -Database $RTDatabaseName
-    ThenMigration -HasContent @'
+        Invoke-RTRivet -Push -Database $RTDatabaseName
+        WhenCheckpointingMigration
+        ThenSchemaFileRunnable
+        ThenSchema -Not -HasContent 'Add-Schema -Name ''dbo''' -Database $RTDatabaseName
+        ThenSchema -HasContent @'
     Add-Table -Name 'Migrations' -Description 'some table''s description' -Column {
         int 'ID' -Identity
         bigint 'BigID' -NotNull -Description 'some bigint column''s description'
@@ -346,37 +356,38 @@ function Pop-Migration
         varchar 'ExplicitMaxSize' -Size 8000
     }
 '@ -Database $RTDatabaseName
-    ThenMigration -HasContent @'
+        ThenSchema -HasContent @'
     Add-PrimaryKey -TableName 'Migrations' -ColumnName 'ID' -Name 'PK_Migrations'
 '@ -Database $RTDatabaseName
-    ThenMigration -HasContent @'
+        ThenSchema -HasContent @'
     Add-DefaultConstraint -TableName 'Migrations' -ColumnName 'AtUtc' -Name 'DF_Migrations_AtUtc' -Expression '(getutcdate())'
 '@ -Database $RTDatabaseName
-    ThenMigration -HasContent @'
+        ThenSchema -HasContent @'
     Add-CheckConstraint -TableName 'Migrations' -Name 'CK_Migrations_Name' -Expression '([Name]=''Fubar'')'
 '@ -Database $RTDatabaseName
-    ThenMigration -HasContent 'Add-CheckConstraint -TableName ''Migrations'' -Name ''CK_Migrations_Name2'' -Expression ''([Name]=''''Snafu'''')'' -NotForReplication -NoCheck' -Database $RTDatabaseName
-    ThenMigration -HasContent 'Add-Index -TableName ''Migrations'' -ColumnName ''BigID'' -Name ''IX_Migrations_BigID''' -Database $RTDatabaseName
-    ThenMigration -HasContent 'Add-UniqueKey -TableName ''Migrations'' -ColumnName ''Korean'' -Name ''AK_Migrations_Korean''' -Database $RTDatabaseName
-    ThenMigration -HasContent 'Add-Trigger -Name ''MigrationsTrigger'' -Definition @''
+        ThenSchema -HasContent 'Add-CheckConstraint -TableName ''Migrations'' -Name ''CK_Migrations_Name2'' -Expression ''([Name]=''''Snafu'''')'' -NotForReplication -NoCheck' -Database $RTDatabaseName
+        ThenSchema -HasContent 'Add-Index -TableName ''Migrations'' -ColumnName ''BigID'' -Name ''IX_Migrations_BigID''' -Database $RTDatabaseName
+        ThenSchema -HasContent 'Add-UniqueKey -TableName ''Migrations'' -ColumnName ''Korean'' -Name ''AK_Migrations_Korean''' -Database $RTDatabaseName
+        ThenSchema -HasContent 'Add-Trigger -Name ''MigrationsTrigger'' -Definition @''
 ON [dbo].[Migrations] for insert as select 1
 ''@' -Database $RTDatabaseName
+        ThenSchema -HasContent @'
+    Add-Row -SchemaName 'rivet' -TableName 'Migrations' -Column @{
+'@ -ContainsRowsFor 'CheckpointMigration' -Database $RTDatabaseName
+        
+        ThenSchema -HasContent 'Remove-Table -Name ''Migrations''' -Database $RTDatabaseName
+        ThenSchema -Not -HasContent 'Remove-Schema' -Database $RTDatabaseName
+        ThenSchema -Not -HasContent 'Remove-PrimaryKey' -Database $RTDatabaseName
+        ThenSchema -Not -HasContent 'Remove-DefaultConstraint' -Database $RTDatabaseName
+        ThenSchema -Not -HasContent 'Remove-CheckConstraint' -Database $RTDatabaseName
+        ThenSchema -Not -HasContent 'Remove-Index' -Database $RTDatabaseName
+        ThenSchema -Not -HasContent 'Remove-UniqueKey' -Database $RTDatabaseName
+        ThenSchema -Not -HasContent 'Remove-Trigger' -Database $RTDatabaseName
+        ThenNoErrors
+    }
     
-    ThenMigration -HasContent 'Remove-Table -Name ''Migrations''' -Database $RTDatabaseName
-    ThenMigration -Not -HasContent 'Remove-Schema' -Database $RTDatabaseName
-    ThenMigration -Not -HasContent 'Remove-PrimaryKey' -Database $RTDatabaseName
-    ThenMigration -Not -HasContent 'Remove-DefaultConstraint' -Database $RTDatabaseName
-    ThenMigration -Not -HasContent 'Remove-CheckConstraint' -Database $RTDatabaseName
-    ThenMigration -Not -HasContent 'Remove-Index' -Database $RTDatabaseName
-    ThenMigration -Not -HasContent 'Remove-UniqueKey' -Database $RTDatabaseName
-    ThenMigration -Not -HasContent 'Remove-Trigger' -Database $RTDatabaseName
-    ThenNoErrors
-    Reset
-}
-
-Describe 'Checkpoint-Migration.when there are multiple migrations but only one has been pushed' {
-    Init
-    GivenMigrationContent @'
+    It 'should only checkpoint pushed migrations when there are multiple migrations but only one has been pushed' {
+        GivenMigrationContent -Name 'CheckpointMigration' -Content @'
 function Push-Migration
 {
     Add-Table -Name 'Test1' -Column {
@@ -389,8 +400,8 @@ function Pop-Migration
     Remove-Table 'Test1'
 }
 '@
-    Invoke-RTRivet -Push -Database $RTDatabaseName
-    GivenMigrationContent @'
+        Invoke-RTRivet -Push -Database $RTDatabaseName
+        GivenMigrationContent -Name 'CheckpointMigration2' -Content @'
 function Push-Migration
 {
     Add-Table -Name 'Test2' -Column {
@@ -403,26 +414,74 @@ function Pop-Migration
     Remove-Table 'Test2'
 }
 '@
-    WhenCheckpointingMigration -Exclude $script:migrationPaths[1]
-    ThenSchemaFileRunnable
-    ThenMigration -HasContent @'
+        WhenCheckpointingMigration -Exclude $script:migrationPaths[1]
+        ThenSchemaFileRunnable
+        ThenSchema -HasContent @'
     Add-Table -Name 'Test1' -Column {
         int 'ID' -Identity
     }
 '@ -Database $RTDatabaseName
-    ThenMigration -Not -HasContent @'
+        ThenSchema -Not -HasContent @'
     Add-Table -Name 'Test2' -Column {
         int 'ID' -Identity
     }
 '@ -Database $RTDatabaseName
-    ThenNoErrors
-    Reset
+        ThenSchema -HasContent @'
+    Add-Row -SchemaName 'rivet' -TableName 'Migrations' -Column @{
+'@ -ContainsRowsFor 'CheckpointMigration' -Database $RTDatabaseName
+        ThenNoErrors
+    }
+
+    It 'should only checkpoint all migrations when multiple migrations have been pushed' {
+        GivenMigrationContent -Name 'CheckpointMigration' -Content @'
+function Push-Migration
+{
+    Add-Table -Name 'Test1' -Column {
+        int 'ID' -Identity
+    }
 }
 
-Describe 'Checkpoint-Migration.when no migrations have been pushed' {
-    Init
-    # Nothing to push here. Just running push here to initialize database with rivet.migrations table.
-    Invoke-RTRivet -Push -Database $RTDatabaseName
-    WhenCheckpointingMigration
-    ThenNoErrors
+function Pop-Migration
+{
+    Remove-Table 'Test1'
+}
+'@
+        GivenMigrationContent -Name 'CheckpointMigration2' -Content @'
+function Push-Migration
+{
+    Add-Table -Name 'Test2' -Column {
+        int 'ID' -Identity
+    }
+}
+
+function Pop-Migration
+{
+    Remove-Table 'Test2'
+}
+'@
+        Invoke-RTRivet -Push -Database $RTDatabaseName
+        WhenCheckpointingMigration -Exclude $script:migrationPaths[1]
+        ThenSchemaFileRunnable
+        ThenSchema -HasContent @'
+    Add-Table -Name 'Test1' -Column {
+        int 'ID' -Identity
+    }
+'@ -Database $RTDatabaseName
+        ThenSchema -HasContent @'
+    Add-Table -Name 'Test2' -Column {
+        int 'ID' -Identity
+    }
+'@ -Database $RTDatabaseName
+        ThenSchema -HasContent @'
+    Add-Row -SchemaName 'rivet' -TableName 'Migrations' -Column @{
+'@ -ContainsRowsFor 'CheckpointMigration', 'CheckpointMigration2' -Database $RTDatabaseName
+        ThenNoErrors
+    }
+    
+    It 'should do nothing when no migrations have been pushed' {
+        # Nothing to push here. Just running push here to initialize database with rivet.migrations table.
+        Invoke-RTRivet -Push -Database $RTDatabaseName
+        WhenCheckpointingMigration
+        ThenNoErrors
+    }
 }
