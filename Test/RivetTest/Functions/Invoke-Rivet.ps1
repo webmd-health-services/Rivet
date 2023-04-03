@@ -51,7 +51,7 @@ function Invoke-RTRivet
 
         [Parameter(ParameterSetName='InitializeSchema')]
         [Switch]
-        # Initializes the database using the contents of the schema.ps1 file that was created from checkpoint.
+        # Initializes the database, including baseline schema. Use the -Checkpoint switch to create a database baseline.
         $InitializeSchema
     )
     

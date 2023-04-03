@@ -13,9 +13,7 @@ function Start-RivetTest
 
         [String[]] $ConfigurationDatabase,
 
-        [int] $CommandTimeout = 30,
-
-        [Switch] $Pester5
+        [int] $CommandTimeout = 30
     )
     
     Set-StrictMode -Version Latest
@@ -27,9 +25,9 @@ function Start-RivetTest
     if( (Test-Pester) )
     {
         $testDirectory = $TestDrive
-        if( -not $Pester5 )
+        if( $testDirectory | Get-Member -Name 'FullName' )
         {
-            $testDirectory = $TestDrive.FullName
+            $testDirectory = $testDirectory.FullName
         }
         
         $script:RTTestRoot = Join-Path -Path $testDirectory -ChildPath ([IO.Path]::GetRandomFileName())

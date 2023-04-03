@@ -1626,6 +1626,7 @@ where
     SELECT *
     FROM rivet.Migrations
     WHERE ID > $($script:firstMigrationId)"
+
     function Export-RivetMigrationsTable
     {
         [CmdletBinding()]
@@ -1633,13 +1634,15 @@ where
 
         foreach( $row in $rivetMigrationsTableData )
         {
-            "    Add-Row -SchemaName 'rivet' -TableName 'Migrations' -Column @{"
-            "        ID = '$($row.Id)';"
-            "        Name = '$($row.Name)';"
-            "        Who = '$($row.Who)';"
-            "        ComputerName = '$($row.ComputerName)';"
-            "        AtUtc = '$($row.AtUtc.ToString("MM/dd/yyyy HH:mm:ss.fffffff"))';"
-            "    }"
+            @"
+    Add-Row -SchemaName 'rivet' -TableName 'Migrations' -Column @{
+        ID = '$($row.Id)';
+        Name = '$($row.Name)';
+        Who = '$($row.Who)';
+        ComputerName = '$($row.ComputerName)';
+        AtUtc = '$($row.AtUtc.ToString("MM/dd/yyyy HH:mm:ss.fffffff"))';
+    }
+"@
         }
     }
 

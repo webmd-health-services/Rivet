@@ -119,6 +119,12 @@ Build:
 - Pester:
     AsJob: true
     Configuration:
+        TestResult:
+            Enabled: true
+            OutputPath: .output\pester.xml
+            TestSuiteName: Rivet
+        Output:
+            Verbosity: Detailed
         Run:
             Path: Test\*.Tests.ps1
             ExcludePath:
@@ -166,10 +172,6 @@ Build:
             - "*\\Test\\varbinary.Tests.ps1"
             - "*\\Test\\varchar.Tests.ps1"
             - "*\\Test\\xml.Tests.ps1"
-        TestResult:
-            Enabled: true
-            OutputPath: .output\pester.xml
-            TestSuiteName: Rivet
 
 - PowerShell:
     OnlyDuring: Build
