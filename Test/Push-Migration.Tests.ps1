@@ -187,7 +187,6 @@ Describe 'Push-Migration' {
     }
 
     It 'should push migrations' {
-        $createdAt = (Get-Date).ToUniversalTime()
         Invoke-RTRivet -Push
 
         $migrationScripts = Get-MigrationScript
