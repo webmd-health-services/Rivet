@@ -8,18 +8,19 @@ function Convert-FileInfoToMigration
     [CmdletBinding()]
     [OutputType([Rivet.Migration])]
     param(
-        [Parameter(Mandatory)]
         # The Rivet configuration to use.
-        [Rivet.Configuration.Configuration]$Configuration,
+        [Parameter(Mandatory)]
+        [Rivet_Session] $Session,
 
-        [Parameter(Mandatory,ValueFromPipeline)]
         # The database whose migrations to get.
-        [IO.FileInfo]$InputObject
+        [Parameter(Mandatory, ValueFromPipeline)]
+        [IO.FileInfo] $InputObject
     )
 
     begin
     {
         Set-StrictMode -Version 'Latest'
+        Use-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
         Write-Timing -Message 'Convert-FileInfoToMigration  BEGIN' -Indent
         function Clear-Migration
@@ -34,44 +35,49 @@ function Convert-FileInfoToMigration
 
     process
     {
-        filter Add-Operation
+        function Add-Operation
         {
             param(
-                [Parameter(Mandatory,ValueFromPipeline)]
                 # The migration object to invoke.
-                [Object]$Operation,
+                [Parameter(Mandatory, ValueFromPipeline)]
+                [Object] $Operation,
 
-                [Parameter(ParameterSetName='Push',Mandatory)]
+                [Parameter(ParameterSetName='Push', Mandatory)]
                 [AllowEmptyCollection()]
-                [Collections.Generic.List[Rivet.Operations.Operation]]$OperationsList,
+                [Collections.Generic.List[Rivet.Operations.Operation]] $OperationsList,
 
-                [Parameter(ParameterSetName='Pop',Mandatory)]
-                [switch]$Pop
+                [Parameter(ParameterSetName='Pop', Mandatory)]
+                [switch] $Pop
             )
 
-            Set-StrictMode -Version 'Latest'
-
-            foreach( $operationItem in $Operation )
+            process
             {
-                if( $operationItem -isnot [Rivet.Operations.Operation] )
+                foreach( $operationItem in $Operation )
                 {
-                    continue
+                    if( $operationItem -isnot [Rivet.Operations.Operation] )
+                    {
+                        continue
+                    }
+
+                    # Set CommandTimeout on operation to value from Rivet configuration.
+                    $operationItem.CommandTimeout = $Session.CommandTimeout
+
+                    $pluginParameter = @{ Migration = $m ; Operation = $_ }
+
+                    [Rivet.Operations.Operation[]]$operations = & {
+                            Invoke-RivetPlugin -Session $Session `
+                                               -Event ([Rivet.Events]::BeforeOperationLoad) `
+                                               -Parameter $pluginParameter
+                            $operationItem
+                            Invoke-RivetPlugin -Session $Session `
+                                               -Event ([Rivet.Events]::AfterOperationLoad) `
+                                               -Parameter $pluginParameter
+                        } |
+                        Where-Object { $_ -is [Rivet.Operations.Operation] } |
+                        Repair-Operation
+
+                    $OperationsList.AddRange($operations)
                 }
-
-                # Set CommandTimeout on operation to value from Rivet configuration.
-                $operationItem.CommandTimeout = $Configuration.CommandTimeout
-                
-                $pluginParameter = @{ Migration = $m ; Operation = $_ }
-
-                [Rivet.Operations.Operation[]]$operations = & {
-                        Invoke-RivetPlugin -Event ([Rivet.Events]::BeforeOperationLoad) -Parameter $pluginParameter
-                        $operationItem
-                        Invoke-RivetPlugin -Event ([Rivet.Events]::AfterOperationLoad) -Parameter $pluginParameter
-                    } | 
-                    Where-Object { $_ -is [Rivet.Operations.Operation] } |
-                    Repair-Operation
-
-                $OperationsList.AddRange($operations)
             }
         }
 
@@ -110,7 +116,7 @@ Push-Migration function not found. All migrations are required to have a Push-Mi
                 {
                     return
                 }
-            
+
                 if( -not (Test-Path -Path 'function:Pop-Migration') )
                 {
                     throw (@'
@@ -131,16 +137,12 @@ Pop-Migration function not found. All migrations are required to have a Pop-Migr
                 }
 
                 $afterMigrationLoadParameter = @{ Migration = $m }
-                & { Invoke-RivetPlugin -Event ([Rivet.Events]::AfterMigrationLoad) -Parameter $afterMigrationLoadParameter }
+                & {
+                    Invoke-RivetPlugin -Session $Session `
+                                       -Event ([Rivet.Events]::AfterMigrationLoad) `
+                                       -Parameter $afterMigrationLoadParameter
+                }
                 $m | Write-Output
-            }
-            catch
-            {
-                Write-RivetError -Message ('Loading migration "{0}" failed' -f $m.Path) `
-                                 -CategoryInfo $_.CategoryInfo.Category `
-                                 -ErrorID $_.FullyQualifiedErrorID `
-                                 -Exception $_.Exception `
-                                 -CallStack ($_.ScriptStackTrace) 
             }
             finally
             {

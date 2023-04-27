@@ -10,22 +10,22 @@ function Get-MigrationFile
     param(
         [Parameter(Mandatory)]
         # The configuration to use.
-        [Rivet.Configuration.Configuration]$Configuration,
+        [Rivet_Session] $Session,
 
         [Parameter(Mandatory,ParameterSetName='ByPath')]
         # The path to a migrations directory to get.
-        [String[]]$Path,
+        [String[]] $Path,
 
         # A list of migrations to include. Matches against the migration's ID or Name or the migration's file name (without extension). Wildcards permitted.
-        [String[]]$Include,
+        [String[]] $Include,
 
         # A list of migrations to exclude. Matches against the migration's ID or Name or the migration's file name (without extension). Wildcards permitted.
-        [String[]]$Exclude
+        [String[]] $Exclude
     )
 
     Set-StrictMode -Version Latest
     Use-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-    
+
     Write-Timing -Message 'Get-MigrationFile  BEGIN' -Indent
 
     $requiredMatches = @{ }
@@ -41,7 +41,7 @@ function Get-MigrationFile
     }
 
     $foundMatches = @{ }
-    
+
     Invoke-Command -ScriptBlock {
             if( $PSCmdlet.ParameterSetName -eq 'ByPath' )
             {
@@ -49,11 +49,11 @@ function Get-MigrationFile
             }
             else
             {
-                $Configuration.Databases | Select-Object -ExpandProperty 'MigrationsRoot'
+                $Session.Databases | Select-Object -ExpandProperty 'MigrationsRoot'
             }
         } |
         ForEach-Object {
-            Write-Debug -Message $_ 
+            Write-Debug -Message $_
             if( (Test-Path -Path $_ -PathType Container) )
             {
                 Get-ChildItem -Path $_ -Filter '*_*.ps1'
@@ -62,7 +62,7 @@ function Get-MigrationFile
             {
                 Get-Item -Path $_
             }
-        } | 
+        } |
         ForEach-Object {
             if( $_.BaseName -eq 'schema' )
             {
@@ -79,8 +79,8 @@ function Get-MigrationFile
                 $id = [int64]$matches[1]
                 $name = $matches[2]
             }
-        
-            $_ | 
+
+            $_ |
                 Add-Member -MemberType NoteProperty -Name 'MigrationID' -Value $id -PassThru |
                 Add-Member -MemberType NoteProperty -Name 'MigrationName' -Value $name -PassThru
         } |
@@ -100,12 +100,12 @@ function Get-MigrationFile
                 {
                     $foundMatches[$includeItem] = $true
                     return $true
-                } 
+                }
             }
 
             return $false
         } |
-        Where-Object { 
+        Where-Object {
 
             if( -not ($PSBoundParameters.ContainsKey( 'Exclude' )) )
             {
@@ -125,7 +125,7 @@ function Get-MigrationFile
             }
 
             return $true
-        } 
+        }
 
     foreach( $requiredMatch in $requiredMatches.Keys )
     {

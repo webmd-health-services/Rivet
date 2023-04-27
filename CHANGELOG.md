@@ -1,6 +1,14 @@
 <!--markdownlint-disable MD012 no-multiple-blanks -->
 <!--markdownlint-disable MD024 no-duplicate-heading/no-duplicate-header -->
 
+# 0.20.0
+
+* Rivet internals no longer use global variables for managing connections and current state.
+* Created `New-RivetSession` function for creating a Rivet session. A `Rivet_Session` is the object used by Rivet to
+keep track of current state.
+* Fixed: Rivet no longer shows multiple errors when it encounters a terminating error.
+
+
 # 0.19.0
 
 * `Checkpoint-Migration` will no longer delete migration scripts that have been pushed to the database. Instead it

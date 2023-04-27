@@ -1,54 +1,49 @@
 
-function Export-Row 
+function Export-Row
 {
     <#
     .SYNOPSIS
     Export rows from a database as a migration where those rows get added using the `Add-Row` operation.
 
     .DESCRIPTION
-    When getting your database working with Rivet, you may want to get some data exported into an initial migration.  This script does that.
+    When getting your database working with Rivet, you may want to get some data exported into an initial migration.
+    This script does that.
 
     .EXAMPLE
     Export-Row -SqlServerName .\Rivet -DatabaseName 'Rivet' -SchemaName 'rivet' -TableName 'Migrations' -Column 'MigrationID','RunAtUtc'
 
-    Demonstrates how to export the `MigrationID` and `RunAtUtc` columns of the `rivet.Migrations` table from the `.\Rivet.Rivet` database
+    Demonstrates how to export the `MigrationID` and `RunAtUtc` columns of the `rivet.Migrations` table from the
+    `.\Rivet.Rivet` database
     #>
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory=$true)]
-        [string]
         # The SQL Server to connect to.
-        $SqlServerName,
-
         [Parameter(Mandatory=$true)]
-        [string]
+        [String] $SqlServerName,
+
         # The name of the database.
-        $DatabaseName,
-
-        [string]
-        # The schema of the table.
-        $SchemaName = 'dbo',
-
         [Parameter(Mandatory=$true)]
-        [string]
+        [String] $DatabaseName,
+
+        # The schema of the table.
+        [String] $SchemaName = 'dbo',
+
         # The name of the table.
-        $TableName,
+        [Parameter(Mandatory=$true)]
+        [String] $TableName,
 
-        [Parameter()]
-        [string[]]
         # The columns to export.
-        $Column,
+        [String[]] $Column,
 
-        [string]
         # An orderBy clause to use to order the results.
-        $OrderBy
+        [String] $OrderBy
     )
 
     #Require -Version 3
     Set-StrictMode -Version Latest
 
     $connectionString = 'Server={0};Database={1};Integrated Security=True;' -f $SqlServerName,$DatabaseName
-        
+
     $connection = New-Object Data.SqlClient.SqlConnection $connectionString
     $columnClause = $Column -join ', '
     $query = 'select {0} from {1}.{2}' -f $columnClause,$SchemaName,$TableName
@@ -57,7 +52,7 @@ function Export-Row
         $query += ' order by {0}' -f $OrderBy
     }
     $cmd = New-Object Data.SqlClient.SqlCommand ($query,$connection)
-        
+
     $connection.Open()
     try
     {
@@ -69,12 +64,12 @@ function Export-Row
             {
                 return
             }
-                
+
             while( $cmdReader.Read() )
             {
                 '        @{'
-                for ($i= 0; $i -lt $cmdReader.FieldCount; $i++) 
-                { 
+                for ($i= 0; $i -lt $cmdReader.FieldCount; $i++)
+                {
                     if( $cmdReader.IsDbNull( $i ) )
                     {
                         continue
@@ -97,7 +92,7 @@ function Export-Row
                     {
                         $value = $value.ToString()
                     }
-                    
+
                     '            {0} = {1};' -f $name,$value
                 }
                 '        },'

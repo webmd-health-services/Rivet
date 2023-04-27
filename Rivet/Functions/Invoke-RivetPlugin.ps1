@@ -1,13 +1,16 @@
 
 function Invoke-RivetPlugin
 {
+    [Diagnostics.CodeAnalysis.SuppressMessage('PSAvoidAssignmentToAutomaticVariable', '')]
+    [CmdletBinding()]
     param(
         [Parameter(Mandatory)]
-        [Rivet.Events]
-        $Event,
+        [Rivet_Session] $Session,
 
-        [hashtable]
-        $Parameter
+        [Parameter(Mandatory)]
+        [Rivet.Events] $Event,
+
+        [hashtable] $Parameter
     )
 
     Set-StrictMode -Version 'Latest'
@@ -15,12 +18,15 @@ function Invoke-RivetPlugin
 
     Write-Timing -Message 'Invoke-RivetPlugin  BEGIN' -Indent
 
-    $responders = $plugins |
-                        Where-Object {
-                            $_.ScriptBlock.Attributes | Where-Object { $_ -is [Rivet.PluginAttribute] -and $_.RespondsTo -eq $Event }
-                        }
+
     try
     {
+        $responders =
+            $plugins |
+            Where-Object {
+                $_.ScriptBlock.Attributes | Where-Object { $_ -is [Rivet.PluginAttribute] -and $_.RespondsTo -eq $Event }
+            }
+
         if( -not $responders )
         {
             return
@@ -28,11 +34,21 @@ function Invoke-RivetPlugin
 
         foreach( $plugin in $responders )
         {
+            $Parameter.Remove('Session')
+
+            # Pass the context to plug-ins.
+            if ($plugin.Parameters.ContainsKey('Session'))
+            {
+                $Parameter['Session'] = $Session
+            }
+
             foreach( $parameterName in $Parameter.Keys )
             {
-                if( -not $plugin.Parameters.ContainsKey($parameterName) )
+                if ($parameterName -ne 'Session' -and -not $plugin.Parameters.ContainsKey($parameterName))
                 {
-                    Write-Error -Message ('The function "{0}" that responds to Rivet''s "{1}" event must have a named "{2}" parameter. Please update this function''s definition.' -f $plugin.Name,$Event,$parameterName) -ErrorAction Stop
+                    $msg = "The function ""$($plugin.Name)"" that responds to Rivet's ""${Event}"" event must have " +
+                           "a named ""${parameterName}"" parameter. Please update this function''s definition."
+                    Write-Error -Message $msg -ErrorAction Stop
                 }
             }
 

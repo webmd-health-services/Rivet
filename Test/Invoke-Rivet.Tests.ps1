@@ -161,7 +161,7 @@ Describe 'Invoke-Rivet' {
         Assert-Schema -Name 'fubar'
     }
 
-    It 'should handle failure to connect' {
+    It 'handles connection failure' {
         $config = Get-Content -Raw -Path $RTConfigFilePath | ConvertFrom-Json
         $originalSqlServerName = $config.SqlServerName
         $config.SqlServerName = '.\IDoNotExist'
@@ -171,7 +171,9 @@ Describe 'Invoke-Rivet' {
         {
             Invoke-RTRivet -Push -ErrorAction SilentlyContinue
             $Global:Error.Count | Should -BeGreaterThan 0
-            $Global:Error[0] | Should -Match 'failed to connect'
+            $expectedErrMsg = '\[\.\\IDoNotExist\]\.\[master\]: A network-related or instance-specific error ' +
+                              'occurred while establishing a connection to SQL Server'
+            $Global:Error[0] | Should -Match $expectedErrMsg
         }
         finally
         {

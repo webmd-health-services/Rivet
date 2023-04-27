@@ -4,65 +4,58 @@ function Update-Database
     <#
     .SYNOPSIS
     Applies a set of migrations to the database.
-    
+
     .DESCRIPTION
     By default, applies all unapplied migrations to the database.  You can reverse all migrations with the `Down` switch.
-    
+
     .EXAMPLE
     Update-Database -Path C:\Projects\Rivet\Databases\Rivet\Migrations
-    
+
     Applies all un-applied migrations from the `C:\Projects\Rivet\Databases\Rivet\Migrations` directory.
-    
+
     .EXAMPLE
     Update-Database -Path C:\Projects\Rivet\Databases\Rivet\Migrations -Pop
-    
+
     Reverses all migrations in the `C:\Projects\Rivet\Databases\Rivet\Migrations` directory
     #>
     [CmdletBinding(DefaultParameterSetName='Push', SupportsShouldProcess=$True)]
     param(
-        [Parameter(Mandatory=$true)]
-        [Rivet.Configuration.Configuration]
-        $Configuration,
+        [Parameter(Mandatory)]
+        [Rivet_Session] $Session,
 
-        [Parameter(Mandatory=$true)]
-        [string[]]
         # The path to the migration.
-        $Path,
+        [Parameter(Mandatory)]
+        [String[]] $Path,
 
-        [Parameter(Mandatory=$true,ParameterSetName='Pop')]
-        [Parameter(Mandatory=$true,ParameterSetName='PopByName')]
-        [Parameter(Mandatory=$true,ParameterSetName='PopByCount')]
-        [Parameter(Mandatory=$true,ParameterSetName='PopAll')]
-        [Switch]
         # Reverse the given migration(s).
-        $Pop,
+        [Parameter(Mandatory, ParameterSetName='Pop')]
+        [Parameter(Mandatory, ParameterSetName='PopByName')]
+        [Parameter(Mandatory, ParameterSetName='PopByCount')]
+        [Parameter(Mandatory, ParameterSetName='PopAll')]
+        [switch] $Pop,
 
         [Parameter(ParameterSetName='Push')]
-        [Parameter(Mandatory=$true,ParameterSetName='PopByName')]
-        [string[]]
-        $Name,
+        [Parameter(Mandatory, ParameterSetName='PopByName')]
+        [string[]] $Name,
 
-        [Parameter(Mandatory=$true,ParameterSetName='PopByCount')]
-        [UInt32]
         # Reverse the given migration(s).
-        $Count,
+        [Parameter(Mandatory, ParameterSetName='PopByCount')]
+        [UInt32] $Count,
 
-        [Parameter(Mandatory=$true,ParameterSetName='PopAll')]
-        [Switch]
         # Reverse the given migration(s).
-        $All,
+        [Parameter(Mandatory, ParameterSetName='PopAll')]
+        [switch] $All,
 
-        [Switch]
-        # Running internal Rivet migrations. This is for internal use only. If you use this flag, Rivet will break when you upgrade. You've been warned!
-        $RivetSchema,
+        # Running internal Rivet migrations. This is for internal use only. If you use this flag, Rivet will break when
+        # you upgrade. You've been warned!
+        [switch] $RivetSchema,
 
+        # Force popping a migration you didn't apply or that is old.
         [Parameter(ParameterSetName='Pop')]
         [Parameter(ParameterSetName='PopByCount')]
         [Parameter(ParameterSetName='PopByName')]
         [Parameter(ParameterSetName='PopAll')]
-        [Switch]
-        # Force popping a migration you didn't apply or that is old.
-        $Force
+        [switch] $Force
     )
 
     Set-StrictMode -Version 'Latest'
@@ -71,10 +64,9 @@ function Update-Database
     function ConvertTo-RelativeTime
     {
         param(
-            [Parameter(Mandatory=$true)]
-            [DateTime]
             # The date time to convert to a relative time string.
-            $DateTime
+            [Parameter(Mandatory)]
+            [DateTime] $DateTime
         )
 
         [TimeSpan]$howLongAgo = (Get-Date) - $DateTime
@@ -134,13 +126,13 @@ function Update-Database
 
     $query = 'if (object_id(''{0}'', ''U'') is not null) select ID, Name, Who, AtUtc from {0}' -f $RivetMigrationsTableFullName
     $appliedMigrations = @{}
-    foreach( $migration in (Invoke-Query -Query $query) )
+    foreach( $migration in (Invoke-Query -Session $Session -Query $query) )
     {
         $appliedMigrations[$migration.ID] = $migration
     }
 
-    $migrations = 
-        Get-MigrationFile -Path $Path -Configuration $Configuration @byName -ErrorAction Stop |
+    $migrations =
+        Get-MigrationFile -Path $Path -Session $Session @byName -ErrorAction Stop |
         Sort-Object -Property 'MigrationID' -Descending:$popping |
         Where-Object {
             if( $RivetSchema )
@@ -155,7 +147,7 @@ function Update-Database
             }
             return $true
         } |
-        Where-Object { 
+        Where-Object {
             $migration = $appliedMigrations[$_.MigrationID]
 
             if( $popping )
@@ -176,7 +168,7 @@ function Update-Database
                 if( $migration.Who -ne $who -or $migration.AtUtc -lt $youngerThan )
                 {
                     $howLongAgo = ConvertTo-RelativeTime -DateTime ($migration.AtUtc.ToLocalTime())
-                    $confirmQuery = "Are you sure you want to pop migration {0} from database {1} on {2} applied by {3} {4}?" -f $_.FullName,$Connection.Database,$Connection.DataSource,$migration.Who,$howLongAgo
+                    $confirmQuery = "Are you sure you want to pop migration {0} from database {1} on {2} applied by {3} {4}?" -f $_.FullName,$conn.Database,$conn.DataSource,$migration.Who,$howLongAgo
                     $confirmCaption = "Pop Migration {0}?" -f $_.FullName
                     if( -not $Force -and -not $PSCmdlet.ShouldContinue( $confirmQuery, $confirmCaption ) )
                     {
@@ -193,15 +185,17 @@ function Update-Database
             }
             return $true
         } |
-        Convert-FileInfoToMigration -Configuration $Configuration 
-        
+        Convert-FileInfoToMigration -Session $Session
+
+    $conn = $Session.Connection
     foreach( $migrationInfo in $migrations )
     {
-        $migrationInfo.DataSource = $Connection.DataSource
+        $migrationInfo.DataSource = $conn.DataSource
 
+        $trx = $Session.CurrentTransaction = $conn.BeginTransaction()
+        $rollback = $true
         try
         {
-            $Connection.Transaction = $Connection.BeginTransaction()
 
             if( $Pop )
             {
@@ -222,43 +216,39 @@ function Update-Database
                 return
             }
 
-            $operations | Invoke-MigrationOperation -Migration $migrationInfo
+            $operations | Invoke-MigrationOperation -Session $Session -Migration $migrationInfo
 
             $query = 'exec [rivet].[{0}] @ID = @ID, @Name = @Name, @Who = @Who, @ComputerName = @ComputerName' -f $sprocName
             $parameters = @{
-                                ID = [int64]$migrationInfo.ID; 
+                                ID = [int64]$migrationInfo.ID;
                                 Name = $migrationInfo.Name;
                                 Who = $who;
                                 ComputerName = $env:COMPUTERNAME;
                             }
-            Invoke-Query -Query $query -NonQuery -Parameter $parameters  | Out-Null
+            Invoke-Query -Session $Session -Query $query -NonQuery -Parameter $parameters  | Out-Null
 
-            $target = '{0}.{1}' -f $Connection.DataSource,$Connection.Database
+            $target = '{0}.{1}' -f $conn.DataSource,$conn.Database
             $operation = '{0} migration {1} {2}' -f $PSCmdlet.ParameterSetName,$migrationInfo.ID,$migrationInfo.Name
             if ($PSCmdlet.ShouldProcess($target, $operation))
             {
-                $Connection.Transaction.Commit()
+                $trx.Commit()
             }
-            else 
+            else
             {
-                $Connection.Transaction.Rollback()
+                $trx.Rollback()
+                $rollback = $false
                 break
             }
-        }
-        catch
-        {
-            $Connection.Transaction.Rollback()
-        
-            # TODO: Create custom exception for migration query errors so that we can report here when unknown things happen.
-            if( $_.Exception -isnot [ApplicationException] )
-            {
-                Write-RivetError -Message ('Migration {0} failed' -f $migrationInfo.Path) -CategoryInfo $_.CategoryInfo.Category -ErrorID $_.FullyQualifiedErrorID -Exception $_.Exception -CallStack ($_.ScriptStackTrace)
-            }
-            break
+            $rollback = $false
         }
         finally
         {
-            $Connection.Transaction = $null
+            if ($rollback)
+            {
+                $trx.Rollback()
+            }
+
+            $Session.CurrentTransaction = $null
         }
     }
 }
