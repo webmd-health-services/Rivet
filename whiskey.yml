@@ -60,13 +60,33 @@ Build:
 
 - MergeFile:
     OnlyBy: BuildServer
-    IfExists: Rivet\Functions\*.ps1
+    IfExists: Test\RivetTest\Functions\*.ps1
     Path:
     - Test\RivetTest\Functions\*.ps1
     - Test\RivetTest\RivetTest.Exports.ps1
     DestinationPath: Test\RivetTest\RivetTest.psm1
     DeleteSourceFiles: true
     TextSeparator: "$(NewLine)$(NewLine)"
+
+- CopyFile:
+    Path:
+    - README.md
+    - LICENSE
+    - NOTICE
+    DestinationDirectory: Rivet
+
+- Zip:
+    ArchivePath: .output\Rivet-$(WHISKEY_SEMVER2).zip
+    Path:
+    - Rivet
+    Exclude:
+    - "*.pdb"
+    - "*.orig"
+
+- Exec:
+    OnlyBy: BuildServer
+    Path: appveyor
+    Argument: [ 'PushArtifact', '.output/Rivet-$(WHISKEY_SEMVER2).zip', '-DeploymentName', 'GitHub' ]
 
 - Pester4:
     Verbose: false  # Rivet is super chatty with Verbose messages.
@@ -162,30 +182,6 @@ Build:
             - "*\\Test\\varbinary.Tests.ps1"
             - "*\\Test\\varchar.Tests.ps1"
             - "*\\Test\\xml.Tests.ps1"
-
-# Build runs twice on some servers, so delete any ZIP file created by another build.
-- Delete:
-    Path: .output\*.zip
-
-- CopyFile:
-    Path:
-    - README.md
-    - LICENSE
-    - NOTICE
-    DestinationDirectory: Rivet
-
-- Zip:
-    ArchivePath: .output\Rivet-$(WHISKEY_SEMVER2).zip
-    Path:
-    - Rivet
-    Exclude:
-    - "*.pdb"
-    - "*.orig"
-
-- Exec:
-    OnlyBy: BuildServer
-    Path: appveyor
-    Argument: [ 'PushArtifact', '.output/Rivet-$(WHISKEY_SEMVER2).zip', '-DeploymentName', 'GitHub' ]
 
 - PublishPowerShellModule:
     Path: Rivet
