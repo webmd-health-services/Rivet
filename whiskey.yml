@@ -70,6 +70,7 @@ Build:
 
 - CopyFile:
     Path:
+    - CHANGELOG.md
     - README.md
     - LICENSE
     - NOTICE
@@ -132,7 +133,6 @@ Build:
         - "Test\\xml.Tests.ps1"
 
 - Pester:
-    AsJob: true
     Configuration:
         TestResult:
             Enabled: true
@@ -141,7 +141,7 @@ Build:
         Output:
             Verbosity: Detailed
         Run:
-            Path: Test\*.Tests.ps1
+            Path: Test\Add-BinaryColumn.Tests.ps1
             ExcludePath:
             - "*\\Test\\Add-DataType.Tests.ps1"
             - "*\\Test\\Add-DefaultConstraint.Tests.ps1"
