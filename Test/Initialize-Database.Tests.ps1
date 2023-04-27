@@ -4,6 +4,7 @@ Set-StrictMode -Version 'Latest'
 
 BeforeAll {
     Set-StrictMode -Version 'Latest'
+
     & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
 }
 
@@ -25,7 +26,7 @@ Describe 'Initialize-Database' {
 '@ | New-TestMigration -Name 'First'
     }
 
-    Reset {
+    AfterEach {
         Stop-RivetTest
     }
 
