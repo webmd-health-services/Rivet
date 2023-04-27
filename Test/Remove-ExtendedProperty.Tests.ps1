@@ -1,19 +1,24 @@
 
-& (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
+#Requires -Version 5.1
+Set-StrictMode -Version 'Latest'
 
-function Setup
-{
-    Start-RivetTest
+BeforeAll {
+    Set-StrictMode -Version 'Latest'
+
+    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
 }
 
-function TearDown
-{
-    Stop-RivetTest
-}
+Describe 'Remove-ExtendedProperty' {
+    BeforeEach {
+        Start-RivetTest
+    }
 
-function Test-ShouldRemoveExtendedPropertyToSchema
-{
-    @'
+    AfterEach {
+        Stop-RivetTest
+    }
+
+    It 'should remove extended property to schema' {
+        @'
 function Push-Migration
 {
     Add-Schema 'fizz'
@@ -28,25 +33,24 @@ function Pop-Migration
 
 '@ | New-TestMigration -Name 'RemoveExtendedPropertyToSchema'
 
-    Invoke-RTRivet -Push 'RemoveExtendedPropertyToSchema'
+        Invoke-RTRivet -Push 'RemoveExtendedPropertyToSchema'
 
-    $expinfo = Get-ExtendedProperties
+        $expinfo = Get-ExtendedProperties
 
-    Assert-Null $expinfo
+        $expinfo | Should -BeNullOrEmpty
 
-}
+    }
 
-function Test-ShouldRemoveExtendedPropertyToTable
-{
-    @'
+    It 'should remove extended property to table' {
+        @'
 function Push-Migration
 {
     Add-Table Foobar {
         Int ID
     }
 
-    Add-ExtendedProperty -Name 'Deploy' -Value 'TRUE' -TableName 'Foobar' 
-    Remove-ExtendedProperty -Name 'Deploy' -TableName 'Foobar' 
+    Add-ExtendedProperty -Name 'Deploy' -Value 'TRUE' -TableName 'Foobar'
+    Remove-ExtendedProperty -Name 'Deploy' -TableName 'Foobar'
 }
 
 function Pop-Migration
@@ -56,22 +60,21 @@ function Pop-Migration
 
 '@ | New-TestMigration -Name 'RemoveExtendedPropertyToTable'
 
-    Invoke-RTRivet -Push 'RemoveExtendedPropertyToTable'
+        Invoke-RTRivet -Push 'RemoveExtendedPropertyToTable'
 
-    $expinfo = Get-ExtendedProperties
+        $expinfo = Get-ExtendedProperties
 
-    Assert-Null $expinfo
+        $expinfo | Should -BeNullOrEmpty
 
-}
+    }
 
-function Test-ShouldRemoveExtendedPropertyToView
-{
-    @'
+    It 'should remove extended property to view' {
+        @'
 function Push-Migration
 {
     Add-View -SchemaName 'dbo' 'Foobar' 'AS select * from rivet.Migrations'
-    Add-ExtendedProperty -Name 'Deploy' -Value 'TRUE' -ViewName 'Foobar' 
-    Remove-ExtendedProperty -Name 'Deploy' -ViewName 'Foobar' 
+    Add-ExtendedProperty -Name 'Deploy' -Value 'TRUE' -ViewName 'Foobar'
+    Remove-ExtendedProperty -Name 'Deploy' -ViewName 'Foobar'
 }
 
 function Pop-Migration
@@ -81,23 +84,22 @@ function Pop-Migration
 
 '@ | New-TestMigration -Name 'RemoveExtendedPropertyToView'
 
-    Invoke-RTRivet -Push 'RemoveExtendedPropertyToView'
+        Invoke-RTRivet -Push 'RemoveExtendedPropertyToView'
 
-    $expinfo = Get-ExtendedProperties
+        $expinfo = Get-ExtendedProperties
 
-    Assert-Null $expinfo
+        $expinfo | Should -BeNullOrEmpty
 
-}
+    }
 
-function Test-ShouldRemoveExtendedPropertyToViewInCustomSchema
-{
-    @'
+    It 'should remove extended property to view in custom schema' {
+        @'
 function Push-Migration
 {
     Add-Schema 'metric'
     Add-View -SchemaName 'metric' 'Foobar' 'AS select * from rivet.Migrations'
-    Add-ExtendedProperty 'Deploy' 'TRUE' -SchemaName 'metric' -ViewName 'Foobar' 
-    Remove-ExtendedProperty 'Deploy' -SchemaName 'metric' -ViewName 'Foobar' 
+    Add-ExtendedProperty 'Deploy' 'TRUE' -SchemaName 'metric' -ViewName 'Foobar'
+    Remove-ExtendedProperty 'Deploy' -SchemaName 'metric' -ViewName 'Foobar'
 }
 
 function Pop-Migration
@@ -108,17 +110,16 @@ function Pop-Migration
 
 '@ | New-TestMigration -Name 'RemoveExtendedPropertyToView'
 
-    Invoke-RTRivet -Push 'RemoveExtendedPropertyToView'
+        Invoke-RTRivet -Push 'RemoveExtendedPropertyToView'
 
-    $expinfo = Get-ExtendedProperties
+        $expinfo = Get-ExtendedProperties
 
-    Assert-Null $expinfo
+        $expinfo | Should -BeNullOrEmpty
 
-}
+    }
 
-function Test-ShouldRemoveExtendedPropertyToTableColumn
-{
-    @'
+    It 'should remove extended property to table column' {
+        @'
 function Push-Migration
 {
     Add-Table Foobar {
@@ -136,17 +137,16 @@ function Pop-Migration
 
 '@ | New-TestMigration -Name 'RemoveExtendedPropertyToTableColumn'
 
-    Invoke-RTRivet -Push 'RemoveExtendedPropertyToTableColumn'
+        Invoke-RTRivet -Push 'RemoveExtendedPropertyToTableColumn'
 
-    $expinfo = Get-ExtendedProperties
+        $expinfo = Get-ExtendedProperties
 
-    Assert-Null $expinfo
+        $expinfo | Should -BeNullOrEmpty
 
-}
+    }
 
-function Test-ShouldRemoveExtendedPropertyToViewColumn
-{
-    @'
+    It 'should remove extended property to view column' {
+        @'
 function Push-Migration
 {
     Add-Table Foobar2 {
@@ -165,10 +165,10 @@ function Pop-Migration
 
 '@ | New-TestMigration -Name 'RemoveExtendedPropertyToViewColumn'
 
-    Invoke-RTRivet -Push 'RemoveExtendedPropertyToViewColumn'
+        Invoke-RTRivet -Push 'RemoveExtendedPropertyToViewColumn'
 
-    $expinfo = Get-ExtendedProperties
+        $expinfo = Get-ExtendedProperties
 
-    Assert-Null $expinfo
-
+        $expinfo | Should -BeNullOrEmpty
+    }
 }

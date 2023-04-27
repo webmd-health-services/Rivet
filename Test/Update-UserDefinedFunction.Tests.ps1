@@ -1,33 +1,39 @@
 
-& (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
+#Requires -Version 5.1
+Set-StrictMode -Version 'Latest'
 
-function Start-Test
-{
-    Start-RivetTest
+BeforeAll {
+    Set-StrictMode -Version 'Latest'
+
+    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
 }
 
-function Stop-Test
-{
-    Stop-RivetTest
-}
+Describe 'Update-UserDefinedFunction' {
+    BeforeEach {
+        Start-RivetTest
+    }
 
-function Test-ShouldUpdateUserDefinedFunction
-{
-    @'
-function Push-Migration
-{
-    Add-UserDefinedFunction -Name 'squarefunction' -Schema 'dbo' -Definition '(@Number decimal(4,1)) returns decimal(12,3) as begin return(@Number * @Number) end'
-    Update-UserDefinedFunction -Name 'squarefunction' -Schema 'dbo' -Definition '(@Number decimal(4,1)) returns decimal(12,3) as begin return(@Number * (@Number)) end'
-}
+    AfterEach {
+        Stop-RivetTest
+    }
 
-function Pop-Migration
-{
-    Remove-UserDefinedFunction -Name 'squarefunction'
-}
+    It 'should update user defined function' {
+        @'
+    function Push-Migration
+    {
+        Add-UserDefinedFunction -Name 'squarefunction' -Schema 'dbo' -Definition '(@Number decimal(4,1)) returns decimal(12,3) as begin return(@Number * @Number) end'
+        Update-UserDefinedFunction -Name 'squarefunction' -Schema 'dbo' -Definition '(@Number decimal(4,1)) returns decimal(12,3) as begin return(@Number * (@Number)) end'
+    }
+
+    function Pop-Migration
+    {
+        Remove-UserDefinedFunction -Name 'squarefunction'
+    }
 
 '@ | New-TestMigration -Name 'UpdateUserDefinedFunction'
 
-    Invoke-RTRivet -Push 'UpdateUserDefinedFunction'
-    
-    Assert-UserDefinedFunction -Name 'squarefunction' -Schema 'dbo' -Definition '(@Number decimal(4,1)) returns decimal(12,3) as begin return(@Number * (@Number)) end'
+        Invoke-RTRivet -Push 'UpdateUserDefinedFunction'
+
+        Assert-UserDefinedFunction -Name 'squarefunction' -Schema 'dbo' -Definition '(@Number decimal(4,1)) returns decimal(12,3) as begin return(@Number * (@Number)) end'
+    }
 }

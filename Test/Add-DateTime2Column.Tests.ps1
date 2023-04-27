@@ -1,81 +1,85 @@
 
-& (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
+#Requires -Version 5.1
+Set-StrictMode -Version 'Latest'
 
-function Start-Test
-{
-    Start-RivetTest
+BeforeAll {
+    Set-StrictMode -Version 'Latest'
+
+    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
 }
 
-function Stop-Test
-{
-    Stop-RivetTest
-}
+Describe 'Add-DateTime2Column' {
+    BeforeEach {
+        Start-RivetTest
+    }
 
-function Test-ShouldCreateDateTime2Column
-{
-    @'
-function Push-Migration
-{
-    Add-Table -Name 'Foobar' -Column {
-        DateTime2 'id'
-    } -Option 'data_compression = none'
-}
+    AfterEach {
+        Stop-RivetTest
+    }
 
-function Pop-Migration
-{
-    Remove-Table 'Foobar'
-}
+    It 'should create date time2 column' {
+        @'
+    function Push-Migration
+    {
+        Add-Table -Name 'Foobar' -Column {
+            DateTime2 'id'
+        } -Option 'data_compression = none'
+    }
+
+    function Pop-Migration
+    {
+        Remove-Table 'Foobar'
+    }
 
 '@ | New-TestMigration -Name 'CreateDateTime2Column'
 
-    Invoke-RTRivet -Push 'CreateDateTime2Column'
-    
-    Assert-Table 'Foobar'
-    Assert-Column -Name 'id' -DataType 'DateTime2' -TableName 'Foobar' -Scale 7
-}
+        Invoke-RTRivet -Push 'CreateDateTime2Column'
 
-function Test-ShouldCreateDateTime2ColumnWithSparse
-{
-    @'
-function Push-Migration
-{
-    Add-Table -Name 'Foobar' -Column {
-        DateTime2 'id' 6 -Sparse 
+        Assert-Table 'Foobar'
+        Assert-Column -Name 'id' -DataType 'DateTime2' -TableName 'Foobar' -Scale 7
     }
-}
 
-function Pop-Migration
-{
-    Remove-Table 'Foobar'
-}
+    It 'should create date time2 column with sparse' {
+        @'
+    function Push-Migration
+    {
+        Add-Table -Name 'Foobar' -Column {
+            DateTime2 'id' 6 -Sparse
+        }
+    }
+
+    function Pop-Migration
+    {
+        Remove-Table 'Foobar'
+    }
 
 '@ | New-TestMigration -Name 'CreateDateTime2ColumnWithSparse'
 
-    Invoke-RTRivet -Push 'CreateDateTime2ColumnWithSparse'
-    
-    Assert-Table 'Foobar'
-    Assert-Column -Name 'id' -DataType 'DateTime2' -TableName 'Foobar' -Sparse -Scale 6
-}
+        Invoke-RTRivet -Push 'CreateDateTime2ColumnWithSparse'
 
-function Test-ShouldCreateDateTime2ColumnWithNotNull
-{
-    @'
-function Push-Migration
-{
-    Add-Table -Name 'Foobar' -Column {
-        DateTime2 'id' 6 -NotNull  
+        Assert-Table 'Foobar'
+        Assert-Column -Name 'id' -DataType 'DateTime2' -TableName 'Foobar' -Sparse -Scale 6
     }
-}
 
-function Pop-Migration
-{
-    Remove-Table 'Foobar'
-}
+    It 'should create date time2 column with not null' {
+        @'
+    function Push-Migration
+    {
+        Add-Table -Name 'Foobar' -Column {
+            DateTime2 'id' 6 -NotNull
+        }
+    }
+
+    function Pop-Migration
+    {
+        Remove-Table 'Foobar'
+    }
 
 '@ | New-TestMigration -Name 'CreateDateTime2ColumnWithNotNull'
 
-    Invoke-RTRivet -Push 'CreateDateTime2ColumnWithNotNull'
-    
-    Assert-Table 'Foobar'
-    Assert-Column -Name 'id' -DataType 'DateTime2' -TableName 'Foobar' -NotNull -Scale 6
+        Invoke-RTRivet -Push 'CreateDateTime2ColumnWithNotNull'
+
+        Assert-Table 'Foobar'
+        Assert-Column -Name 'id' -DataType 'DateTime2' -TableName 'Foobar' -NotNull -Scale 6
+    }
 }

@@ -1,214 +1,217 @@
 
-& (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
+#Requires -Version 5.1
+Set-StrictMode -Version 'Latest'
 
-function Start-Test
-{
-    Start-RivetTest
+BeforeAll {
+    Set-StrictMode -Version 'Latest'
+
+    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
 }
 
-function Stop-Test
-{
-    Stop-RivetTest
-}
+Describe 'Update-Row' {
+    BeforeEach {
+        Start-RivetTest
+    }
 
-function Test-ShouldUpdateSpecificRows
-{
-    # Yes.  Spaces in names so we check that the names get quoted.
-    @'
-function Push-Migration
-{
-    Add-Table -Name 'City List' -Column {
-        VarChar 'City Name' -Max -NotNull
-        VarChar 'State' -Max -NotNull
-        Int 'Population' -NotNull
-    } -Option 'data_compression = none'
+    AfterEach {
+        Stop-RivetTest
+    }
 
-    $Top8USCities = @(  
-                        @{'City Name' = 'New York'; State = 'New York'; Population = 8336697}, 
-                        @{'City Name' = 'Los Angeles'; State = 'California'; Population = 3857799},
-                        @{'City Name' = 'Chicago'; State = 'Illnois'; Population = 2714856},
-                        @{'City Name' = 'Houston'; State = 'Texas'; Population = 2160821},
-                        @{'City Name' = 'Philadelphia'; State = 'Pennsylvania'; Population = 1547607},
-                        @{'City Name' = 'Phoenix'; State = 'Arizona'; Population = 1488750},
-                        @{'City Name' = 'San Antonio'; State = 'Texas'; Population = 1382951},
-                        @{'City Name' = 'San Diego'; State = 'California'; Population = 1338348} 
-                     )
+    It 'should update specific rows' {
+        # Yes.  Spaces in names so we check that the names get quoted.
+        @'
+    function Push-Migration
+    {
+        Add-Table -Name 'City List' -Column {
+            VarChar 'City Name' -Max -NotNull
+            VarChar 'State' -Max -NotNull
+            Int 'Population' -NotNull
+        } -Option 'data_compression = none'
 
-    $Changes = @{ 
-                    "City Name" = "San Diego UPDATED";
-                    "Population" = 123456
-                }     
-    
-    Add-Row -SchemaName 'dbo' -TableName 'City List' -Column $Top8USCities
-    Update-Row -SchemaName 'dbo' -TableName 'City List' -Column $Changes -Where "[City Name] = 'San Diego'"
-}
+        $Top8USCities = @(
+                            @{'City Name' = 'New York'; State = 'New York'; Population = 8336697},
+                            @{'City Name' = 'Los Angeles'; State = 'California'; Population = 3857799},
+                            @{'City Name' = 'Chicago'; State = 'Illnois'; Population = 2714856},
+                            @{'City Name' = 'Houston'; State = 'Texas'; Population = 2160821},
+                            @{'City Name' = 'Philadelphia'; State = 'Pennsylvania'; Population = 1547607},
+                            @{'City Name' = 'Phoenix'; State = 'Arizona'; Population = 1488750},
+                            @{'City Name' = 'San Antonio'; State = 'Texas'; Population = 1382951},
+                            @{'City Name' = 'San Diego'; State = 'California'; Population = 1338348}
+                         )
 
-function Pop-Migration
-{
-    Remove-Table 'City List'
-}
+        $Changes = @{
+                        "City Name" = "San Diego UPDATED";
+                        "Population" = 123456
+                    }
+
+        Add-Row -SchemaName 'dbo' -TableName 'City List' -Column $Top8USCities
+        Update-Row -SchemaName 'dbo' -TableName 'City List' -Column $Changes -Where "[City Name] = 'San Diego'"
+    }
+
+    function Pop-Migration
+    {
+        Remove-Table 'City List'
+    }
 
 '@ | New-TestMigration -Name 'UpdateSpecificRows'
 
-    Invoke-RTRivet -Push 'UpdateSpecificRows'
+        Invoke-RTRivet -Push 'UpdateSpecificRows'
 
-    Assert-Table 'City List'
-    Assert-Column -TableName 'City List' -Name 'City Name' -DataType 'VarChar' -NotNull
-    Assert-Column -TableName 'City List' -Name 'State' -DataType 'VarChar' -NotNull
-    Assert-Column -TableName 'City List' -Name 'Population' -DataType 'Int' -NotNull
+        Assert-Table 'City List'
+        Assert-Column -TableName 'City List' -Name 'City Name' -DataType 'VarChar' -NotNull
+        Assert-Column -TableName 'City List' -Name 'State' -DataType 'VarChar' -NotNull
+        Assert-Column -TableName 'City List' -Name 'Population' -DataType 'Int' -NotNull
 
-    $rows = @(Get-Row -SchemaName 'dbo' -TableName 'City List')
-    Assert-Equal 8 $rows.count
-    Assert-True $rows.'City Name'.Contains("San Diego UPDATED")
-    Assert-Equal 123456 $rows[7].Population
-}
+        $rows = @(Get-Row -SchemaName 'dbo' -TableName 'City List')
+        $rows.count | Should -Be 8
+        $rows.'City Name'.Contains("San Diego UPDATED") | Should -BeTrue
+        $rows[7].Population | Should -Be 123456
+    }
 
-function Test-ShouldUpdateAllRows
-{
-    @'
-function Push-Migration
-{
-    Add-Table -Name 'Cities' -Column {
-        VarChar 'City' -Max -NotNull
-        VarChar 'State' -Max -NotNull
-        Int 'Population' -NotNull
-    } -Option 'data_compression = none'
+    It 'should update all rows' {
+        @'
+    function Push-Migration
+    {
+        Add-Table -Name 'Cities' -Column {
+            VarChar 'City' -Max -NotNull
+            VarChar 'State' -Max -NotNull
+            Int 'Population' -NotNull
+        } -Option 'data_compression = none'
 
-    $Top8USCities = @(  
-                        @{City = 'New York'; State = 'New York'; Population = 8336697}, 
-                        @{City = 'Los Angeles'; State = 'California'; Population = 3857799},
-                        @{City = 'Chicago'; State = 'Illnois'; Population = 2714856},
-                        @{City = 'Houston'; State = 'Texas'; Population = 2160821},
-                        @{City = 'Philadelphia'; State = 'Pennsylvania'; Population = 1547607},
-                        @{City = 'Phoenix'; State = 'Arizona'; Population = 1488750},
-                        @{City = 'San Antonio'; State = 'Texas'; Population = 1382951},
-                        @{City = 'San Diego'; State = 'California'; Population = 1338348} 
-                     )
+        $Top8USCities = @(
+                            @{City = 'New York'; State = 'New York'; Population = 8336697},
+                            @{City = 'Los Angeles'; State = 'California'; Population = 3857799},
+                            @{City = 'Chicago'; State = 'Illnois'; Population = 2714856},
+                            @{City = 'Houston'; State = 'Texas'; Population = 2160821},
+                            @{City = 'Philadelphia'; State = 'Pennsylvania'; Population = 1547607},
+                            @{City = 'Phoenix'; State = 'Arizona'; Population = 1488750},
+                            @{City = 'San Antonio'; State = 'Texas'; Population = 1382951},
+                            @{City = 'San Diego'; State = 'California'; Population = 1338348}
+                         )
 
-    $Changes = @{ 
-                    "State" = "Oregon";
-                    "Population" = 123456
-                }     
-    
-    Add-Row -SchemaName 'dbo' -TableName 'Cities' -Column $Top8USCities
-    Update-Row -TableName 'Cities' -Column $Changes -All
-}
+        $Changes = @{
+                        "State" = "Oregon";
+                        "Population" = 123456
+                    }
 
-function Pop-Migration
-{
-    Remove-Table 'Cities'
-}
+        Add-Row -SchemaName 'dbo' -TableName 'Cities' -Column $Top8USCities
+        Update-Row -TableName 'Cities' -Column $Changes -All
+    }
+
+    function Pop-Migration
+    {
+        Remove-Table 'Cities'
+    }
 
 '@ | New-TestMigration -Name 'UpdateAllRows'
 
-    Invoke-RTRivet -Push 'UpdateAllRows'
+        Invoke-RTRivet -Push 'UpdateAllRows'
 
-    Assert-Table 'Cities'
-    Assert-Column -TableName 'Cities' -Name 'City' -DataType 'VarChar' -NotNull
-    Assert-Column -TableName 'Cities' -Name 'State' -DataType 'VarChar' -NotNull
-    Assert-Column -TableName 'Cities' -Name 'Population' -DataType 'Int' -NotNull
+        Assert-Table 'Cities'
+        Assert-Column -TableName 'Cities' -Name 'City' -DataType 'VarChar' -NotNull
+        Assert-Column -TableName 'Cities' -Name 'State' -DataType 'VarChar' -NotNull
+        Assert-Column -TableName 'Cities' -Name 'Population' -DataType 'Int' -NotNull
 
-    $rows = @(Get-Row -SchemaName 'dbo' -TableName 'Cities')
-    Assert-Equal 8 $rows.count
+        $rows = @(Get-Row -SchemaName 'dbo' -TableName 'Cities')
+        $rows.count | Should -Be 8
 
-    Assert-True $rows.State.Contains("Oregon")
-    Assert-False $rows.State.Contains("New York")
-    Assert-False $rows.Population.Contains("8336697")
+        $rows.State.Contains("Oregon") | Should -BeTrue
+        $rows.State.Contains("New York") | Should -BeFalse
+        $rows.Population.Contains("8336697") | Should -BeFalse
 
-}
-
-function Test-ShouldUpdateAllTypes
-{
-    @'
-function Push-Migration
-{
-    Add-Table 'Members' {
-        int 'ID' -Identity
-        int 'MemberNumber' 
-        varchar 'Name' 50
-        datetime 'LastVisit'
-        time 'LastStayDuration'
-        bit 'IsActive'
-        varchar 'Comments' 100
     }
 
-    Add-Row 'Members' @( @{
-        MemberNumber = $null;
-        Name = $null;
-        LastVisit = $null;
-        LastStayDuration = $null;
-        IsActive = $null;
-        Comments = "I know.  It's a pretty funny record.  So goes the world of testing!"
-    })
+    It 'should update all types' {
+        @'
+    function Push-Migration
+    {
+        Add-Table 'Members' {
+            int 'ID' -Identity
+            int 'MemberNumber'
+            varchar 'Name' 50
+            datetime 'LastVisit'
+            time 'LastStayDuration'
+            bit 'IsActive'
+            varchar 'Comments' 100
+        }
 
-    Update-Row 'Members' -Where 'ID = 1' @{
-        MemberNumber = 1;
-        Name = "Old McDonald's";
-        LastVisit = ([DateTime]'10/18/2013 10:44:00');
-        LastStayDuration = ([TimeSpan]'00:44:00');
-        IsActive = $true;
-        Comments = $null;
+        Add-Row 'Members' @( @{
+            MemberNumber = $null;
+            Name = $null;
+            LastVisit = $null;
+            LastStayDuration = $null;
+            IsActive = $null;
+            Comments = "I know.  It's a pretty funny record.  So goes the world of testing!"
+        })
+
+        Update-Row 'Members' -Where 'ID = 1' @{
+            MemberNumber = 1;
+            Name = "Old McDonald's";
+            LastVisit = ([DateTime]'10/18/2013 10:44:00');
+            LastStayDuration = ([TimeSpan]'00:44:00');
+            IsActive = $true;
+            Comments = $null;
+        }
     }
-}
 
-function Pop-Migration
-{
-    Remove-Table 'Members'
-}
+    function Pop-Migration
+    {
+        Remove-Table 'Members'
+    }
 '@ | New-TestMigration -Name 'AddSingleRow'
 
-    Invoke-RTRivet -Push 'AddSingleRow'
+        Invoke-RTRivet -Push 'AddSingleRow'
 
-    Assert-Table 'Members'
+        Assert-Table 'Members'
 
-    $rows = @(Get-Row -TableName 'Members')
+        $rows = @(Get-Row -TableName 'Members')
 
-    Assert-Equal 1 $rows.count
+        $rows.count | Should -Be 1
 
-    $row = $rows[0]
-    Assert-Equal 1 $row.MemberNumber
-    Assert-Equal "Old McDonald's" $row.Name
-    Assert-Equal ([DateTime]'10/18/2013 10:44:00') $row.LastVisit
-    Assert-Equal ([TimeSpan]'00:44:00') $row.LastStayDuration
-    Assert-Equal $true $row.IsActive
-    Assert-Null $row.Comments
-}
-
-function Test-ShouldAllowSqlExpressionForColumnValue
-{
-    [datetime]$expectedUpdatedAt = Invoke-RivetTestQuery -Query 'select getutcdate()' -AsScalar
-    @'
-function Push-Migration
-{
-    Add-Table 'Members' {
-        int 'ID' -Identity
-        datetime 'LastVisit'
+        $row = $rows[0]
+        $row.MemberNumber | Should -Be 1
+        $row.Name | Should -Be "Old McDonald's"
+        $row.LastVisit | Should -Be ([DateTime]'10/18/2013 10:44:00')
+        $row.LastStayDuration | Should -Be ([TimeSpan]'00:44:00')
+        $row.IsActive | Should -BeTrue
+        $row.Comments | Should -BeNullOrEmpty
     }
 
-    Add-Row 'Members' @( @{
-        LastVisit = $null;
-    })
+    It 'should allow sql expression for column value' {
+        [datetime]$expectedUpdatedAt = Invoke-RivetTestQuery -Query 'select getutcdate()' -AsScalar
+        @'
+    function Push-Migration
+    {
+        Add-Table 'Members' {
+            int 'ID' -Identity
+            datetime 'LastVisit'
+        }
 
-    Update-Row 'Members' -Where 'ID = 1' -RawColumnValue @{
-        LastVisit = 'getutcdate()';
+        Add-Row 'Members' @( @{
+            LastVisit = $null;
+        })
+
+        Update-Row 'Members' -Where 'ID = 1' -RawColumnValue @{
+            LastVisit = 'getutcdate()';
+        }
     }
-}
-function Pop-Migration
-{
-    Remove-Table 'Members'
-}
+    function Pop-Migration
+    {
+        Remove-Table 'Members'
+    }
 '@ | New-TestMigration -Name 'AddSingleRow'
 
-    Invoke-RTRivet -Push 'AddSingleRow'
+        Invoke-RTRivet -Push 'AddSingleRow'
 
-    Assert-Table 'Members'
+        Assert-Table 'Members'
 
-    $rows = @(Get-Row -TableName 'Members')
+        $rows = @(Get-Row -TableName 'Members')
 
-    Assert-Equal 1 $rows.count
+        $rows.count | Should -Be 1
 
-    $row = $rows[0]
-    Assert-NotNull $row.LastVisit
-    $updatedAt = $row.LastVisit
-    Assert-True ($expectedUpdatedAt -le $updatedAt) ('updated date ''{0}'' is not before ''{1}''' -f $expectedUpdatedAt,$updatedAt)
+        $row = $rows[0]
+        $row.LastVisit | Should -Not -BeNullOrEmpty
+        $updatedAt = $row.LastVisit
+        ($expectedUpdatedAt -le $updatedAt) | Should -BeTrue
+    }
 }

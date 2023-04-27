@@ -1,252 +1,251 @@
 
-& (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
+#Requires -Version 5.1
+Set-StrictMode -Version 'Latest'
 
-function Start-Test
-{
-    Start-RivetTest
+BeforeAll {
+    Set-StrictMode -Version 'Latest'
+
+    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
 }
 
-function Stop-Test
-{
-    Stop-RivetTest
-}
+Describe 'Update-ExtendedProperty' {
+    BeforeEach {
+        Start-RivetTest
+    }
 
-function Test-ShouldUpdateExtendedPropertyToSchema
-{
-    @'
-function Push-Migration
-{
-    Add-Schema 'fizz'
-    Add-ExtendedProperty -Name 'Deploy' -Value 'TRUE' -SchemaName 'fizz'
-    Update-ExtendedProperty -Name 'Deploy' -Value 'FALSE' -SchemaName 'fizz'
-}
+    AfterEach {
+        Stop-RivetTest
+    }
 
-function Pop-Migration
-{
-    Remove-Schema 'fizz'
-}
+    It 'should update extended property to schema' {
+        @'
+    function Push-Migration
+    {
+        Add-Schema 'fizz'
+        Add-ExtendedProperty -Name 'Deploy' -Value 'TRUE' -SchemaName 'fizz'
+        Update-ExtendedProperty -Name 'Deploy' -Value 'FALSE' -SchemaName 'fizz'
+    }
+
+    function Pop-Migration
+    {
+        Remove-Schema 'fizz'
+    }
 
 '@ | New-TestMigration -Name 'UpdateExtendedPropertyToSchema'
 
-    Invoke-RTRivet -Push 'UpdateExtendedPropertyToSchema'
+        Invoke-RTRivet -Push 'UpdateExtendedPropertyToSchema'
 
-    $expinfo = Get-ExtendedProperties
+        $expinfo = Get-ExtendedProperties
 
-    Assert-Equal $expinfo[0].name 'Deploy'
-    Assert-Equal $expinfo[0].value 'FALSE'
-    Assert-Equal $expinfo[0].class_desc 'SCHEMA'
+        'Deploy' | Should -Be $expinfo[0].name
+        'FALSE' | Should -Be $expinfo[0].value
+        'SCHEMA' | Should -Be $expinfo[0].class_desc
 
-}
-
-function Test-ShouldUpdateExtendedPropertyToTable
-{
-    @'
-function Push-Migration
-{
-    Add-Table Foobar {
-        Int ID
     }
 
-    Add-ExtendedProperty -Name 'Deploy' -Value 'TRUE' -TableName 'Foobar' 
-    Update-ExtendedProperty -Name 'Deploy' -Value 'FALSE' -TableName 'Foobar' 
-}
+    It 'should update extended property to table' {
+        @'
+    function Push-Migration
+    {
+        Add-Table Foobar {
+            Int ID
+        }
 
-function Pop-Migration
-{
-    Remove-Table 'Foobar'
-}
+        Add-ExtendedProperty -Name 'Deploy' -Value 'TRUE' -TableName 'Foobar'
+        Update-ExtendedProperty -Name 'Deploy' -Value 'FALSE' -TableName 'Foobar'
+    }
+
+    function Pop-Migration
+    {
+        Remove-Table 'Foobar'
+    }
 
 '@ | New-TestMigration -Name 'UpdateExtendedPropertyToTable'
 
-    Invoke-RTRivet -Push 'UpdateExtendedPropertyToTable'
+        Invoke-RTRivet -Push 'UpdateExtendedPropertyToTable'
 
-    $expinfo = Get-ExtendedProperties
+        $expinfo = Get-ExtendedProperties
 
-    Assert-Equal 'Deploy' $expinfo[0].name 
-    Assert-Equal 'FALSE' $expinfo[0].value 
-    Assert-Equal 'OBJECT_OR_COLUMN' $expinfo[0].class_desc
+        $expinfo[0].name | Should -Be 'Deploy'
+        $expinfo[0].value | Should -Be 'FALSE'
+        $expinfo[0].class_desc | Should -Be 'OBJECT_OR_COLUMN'
 
-}
-
-
-function Test-ShouldUpdateExtendedPropertyToView
-{
-    @'
-function Push-Migration
-{
-    Add-View -SchemaName 'dbo' 'Foobar' 'AS select * from rivet.Migrations'
-
-    Add-ExtendedProperty -Name 'Deploy' -Value 'TRUE' -ViewName 'Foobar'
-
-    Update-ExtendedProperty -Name 'Deploy' -Value 'FALSE' -ViewName 'Foobar' 
-}
-
-function Pop-Migration
-{
-    Remove-View 'Foobar'
-}
-
-'@ | New-TestMigration -Name 'UpdateExtendedPropertyToView'
-
-    Invoke-RTRivet -Push 'UpdateExtendedPropertyToView'
-
-    $expinfo = Get-ExtendedProperties
-
-    Assert-Equal 'Deploy' $expinfo[0].name 
-    Assert-Equal 'FALSE' $expinfo[0].value 
-    Assert-Equal 'OBJECT_OR_COLUMN' $expinfo[0].class_desc
-
-}
-
-
-function Test-ShouldUpdateExtendedPropertyToViewInCustomSchema
-{
-    @'
-function Push-Migration
-{
-    Add-Schema 'metric'
-    Add-View -SchemaName 'metric' 'Foobar' 'AS select * from rivet.Migrations'
-    Add-ExtendedProperty 'Deploy' 'TRUE' -SchemaName 'metric' -ViewName 'Foobar'
-    Update-ExtendedProperty 'Deploy' 'FALSE' -SchemaName 'metric' -ViewName 'Foobar' 
-}
-
-function Pop-Migration
-{
-    Remove-View 'Foobar' -schemaname 'metric'
-    Remove-Schema 'metric'
-}
-
-'@ | New-TestMigration -Name 'UpdateExtendedPropertyToView'
-
-    Invoke-RTRivet -Push 'UpdateExtendedPropertyToView'
-
-    $expinfo = Get-ExtendedProperties
-
-    Assert-Equal 'Deploy' $expinfo[0].name 
-    Assert-Equal 'FALSE' $expinfo[0].value 
-    Assert-Equal 'OBJECT_OR_COLUMN' $expinfo[0].class_desc
-
-}
-
-
-function Test-ShouldUpdateExtendedPropertyToTableColumn
-{
-    @'
-function Push-Migration
-{
-    Add-Table Foobar {
-        Int ID
     }
 
-    Add-ExtendedProperty -Name 'Deploy' -Value 'TRUE' -TableName 'Foobar' -ColumnName 'ID'
-    Update-ExtendedProperty -Name 'Deploy' -Value 'FALSE' -TableName 'Foobar' -ColumnName 'ID'
-}
 
-function Pop-Migration
-{
-    Remove-Table 'Foobar'
-}
+    It 'should update extended property to view' {
+        @'
+    function Push-Migration
+    {
+        Add-View -SchemaName 'dbo' 'Foobar' 'AS select * from rivet.Migrations'
+
+        Add-ExtendedProperty -Name 'Deploy' -Value 'TRUE' -ViewName 'Foobar'
+
+        Update-ExtendedProperty -Name 'Deploy' -Value 'FALSE' -ViewName 'Foobar'
+    }
+
+    function Pop-Migration
+    {
+        Remove-View 'Foobar'
+    }
+
+'@ | New-TestMigration -Name 'UpdateExtendedPropertyToView'
+
+        Invoke-RTRivet -Push 'UpdateExtendedPropertyToView'
+
+        $expinfo = Get-ExtendedProperties
+
+        $expinfo[0].name | Should -Be 'Deploy'
+        $expinfo[0].value | Should -Be 'FALSE'
+        $expinfo[0].class_desc | Should -Be 'OBJECT_OR_COLUMN'
+
+    }
+
+
+    It 'should update extended property to view in custom schema' {
+        @'
+    function Push-Migration
+    {
+        Add-Schema 'metric'
+        Add-View -SchemaName 'metric' 'Foobar' 'AS select * from rivet.Migrations'
+        Add-ExtendedProperty 'Deploy' 'TRUE' -SchemaName 'metric' -ViewName 'Foobar'
+        Update-ExtendedProperty 'Deploy' 'FALSE' -SchemaName 'metric' -ViewName 'Foobar'
+    }
+
+    function Pop-Migration
+    {
+        Remove-View 'Foobar' -schemaname 'metric'
+        Remove-Schema 'metric'
+    }
+
+'@ | New-TestMigration -Name 'UpdateExtendedPropertyToView'
+
+        Invoke-RTRivet -Push 'UpdateExtendedPropertyToView'
+
+        $expinfo = Get-ExtendedProperties
+
+        $expinfo[0].name | Should -Be 'Deploy'
+        $expinfo[0].value | Should -Be 'FALSE'
+        $expinfo[0].class_desc | Should -Be 'OBJECT_OR_COLUMN'
+
+    }
+
+
+    It 'should update extended property to table column' {
+        @'
+    function Push-Migration
+    {
+        Add-Table Foobar {
+            Int ID
+        }
+
+        Add-ExtendedProperty -Name 'Deploy' -Value 'TRUE' -TableName 'Foobar' -ColumnName 'ID'
+        Update-ExtendedProperty -Name 'Deploy' -Value 'FALSE' -TableName 'Foobar' -ColumnName 'ID'
+    }
+
+    function Pop-Migration
+    {
+        Remove-Table 'Foobar'
+    }
 
 '@ | New-TestMigration -Name 'UpdateExtendedPropertyToTableColumn'
 
-    Invoke-RTRivet -Push 'UpdateExtendedPropertyToTableColumn'
+        Invoke-RTRivet -Push 'UpdateExtendedPropertyToTableColumn'
 
-    $expinfo = Get-ExtendedProperties
+        $expinfo = Get-ExtendedProperties
 
-    Assert-Equal 'Deploy' $expinfo[0].name 
-    Assert-Equal 'FALSE' $expinfo[0].value 
-    Assert-Equal 'OBJECT_OR_COLUMN' $expinfo[0].class_desc
+        $expinfo[0].name | Should -Be 'Deploy'
+        $expinfo[0].value | Should -Be 'FALSE'
+        $expinfo[0].class_desc | Should -Be 'OBJECT_OR_COLUMN'
 
-}
-
-
-function Test-ShouldUpdateExtendedPropertyToViewColumn
-{
-    @'
-function Push-Migration
-{
-    Add-Table Table {
-        Int ID
     }
 
-    Add-View -SchemaName 'dbo' 'Foobar' 'AS select * from rivet.Migrations'
 
-    Add-ExtendedProperty -Name 'Deploy' -Value 'TRUE' -ViewName 'Foobar' -ColumnName 'ID'
-    Update-ExtendedProperty -Name 'Deploy' -Value 'FALSE' -ViewName 'Foobar' -ColumnName 'ID'
-}
+    It 'should update extended property to view column' {
+        @'
+    function Push-Migration
+    {
+        Add-Table Table {
+            Int ID
+        }
 
-function Pop-Migration
-{
-    Remove-View 'Foobar'
-    Remove-Table 'Table'
-}
+        Add-View -SchemaName 'dbo' 'Foobar' 'AS select * from rivet.Migrations'
+
+        Add-ExtendedProperty -Name 'Deploy' -Value 'TRUE' -ViewName 'Foobar' -ColumnName 'ID'
+        Update-ExtendedProperty -Name 'Deploy' -Value 'FALSE' -ViewName 'Foobar' -ColumnName 'ID'
+    }
+
+    function Pop-Migration
+    {
+        Remove-View 'Foobar'
+        Remove-Table 'Table'
+    }
 
 '@ | New-TestMigration -Name 'UpdateExtendedPropertyToViewColumn'
 
-    Invoke-RTRivet -Push 'UpdateExtendedPropertyToViewColumn'
+        Invoke-RTRivet -Push 'UpdateExtendedPropertyToViewColumn'
 
-    $expinfo = Get-ExtendedProperties
+        $expinfo = Get-ExtendedProperties
 
-    Assert-Equal 'Deploy' $expinfo[0].name 
-    Assert-Equal 'FALSE' $expinfo[0].value 
-    Assert-Equal 'OBJECT_OR_COLUMN' $expinfo[0].class_desc
+        $expinfo[0].name | Should -Be 'Deploy'
+        $expinfo[0].value | Should -Be 'FALSE'
+        $expinfo[0].class_desc | Should -Be 'OBJECT_OR_COLUMN'
 
-}
-
-
-
-function Test-ShouldAllowNullPropertyValue
-{
-    @'
-function Push-Migration
-{
-    Add-Table Foobar {
-        Int ID
     }
 
-    Add-ExtendedProperty 'Deploy' 'Goodbye!' -TableName 'Foobar' -ColumnName 'ID'
-    Update-ExtendedProperty 'Deploy' $null -TableName 'Foobar' -ColumnName 'ID'
-}
 
-function Pop-Migration
-{
-    Remove-Table 'Foobar'
-}
+
+    It 'should allow null property value' {
+        @'
+    function Push-Migration
+    {
+        Add-Table Foobar {
+            Int ID
+        }
+
+        Add-ExtendedProperty 'Deploy' 'Goodbye!' -TableName 'Foobar' -ColumnName 'ID'
+        Update-ExtendedProperty 'Deploy' $null -TableName 'Foobar' -ColumnName 'ID'
+    }
+
+    function Pop-Migration
+    {
+        Remove-Table 'Foobar'
+    }
 
 '@ | New-TestMigration -Name 'AllowNullPropertyValue'
 
-    Invoke-RTRivet -Push 'AllowNullPropertyValue'
+        Invoke-RTRivet -Push 'AllowNullPropertyValue'
 
-    $expinfo = Get-ExtendedProperties
+        $expinfo = Get-ExtendedProperties
 
-    Assert-Null $expInfo[0].value
-}
-
-
-function Test-ShouldAllowEmptyPropertyValue
-{
-    @'
-function Push-Migration
-{
-    Add-Table Foobar {
-        Int ID
+        $expInfo[0].value | Should -BeNullOrEmpty
     }
 
-    Add-ExtendedProperty 'Deploy' 'Goodbye!' -TableName 'Foobar' -ColumnName 'ID'
-    Update-ExtendedProperty 'Deploy' '' -TableName 'Foobar' -ColumnName 'ID'
-}
 
-function Pop-Migration
-{
-    Remove-Table 'Foobar'
-}
+    It 'should allow empty property value' {
+        @'
+    function Push-Migration
+    {
+        Add-Table Foobar {
+            Int ID
+        }
+
+        Add-ExtendedProperty 'Deploy' 'Goodbye!' -TableName 'Foobar' -ColumnName 'ID'
+        Update-ExtendedProperty 'Deploy' '' -TableName 'Foobar' -ColumnName 'ID'
+    }
+
+    function Pop-Migration
+    {
+        Remove-Table 'Foobar'
+    }
 
 '@ | New-TestMigration -Name 'AllowEmptyPropertyValue'
 
-    Invoke-RTRivet -Push 'AllowEmptyPropertyValue'
+        Invoke-RTRivet -Push 'AllowEmptyPropertyValue'
 
-    $expinfo = Get-ExtendedProperties
+        $expinfo = Get-ExtendedProperties
 
-    Assert-Equal '' $expInfo[0].value
+        $expInfo[0].value | Should -Be ''
 
+    }
 }

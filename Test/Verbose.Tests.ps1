@@ -1,33 +1,39 @@
 
-& (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
+#Requires -Version 5.1
+Set-StrictMode -Version 'Latest'
 
-function Start-Test
-{
-    Start-RivetTest
+BeforeAll {
+    Set-StrictMode -Version 'Latest'
+
+    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
 }
 
-function Stop-Test
-{
-    Stop-RivetTest
-}
+Describe 'Verbose' {
+    BeforeEach {
+        Start-RivetTest
+    }
 
-function Test-VerboseSwitch
-{
+    AfterEach {
+        Stop-RivetTest
+    }
 
-    @'
-function Push-Migration
-{
-    Add-Table -Name 'Foobar' -Column {
-        DateTime2 'id' -Precision 6
-    } -Option 'data_compression = none'
-}
+    It 'verbose switch' {
 
-function Pop-Migration
-{
-    Remove-Table 'Foobar'
-}
+        @'
+    function Push-Migration
+    {
+        Add-Table -Name 'Foobar' -Column {
+            DateTime2 'id' -Precision 6
+        } -Option 'data_compression = none'
+    }
+
+    function Pop-Migration
+    {
+        Remove-Table 'Foobar'
+    }
 
 '@ | New-TestMigration -Name 'VerboseSwitch'
 
-    Invoke-RTRivet -Push 'VerboseSwitch' -Verbose
+        Invoke-RTRivet -Push 'VerboseSwitch' -Verbose
+    }
 }

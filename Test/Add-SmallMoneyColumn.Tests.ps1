@@ -1,81 +1,85 @@
 
-& (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
+#Requires -Version 5.1
+Set-StrictMode -Version 'Latest'
 
-function Start-Test
-{
-    Start-RivetTest
+BeforeAll {
+    Set-StrictMode -Version 'Latest'
+
+    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
 }
 
-function Stop-Test
-{
-    Stop-RivetTest
-}
+Describe 'Add-SmallMoneyColumn' {
+    BeforeEach {
+        Start-RivetTest
+    }
 
-function Test-ShouldCreateSmallMoneyColumn
-{
-    @'
-function Push-Migration
-{
-    Add-Table -Name 'Foobar' -Column {
-        SmallMoney 'id'
-    } -Option 'data_compression = none'
-}
+    AfterEach {
+        Stop-RivetTest
+    }
 
-function Pop-Migration
-{
-    Remove-Table 'Foobar'
-}
+    It 'should create small money column' {
+        @'
+    function Push-Migration
+    {
+        Add-Table -Name 'Foobar' -Column {
+            SmallMoney 'id'
+        } -Option 'data_compression = none'
+    }
+
+    function Pop-Migration
+    {
+        Remove-Table 'Foobar'
+    }
 
 '@ | New-TestMigration -Name 'CreateSmallMoneyColumn'
 
-    Invoke-RTRivet -Push 'CreateSmallMoneyColumn'
-    
-    Assert-Table 'Foobar'
-    Assert-Column -Name 'id' -DataType 'SmallMoney' -TableName 'Foobar'
-}
+        Invoke-RTRivet -Push 'CreateSmallMoneyColumn'
 
-function Test-ShouldCreateSmallMoneyColumnWithSparse
-{
-    @'
-function Push-Migration
-{
-    Add-Table -Name 'Foobar' -Column {
-        SmallMoney 'id' -Sparse
+        Assert-Table 'Foobar'
+        Assert-Column -Name 'id' -DataType 'SmallMoney' -TableName 'Foobar'
     }
-}
 
-function Pop-Migration
-{
-    Remove-Table 'Foobar'
-}
+    It 'should create small money column with sparse' {
+        @'
+    function Push-Migration
+    {
+        Add-Table -Name 'Foobar' -Column {
+            SmallMoney 'id' -Sparse
+        }
+    }
+
+    function Pop-Migration
+    {
+        Remove-Table 'Foobar'
+    }
 
 '@ | New-TestMigration -Name 'CreateSmallMoneyColumnWithSparse'
 
-    Invoke-RTRivet -Push 'CreateSmallMoneyColumnWithSparse'
-    
-    Assert-Table 'Foobar'
-    Assert-Column -Name 'id' -DataType 'SmallMoney' -TableName 'Foobar' -Sparse
-}
+        Invoke-RTRivet -Push 'CreateSmallMoneyColumnWithSparse'
 
-function Test-ShouldCreateSmallMoneyColumnWithNotNull
-{
-    @'
-function Push-Migration
-{
-    Add-Table -Name 'Foobar' -Column {
-        SmallMoney 'id' -NotNull
+        Assert-Table 'Foobar'
+        Assert-Column -Name 'id' -DataType 'SmallMoney' -TableName 'Foobar' -Sparse
     }
-}
 
-function Pop-Migration
-{
-    Remove-Table 'Foobar'
-}
+    It 'should create small money column with not null' {
+        @'
+    function Push-Migration
+    {
+        Add-Table -Name 'Foobar' -Column {
+            SmallMoney 'id' -NotNull
+        }
+    }
+
+    function Pop-Migration
+    {
+        Remove-Table 'Foobar'
+    }
 
 '@ | New-TestMigration -Name 'CreateSmallMoneyColumnWithNotNull'
 
-    Invoke-RTRivet -Push 'CreateSmallMoneyColumnWithNotNull'
-    
-    Assert-Table 'Foobar'
-    Assert-Column -Name 'id' -DataType 'SmallMoney' -TableName 'Foobar' -NotNull
+        Invoke-RTRivet -Push 'CreateSmallMoneyColumnWithNotNull'
+
+        Assert-Table 'Foobar'
+        Assert-Column -Name 'id' -DataType 'SmallMoney' -TableName 'Foobar' -NotNull
+    }
 }

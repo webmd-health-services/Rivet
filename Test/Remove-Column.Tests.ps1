@@ -1,25 +1,30 @@
 
-& (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
+#Requires -Version 5.1
+Set-StrictMode -Version 'Latest'
 
-function Setup
-{
-    Start-RivetTest
+BeforeAll {
+    Set-StrictMode -Version 'Latest'
+
+    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
 }
 
-function TearDown
-{
-    Stop-RivetTest
-}
+Describe 'Remove-Column' {
+    BeforeEach {
+        Start-RivetTest
+    }
 
-function Test-ShouldRemoveColumns
-{
-    @'
+    AfterEach {
+        Stop-RivetTest
+    }
+
+    It 'should remove columns' {
+        @'
 function Push-Migration()
 {
     Add-Schema 'My-Schema'
 
     Add-Table -SchemaName 'My-Schema' AddColumnNoDefaultsAllNull {
-        Int 'id' -Identity 
+        Int 'id' -Identity
         VarChar 'varchar' -Size 50
         VarChar 'varcharmax' -Max
     }
@@ -35,9 +40,10 @@ function Pop-Migration()
 }
 '@ | New-TestMigration -Name 'AddColumnNoDefaultsAllNull'
 
-    Invoke-RTRivet -Push 'AddColumnNoDefaultsAllNull'
-    
-    $commonArgs = @{ TableName = 'AddColumnNoDefaultsAllNull' ; SchemaName = 'My-Schema' }
-    Assert-False (Test-Column -Name 'varchar' @commonArgs)
-    Assert-False (Test-Column -Name 'varcharmax' @commonArgs)
+        Invoke-RTRivet -Push 'AddColumnNoDefaultsAllNull'
+
+        $commonArgs = @{ TableName = 'AddColumnNoDefaultsAllNull' ; SchemaName = 'My-Schema' }
+            (Test-Column -Name 'varchar' @commonArgs) | Should -BeFalse
+            (Test-Column -Name 'varcharmax' @commonArgs) | Should -BeFalse
+    }
 }

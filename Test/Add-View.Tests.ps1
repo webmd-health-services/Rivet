@@ -1,19 +1,24 @@
 
-& (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
+#Requires -Version 5.1
+Set-StrictMode -Version 'Latest'
 
-function Setup
-{
-    Start-RivetTest
+BeforeAll {
+    Set-StrictMode -Version 'Latest'
+
+    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
 }
 
-function TearDown
-{
-    Stop-RivetTest
-}
+Describe 'Add-View' {
+    BeforeEach {
+        Start-RivetTest
+    }
 
-function Test-ShouldAddView
-{
-    @'
+    AfterEach {
+        Stop-RivetTest
+    }
+
+    It 'should add view' {
+        @'
 function Push-Migration
 {
      Add-Table -Name 'Person' -Description 'Testing Add-View' -Column {
@@ -30,7 +35,8 @@ function Pop-Migration()
     Remove-Table 'Person'
 }
 '@ | New-TestMigration -Name 'AddNewView'
-    Invoke-RTRivet -Push 'AddNewView'
-    
-    Assert-View -Name "customView" -Schema "dbo" -Definition "as select FirstName from Person"
+        Invoke-RTRivet -Push 'AddNewView'
+
+        Assert-View -Name "customView" -Schema "dbo" -Definition "as select FirstName from Person"
+    }
 }

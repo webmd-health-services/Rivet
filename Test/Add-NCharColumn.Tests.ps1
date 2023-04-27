@@ -1,104 +1,107 @@
 
-& (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
+#Requires -Version 5.1
+Set-StrictMode -Version 'Latest'
 
-function Start-Test
-{
-    Start-RivetTest
+BeforeAll {
+    Set-StrictMode -Version 'Latest'
+
+    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
 }
 
-function Stop-Test
-{
-    Stop-RivetTest
-}
+Describe 'Add-NCharColumn' {
+    BeforeEach {
+        Start-RivetTest
+    }
 
-function Test-ShouldCreateNCharColumn
-{
-    @'
-function Push-Migration
-{
-    Add-Table -Name 'Foobar' -Column {
-        NChar 'id' 30
-    } -Option 'data_compression = none'
-}
+    AfterEach {
+        Stop-RivetTest
+    }
 
-function Pop-Migration
-{
-    Remove-Table 'Foobar'
-}
+    It 'should create n char column' {
+        @'
+    function Push-Migration
+    {
+        Add-Table -Name 'Foobar' -Column {
+            NChar 'id' 30
+        } -Option 'data_compression = none'
+    }
+
+    function Pop-Migration
+    {
+        Remove-Table 'Foobar'
+    }
 
 '@ | New-TestMigration -Name 'CreateNCharColumn'
 
-    Invoke-RTRivet -Push 'CreateNCharColumn'
-    
-    Assert-Table 'Foobar'
-    Assert-Column -Name 'id' -DataType 'NChar' -TableName 'Foobar'
-}
+        Invoke-RTRivet -Push 'CreateNCharColumn'
 
-function Test-ShouldCreateNCharColumnWithSparse
-{
-    @'
-function Push-Migration
-{
-    Add-Table -Name 'Foobar' -Column {
-        NChar 'id' 30 -Sparse
+        Assert-Table 'Foobar'
+        Assert-Column -Name 'id' -DataType 'NChar' -TableName 'Foobar'
     }
-}
 
-function Pop-Migration
-{
-    Remove-Table 'Foobar'
-}
+    It 'should create n char column with sparse' {
+        @'
+    function Push-Migration
+    {
+        Add-Table -Name 'Foobar' -Column {
+            NChar 'id' 30 -Sparse
+        }
+    }
+
+    function Pop-Migration
+    {
+        Remove-Table 'Foobar'
+    }
 
 '@ | New-TestMigration -Name 'CreateNCharColumnWithSparse'
 
-    Invoke-RTRivet -Push 'CreateNCharColumnWithSparse'
-    
-    Assert-Table 'Foobar'
-    Assert-Column -Name 'id' -DataType 'NChar' -TableName 'Foobar' -Sparse
-}
+        Invoke-RTRivet -Push 'CreateNCharColumnWithSparse'
 
-function Test-ShouldCreateNCharColumnWithNotNull
-{
-    @'
-function Push-Migration
-{
-    Add-Table -Name 'Foobar' -Column {
-        NChar 'id' 30 -NotNull
+        Assert-Table 'Foobar'
+        Assert-Column -Name 'id' -DataType 'NChar' -TableName 'Foobar' -Sparse
     }
-}
 
-function Pop-Migration
-{
-    Remove-Table 'Foobar'
-}
+    It 'should create n char column with not null' {
+        @'
+    function Push-Migration
+    {
+        Add-Table -Name 'Foobar' -Column {
+            NChar 'id' 30 -NotNull
+        }
+    }
+
+    function Pop-Migration
+    {
+        Remove-Table 'Foobar'
+    }
 
 '@ | New-TestMigration -Name 'CreateNCharColumnWithNotNull'
 
-    Invoke-RTRivet -Push 'CreateNCharColumnWithNotNull'
-    
-    Assert-Table 'Foobar'
-    Assert-Column -Name 'id' -DataType 'NChar' -TableName 'Foobar' -NotNull
-}
+        Invoke-RTRivet -Push 'CreateNCharColumnWithNotNull'
 
-function Test-ShouldCreateNCharColumnWithCustomSizeCollation
-{
-    @'
-function Push-Migration
-{
-    Add-Table -Name 'Foobar' -Column {
-        NChar 'id' -NotNull -Size 50 -Collation "Chinese_Taiwan_Stroke_CI_AS"
+        Assert-Table 'Foobar'
+        Assert-Column -Name 'id' -DataType 'NChar' -TableName 'Foobar' -NotNull
     }
-}
 
-function Pop-Migration
-{
-    Remove-Table 'Foobar'
-}
+    It 'should create n char column with custom size collation' {
+        @'
+    function Push-Migration
+    {
+        Add-Table -Name 'Foobar' -Column {
+            NChar 'id' -NotNull -Size 50 -Collation "Chinese_Taiwan_Stroke_CI_AS"
+        }
+    }
+
+    function Pop-Migration
+    {
+        Remove-Table 'Foobar'
+    }
 
 '@ | New-TestMigration -Name 'ShouldCreateNCharColumnWithCustomSizeCollation'
 
-    Invoke-RTRivet -Push 'ShouldCreateNCharColumnWithCustomSizeCollation'
-    
-    Assert-Table 'Foobar'
-    Assert-Column -Name 'id' -DataType 'NChar' -TableName 'Foobar' -NotNull -Size 50 -Collation "Chinese_Taiwan_Stroke_CI_AS"
+        Invoke-RTRivet -Push 'ShouldCreateNCharColumnWithCustomSizeCollation'
+
+        Assert-Table 'Foobar'
+        Assert-Column -Name 'id' -DataType 'NChar' -TableName 'Foobar' -NotNull -Size 50 -Collation "Chinese_Taiwan_Stroke_CI_AS"
+    }
 }

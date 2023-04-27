@@ -1,71 +1,76 @@
 
-& (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
+#Requires -Version 5.1
+Set-StrictMode -Version 'Latest'
 
-function Start-Test
-{
-    Start-RivetTest
+BeforeAll {
+    Set-StrictMode -Version 'Latest'
+
+    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
 }
 
-function Stop-Test
-{
-    Stop-RivetTest
-}
-
-function Test-ShouldRemoveTable
-{
-    @'
-function Push-Migration()
-{
-    Add-Table -Name 'Ducati' {
-        Int 'ID' -Identity 
-    } # -SchemaName
-
-}
-
-function Pop-Migration()
-{
-    Remove-Table -Name 'Ducati'
-}
-'@ | New-TestMigration -Name 'AddTable'
-    Invoke-RTRivet -Push 'AddTable'
-    Assert-True (Test-Table 'Ducati')
-
-    Invoke-RTRivet -Pop ([Int32]::MaxValue)
-    Assert-False (Test-Table 'Ducati')
-}
-
-function Test-ShouldRemoveTableInCustomSchema
-{
-    $Name = 'Ducati'
-    $CustomSchemaName = 'notDbo'
-    
-@'
-function Push-Migration()
-{
-    Add-Table -Name 'Ducati' {
-        Int 'ID' -Identity 
+Describe 'Remove-Table' {
+    BeforeEach {
+        Start-RivetTest
     }
-    Add-Schema -Name 'notDbo'
 
-    Add-Table -Name 'Ducati' {
-        Int 'ID' -Identity 
-    } -SchemaName 'notDbo'
-}
+    AfterEach {
+        Stop-RivetTest
+    }
 
-function Pop-Migration()
-{
-    Remove-Table -Name 'Ducati' -SchemaName 'notDbo'
-    Remove-Table 'Ducati'
-    Remove-Schema 'notDbo'
-}
-'@ | New-TestMigration -Name 'AddTablesInDifferentSchemas'    
+    It 'should remove table' {
+        @'
+    function Push-Migration()
+    {
+        Add-Table -Name 'Ducati' {
+            Int 'ID' -Identity
+        } # -SchemaName
 
-    Invoke-RTRivet -Push 'AddTablesInDifferentSchemas'
+    }
 
-    Assert-True (Test-Table -Name $Name)
-    Assert-True (Test-Table -Name $Name -SchemaName $CustomSchemaName)
-    
-    Invoke-RTRivet -Pop ([Int32]::MaxValue)
-    Assert-False (Test-Table -Name $Name)
-    Assert-False (Test-Table -Name $Name -SchemaName $CustomSchemaName)
+    function Pop-Migration()
+    {
+        Remove-Table -Name 'Ducati'
+    }
+'@ | New-TestMigration -Name 'AddTable'
+        Invoke-RTRivet -Push 'AddTable'
+        (Test-Table 'Ducati') | Should -BeTrue
+
+        Invoke-RTRivet -Pop ([Int32]::MaxValue)
+        (Test-Table 'Ducati') | Should -BeFalse
+    }
+
+    It 'should remove table in custom schema' {
+        $Name = 'Ducati'
+        $CustomSchemaName = 'notDbo'
+
+    @'
+    function Push-Migration()
+    {
+        Add-Table -Name 'Ducati' {
+            Int 'ID' -Identity
+        }
+        Add-Schema -Name 'notDbo'
+
+        Add-Table -Name 'Ducati' {
+            Int 'ID' -Identity
+        } -SchemaName 'notDbo'
+    }
+
+    function Pop-Migration()
+    {
+        Remove-Table -Name 'Ducati' -SchemaName 'notDbo'
+        Remove-Table 'Ducati'
+        Remove-Schema 'notDbo'
+    }
+'@ | New-TestMigration -Name 'AddTablesInDifferentSchemas'
+
+        Invoke-RTRivet -Push 'AddTablesInDifferentSchemas'
+
+        (Test-Table -Name $Name) | Should -BeTrue
+        (Test-Table -Name $Name -SchemaName $CustomSchemaName) | Should -BeTrue
+
+        Invoke-RTRivet -Pop ([Int32]::MaxValue)
+        (Test-Table -Name $Name) | Should -BeFalse
+        (Test-Table -Name $Name -SchemaName $CustomSchemaName) | Should -BeFalse
+    }
 }

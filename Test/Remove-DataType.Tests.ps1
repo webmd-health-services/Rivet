@@ -1,20 +1,25 @@
 
-& (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve) 
+#Requires -Version 5.1
+Set-StrictMode -Version 'Latest'
 
-function Setup
-{
-    Start-RivetTest
+BeforeAll {
+    Set-StrictMode -Version 'Latest'
+
+    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
 }
 
-function TearDown
-{
-    Stop-RivetTest
-}
+Describe 'Remove-DataType' {
+    BeforeEach {
+        Start-RivetTest
+    }
 
-function Test-ShouldRemoveDataTypeByTable
-{
-    # Yes.  Spaces in names so we check that the names get quoted.
-    @'
+    AfterEach {
+        Stop-RivetTest
+    }
+
+    It 'should remove data type by table' {
+        # Yes.  Spaces in names so we check that the names get quoted.
+        @'
 function Push-Migration
 {
     Add-DataType 'Users DT' -AsTable { varchar 'Name' 50 } -TableConstraint 'primary key'
@@ -22,18 +27,19 @@ function Push-Migration
 
 function Pop-Migration
 {
-    Remove-DataType 'Users DT'    
+    Remove-DataType 'Users DT'
 }
 
 '@ | New-TestMigration -Name 'ByTable'
 
-    Invoke-RTRivet -Push 'ByTable'
+        Invoke-RTRivet -Push 'ByTable'
 
-    $temp = Invoke-RivetTestQuery -Query 'select * from sys.table_types'
-    Assert-NotNull $temp
-    Assert-Equal $temp.name 'Users DT'
+        $temp = Invoke-RivetTestQuery -Query 'select * from sys.table_types'
+            $temp | Should -Not -BeNullOrEmpty
+            'Users DT' | Should -Be $temp.name
 
-    Invoke-RTRivet -Pop 1
-    $temp = Invoke-RivetTestQuery -Query 'select * from sys.table_types'
-    Assert-Null $temp
+        Invoke-RTRivet -Pop 1
+        $temp = Invoke-RivetTestQuery -Query 'select * from sys.table_types'
+            $temp | Should -BeNullOrEmpty
+    }
 }

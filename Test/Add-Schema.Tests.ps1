@@ -1,82 +1,87 @@
-$floog = ''
 
-& (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
+#Requires -Version 5.1
+Set-StrictMode -Version 'Latest'
 
-function Start-Test
-{
-    Start-RivetTest
-    $floog = 'blarg'
+BeforeAll {
+    Set-StrictMode -Version 'Latest'
+
+    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
+
+   $script:floog = ''
 }
 
-function Stop-Test
-{
-    Stop-RivetTest
-}
+Describe 'Add-Schema' {
+    BeforeEach {
+        Start-RivetTest
+        $floog = 'blarg'
+    }
 
-function Test-ShouldCreateSchema
-{
-    @'
-function Push-Migration()
-{
-    Add-Schema -Name 'rivetaddremoveschema'
-    # Check that Add-Schema is idempotent.
-    Add-Schema -Name 'rivetaddremoveschema'
-}
+    AfterEach {
+        Stop-RivetTest
+    }
 
-function Pop-Migration()
-{
-    Remove-Schema -Name 'rivetaddremoveschema'
-}
+    It 'should create schema' {
+        @'
+    function Push-Migration()
+    {
+        Add-Schema -Name 'rivetaddremoveschema'
+        # Check that Add-Schema is idempotent.
+        Add-Schema -Name 'rivetaddremoveschema'
+    }
+
+    function Pop-Migration()
+    {
+        Remove-Schema -Name 'rivetaddremoveschema'
+    }
 '@ | New-TestMigration -Name 'addschema'
 
-    Assert-False (Test-Schema 'rivetaddremoveschema')
+        (Test-Schema 'rivetaddremoveschema') | Should -BeFalse
 
-    Invoke-RTRivet -Push 'AddSchema'
+        Invoke-RTRivet -Push 'AddSchema'
 
-    Assert-True (Test-Schema -Name 'rivetaddremoveschema')
-}
+        (Test-Schema -Name 'rivetaddremoveschema') | Should -BeTrue
+    }
 
-function Test-ShouldCreateSchemaWithReservedWord
-{
-    @'
-function Push-Migration()
-{
-    Add-Schema -Name 'alter'
-}
+    It 'should create schema with reserved word' {
+        @'
+    function Push-Migration()
+    {
+        Add-Schema -Name 'alter'
+    }
 
-function Pop-Migration()
-{
-    Remove-Schema -Name 'alter'
-}
+    function Pop-Migration()
+    {
+        Remove-Schema -Name 'alter'
+    }
 '@ | New-TestMigration -Name 'AddSchemaWithReservedName'
 
-    Assert-False (Test-Schema 'alter')
+        (Test-Schema 'alter') | Should -BeFalse
 
-    Invoke-RTRivet -Push 'AddSchemaWithReservedName'
+        Invoke-RTRivet -Push 'AddSchemaWithReservedName'
 
-    Assert-True (Test-Schema -Name 'alter')
-}
+        (Test-Schema -Name 'alter') | Should -BeTrue
+    }
 
-function Test-ShouldAddSchemaWithOwner
-{
-    @'
+    It 'should add schema with owner' {
+        @'
 
-function Push-Migration
-{
-    Invoke-Ddl 'create user addremoteschema without login'
-    Add-Schema -Name 'schemawithowner' -Authorization 'addremoteschema'
-}
+    function Push-Migration
+    {
+        Invoke-Ddl 'create user addremoteschema without login'
+        Add-Schema -Name 'schemawithowner' -Authorization 'addremoteschema'
+    }
 
-function Pop-Migration
-{
-    Remove-Schema -Name 'schemawithowner'
-    Invoke-Ddl 'drop user addremoteschema'
-}
+    function Pop-Migration
+    {
+        Remove-Schema -Name 'schemawithowner'
+        Invoke-Ddl 'drop user addremoteschema'
+    }
 '@ | New-TestMigration -Name 'AddSchemaWithOwner'
 
-    Assert-False (Test-Schema 'schemawithowner')
-    Invoke-RTRivet -Push 'AddSchemaWithOwner'
-    $schema = Get-Schema 'schemawithowner'
-    Assert-NotNull $schema
-    Assert-Equal 'addremoteschema' $schema.principal_name
+        (Test-Schema 'schemawithowner') | Should -BeFalse
+        Invoke-RTRivet -Push 'AddSchemaWithOwner'
+        $schema = Get-Schema 'schemawithowner'
+        $schema | Should -Not -BeNullOrEmpty
+        $schema.principal_name | Should -Be 'addremoteschema'
+    }
 }

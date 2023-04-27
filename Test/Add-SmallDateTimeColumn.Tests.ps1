@@ -1,81 +1,85 @@
 
-& (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
+#Requires -Version 5.1
+Set-StrictMode -Version 'Latest'
 
-function Start-Test
-{
-    Start-RivetTest
+BeforeAll {
+    Set-StrictMode -Version 'Latest'
+
+    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
 }
 
-function Stop-Test
-{
-    Stop-RivetTest
-}
+Describe 'Add-SmallDateTimeColumn' {
+    BeforeEach {
+        Start-RivetTest
+    }
 
-function Test-ShouldCreateSmallDateTimeColumn
-{
-    @'
-function Push-Migration
-{
-    Add-Table -Name 'Foobar' -Column {
-        SmallDateTime 'id'
-    } -Option 'data_compression = none'
-}
+    AfterEach {
+        Stop-RivetTest
+    }
 
-function Pop-Migration
-{
-    Remove-Table 'Foobar'
-}
+    It 'should create small date time column' {
+        @'
+    function Push-Migration
+    {
+        Add-Table -Name 'Foobar' -Column {
+            SmallDateTime 'id'
+        } -Option 'data_compression = none'
+    }
+
+    function Pop-Migration
+    {
+        Remove-Table 'Foobar'
+    }
 
 '@ | New-TestMigration -Name 'CreateSmallDateTimeColumn'
 
-    Invoke-RTRivet -Push 'CreateSmallDateTimeColumn'
-    
-    Assert-Table 'Foobar'
-    Assert-Column -Name 'id' -DataType 'SmallDateTime' -TableName 'Foobar'
-}
+        Invoke-RTRivet -Push 'CreateSmallDateTimeColumn'
 
-function Test-ShouldCreateSmallDateTimeColumnWithSparse
-{
-    @'
-function Push-Migration
-{
-    Add-Table -Name 'Foobar' -Column {
-        SmallDateTime 'id' -Sparse
+        Assert-Table 'Foobar'
+        Assert-Column -Name 'id' -DataType 'SmallDateTime' -TableName 'Foobar'
     }
-}
 
-function Pop-Migration
-{
-    Remove-Table 'Foobar'
-}
+    It 'should create small date time column with sparse' {
+        @'
+    function Push-Migration
+    {
+        Add-Table -Name 'Foobar' -Column {
+            SmallDateTime 'id' -Sparse
+        }
+    }
+
+    function Pop-Migration
+    {
+        Remove-Table 'Foobar'
+    }
 
 '@ | New-TestMigration -Name 'CreateSmallDateTimeColumnWithSparse'
 
-    Invoke-RTRivet -Push 'CreateSmallDateTimeColumnWithSparse'
-    
-    Assert-Table 'Foobar'
-    Assert-Column -Name 'id' -DataType 'SmallDateTime' -TableName 'Foobar' -Sparse
-}
+        Invoke-RTRivet -Push 'CreateSmallDateTimeColumnWithSparse'
 
-function Test-ShouldCreateSmallDateTimeColumnWithNotNull
-{
-    @'
-function Push-Migration
-{
-    Add-Table -Name 'Foobar' -Column {
-        SmallDateTime 'id' -NotNull
+        Assert-Table 'Foobar'
+        Assert-Column -Name 'id' -DataType 'SmallDateTime' -TableName 'Foobar' -Sparse
     }
-}
 
-function Pop-Migration
-{
-    Remove-Table 'Foobar'
-}
+    It 'should create small date time column with not null' {
+        @'
+    function Push-Migration
+    {
+        Add-Table -Name 'Foobar' -Column {
+            SmallDateTime 'id' -NotNull
+        }
+    }
+
+    function Pop-Migration
+    {
+        Remove-Table 'Foobar'
+    }
 
 '@ | New-TestMigration -Name 'CreateSmallDateTimeColumnWithNotNull'
 
-    Invoke-RTRivet -Push 'CreateSmallDateTimeColumnWithNotNull'
-    
-    Assert-Table 'Foobar'
-    Assert-Column -Name 'id' -DataType 'SmallDateTime' -TableName 'Foobar' -NotNull
+        Invoke-RTRivet -Push 'CreateSmallDateTimeColumnWithNotNull'
+
+        Assert-Table 'Foobar'
+        Assert-Column -Name 'id' -DataType 'SmallDateTime' -TableName 'Foobar' -NotNull
+    }
 }

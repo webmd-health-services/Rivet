@@ -27,8 +27,8 @@ function ConvertTo-Expression
         $errors = $null
         $ast = [System.Management.Automation.Language.Parser]::ParseInput($line, [ref]$tokens, [ref]$errors)
         [object[]]$formatArgs = $ast.FindAll({$args[0] -is [System.Management.Automation.Language.CommandAst]},$true) |
-            Select-Object -First 1 | 
-            Select-Object -ExpandProperty 'CommandElements' | 
+            Select-Object -First 1 |
+            Select-Object -ExpandProperty 'CommandElements' |
             Select-Object -Skip 1
 
         $result = $InputObject -f $formatArgs
@@ -56,6 +56,10 @@ Get-Item -Path $path | ForEach-Object {
 
             if( -not $alreadyDescribed -and $line -match 'function (Start|Stop)-Test(Fixture)?' )
             {
+                'BeforeAll {'
+                '   Set-StrictMode -Version ''Latest'''
+                '}'
+                ''
                 'Describe ''{0}'' {{' -f ($fixture.BaseName -replace '\.Tests$','')
                 $alreadyDescribed = $true
             }
@@ -83,7 +87,7 @@ Get-Item -Path $path | ForEach-Object {
             if( $line -match '\bAssert-(.+?)\b' )
             {
                 $assertion = $Matches[1]
-                $Matches | Out-String | Write-Debug 
+                $Matches | Out-String | Write-Debug
                 $errors = [Management.Automation.PSParseError[]] @()
                 $tokens = [System.Management.Automation.PsParser]::Tokenize( $line, [ref] $errors )
                 if( $errors )
@@ -91,7 +95,7 @@ Get-Item -Path $path | ForEach-Object {
                     Write-Error -Message ('There were errors parsing line ''{0}''.' -f $line)
                     return $line
                 }
-                
+
                 $line -match '^(\s*)' | Out-Null
                 $indent = $Matches[1]
                 switch ($assertion)
@@ -167,7 +171,7 @@ Get-Item -Path $path | ForEach-Object {
             }
 
             return $line
-        } 
+        }
 
         '}'
     }

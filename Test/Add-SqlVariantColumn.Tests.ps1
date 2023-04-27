@@ -1,81 +1,85 @@
 
-& (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
+#Requires -Version 5.1
+Set-StrictMode -Version 'Latest'
 
-function Start-Test
-{
-    Start-RivetTest
+BeforeAll {
+    Set-StrictMode -Version 'Latest'
+
+    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
 }
 
-function Stop-Test
-{
-    Stop-RivetTest
-}
+Describe 'Add-SqlVariantColumn' {
+    BeforeEach {
+        Start-RivetTest
+    }
 
-function Test-ShouldCreateSqlVariantColumn
-{
-    @'
-function Push-Migration
-{
-    Add-Table -Name 'Foobar' -Column {
-        SqlVariant 'id'
-    } -Option 'data_compression = none'
-}
+    AfterEach {
+        Stop-RivetTest
+    }
 
-function Pop-Migration
-{
-    Remove-Table 'Foobar'
-}
+    It 'should create sql variant column' {
+        @'
+    function Push-Migration
+    {
+        Add-Table -Name 'Foobar' -Column {
+            SqlVariant 'id'
+        } -Option 'data_compression = none'
+    }
+
+    function Pop-Migration
+    {
+        Remove-Table 'Foobar'
+    }
 
 '@ | New-TestMigration -Name 'CreateSqlVariantColumn'
 
-    Invoke-RTRivet -Push 'CreateSqlVariantColumn'
-    
-    Assert-Table 'Foobar'
-    Assert-Column -Name 'id' -DataType 'sql_variant' -TableName 'Foobar'
-}
+        Invoke-RTRivet -Push 'CreateSqlVariantColumn'
 
-function Test-ShouldCreateSqlVariantColumnWithSparse
-{
-    @'
-function Push-Migration
-{
-    Add-Table -Name 'Foobar' -Column {
-        SqlVariant 'id' -Sparse
+        Assert-Table 'Foobar'
+        Assert-Column -Name 'id' -DataType 'sql_variant' -TableName 'Foobar'
     }
-}
 
-function Pop-Migration
-{
-    Remove-Table 'Foobar'
-}
+    It 'should create sql variant column with sparse' {
+        @'
+    function Push-Migration
+    {
+        Add-Table -Name 'Foobar' -Column {
+            SqlVariant 'id' -Sparse
+        }
+    }
+
+    function Pop-Migration
+    {
+        Remove-Table 'Foobar'
+    }
 
 '@ | New-TestMigration -Name 'CreateSqlVariantColumnWithSparse'
 
-    Invoke-RTRivet -Push 'CreateSqlVariantColumnWithSparse'
-    
-    Assert-Table 'Foobar'
-    Assert-Column -Name 'id' -DataType 'sql_variant' -TableName 'Foobar' -Sparse
-}
+        Invoke-RTRivet -Push 'CreateSqlVariantColumnWithSparse'
 
-function Test-ShouldCreateSqlVariantColumnWithNotNull
-{
-    @'
-function Push-Migration
-{
-    Add-Table -Name 'Foobar' -Column {
-        SqlVariant 'id' -NotNull
+        Assert-Table 'Foobar'
+        Assert-Column -Name 'id' -DataType 'sql_variant' -TableName 'Foobar' -Sparse
     }
-}
 
-function Pop-Migration
-{
-    Remove-Table 'Foobar'
-}
+    It 'should create sql variant column with not null' {
+        @'
+    function Push-Migration
+    {
+        Add-Table -Name 'Foobar' -Column {
+            SqlVariant 'id' -NotNull
+        }
+    }
+
+    function Pop-Migration
+    {
+        Remove-Table 'Foobar'
+    }
 
 '@ | New-TestMigration -Name 'CreateSqlVariantColumnWithNotNull'
 
-    Invoke-RTRivet -Push 'CreateSqlVariantColumnWithNotNull'
-    
-    Assert-Table 'Foobar'
-    Assert-Column -Name 'id' -DataType 'sql_variant' -TableName 'Foobar' -NotNull
+        Invoke-RTRivet -Push 'CreateSqlVariantColumnWithNotNull'
+
+        Assert-Table 'Foobar'
+        Assert-Column -Name 'id' -DataType 'sql_variant' -TableName 'Foobar' -NotNull
+    }
 }

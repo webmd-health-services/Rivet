@@ -1,19 +1,24 @@
 
-& (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
+#Requires -Version 5.1
+Set-StrictMode -Version 'Latest'
 
-function Setup
-{
-    Start-RivetTest
+BeforeAll {
+    Set-StrictMode -Version 'Latest'
+
+    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
 }
 
-function TearDown
-{
-    Stop-RivetTest
-}
+Describe 'Add-StoredProcedure' {
+    BeforeEach {
+        Start-RivetTest
+    }
 
-function Test-ShouldCreateNewStoredProcedure
-{
-    @'
+    AfterEach {
+        Stop-RivetTest
+    }
+
+    It 'should create new stored procedure' {
+        @'
 function Push-Migration
 {
     Add-Table -Name 'Person' -Description 'Testing Add-StoredProcedure' -Column {
@@ -31,7 +36,8 @@ function Pop-Migration
 }
 '@ | New-TestMigration -Name 'CreateNewStoredProcedure'
 
-    Invoke-RTRivet -Push 'CreateNewStoredProcedure'
+        Invoke-RTRivet -Push 'CreateNewStoredProcedure'
 
-    Assert-StoredProcedure -Name 'TestStoredProcedure' -Definition 'as SELECT FirstName, LastName FROM dbo.Person;' -SchemaName 'dbo'
+        Assert-StoredProcedure -Name 'TestStoredProcedure' -Definition 'as SELECT FirstName, LastName FROM dbo.Person;' -SchemaName 'dbo'
+    }
 }

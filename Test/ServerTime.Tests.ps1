@@ -1,42 +1,48 @@
 
-& (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
+#Requires -Version 5.1
+Set-StrictMode -Version 'Latest'
 
-function Start-Test
-{
-    Start-RivetTest
+BeforeAll {
+    Set-StrictMode -Version 'Latest'
+
+    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
 }
 
-function Stop-Test
-{
-    Stop-RivetTest
-}
+Describe 'ServerTime' {
+    BeforeEach {
+        Start-RivetTest
+    }
 
-function Test-PastPresentFuture
-{
-    $createdAt = Invoke-RivetTestQuery -Query 'select getutcdate()' -AsScalar
+    AfterEach {
+        Stop-RivetTest
+    }
 
-    @'
-function Push-Migration
-{
-    Add-Table -Name 'Foobar' -Column {
-        DateTime2 'id' -Precision 6
-    } -Option 'data_compression = none'
-}
+    It 'past present future' {
+        $createdAt = Invoke-RivetTestQuery -Query 'select getutcdate()' -AsScalar
 
-function Pop-Migration
-{
-    Remove-Table 'Foobar'
-}
+        @'
+    function Push-Migration
+    {
+        Add-Table -Name 'Foobar' -Column {
+            DateTime2 'id' -Precision 6
+        } -Option 'data_compression = none'
+    }
+
+    function Pop-Migration
+    {
+        Remove-Table 'Foobar'
+    }
 
 '@ | New-TestMigration -Name 'CreateDateTime2Column'
 
-    Invoke-RTRivet -Push 'CreateDateTime2Column'
+        Invoke-RTRivet -Push 'CreateDateTime2Column'
 
-    $migrationRow = Get-MigrationInfo -Name 'CreateDateTime2Column'
+        $migrationRow = Get-MigrationInfo -Name 'CreateDateTime2Column'
 
-    Write-Verbose ("Time Variance: {0}" -f ($migrationRow.AtUTC - $createdAt))
-    Write-Verbose "300 ms variance is allowed"
-    Assert-True ($migrationRow.AtUTC.AddMilliseconds(300) -gt $createdAt) ($migrationRow.AtUTC - $createdAt)
+        Write-Verbose ("Time Variance: {0}" -f ($migrationRow.AtUTC - $createdAt))
+        Write-Verbose "300 ms variance is allowed"
+        ($migrationRow.AtUTC.AddMilliseconds(300) -gt $createdAt) | Should -BeTrue
 
 
+    }
 }

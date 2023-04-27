@@ -1,85 +1,89 @@
 
-& (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
+#Requires -Version 5.1
+Set-StrictMode -Version 'Latest'
 
-function Start-Test
-{
-    Start-RivetTest
+BeforeAll {
+    Set-StrictMode -Version 'Latest'
+
+    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
 }
 
-function Stop-Test
-{
-    Stop-RivetTest
-}
-
-function Test-ShouldAddCheckConstraint
-{
-    @'
-function Push-Migration()
-{
-    Add-Table 'Migrations' -Column {
-        Int 'Example' -NotNull
+Describe 'Add-CheckConstraint' {
+    BeforeEach {
+        Start-RivetTest
     }
 
-    Add-CheckConstraint 'Migrations' 'CK_Migrations_Example' 'Example > 0'
-}
-
-function Pop-Migration()
-{
-    Remove-Table 'Migrations'
-}
-'@ | New-TestMigration -Name 'AddCheckConstraint'
-
-    Invoke-RTRivet -Push 'AddCheckConstraint'
-    Assert-CheckConstraint 'CK_Migrations_Example' -Definition '([Example]>(0))'
-}
-
-function Test-ShouldAddCheckConstraintWithNoReplication
-{
-    @'
-function Push-Migration()
-{
-    Add-Table 'Migrations' -Column {
-        Int 'Example' -NotNull
+    AfterEach {
+        Stop-RivetTest
     }
 
-    Add-CheckConstraint 'Migrations' 'CK_Migrations_Example' 'Example > 0' -NotForReplication
-}
+    It 'should add check constraint' {
+        @'
+    function Push-Migration()
+    {
+        Add-Table 'Migrations' -Column {
+            Int 'Example' -NotNull
+        }
 
-function Pop-Migration()
-{
-    Remove-Table 'Migrations'
-}
-'@ | New-TestMigration -Name 'AddCheckConstraint'
-
-    Invoke-RTRivet -Push 'AddCheckConstraint'
-    Assert-CheckConstraint 'CK_Migrations_Example' -NotForReplication -Definition '([Example]>(0))'
-}
-
-function Test-ShouldAddCheckConstraintWithNoCheck
-{
-    @'
-function Push-Migration()
-{
-    Add-Table 'Migrations' -Column {
-        Int 'Example' -NotNull
+        Add-CheckConstraint 'Migrations' 'CK_Migrations_Example' 'Example > 0'
     }
 
-    Add-Row 'Migrations' @( @{ Example = -1 } )
-
-    # Will fail without NOCHECK constraint
-    Add-CheckConstraint 'Migrations' 'CK_Migrations_Example' 'Example > 0' -NoCheck
-}
-
-function Pop-Migration()
-{
-    Remove-Table 'Migrations'
-}
+    function Pop-Migration()
+    {
+        Remove-Table 'Migrations'
+    }
 '@ | New-TestMigration -Name 'AddCheckConstraint'
 
-    Invoke-RTRivet -Push 'AddCheckConstraint'
+        Invoke-RTRivet -Push 'AddCheckConstraint'
+        Assert-CheckConstraint 'CK_Migrations_Example' -Definition '([Example]>(0))'
+    }
 
-    $row = Get-Row -SchemaName 'dbo' -TableName 'Migrations'
-    Assert-Equal -1 $row.Example
+    It 'should add check constraint with no replication' {
+        @'
+    function Push-Migration()
+    {
+        Add-Table 'Migrations' -Column {
+            Int 'Example' -NotNull
+        }
 
-    Assert-CheckConstraint 'CK_Migrations_Example' -Definition '([Example]>(0))'
+        Add-CheckConstraint 'Migrations' 'CK_Migrations_Example' 'Example > 0' -NotForReplication
+    }
+
+    function Pop-Migration()
+    {
+        Remove-Table 'Migrations'
+    }
+'@ | New-TestMigration -Name 'AddCheckConstraint'
+
+        Invoke-RTRivet -Push 'AddCheckConstraint'
+        Assert-CheckConstraint 'CK_Migrations_Example' -NotForReplication -Definition '([Example]>(0))'
+    }
+
+    It 'should add check constraint with no check' {
+        @'
+    function Push-Migration()
+    {
+        Add-Table 'Migrations' -Column {
+            Int 'Example' -NotNull
+        }
+
+        Add-Row 'Migrations' @( @{ Example = -1 } )
+
+        # Will fail without NOCHECK constraint
+        Add-CheckConstraint 'Migrations' 'CK_Migrations_Example' 'Example > 0' -NoCheck
+    }
+
+    function Pop-Migration()
+    {
+        Remove-Table 'Migrations'
+    }
+'@ | New-TestMigration -Name 'AddCheckConstraint'
+
+        Invoke-RTRivet -Push 'AddCheckConstraint'
+
+        $row = Get-Row -SchemaName 'dbo' -TableName 'Migrations'
+        $row.Example | Should -Be -1
+
+        Assert-CheckConstraint 'CK_Migrations_Example' -Definition '([Example]>(0))'
+    }
 }

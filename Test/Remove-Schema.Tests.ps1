@@ -1,39 +1,46 @@
 
-& (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
-$floog = ''
+#Requires -Version 5.1
+Set-StrictMode -Version 'Latest'
 
-function Start-Test
-{
-    Start-RivetTest
-    $floog = 'blarg'
+BeforeAll {
+    Set-StrictMode -Version 'Latest'
+
+    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
+
+    $script:floog = ''
 }
 
-function Stop-Test
-{
-    Stop-RivetTest
-}
+Describe 'Remove-Schema' {
+    BeforeEach {
+        Start-RivetTest
+        $script:floog = 'blarg'
+    }
 
-function Test-ShouldRemoveSchema
-{
-    @'
-function Push-Migration()
-{
-    Add-Schema -Name 'rivetaddremoveschema'
-}
+    AfterEach {
+        Stop-RivetTest
+    }
 
-function Pop-Migration()
-{
-    Remove-Schema -Name 'rivetaddremoveschema'
-}
+    It 'should remove schema' {
+        @'
+    function Push-Migration()
+    {
+        Add-Schema -Name 'rivetaddremoveschema'
+    }
+
+    function Pop-Migration()
+    {
+        Remove-Schema -Name 'rivetaddremoveschema'
+    }
 '@ | New-TestMigration -Name 'AddSchema'
 
-    Assert-False (Test-Schema 'rivetaddremoveschema')
+        (Test-Schema 'rivetaddremoveschema') | Should -BeFalse
 
-    Invoke-RTRivet -Push 'AddSchema'
+        Invoke-RTRivet -Push 'AddSchema'
 
-    Assert-True (Test-Schema -Name 'rivetaddremoveschema')
+        (Test-Schema -Name 'rivetaddremoveschema') | Should -BeTrue
 
-    Invoke-RTRivet -Pop -Name 'AddSchema'
+        Invoke-RTRivet -Pop -Name 'AddSchema'
 
-    Assert-False (Test-Schema 'AddSchema')
+        (Test-Schema 'AddSchema') | Should -BeFalse
+    }
 }

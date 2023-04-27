@@ -1,104 +1,107 @@
 
-& (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
+#Requires -Version 5.1
+Set-StrictMode -Version 'Latest'
 
-function Start-Test
-{
-    Start-RivetTest
+BeforeAll {
+    Set-StrictMode -Version 'Latest'
+
+    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
 }
 
-function Stop-Test
-{
-    Stop-RivetTest
-}
+Describe 'Add-UniqueIdentifierColumn' {
+    BeforeEach {
+        Start-RivetTest
+    }
 
-function Test-ShouldCreateUniqueIdentifierColumn
-{
-    @'
-function Push-Migration
-{
-    Add-Table -Name 'Foobar' -Column {
-        UniqueIdentifier 'id'
-    } -Option 'data_compression = none'
-}
+    AfterEach {
+        Stop-RivetTest
+    }
 
-function Pop-Migration
-{
-    Remove-Table 'Foobar'
-}
+    It 'should create unique identifier column' {
+        @'
+    function Push-Migration
+    {
+        Add-Table -Name 'Foobar' -Column {
+            UniqueIdentifier 'id'
+        } -Option 'data_compression = none'
+    }
+
+    function Pop-Migration
+    {
+        Remove-Table 'Foobar'
+    }
 
 '@ | New-TestMigration -Name 'CreateUniqueIdentifierColumn'
 
-    Invoke-RTRivet -Push 'CreateUniqueIdentifierColumn'
-    
-    Assert-Table 'Foobar'
-    Assert-Column -Name 'id' -DataType 'UniqueIdentifier' -TableName 'Foobar'
-}
+        Invoke-RTRivet -Push 'CreateUniqueIdentifierColumn'
 
-function Test-ShouldCreateUniqueIdentifierColumnWithSparse
-{
-    @'
-function Push-Migration
-{
-    Add-Table -Name 'Foobar' -Column {
-        UniqueIdentifier 'id' -Sparse
+        Assert-Table 'Foobar'
+        Assert-Column -Name 'id' -DataType 'UniqueIdentifier' -TableName 'Foobar'
     }
-}
 
-function Pop-Migration
-{
-    Remove-Table 'Foobar'
-}
+    It 'should create unique identifier column with sparse' {
+        @'
+    function Push-Migration
+    {
+        Add-Table -Name 'Foobar' -Column {
+            UniqueIdentifier 'id' -Sparse
+        }
+    }
+
+    function Pop-Migration
+    {
+        Remove-Table 'Foobar'
+    }
 
 '@ | New-TestMigration -Name 'CreateUniqueIdentifierColumnWithSparse'
 
-    Invoke-RTRivet -Push 'CreateUniqueIdentifierColumnWithSparse'
-    
-    Assert-Table 'Foobar'
-    Assert-Column -Name 'id' -DataType 'UniqueIdentifier' -TableName 'Foobar' -Sparse
-}
+        Invoke-RTRivet -Push 'CreateUniqueIdentifierColumnWithSparse'
 
-function Test-ShouldCreateUniqueIdentifierColumnWithNotNull
-{
-    @'
-function Push-Migration
-{
-    Add-Table -Name 'Foobar' -Column {
-        UniqueIdentifier 'id' -NotNull
+        Assert-Table 'Foobar'
+        Assert-Column -Name 'id' -DataType 'UniqueIdentifier' -TableName 'Foobar' -Sparse
     }
-}
 
-function Pop-Migration
-{
-    Remove-Table 'Foobar'
-}
+    It 'should create unique identifier column with not null' {
+        @'
+    function Push-Migration
+    {
+        Add-Table -Name 'Foobar' -Column {
+            UniqueIdentifier 'id' -NotNull
+        }
+    }
+
+    function Pop-Migration
+    {
+        Remove-Table 'Foobar'
+    }
 
 '@ | New-TestMigration -Name 'CreateUniqueIdentifierColumnWithNotNull'
 
-    Invoke-RTRivet -Push 'CreateUniqueIdentifierColumnWithNotNull'
-    
-    Assert-Table 'Foobar'
-    Assert-Column -Name 'id' -DataType 'UniqueIdentifier' -TableName 'Foobar' -NotNull
-}
+        Invoke-RTRivet -Push 'CreateUniqueIdentifierColumnWithNotNull'
 
-function Test-ShouldCreateUniqueIdentifierRowGuidCol
-{
-    @'
-function Push-Migration
-{
-    Add-Table -Name 'Foobar' -Column {
-        UniqueIdentifier 'id' -NotNull -RowGuidCol
+        Assert-Table 'Foobar'
+        Assert-Column -Name 'id' -DataType 'UniqueIdentifier' -TableName 'Foobar' -NotNull
     }
-}
 
-function Pop-Migration
-{
-    Remove-Table 'Foobar'
-}
+    It 'should create unique identifier row guid col' {
+        @'
+    function Push-Migration
+    {
+        Add-Table -Name 'Foobar' -Column {
+            UniqueIdentifier 'id' -NotNull -RowGuidCol
+        }
+    }
+
+    function Pop-Migration
+    {
+        Remove-Table 'Foobar'
+    }
 
 '@ | New-TestMigration -Name 'CreateUniqueIdentifierRowGuidCol'
 
-    Invoke-RTRivet -Push 'CreateUniqueIdentifierRowGuidCol'
-    
-    Assert-Table 'Foobar'
-    Assert-Column -Name 'id' -DataType 'UniqueIdentifier' -TableName 'Foobar' -NotNull -RowGuidCol
+        Invoke-RTRivet -Push 'CreateUniqueIdentifierRowGuidCol'
+
+        Assert-Table 'Foobar'
+        Assert-Column -Name 'id' -DataType 'UniqueIdentifier' -TableName 'Foobar' -NotNull -RowGuidCol
+    }
 }

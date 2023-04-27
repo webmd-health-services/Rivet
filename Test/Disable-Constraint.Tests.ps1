@@ -1,41 +1,47 @@
 
-& (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
+#Requires -Version 5.1
+Set-StrictMode -Version 'Latest'
 
-function Start-Test
-{
-    Start-RivetTest
+BeforeAll {
+    Set-StrictMode -Version 'Latest'
+
+    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
 }
 
-function Stop-Test
-{
-    Stop-RivetTest
-}
-
-function Test-ShouldDisableCheckConstraint
-{
-    @'
-function Push-Migration()
-{
-    Add-Table 'Migrations' -Column {
-        Int 'Example' -NotNull
+Describe 'Disable-Constraint' {
+    BeforeEach {
+        Start-RivetTest
     }
 
-    Add-CheckConstraint 'Migrations' 'CK_Migrations_Example' 'Example > 0'
-    Disable-Constraint 'Migrations' 'CK_Migrations_Example'
+    AfterEach {
+        Stop-RivetTest
+    }
 
-    # Will fail if Check Constraint is enabled
-    Add-Row 'Migrations' @( @{ Example = -1 } )
-}
+    It 'should disable check constraint' {
+        @'
+    function Push-Migration()
+    {
+        Add-Table 'Migrations' -Column {
+            Int 'Example' -NotNull
+        }
 
-function Pop-Migration()
-{
-    Remove-Table 'Migrations'
-}
+        Add-CheckConstraint 'Migrations' 'CK_Migrations_Example' 'Example > 0'
+        Disable-Constraint 'Migrations' 'CK_Migrations_Example'
+
+        # Will fail if Check Constraint is enabled
+        Add-Row 'Migrations' @( @{ Example = -1 } )
+    }
+
+    function Pop-Migration()
+    {
+        Remove-Table 'Migrations'
+    }
 '@ | New-TestMigration -Name 'DisabledCheckConstraint'
 
-    Invoke-RTRivet -Push 'DisabledCheckConstraint'
-    Assert-CheckConstraint 'CK_Migrations_Example' -Definition '([Example]>(0))' -IsDisabled
+        Invoke-RTRivet -Push 'DisabledCheckConstraint'
+        Assert-CheckConstraint 'CK_Migrations_Example' -Definition '([Example]>(0))' -IsDisabled
 
-    $row = Get-Row -SchemaName 'dbo' -TableName 'Migrations'
-    Assert-Equal -1 $row.Example
+        $row = Get-Row -SchemaName 'dbo' -TableName 'Migrations'
+        $row.Example | Should -Be -1
+    }
 }

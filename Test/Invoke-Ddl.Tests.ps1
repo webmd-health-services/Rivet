@@ -1,130 +1,134 @@
 
-& (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
+#Requires -Version 5.1
+Set-StrictMode -Version 'Latest'
 
-function Start-Test
-{
-    Start-RivetTest
+BeforeAll {
+    Set-StrictMode -Version 'Latest'
+
+    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
 }
 
-function Stop-Test
-{
-    Stop-RivetTest
-}
+Describe 'Invoke-Ddl' {
+    BeforeEach {
+        Start-RivetTest
+    }
 
-function Test-ShouldInvokeDdl
-{
-    @"
-function Push-Migration
-{
-    Invoke-Ddl @'
-create function [InvokeDdl] ()
-returns int 
-begin
- return 1 
-end
+    AfterEach {
+        Stop-RivetTest
+    }
 
-GO
+    It 'should invoke ddl' {
+        @"
+    function Push-Migration
+    {
+        Invoke-Ddl @'
+    create function [InvokeDdl] ()
+    returns int
+    begin
+     return 1
+    end
 
-drop function [InvokeDdl]
+    GO
+
+    drop function [InvokeDdl]
 
 '@
 
-    Add-Schema 'Invoke-Ddl'
-}
+        Add-Schema 'Invoke-Ddl'
+    }
 
-function Pop-Migration
-{
-    Remove-Schema 'Invoke-Ddl'
-}
+    function Pop-Migration
+    {
+        Remove-Schema 'Invoke-Ddl'
+    }
 
 "@ | New-TestMigration -Name 'CreateInvokeDdlFunction'
 
-    Invoke-RTRivet -Push 'CreateInvokeDdlFunction'
+        Invoke-RTRivet -Push 'CreateInvokeDdlFunction'
 
-    Assert-True (Test-Schema 'Invoke-Ddl')
-}
+        (Test-Schema 'Invoke-Ddl') | Should -BeTrue
+    }
 
-function Test-ShouldInvokeDdlWithCommentedOutGO
-{
-    @"
-function Push-Migration
-{
-    Invoke-Ddl @'
-create function [InvokeDdl] ()
-returns int 
-begin
- return 1 
-end
+    It 'should invoke ddl with commented out g o' {
+        @"
+    function Push-Migration
+    {
+        Invoke-Ddl @'
+    create function [InvokeDdl] ()
+    returns int
+    begin
+     return 1
+    end
 
-/*
-GO
-*/
+    /*
+    GO
+    */
 
-drop function [InvokeDdl]
+    drop function [InvokeDdl]
 
 '@
 
-    Add-Schema 'Invoke-Ddl'
-}
+        Add-Schema 'Invoke-Ddl'
+    }
 
-function Pop-Migration
-{
-    Remove-Schema 'Invoke-Ddl'
-}
+    function Pop-Migration
+    {
+        Remove-Schema 'Invoke-Ddl'
+    }
 
 "@ | New-TestMigration -Name 'CreateInvokeDdlFunction'
 
-    Invoke-RTRivet -Push 'CreateInvokeDdlFunction' -ErrorAction SilentlyContinue
-    Assert-Error
+        Invoke-RTRivet -Push 'CreateInvokeDdlFunction' -ErrorAction SilentlyContinue
+        $Global:Error.Count | Should -BeGreaterThan 0
 
-    Assert-False (Test-DatabaseObject -ScalarFunction -Name 'InvokeDdl')
-    Assert-False (Test-Schema 'Invoke-Ddl')
-}
+        (Test-DatabaseObject -ScalarFunction -Name 'InvokeDdl') | Should -BeFalse
+        (Test-Schema 'Invoke-Ddl') | Should -BeFalse
+    }
 
-function Test-ShouldInvokeCrazyQueries
-{
-    @"
-function Push-Migration
-{
-    Invoke-Ddl @'
-IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[RivetTestSproc]') AND type in (N'P', N'PC'))
-	drop procedure [dbo].[RivetTestSproc]
-go
+    It 'should invoke crazy queries' {
+        @"
+    function Push-Migration
+    {
+        Invoke-Ddl @'
+    IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[RivetTestSproc]') AND type in (N'P', N'PC'))
+    	drop procedure [dbo].[RivetTestSproc]
+    go
 
-/*
-Nested 
-	/* comment 
-	*/
-with a go
-go
-*/
+    /*
+    Nested
+    	/* comment
+    	*/
+    with a go
+    go
+    */
 
---superfluous GO statements
-	go
-    go        
-	
-go -- comment
-go-- really friendly comment
---go
+    --superfluous GO statements
+    	go
+        go
 
-CREATE PROCEDURE RivetTestSproc
-AS
-BEGIN
-	select GETDATE()
-END
+    go -- comment
+    go-- really friendly comment
+    --go
 
-GO
+    CREATE PROCEDURE RivetTestSproc
+    AS
+    BEGIN
+    	select GETDATE()
+    END
+
+    GO
 '@
-}
+    }
 
-function Pop-Migration
-{
-    Remove-StoredProcedure 'RivetTestSproc'
-}
+    function Pop-Migration
+    {
+        Remove-StoredProcedure 'RivetTestSproc'
+    }
 
 "@ | New-TestMigration -Name 'CreateInvokeDdlFunction'
 
-    Invoke-RTRivet -Push 'CreateInvokeDdlFunction' #-ErrorAction SilentlyContinue
+        Invoke-RTRivet -Push 'CreateInvokeDdlFunction' #-ErrorAction SilentlyContinue
 
-    Assert-True (Test-DatabaseObject -StoredProcedure -Name 'RivetTestSproc')
+        (Test-DatabaseObject -StoredProcedure -Name 'RivetTestSproc') | Should -BeTrue
+    }
 }

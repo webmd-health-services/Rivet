@@ -1,164 +1,168 @@
 
-& (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
+#Requires -Version 5.1
+Set-StrictMode -Version 'Latest'
 
-function Start-Test
-{
-    Start-RivetTest
+BeforeAll {
+    Set-StrictMode -Version 'Latest'
+
+    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
 }
 
-function Stop-Test
-{
-    Stop-RivetTest
-}
+Describe 'Remove-Row' {
+    BeforeEach {
+        Start-RivetTest
+    }
 
-function Test-ShouldRemoveSpecificRows
-{
-    @'
-function Push-Migration
-{
-    Add-Table -Name 'Cities' -Column {
-        VarChar 'City' -Max -NotNull
-        VarChar 'State' -Max -NotNull
-        Int 'Population' -NotNull
-    } -Option 'data_compression = none'
+    AfterEach {
+        Stop-RivetTest
+    }
 
-    $Top8USCities = @(  
-                        @{City = 'New York'; State = 'New York'; Population = 8336697}, 
-                        @{City = 'Los Angeles'; State = 'California'; Population = 3857799},
-                        @{City = 'Chicago'; State = 'Illnois'; Population = 2714856},
-                        @{City = 'Houston'; State = 'Texas'; Population = 2160821},
-                        @{City = 'Philadelphia'; State = 'Pennsylvania'; Population = 1547607},
-                        @{City = 'Phoenix'; State = 'Arizona'; Population = 1488750},
-                        @{City = 'San Antonio'; State = 'Texas'; Population = 1382951},
-                        @{City = 'San Diego'; State = 'California'; Population = 1338348} 
-                     )
-    
-    Add-Row -SchemaName 'dbo' -TableName 'Cities' -Column $Top8USCities
+    It 'should remove specific rows' {
+        @'
+    function Push-Migration
+    {
+        Add-Table -Name 'Cities' -Column {
+            VarChar 'City' -Max -NotNull
+            VarChar 'State' -Max -NotNull
+            Int 'Population' -NotNull
+        } -Option 'data_compression = none'
 
-    #Should delete Houston, San Antonio and Phoenix
-    Remove-Row -SchemaName 'dbo' -TableName 'Cities' -Where "State='Texas' or Population=1488750"
+        $Top8USCities = @(
+                            @{City = 'New York'; State = 'New York'; Population = 8336697},
+                            @{City = 'Los Angeles'; State = 'California'; Population = 3857799},
+                            @{City = 'Chicago'; State = 'Illnois'; Population = 2714856},
+                            @{City = 'Houston'; State = 'Texas'; Population = 2160821},
+                            @{City = 'Philadelphia'; State = 'Pennsylvania'; Population = 1547607},
+                            @{City = 'Phoenix'; State = 'Arizona'; Population = 1488750},
+                            @{City = 'San Antonio'; State = 'Texas'; Population = 1382951},
+                            @{City = 'San Diego'; State = 'California'; Population = 1338348}
+                         )
 
-}
+        Add-Row -SchemaName 'dbo' -TableName 'Cities' -Column $Top8USCities
 
-function Pop-Migration
-{
-    Remove-Table 'Cities'
-}
+        #Should delete Houston, San Antonio and Phoenix
+        Remove-Row -SchemaName 'dbo' -TableName 'Cities' -Where "State='Texas' or Population=1488750"
+
+    }
+
+    function Pop-Migration
+    {
+        Remove-Table 'Cities'
+    }
 
 '@ | New-TestMigration -Name 'RemoveSpecificRows'
 
-    Invoke-RTRivet -Push 'RemoveSpecificRows'
+        Invoke-RTRivet -Push 'RemoveSpecificRows'
 
-    Assert-Table 'Cities'
-    Assert-Column -TableName 'Cities' -Name 'City' -DataType 'VarChar' -NotNull
-    Assert-Column -TableName 'Cities' -Name 'State' -DataType 'VarChar' -NotNull
-    Assert-Column -TableName 'Cities' -Name 'Population' -DataType 'Int' -NotNull
+        Assert-Table 'Cities'
+        Assert-Column -TableName 'Cities' -Name 'City' -DataType 'VarChar' -NotNull
+        Assert-Column -TableName 'Cities' -Name 'State' -DataType 'VarChar' -NotNull
+        Assert-Column -TableName 'Cities' -Name 'Population' -DataType 'Int' -NotNull
 
-    $rows = @(Get-Row -SchemaName 'dbo' -TableName 'Cities')
-    Assert-Equal 5 $rows.count
+        $rows = @(Get-Row -SchemaName 'dbo' -TableName 'Cities')
+        $rows.count | Should -Be 5
 
-    Assert-False $rows.State.Contains("Texas")
-    Assert-True $rows.State.Contains("California")
-    Assert-False $rows.City.Contains("Houston")
-    Assert-False $rows.City.Contains("San Antonio")
-    Assert-True $rows.City.Contains("Los Angeles")
-    Assert-False $rows.City.Contains("Phoenix")
+        $rows.State.Contains("Texas") | Should -BeFalse
+        $rows.State.Contains("California") | Should -BeTrue
+        $rows.City.Contains("Houston") | Should -BeFalse
+        $rows.City.Contains("San Antonio") | Should -BeFalse
+        $rows.City.Contains("Los Angeles") | Should -BeTrue
+        $rows.City.Contains("Phoenix") | Should -BeFalse
 
-}
+    }
 
-function Test-ShouldRemoveAllRows
-{
-    @'
-function Push-Migration
-{
-    Add-Table -Name 'Cities' -Column {
-        VarChar 'City' -Max -NotNull
-        VarChar 'State' -Max -NotNull
-        Int 'Population' -NotNull
-    } -Option 'data_compression = none'
+    It 'should remove all rows' {
+        @'
+    function Push-Migration
+    {
+        Add-Table -Name 'Cities' -Column {
+            VarChar 'City' -Max -NotNull
+            VarChar 'State' -Max -NotNull
+            Int 'Population' -NotNull
+        } -Option 'data_compression = none'
 
-    $Top8USCities = @(  
-                        @{City = 'New York'; State = 'New York'; Population = 8336697}, 
-                        @{City = 'Los Angeles'; State = 'California'; Population = 3857799},
-                        @{City = 'Chicago'; State = 'Illnois'; Population = 2714856},
-                        @{City = 'Houston'; State = 'Texas'; Population = 2160821},
-                        @{City = 'Philadelphia'; State = 'Pennsylvania'; Population = 1547607},
-                        @{City = 'Phoenix'; State = 'Arizona'; Population = 1488750},
-                        @{City = 'San Antonio'; State = 'Texas'; Population = 1382951},
-                        @{City = 'San Diego'; State = 'California'; Population = 1338348} 
-                     )
-    
-    Add-Row -SchemaName 'dbo' -TableName 'Cities' -Column $Top8USCities
+        $Top8USCities = @(
+                            @{City = 'New York'; State = 'New York'; Population = 8336697},
+                            @{City = 'Los Angeles'; State = 'California'; Population = 3857799},
+                            @{City = 'Chicago'; State = 'Illnois'; Population = 2714856},
+                            @{City = 'Houston'; State = 'Texas'; Population = 2160821},
+                            @{City = 'Philadelphia'; State = 'Pennsylvania'; Population = 1547607},
+                            @{City = 'Phoenix'; State = 'Arizona'; Population = 1488750},
+                            @{City = 'San Antonio'; State = 'Texas'; Population = 1382951},
+                            @{City = 'San Diego'; State = 'California'; Population = 1338348}
+                         )
 
-    Remove-Row -SchemaName 'dbo' -TableName 'Cities' -All
+        Add-Row -SchemaName 'dbo' -TableName 'Cities' -Column $Top8USCities
 
-}
+        Remove-Row -SchemaName 'dbo' -TableName 'Cities' -All
 
-function Pop-Migration
-{
-    Remove-Table 'Cities'
-}
+    }
+
+    function Pop-Migration
+    {
+        Remove-Table 'Cities'
+    }
 
 '@ | New-TestMigration -Name 'RemoveAllRows'
 
-    Invoke-RTRivet -Push 'RemoveAllRows'
+        Invoke-RTRivet -Push 'RemoveAllRows'
 
-    Assert-Table 'Cities'
-    Assert-Column -TableName 'Cities' -Name 'City' -DataType 'VarChar' -NotNull
-    Assert-Column -TableName 'Cities' -Name 'State' -DataType 'VarChar' -NotNull
-    Assert-Column -TableName 'Cities' -Name 'Population' -DataType 'Int' -NotNull
+        Assert-Table 'Cities'
+        Assert-Column -TableName 'Cities' -Name 'City' -DataType 'VarChar' -NotNull
+        Assert-Column -TableName 'Cities' -Name 'State' -DataType 'VarChar' -NotNull
+        Assert-Column -TableName 'Cities' -Name 'Population' -DataType 'Int' -NotNull
 
-    $rows = @(Get-Row -SchemaName 'dbo' -TableName 'Cities')
+        $rows = @(Get-Row -SchemaName 'dbo' -TableName 'Cities')
 
-    Assert-Equal 0 $rows.count
+        $rows.count | Should -Be 0
 
-}
+    }
 
-function Test-ShouldRemoveAllRowsWithTruncate
-{
-    @'
-function Push-Migration
-{
-    Add-Table -Name 'Cities' -Column {
-        VarChar 'City' -Max -NotNull
-        VarChar 'State' -Max -NotNull
-        Int 'Population' -NotNull
-    } -Option 'data_compression = none'
+    It 'should remove all rows with truncate' {
+        @'
+    function Push-Migration
+    {
+        Add-Table -Name 'Cities' -Column {
+            VarChar 'City' -Max -NotNull
+            VarChar 'State' -Max -NotNull
+            Int 'Population' -NotNull
+        } -Option 'data_compression = none'
 
-    $Top8USCities = @(  
-                        @{City = 'New York'; State = 'New York'; Population = 8336697}, 
-                        @{City = 'Los Angeles'; State = 'California'; Population = 3857799},
-                        @{City = 'Chicago'; State = 'Illnois'; Population = 2714856},
-                        @{City = 'Houston'; State = 'Texas'; Population = 2160821},
-                        @{City = 'Philadelphia'; State = 'Pennsylvania'; Population = 1547607},
-                        @{City = 'Phoenix'; State = 'Arizona'; Population = 1488750},
-                        @{City = 'San Antonio'; State = 'Texas'; Population = 1382951},
-                        @{City = 'San Diego'; State = 'California'; Population = 1338348} 
-                     )
-    
-    Add-Row -SchemaName 'dbo' -TableName 'Cities' -Column $Top8USCities
+        $Top8USCities = @(
+                            @{City = 'New York'; State = 'New York'; Population = 8336697},
+                            @{City = 'Los Angeles'; State = 'California'; Population = 3857799},
+                            @{City = 'Chicago'; State = 'Illnois'; Population = 2714856},
+                            @{City = 'Houston'; State = 'Texas'; Population = 2160821},
+                            @{City = 'Philadelphia'; State = 'Pennsylvania'; Population = 1547607},
+                            @{City = 'Phoenix'; State = 'Arizona'; Population = 1488750},
+                            @{City = 'San Antonio'; State = 'Texas'; Population = 1382951},
+                            @{City = 'San Diego'; State = 'California'; Population = 1338348}
+                         )
 
-    Remove-Row -SchemaName 'dbo' -TableName 'Cities' -All -Truncate
+        Add-Row -SchemaName 'dbo' -TableName 'Cities' -Column $Top8USCities
 
-}
+        Remove-Row -SchemaName 'dbo' -TableName 'Cities' -All -Truncate
 
-function Pop-Migration
-{
-    Remove-Table 'Cities'
-}
+    }
+
+    function Pop-Migration
+    {
+        Remove-Table 'Cities'
+    }
 
 '@ | New-TestMigration -Name 'RemoveAllRowsWithTruncate'
 
-    Invoke-RTRivet -Push 'RemoveAllRowsWithTruncate'
+        Invoke-RTRivet -Push 'RemoveAllRowsWithTruncate'
 
-    Assert-Table 'Cities'
-    Assert-Column -TableName 'Cities' -Name 'City' -DataType 'VarChar' -NotNull
-    Assert-Column -TableName 'Cities' -Name 'State' -DataType 'VarChar' -NotNull
-    Assert-Column -TableName 'Cities' -Name 'Population' -DataType 'Int' -NotNull
+        Assert-Table 'Cities'
+        Assert-Column -TableName 'Cities' -Name 'City' -DataType 'VarChar' -NotNull
+        Assert-Column -TableName 'Cities' -Name 'State' -DataType 'VarChar' -NotNull
+        Assert-Column -TableName 'Cities' -Name 'Population' -DataType 'Int' -NotNull
 
-    $rows = @(Get-Row -SchemaName 'dbo' -TableName 'Cities')
+        $rows = @(Get-Row -SchemaName 'dbo' -TableName 'Cities')
 
-    Assert-Equal 0 $rows.count
+        $rows.count | Should -Be 0
+
+    }
 
 }
-
