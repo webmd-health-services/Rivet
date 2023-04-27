@@ -163,10 +163,6 @@ Build:
             - "*\\Test\\varchar.Tests.ps1"
             - "*\\Test\\xml.Tests.ps1"
 
-- PowerShell:
-    OnlyDuring: Build
-    Path: test.ps1
-
 # Build runs twice on some servers, so delete any ZIP file created by another build.
 - Delete:
     Path: .output\*.zip
