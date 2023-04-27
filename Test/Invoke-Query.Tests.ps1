@@ -2,10 +2,13 @@
 #Requires -Version 4
 Set-StrictMode -Version 'Latest'
 
-& (Join-Path -Path $PSScriptRoot -ChildPath 'Initialize-Test.ps1' -Resolve)
+BeforeAll {
+    Set-StrictMode -Version 'Latest'
+    & (Join-Path -Path $PSScriptRoot -ChildPath 'Initialize-Test.ps1' -Resolve)
+}
 
-Describe 'Invoke-Query.when passing command timeout' {
-    It ('should fail') {
+Describe 'Invoke-Query' {
+    It 'can customize command timeout' {
         New-Database $RTDatabaseName
         $failed = $false
         try

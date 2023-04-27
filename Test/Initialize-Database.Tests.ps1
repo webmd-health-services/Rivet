@@ -1,37 +1,39 @@
 
-& (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
+#Requires -Version 5.1
+Set-StrictMode -Version 'Latest'
 
-function Init
-{
-    Start-RivetTest
-    Remove-RivetTestDatabase
+BeforeAll {
+    Set-StrictMode -Version 'Latest'
+    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
+}
 
-    @'
-    function Push-Migration
-    {
-        Add-Schema 'initialize'
-    }
-    
-    function Pop-Migration
-    {
-        Remove-Schema 'initialize'
-    }
+Describe 'Initialize-Database' {
+    BeforeEach {
+        Start-RivetTest
+        Remove-RivetTestDatabase
+
+        @'
+        function Push-Migration
+        {
+            Add-Schema 'initialize'
+        }
+
+        function Pop-Migration
+        {
+            Remove-Schema 'initialize'
+        }
 '@ | New-TestMigration -Name 'First'
-}
+    }
 
-function Reset
-{
-    Stop-RivetTest
-}
+    Reset {
+        Stop-RivetTest
+    }
 
-Describe 'Initialize-Database.when first run against a database' {
-    BeforeEach { Init }
-    AfterEach { Reset }
-    It 'should create rivet objects in database' {
+    It 'creates Rivet objects in database' {
         Invoke-RTRivet -Push | Format-Table | Out-String | Write-Verbose
-        
+
         $Global:Error | Should -BeNullOrEmpty
-    
+
         # Migration #1
         (Test-Database) | Should -BeTrue
         (Test-Schema -Name 'rivet') | Should -BeTrue
@@ -39,7 +41,7 @@ Describe 'Initialize-Database.when first run against a database' {
         (Test-Table -Name 'Activity' -SchemaName 'rivet') | Should -BeTrue
         (Test-StoredProcedure -SchemaName 'rivet' -Name 'InsertMigration') | Should -BeTrue
         (Test-StoredProcedure -SchemaName 'rivet' -Name 'RemoveMigration') | Should -BeTrue
-    
+
         # Migration #2 and #3
         Assert-Column -TableName 'Migrations' -SchemaName 'rivet' -Name 'Name' -DataType 'nvarchar' -Size 241 -NotNull
         Assert-Column -TableName 'Activity' -SchemaName 'rivet' -Name 'Name' -DataType 'nvarchar' -Size 241 -NotNull
@@ -51,9 +53,9 @@ Describe 'Initialize-Database.when first run against a database' {
             join sys.types t on p.user_type_id = t.user_type_id
             where s.name = '{0}' and sp.name in ('InsertMigration','RemoveMigration') and p.name in ('@Name','@Who','@ComputerName')
 '@ -f $RTRivetSchemaName
-    
+
         Write-Verbose $query
-    
+
         $rows = Invoke-RivetTestQuery -Query $query
         foreach( $row in $rows )
         {
@@ -63,15 +65,11 @@ Describe 'Initialize-Database.when first run against a database' {
                 # Parameters are nvarchar, so each character is two bytes.
                 $row.max_length | Should -Be (241 * 2)
             }
-    
+
         }
     }
-}
 
-Describe 'Initialize-Database.when migrating a database that was migrated with Rivet''s previous name' {
-    BeforeEach { Init }
-    AfterEach { Reset }
-    It 'should rename pstep schema to rivet' {
+    It 'renames pstep objects to rivet' {
         $oldSchemaName = 'pstep'
         $rivetSchemaName = 'rivet'
         Invoke-RTRivet -Push
@@ -100,32 +98,28 @@ Describe 'Initialize-Database.when migrating a database that was migrated with R
         Invoke-RTRivet -Push
         $Global:Error | Should -BeNullOrEmpty
         Measure-Migration | Should -HaveCount $expectedCount
-    
+
         (Test-Table -Name 'Migrations' -SchemaName $RivetSchemaName) | Should -BeTrue
         (Test-Table -Name 'Migrations' -SchemaName $oldSchemaName) | Should -BeFalse
         (Test-Schema -Name $RivetSchemaName) | Should -BeTrue
         (Test-Schema -Name $oldSchemaName) | Should -BeFalse
     }
-}
 
-Describe 'Initialize-Database.when a database was initialized with an early version of Rivet' {
-    BeforeEach { Init }
-    AfterEach { Reset }
-    It 'should change at utc to datetime2' {
+    It 'changes AtUtc column to datetime2' {
         Invoke-RTRivet -Push
         $Global:Error | Should -BeNullOrEmpty
-    
+
         $rivetSchemaName = 'rivet'
         $migrationsTableName = 'Migrations'
-    
-        $assertColumnParams = @{ 
-                                    TableName = $migrationsTableName ; 
-                                    SchemaName = $rivetSchemaName ; 
+
+        $assertColumnParams = @{
+                                    TableName = $migrationsTableName ;
+                                    SchemaName = $rivetSchemaName ;
                                     Name = 'AtUtc' ;
                                     NotNull = $true ;
                                }
         Assert-Column -DataType 'datetime2' @assertColumnParams
-    
+
         $query = @'
             alter table {0}.{1} drop constraint DF_rivet_Migrations_AtUtc
             alter table {0}.{1} alter column Atutc datetime not null
@@ -134,17 +128,13 @@ Describe 'Initialize-Database.when a database was initialized with an early vers
 '@ -f $rivetSchemaName,$migrationsTableName
         Invoke-RivetTestQuery -Query $query
         Assert-Column -DataType 'datetime' @assertColumnParams
-    
+
         Invoke-RTRivet -Push
         $Global:Error | Should -BeNullOrEmpty
         Assert-Column -DataType 'datetime2' @assertColumnParams
     }
-}
 
-Describe 'Initialize-Database.when a schema.ps1 file exists' {
-    BeforeEach { Init }
-    AfterEach { Reset }
-    It 'should initialize databases with schema.ps1 file' {
+    It 'runs schemaPs1 file' {
         $schemaFileContents = @'
         function Push-Migration
         {
