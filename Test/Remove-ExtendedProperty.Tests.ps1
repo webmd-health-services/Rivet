@@ -35,10 +35,7 @@ function Pop-Migration
 
         Invoke-RTRivet -Push 'RemoveExtendedPropertyToSchema'
 
-        $expinfo = Get-ExtendedProperties
-
-        $expinfo | Should -BeNullOrEmpty
-
+        Test-MSSqlExtendedProperty -Session $RTSession -SchemaName 'fizz' | Should -BeFalse
     }
 
     It 'should remove extended property to table' {
@@ -62,10 +59,7 @@ function Pop-Migration
 
         Invoke-RTRivet -Push 'RemoveExtendedPropertyToTable'
 
-        $expinfo = Get-ExtendedProperties
-
-        $expinfo | Should -BeNullOrEmpty
-
+        Test-MSSqlExtendedProperty -Session $RTSession -TableName 'Deploy' | Should -BeFalse
     }
 
     It 'should remove extended property to view' {
@@ -86,10 +80,7 @@ function Pop-Migration
 
         Invoke-RTRivet -Push 'RemoveExtendedPropertyToView'
 
-        $expinfo = Get-ExtendedProperties
-
-        $expinfo | Should -BeNullOrEmpty
-
+        Test-MSSqlExtendedProperty -Session $RTSession -ViewName 'Foobar' | Should -BeFalse
     }
 
     It 'should remove extended property to view in custom schema' {
@@ -112,10 +103,7 @@ function Pop-Migration
 
         Invoke-RTRivet -Push 'RemoveExtendedPropertyToView'
 
-        $expinfo = Get-ExtendedProperties
-
-        $expinfo | Should -BeNullOrEmpty
-
+        Test-MSSqlExtendedProperty -Session $RTSession -SchemaName 'metric' -ViewName 'Foobar' | Should -BeFalse
     }
 
     It 'should remove extended property to table column' {
@@ -139,10 +127,7 @@ function Pop-Migration
 
         Invoke-RTRivet -Push 'RemoveExtendedPropertyToTableColumn'
 
-        $expinfo = Get-ExtendedProperties
-
-        $expinfo | Should -BeNullOrEmpty
-
+        Test-MSSqlExtendedProperty -Session $RTSession -TableName 'Foobar' -ColumnName 'ID' | Should -BeFalse
     }
 
     It 'should remove extended property to view column' {
@@ -167,8 +152,6 @@ function Pop-Migration
 
         Invoke-RTRivet -Push 'RemoveExtendedPropertyToViewColumn'
 
-        $expinfo = Get-ExtendedProperties
-
-        $expinfo | Should -BeNullOrEmpty
+        Test-MSSqlExtendedProperty -Session $RTSession -ViewName 'Foobar' -ColumnName 'ID' | Should -BeFalse
     }
 }

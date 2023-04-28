@@ -12,7 +12,8 @@ $RTConfigFilePath =
     $RTRivetSchemaName =
     $RTDatabaseName =
     $RTTestRoot =
-    $RTLastMigrationFailed = $null
+    $RTLastMigrationFailed =
+    $script:RTSession =  $null
 
 $script:RTTimestamp = 20150101000000
 
@@ -57,6 +58,7 @@ if( -not $RivetRoot )
 }
 
 $RTRivetPath = Join-Path -Path $RivetRoot -ChildPath 'rivet.ps1' -Resolve
+$RTSession = $script:RTSession = [pscustomobject]::New()
 
 
 $functionsDir = Join-Path -Path $PSScriptRoot -ChildPath 'Functions'

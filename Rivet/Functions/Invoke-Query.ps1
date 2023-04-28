@@ -137,8 +137,26 @@ function Invoke-Query
             }
             finally
             {
+                $queryLines = & {
+                    if ($cmd.Parameters.Count)
+                    {
+                        $paramFieldLength =
+                            $cmd.Parameters |
+                            Select-Object -ExpandProperty 'ParameterName' |
+                            Select-Object -ExpandProperty 'Length' |
+                            Measure-Object -Maximum |
+                            Select-Object -ExpandProperty 'Maximum'
+                        for ($idx = 0 ; $idx -lt $cmd.Parameters.Count ; ++$idx)
+                        {
+                            $param = $cmd.Parameters[$idx]
+                            $paramName = $param.ParameterName.PadRight($paramFieldLength)
+                            $paramValue = $param.Value
+                            "${paramName}  ${paramValue}" | Write-Output
+                        }
+                    }
+                    $queryBatch -split ([regex]::Escape([Environment]::NewLine))
+                }
                 $cmd.Dispose()
-                $queryLines = $queryBatch -split ([TExt.RegularExpressions.Regex]::Escape([Environment]::NewLine))
                 Write-Verbose -Message ('{0,8} (ms)   {1}' -f ([int]([DateTime]::UtcNow - $cmdStartedAt).TotalMilliseconds),($queryLines | Select-Object -First 1))
                 $queryLines | Select-Object -Skip 1 | ForEach-Object {  Write-Verbose -Message ('{0}   {1}' -f (' ' * 13),$_) }
             }

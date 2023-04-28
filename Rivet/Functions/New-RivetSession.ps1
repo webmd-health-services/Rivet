@@ -46,8 +46,15 @@ function New-RivetSession
         [String] $Environment
     )
 
+    Set-StrictMode -Version 'Latest'
+    Use-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+
     [Rivet.Configuration.Configuration]$settings =
         Get-RivetConfig -Database $Database -Path $ConfigurationPath -Environment $Environment
+    if (-not $settings)
+    {
+        return
+    }
 
     return [Rivet_Session]::New($settings)
 }

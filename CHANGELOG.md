@@ -9,11 +9,15 @@
 
 * `New-RivetSession` function for creating a Rivet session. A `Rivet_Session` is the object used by Rivet to keep track
 of current state.
+* `Connect-RivetSession` function for connecting to the databases in a Rivet session.
+* `Get-MSSqlExtendedProperty` function for getting extended property information.
+* `Test-MSSqlExtendedProperty` function for testing if an object has an extended property.
 
 ### Changed
 
 * Rivet internals no longer use global variables for managing connections and current state.
 * Default migration output now quotes SQL Server names and database names with `[]`.
+* Verbose output now shows query parameter names and values.
 
 ### Fixed
 

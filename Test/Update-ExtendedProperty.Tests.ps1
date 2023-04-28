@@ -35,12 +35,11 @@ Describe 'Update-ExtendedProperty' {
 
         Invoke-RTRivet -Push 'UpdateExtendedPropertyToSchema'
 
-        $expinfo = Get-ExtendedProperties
+        $expinfo = Get-MSSqlExtendedProperty -Session $RTSession -SchemaName 'fizz'
 
-        'Deploy' | Should -Be $expinfo[0].name
-        'FALSE' | Should -Be $expinfo[0].value
-        'SCHEMA' | Should -Be $expinfo[0].class_desc
-
+        $expinfo[0].name | Should -Be 'Deploy'
+        $expinfo[0].value | Should -Be 'FALSE'
+        $expinfo[0].objtype | Should -Be 'SCHEMA'
     }
 
     It 'should update extended property to table' {
@@ -64,11 +63,11 @@ Describe 'Update-ExtendedProperty' {
 
         Invoke-RTRivet -Push 'UpdateExtendedPropertyToTable'
 
-        $expinfo = Get-ExtendedProperties
+        $expinfo = Get-MSSqlExtendedProperty -Session $RTSession -TableName 'Foobar'
 
         $expinfo[0].name | Should -Be 'Deploy'
         $expinfo[0].value | Should -Be 'FALSE'
-        $expinfo[0].class_desc | Should -Be 'OBJECT_OR_COLUMN'
+        $expinfo[0].objtype | Should -Be 'TABLE'
 
     }
 
@@ -93,11 +92,11 @@ Describe 'Update-ExtendedProperty' {
 
         Invoke-RTRivet -Push 'UpdateExtendedPropertyToView'
 
-        $expinfo = Get-ExtendedProperties
+        $expinfo = Get-MSSqlExtendedProperty -Session $RTSession -ViewName 'Foobar'
 
         $expinfo[0].name | Should -Be 'Deploy'
         $expinfo[0].value | Should -Be 'FALSE'
-        $expinfo[0].class_desc | Should -Be 'OBJECT_OR_COLUMN'
+        $expinfo[0].objtype | Should -Be 'VIEW'
 
     }
 
@@ -122,11 +121,11 @@ Describe 'Update-ExtendedProperty' {
 
         Invoke-RTRivet -Push 'UpdateExtendedPropertyToView'
 
-        $expinfo = Get-ExtendedProperties
+        $expinfo = Get-MSSqlExtendedProperty -Session $RTSession -SchemaName 'metric' -ViewName 'Foobar'
 
         $expinfo[0].name | Should -Be 'Deploy'
         $expinfo[0].value | Should -Be 'FALSE'
-        $expinfo[0].class_desc | Should -Be 'OBJECT_OR_COLUMN'
+        $expinfo[0].objtype | Should -Be 'VIEW'
 
     }
 
@@ -152,11 +151,11 @@ Describe 'Update-ExtendedProperty' {
 
         Invoke-RTRivet -Push 'UpdateExtendedPropertyToTableColumn'
 
-        $expinfo = Get-ExtendedProperties
+        $expinfo = Get-MSSqlExtendedProperty -Session $RTSession -TableName 'Foobar' -ColumnName 'ID'
 
         $expinfo[0].name | Should -Be 'Deploy'
         $expinfo[0].value | Should -Be 'FALSE'
-        $expinfo[0].class_desc | Should -Be 'OBJECT_OR_COLUMN'
+        $expinfo[0].objtype | Should -Be 'COLUMN'
 
     }
 
@@ -185,11 +184,11 @@ Describe 'Update-ExtendedProperty' {
 
         Invoke-RTRivet -Push 'UpdateExtendedPropertyToViewColumn'
 
-        $expinfo = Get-ExtendedProperties
+        $expinfo = Get-MSSqlExtendedProperty -Session $RTSession -ViewName 'Foobar' -ColumnName 'ID'
 
         $expinfo[0].name | Should -Be 'Deploy'
         $expinfo[0].value | Should -Be 'FALSE'
-        $expinfo[0].class_desc | Should -Be 'OBJECT_OR_COLUMN'
+        $expinfo[0].objtype | Should -Be 'COLUMN'
 
     }
 
@@ -203,8 +202,8 @@ Describe 'Update-ExtendedProperty' {
             Int ID
         }
 
-        Add-ExtendedProperty 'Deploy' 'Goodbye!' -TableName 'Foobar' -ColumnName 'ID'
-        Update-ExtendedProperty 'Deploy' $null -TableName 'Foobar' -ColumnName 'ID'
+        Add-ExtendedProperty 'Deploy' 'Goodbye!' -TableName 'Foobar'
+        Update-ExtendedProperty 'Deploy' $null -TableName 'Foobar'
     }
 
     function Pop-Migration
@@ -216,7 +215,7 @@ Describe 'Update-ExtendedProperty' {
 
         Invoke-RTRivet -Push 'AllowNullPropertyValue'
 
-        $expinfo = Get-ExtendedProperties
+        $expinfo = Get-MSSqlExtendedProperty -Session $RTSession -TableName 'Foobar'
 
         $expInfo[0].value | Should -BeNullOrEmpty
     }
@@ -230,8 +229,8 @@ Describe 'Update-ExtendedProperty' {
             Int ID
         }
 
-        Add-ExtendedProperty 'Deploy' 'Goodbye!' -TableName 'Foobar' -ColumnName 'ID'
-        Update-ExtendedProperty 'Deploy' '' -TableName 'Foobar' -ColumnName 'ID'
+        Add-ExtendedProperty 'Deploy' 'Goodbye!' -TableName 'Foobar'
+        Update-ExtendedProperty 'Deploy' '' -TableName 'Foobar'
     }
 
     function Pop-Migration
@@ -243,7 +242,7 @@ Describe 'Update-ExtendedProperty' {
 
         Invoke-RTRivet -Push 'AllowEmptyPropertyValue'
 
-        $expinfo = Get-ExtendedProperties
+        $expinfo = Get-MSSqlExtendedProperty -Session $RTSession -TableName 'Foobar'
 
         $expInfo[0].value | Should -Be ''
 

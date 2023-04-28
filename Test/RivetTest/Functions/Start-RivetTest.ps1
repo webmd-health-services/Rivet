@@ -108,5 +108,8 @@ function Start-RivetTest
 "@
     $content | Set-Content -Path $RTConfigFilePath
 
+    $script:RTSession = New-RivetSession -ConfigurationPath $script:RTConfigFilePath
+    Connect-RivetSession -Session $script:RTSession
+
     Write-RTTiming ('Start-RivetTest  END')
 }

@@ -90,8 +90,6 @@
         'Get-Column',
         'Get-DataType',
         'Get-DefaultConstraint',
-        'Get-ExtendedProperties',
-        'Get-ExtendedProperty',
         'Get-ForeignKey',
         'Get-Index',
         'Get-IndexColumn',
@@ -127,7 +125,6 @@
         'Test-DatabaseObject',
         'Test-DataType',
         'Test-DefaultConstraint',
-        'Test-ExtendedProperty',
         'Test-ForeignKey',
         'Test-Index',
         'Test-Pester',
@@ -160,6 +157,7 @@
         'RTRivetRoot',
         'RTRivetSchemaName',
         'RTServer',
+        'RTSession',
         'RTTestRoot',
         'RTTimestamp'
     )

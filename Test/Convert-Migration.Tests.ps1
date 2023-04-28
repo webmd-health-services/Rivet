@@ -240,7 +240,7 @@ AfterAll {
     Remove-Variable -Name 'testedOperations' -Scope Global
 }
 
-Describe 'Convert-Migration.when output path doesn''t exist' {
+Describe 'Convert-Migration' {
     BeforeEach {
         $timer = New-Object 'Diagnostics.Stopwatch'
         $timer.Start()
@@ -653,7 +653,8 @@ Describe 'Convert-Migration.when output path doesn''t exist' {
             (Test-Column @schema @farmers -Name 'RemoveMe') | Should -BeFalse
             (Test-DataType @schema -Name 'GUID') | Should -BeFalse
             (Test-DefaultConstraint @schema @crops -ColumnName 'Name') | Should -BeFalse
-            (Test-ExtendedProperty @schema @crops -ColumnName 'Name' -Name 'MS_Description') | Should -BeFalse
+            Test-MSSqlExtendedProperty -Session $RTSession @schema @crops -ColumnName 'Name' -Name 'MS_Description' |
+                Should -BeFalse
             (Test-ForeignKey @schema @crops -ReferencesSchema $schema.SchemaName -References $farmers.TableName) | Should -BeFalse
             (Test-Index @schema @crops -ColumnName 'Name') | Should -BeFalse
             (Test-PrimaryKey @schema @crops) | Should -BeFalse
