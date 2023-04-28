@@ -1,5 +1,12 @@
 
-& (Join-Path -Path $PSScriptRoot -ChildPath 'Initialize-Test.ps1' -Resolve)
+#Requires -Version 5.1
+Set-StrictMode -Version 'Latest'
+
+BeforeAll {
+    Set-StrictMode -Version 'Latest'
+
+    & (Join-Path -Path $PSScriptRoot -ChildPath 'Initialize-Test.ps1' -Resolve)
+}
 
 Describe 'Update-Table' {
     BeforeEach {
@@ -31,7 +38,7 @@ function Pop-Migration
 '@ | New-TestMigration -Name 'UpdateDateColumnWithDescription'
 
         Invoke-RTRivet -Push 'UpdateDateColumnWithDescription'
-        
+
         Assert-Table 'Foobar'
         Assert-Column -Name 'id' -DataType 'BigInt' -TableName 'Foobar' -Description 'Bar'
     }
@@ -41,7 +48,7 @@ function Pop-Migration
 function Push-Migration
 {
     Add-Table -Name 'Foobar' -Column {
-        Binary 'id' -NotNull -Size 50 
+        Binary 'id' -NotNull -Size 50
     }
 
     Update-Table -Name 'Foobar' -UpdateColumn {
@@ -57,9 +64,9 @@ function Pop-Migration
 '@ | New-TestMigration -Name 'ShouldUpdateColumnFromBinarytoVarBinary'
 
         Invoke-RTRivet -Push 'ShouldUpdateColumnFromBinarytoVarBinary'
-        
+
         Assert-Table 'Foobar'
-        Assert-Column -Name 'id' -DataType 'VarBinary' -TableName 'Foobar' -Sparse -Size 40 
+        Assert-Column -Name 'id' -DataType 'VarBinary' -TableName 'Foobar' -Sparse -Size 40
     }
 
     It 'should update column from nchar to nvarchar' {
@@ -83,7 +90,7 @@ function Pop-Migration
 '@ | New-TestMigration -Name 'ShouldUpdateColumnFromNChartoNVarChar'
 
         Invoke-RTRivet -Push 'ShouldUpdateColumnFromNChartoNVarChar'
-        
+
         Assert-Table 'Foobar'
         Assert-Column -Name 'id' -DataType 'NVarChar' -TableName 'Foobar' -NotNull -Max -Collation "Chinese_Taiwan_Stroke_CI_AS"
     }
@@ -94,11 +101,11 @@ function Pop-Migration
 function Push-Migration
 {
          Invoke-Ddl -Query @'
-create xml schema collection EmptyXsd as 
+create xml schema collection EmptyXsd as
 N'
-<xsd:schema targetNamespace="http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelManuInstructions" 
-   xmlns          ="http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelManuInstructions" 
-   elementFormDefault="qualified" 
+<xsd:schema targetNamespace="http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelManuInstructions"
+   xmlns          ="http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelManuInstructions"
+   elementFormDefault="qualified"
    attributeFormDefault="unqualified"
    xmlns:xsd="http://www.w3.org/2001/XMLSchema" >
 
@@ -126,7 +133,7 @@ function Pop-Migration
 "@ | New-TestMigration -Name 'ShouldUpdateColumnFromNVarChartoXml'
 
         Invoke-RTRivet -Push 'ShouldUpdateColumnFromNVarChartoXml'
-        
+
         Assert-Table 'WithXmlContent'
         Assert-Column -Name 'Two' -DataType 'Xml' -TableName 'WithXmlContent'
     }
@@ -142,16 +149,16 @@ function Push-Migration
     Update-Table -Name 'Foobar' -AddColumn {
         VarChar 'id2' -Max -Description 'Foo2'
     }
-    
+
     Update-Table -Name 'FooBar' -UpdateColumn {
         BigInt 'id2' -Description 'Bar'
-    } 
+    }
 
     Update-Table -Name 'Foobar' -UpdateColumn {
         VarChar 'id' -Max -Description 'Bar2'
     } -AddColumn {
         BigInt 'id3' -Description 'Foo'
-    } 
+    }
 }
 
 function Pop-Migration
@@ -162,30 +169,16 @@ function Pop-Migration
 '@ | New-TestMigration -Name 'UpdateDateColumnWithDescription'
 
         Invoke-RTRivet -Push 'UpdateDateColumnWithDescription'
-        
+
         Assert-Table 'Foobar'
         Assert-Column -Name 'id' -DataType 'VarChar' -TableName 'Foobar' -Max -Description 'Bar2'
         Assert-Column -Name 'id2' -DataType 'BigInt' -TableName 'Foobar' -Description 'Bar'
         Assert-Column -Name 'id3' -DataType 'BigInt' -TableName 'Foobar' -Description 'Foo'
     }
-}
 
-function Init
-{
-    Start-RivetTest
-}
-
-function Reset
-{
-    Stop-RivetTest
-}
-
-Describe 'Update-Table.when setting default constraint name' {
-    AfterEach { Reset }
-    It 'should use the custom constraint name' {
-        Init
+    It 'should use custom constraint name' {
         GivenMigration -Named 'CustomConstraintNames' @'
-function Push-Migration 
+function Push-Migration
 {
     Add-Table 'CustomConstraintNames' {
         int 'ID'
@@ -205,14 +198,10 @@ function Pop-Migration
         WhenMigrating 'CustomConstraintNames'
         ThenDefaultConstraint 'DF_Two' -Is 'snafu'
     }
-}
 
-Describe 'Update-Table.when adding a default constraint to an existing column' {
-    AfterEach { Reset }
-    It 'should fail' {
-        Init
+    It 'does not add default constraint to an existing column' {
         GivenMigration -Named 'DefaultConstraintOnExistingColumn' @'
-function Push-Migration 
+function Push-Migration
 {
     Add-Table 'DefaultConstraintOnExistingColumn' {
         int 'column1'
@@ -232,14 +221,10 @@ function Pop-Migration
         ThenWroteError 'Use the Add-DefaultConstraint operation'
         ThenTable 'DefaultConstraintOnExistingColumn' -Not -Exists
     }
-}
 
-Describe 'Update-Table.when adding an identity to an existing column' {
-    AfterEach { Reset }
-    It 'should fail' {
-        Init
+    It 'rejects adding an idenity to an existng column' {
         GivenMigration -Named 'IdentityOnExistingColumn' @'
-function Push-Migration 
+function Push-Migration
 {
     Add-Table 'IdentityOnExistingColumn' {
         int 'column1'

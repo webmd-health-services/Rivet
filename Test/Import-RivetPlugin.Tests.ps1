@@ -2,56 +2,60 @@
 #Requires -Version 5.1
 Set-StrictMode -Version 'Latest'
 
-& (Join-Path -Path $PSScriptRoot -ChildPath 'Initialize-Test.ps1' -Resolve)
+BeforeAll {
+    Set-StrictMode -Version 'Latest'
 
-function GivenPlugin
-{
-    param(
-    )
+    & (Join-Path -Path $PSScriptRoot -ChildPath 'Initialize-Test.ps1' -Resolve)
 
-    GivenFile 'ImportRivetPluginPlugins\ImportRivetPluginPlugins.psm1' @'
-    function Add-MyTable
+    function GivenPlugin
     {
-        Add-Table 'MyTable' {
-            int 'ID' -Identity
+        param(
+        )
+
+        GivenFile 'ImportRivetPluginPlugins\ImportRivetPluginPlugins.psm1' @'
+        function Add-MyTable
+        {
+            Add-Table 'MyTable' {
+                int 'ID' -Identity
+            }
+        }
+
+        function Remove-MyTable
+        {
+            [CmdletBinding()]
+            [Rivet.Plugin([Rivet.Events]::BeforeOperationLoad)]
+            param(
+                $Migration,
+                $Operation
+            )
+            '' | Set-Content -Path (Join-Path -Path $PSScriptRoot -ChildPath '..\pluginran')
+        }
+'@
+    }
+
+    function Init
+    {
+        $Global:Error.Clear()
+        Start-RivetTest
+    }
+
+    function Reset
+    {
+        param(
+            [string[]]
+            $ModuleName
+        )
+
+        Stop-RivetTest -ErrorAction Ignore
+
+        if( $ModuleName )
+        {
+            $ModuleName | Where-Object { Get-Module -Name $_ } | ForEach-Object { Remove-Module -Name $_ -Force }
         }
     }
-
-    function Remove-MyTable
-    {
-        [CmdletBinding()]
-        [Rivet.Plugin([Rivet.Events]::BeforeOperationLoad)]
-        param(
-            $Migration,
-            $Operation
-        )
-        '' | Set-Content -Path (Join-Path -Path $PSScriptRoot -ChildPath '..\pluginran')
-    }
-'@
 }
 
-function Init
-{
-    $Global:Error.Clear()
-    Start-RivetTest
-}
-
-function Reset
-{
-    param(
-        [string[]]
-        $ModuleName
-    )
-
-    Stop-RivetTest -ErrorAction Ignore
-
-    if( $ModuleName )
-    {
-        $ModuleName | Where-Object { Get-Module -Name $_ } | ForEach-Object { Remove-Module -Name $_ -Force }
-    }
-}
-
-Describe 'Import-RivetPlugin.when plugin in a .psm1 file' {
+Describe 'Import-RivetPlugin' {
     BeforeEach { Init }
     AfterEach { Reset -ModuleName 'ImportRivetPluginPlugins' }
     It 'should load plugins' {
@@ -61,7 +65,7 @@ Describe 'Import-RivetPlugin.when plugin in a .psm1 file' {
     {
         Add-MyTable
     }
-    
+
     function Pop-Migration
     {
         Remove-Table -Name 'MyTable'
@@ -69,26 +73,26 @@ Describe 'Import-RivetPlugin.when plugin in a .psm1 file' {
 '@ | New-TestMigration -Name 'AddMyTable'
 
         Set-PluginPath -PluginPath 'ImportRivetPluginPlugins'
-    
+
         Invoke-RTRivet -Push
-    
+
         (Join-Path -Path $RTTestRoot -ChildPath 'pluginran') | Should -Exist
         Assert-Table 'MyTable'
         Get-Module -Name 'ImportRivetPluginPlugins' | Should -Not -BeNullOrEmpty
     }
 }
-    
-Describe 'Import-RivetPlugin.when plugin is not a module' {
+
+Describe 'Import-RivetPlugin' {
     BeforeEach { Init }
     AfterEach { Reset }
-    It 'should fail' {
+    It 'should require plugins be in a module' {
         GivenFile 'Add-MyFeature.ps1' @'
     function BadPlugin
     {
     }
 '@
         Set-PluginPath -PluginPath 'Add-MyFeature.ps1'
-    
+
         @'
     function Push-Migration
     {
@@ -96,30 +100,30 @@ Describe 'Import-RivetPlugin.when plugin is not a module' {
             int 'ID' -Identity
         }
     }
-    
+
     function Pop-Migration
     {
         Remove-Table 'MyTable'
     }
 '@ | New-TestMigration -Name 'AddMyTable'
-    
+
         Invoke-RTRivet -Push -ErrorAction SilentlyContinue
         $Global:Error.Count | Should -BeGreaterThan 0
         $Global:Error[0] | Should -Match 'invalid\ plugin\ file'
     }
 }
 
-Describe 'Import-RivetPlugin.when plugin is in a module the user imports' {
+Describe 'Import-RivetPlugin' {
     BeforeEach { Init }
     AfterEach { Reset -ModuleName 'ImportRivetPluginPlugins' }
-    It 'should load plugins' {
+    It 'should load plugins from a module loaded by user' {
         GivenPlugin
         @'
     function Push-Migration
     {
         Add-MyTable
     }
-    
+
     function Pop-Migration
     {
         Remove-Table -Name 'MyTable'
@@ -130,9 +134,9 @@ Describe 'Import-RivetPlugin.when plugin is in a module the user imports' {
         Mock -CommandName 'Import-Module' -ModuleName 'Rivet'
 
         Set-PluginPath -PluginModule 'ImportRivetPluginPlugins'
-    
+
         Invoke-RTRivet -Push
-    
+
         (Join-Path -Path $RTTestRoot -ChildPath 'pluginran') | Should -Exist
         Assert-Table 'MyTable'
         Get-Module -Name 'ImportRivetPluginPlugins' | Should -Not -BeNullOrEmpty
@@ -140,17 +144,17 @@ Describe 'Import-RivetPlugin.when plugin is in a module the user imports' {
     }
 }
 
-Describe 'Import-RivetPlugin.when plugin is in a module the user forgets to import' {
+Describe 'Import-RivetPlugin' {
     BeforeEach { Init }
     AfterEach { Reset -ModuleName 'ImportRivetPluginPlugins' }
-    It 'should load plugins' {
+    It 'should load plugins automatically' {
         GivenPlugin
         @'
     function Push-Migration
     {
         Add-MyTable
     }
-    
+
     function Pop-Migration
     {
         Remove-Table -Name 'MyTable'
@@ -158,27 +162,27 @@ Describe 'Import-RivetPlugin.when plugin is in a module the user forgets to impo
 '@ | New-TestMigration -Name 'AddMyTable'
 
         Set-PluginPath -PluginModule 'ImportRivetPluginPlugins'
-    
+
         Invoke-RTRivet -Push -ErrorAction SilentlyContinue
-    
+
         $Global:Error | Should -Match 'the module is not loaded'
         (Join-Path -Path $RTTestRoot -ChildPath 'pluginran') | Should -Not -Exist
         Assert-Table 'MyTable' -Not -Exists
         Get-Module -Name 'ImportRivetPluginPlugins' | Should -BeNullOrEmpty
     }
 }
-    
-Describe 'Import-RivetPlugin.when plugin is not a module' {
+
+Describe 'Import-RivetPlugin' {
     BeforeEach { Init }
     AfterEach { Reset }
-    It 'should fail' {
+    It 'should reject plugins not in a module' {
         GivenFile 'Add-MyFeature.ps1' @'
     function BadPlugin
     {
     }
 '@
         Set-PluginPath -PluginPath 'Add-MyFeature.ps1'
-    
+
         @'
     function Push-Migration
     {
@@ -186,13 +190,13 @@ Describe 'Import-RivetPlugin.when plugin is not a module' {
             int 'ID' -Identity
         }
     }
-    
+
     function Pop-Migration
     {
         Remove-Table 'MyTable'
     }
 '@ | New-TestMigration -Name 'AddMyTable'
-    
+
         Invoke-RTRivet -Push -ErrorAction SilentlyContinue
         $Global:Error.Count | Should -BeGreaterThan 0
     }
