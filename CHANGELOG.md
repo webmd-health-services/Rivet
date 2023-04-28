@@ -21,6 +21,8 @@ of current state.
 
 # 0.19.0
 
+> Released 3 Apr 2023
+
 * `Checkpoint-Migration` will no longer delete migration scripts that have been pushed to the database. Instead it
   will now export rows from the `rivet.Migrations` table and include them in the `schema.ps1` file.
 * Added an `InitializeSchema` switch to the `Invoke-Rivet` script that is used to initialize database(s) with the
@@ -28,6 +30,8 @@ of current state.
 
 
 # 0.18.0
+
+> Released 22 Feb 2023
 
 * Fixed: Rivet doesn't use the CommandTimeout property in rivet.json configuration file.
 * `Export-Migration` will now allow references to objects in databases that have been applied before it.
@@ -38,6 +42,8 @@ be the ordered-list of databases to migrate.
 
 # 0.17.0
 
+> Released 26 Oct 2022
+
 ## Changes
 
 * When initializing a database, Rivet now runs the migrations found in the schema.ps1 file, which contains the baseline
@@ -46,6 +52,8 @@ a baseline `schema.ps1` file for your database(s).
 
 
 # 0.16.0
+
+> Released 18 Oct 2022
 
 * Updated `Checkpoint-Migration` function:
 
@@ -57,10 +65,14 @@ that is being checkpointed.
 
 # 0.15.0
 
+> Released 11 Oct 2022
+
 * Added `Checkpoint-Migration` function that checkpoints the current state of the database so that it can be re-created.
 
 
 # 0.14.0
+
+> Released 29 Aug 2022
 
 * Added an `AfterMigrationLoad` Rivet event that occurs after all operations in a migration have been applied, but
 before the transaction has been commited. Use this event for any validations that require a fully loaded migration.
@@ -68,10 +80,14 @@ before the transaction has been commited. Use this event for any validations tha
 
 # 0.13.0
 
+> Released 23 Jun 2022
+
 * Added a `Reset` switch to `rivet.ps1` that will drop the database(s) for the current environment when given.
 
 
 # 0.12.0
+
+> Released 5 May 2020
 
 ## Upgrade Instructions
 
@@ -130,10 +146,14 @@ parameter.
 
 # 0.9.1
 
+> Released 27 Mar 2020
+
 * Fixed: `Merge-Migration` fails in certain situations if a migration contains a `Rename-Column` operation.
 
 
 # 0.9.0
+
+> Released 27 Nov 2018
 
 * Adding support for running Rivet under Windows PowerShell 5.1 and PowerShell Core.
 * You can now specify the order Rivet should apply migrations to multiple databases with the "DatabaseOrder" setting in
@@ -141,12 +161,16 @@ your rivet.json file. It should be set to a list of databases and Rivet will app
 order. See `help about_Rivet_Configuration` for more information.
 
 
-# 0.8.1 (25 November 2016)
+# 0.8.1
+
+> Released 26 Nov 2016
 
 * Removing a custom operation that isn't part of core Rivet.
 
 
 # 0.8.0
+
+> Released 25 Nov 2016
 
 ## Enhancements
 
