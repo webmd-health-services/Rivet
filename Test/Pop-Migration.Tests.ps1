@@ -166,7 +166,7 @@ Describe 'Pop-Migration' {
             Invoke-RTRivet -Push
             $Global:Error.Count | Should -Be 0
 
-            Invoke-RTRivet -Pop (Measure-Migration) -ErrorAction SilentlyContinue
+            { Invoke-RTRivet -Pop (Measure-Migration) } | Should -Throw '*cannot drop the table ''dbo.Migration38''*'
 
             $Global:Error.Count | Should -BeGreaterThan 0
 
@@ -214,7 +214,7 @@ Describe 'Pop-Migration' {
 
 
     It 'should pop by name with no match' {
-        Invoke-RTRivet -Pop 'Blah' -ErrorAction SilentlyContinue
+        { Invoke-RTRivet -Pop 'Blah' } | Should -Throw '*Migration "Blah" not found*'
         $Global:Error.Count | Should -BeGreaterThan 0
         $Global:Error[0] | Should -Match 'not found'
 

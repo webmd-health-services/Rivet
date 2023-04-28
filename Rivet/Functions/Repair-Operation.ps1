@@ -18,7 +18,7 @@ function Repair-Operation
                 [Parameter(Mandatory,ValueFromPipeline)]
                 [Rivet.Column]$Column
             )
-            
+
             begin
             {
                 Set-StrictMode -Version 'Latest'
@@ -126,7 +126,7 @@ function Repair-Operation
             }
             'RemoveForeignKeyOperation'
             {
-                $Operation.Name = New-ConstraintName -ForeignKey 
+                $Operation.Name = New-ConstraintName -ForeignKey `
                                                      -SchemaName $schemaName `
                                                      -TableName $tableName `
                                                      -ReferencesSchema $Operation.ReferencesSchema `

@@ -30,11 +30,13 @@ function New-TestMigration
     do
     {
         $script:RTTimestamp++
-        $migrationPath = '{0}_{1}.ps1' -f $RTTimestamp, $Named
-        $migrationPath = Join-Path -Path $migrationsRoot -ChildPath $migrationPath
+        $migrationFileName = "${script:RTTimestamp}_*.ps1"
+        $migrationPath = Join-Path -Path $migrationsRoot -ChildPath $migrationFileName
     }
     while( (Test-Path -Path $migrationPath -PathType Leaf) )
 
+    $migrationFileName = "${script:RTTimestamp}_${Named}.ps1"
+    $migrationPath = Join-Path -Path $migrationsRoot -ChildPath $migrationFileName
     $InputObject | Set-Content -Path $migrationPath
     Get-Item -Path $migrationPath
 }

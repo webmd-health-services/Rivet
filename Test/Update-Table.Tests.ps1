@@ -217,7 +217,7 @@ function Pop-Migration
     Remove-Table 'DefaultConstraintOnExistingColumn'
 }
 '@
-        WhenMigrating 'DefaultConstraintOnExistingColumn' -ErrorAction SilentlyContinue
+        { WhenMigrating 'DefaultConstraintOnExistingColumn' } | Should -Throw
         ThenWroteError 'Use the Add-DefaultConstraint operation'
         ThenTable 'DefaultConstraintOnExistingColumn' -Not -Exists
     }
@@ -240,7 +240,7 @@ function Pop-Migration
     Remove-Table 'IdentityOnExistingColumn'
 }
 '@
-        WhenMigrating 'IdentityOnExistingColumn' -ErrorAction SilentlyContinue
+        { WhenMigrating 'IdentityOnExistingColumn' } | Should -Throw
         ThenWroteError 'identity'
         ThenTable 'IdentityOnExistingColumn' -Not -Exists
     }

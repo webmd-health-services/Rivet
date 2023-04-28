@@ -223,8 +223,8 @@ Describe 'Add-Index' {
     }
 '@ | New-TestMigration -Name 'CreateIndexOnCustomFileGroup'
 
-        Invoke-RTRivet -Push 'CreateIndexOnCustomFileGroup' -ErrorAction SilentlyContinue
-        $Global:Error.Count | Should -BeGreaterThan 0
+        { Invoke-RTRivet -Push 'CreateIndexOnCustomFileGroup' -ErrorAction SilentlyContinue } |
+            Should -Throw '*Invalid filegroup*'
     }
 
 
@@ -249,8 +249,8 @@ Describe 'Add-Index' {
     }
 '@ | New-TestMigration -Name 'CreateIndexOnCustomFileStream'
 
-        Invoke-RTRivet -Push 'CreateIndexOnCustomFileStream' -ErrorAction SilentlyContinue
-        $Global:Error.Count | Should -BeGreaterThan 0
+        { Invoke-RTRivet -Push 'CreateIndexOnCustomFileStream' -ErrorAction SilentlyContinue } |
+            Should -Throw '*FILESTREAM_ON*'
     }
 
     It 'should create index with descending' {

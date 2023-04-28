@@ -3,30 +3,32 @@ param(
     [String]$RivetRoot
 )
 
-$RTConfigFilePath = 
-    $RTDatabasesRoot = 
-    $RTDatabaseRoot = 
+$RTConfigFilePath =
+    $RTDatabasesRoot =
+    $RTDatabaseRoot =
     $RTDatabaseMigrationRoot =
-    $RTServer = 
-    $RTRivetPath = 
-    $RTRivetSchemaName = 
+    $RTServer =
+    $RTRivetPath =
+    $RTRivetSchemaName =
     $RTDatabaseName =
-    $RTTestRoot = 
+    $RTTestRoot =
     $RTLastMigrationFailed = $null
 
-$RTTimestamp = 20150101000000
+$script:RTTimestamp = 20150101000000
 
 if( -not $RivetRoot )
 {
     $RivetRoot = Join-Path -Path $PSScriptRoot -ChildPath '..\..\Rivet' -Resolve
 }
-                  
+
+$script:testNum = 0
+
 $RTRivetSchemaName = 'rivet'
 $RTDatabaseName = 'RivetTest'
 $RTDatabase2Name = 'RivetTest2'
 $script:firstMigrationId = [Int64]'00010101000000' # 1/1/1 00:00:00
 
-$serverFileDirs = @( 
+$serverFileDirs = @(
                         (Join-Path -Path $PSScriptRoot -ChildPath '..' -Resolve),
                         (Join-Path -Path $env:APPDATA -ChildPath 'Rivet'),
                         (Join-Path -Path $env:ProgramData -ChildPath 'Rivet')

@@ -60,7 +60,7 @@ function Export-Migration
 
     if ($PSCmdlet.ParameterSetName -eq 'WithoutSession')
     {
-        $Session = New-RivetSession -ConfigurationPath $ConfigFilePath -Environment $Environment -Database $Database
+        $Session = New-RivetSession -ConfigurationPath $ConfigFilePath -Environment $Environment
         $Session.SqlServerName = $SqlServerName
     }
 
@@ -991,7 +991,8 @@ where
 
                 # If the external depenedency's database does not get applied BEFORE the current database, do not allow
                 # references to the external dependency.
-                if( ($indexOfReferencedDatabase -gt $indexOfCurrentDatabase) -or ($indexOfReferencedDatabase -lt 0) -or ($indexOfCurrentDatabase -lt 0) )
+                if (($indexOfReferencedDatabase -gt $indexOfCurrentDatabase) -or `
+                    ($indexOfReferencedDatabase -lt 0) -or ($indexOfCurrentDatabase -lt 0))
                 {
                     Write-Warning -Message ('Unable to export {0} {1}: it depends on external object {2}.' -f $object.type_desc,$object.full_name,$externalDependencies[$object.object_id].ExternalName)
                     $exportedObjects[$object.object_id] = $true

@@ -120,13 +120,13 @@ function Get-Migration
         $getRivetConfigParams['Environment'] = $Environment
     }
 
-    $Configuration = Get-RivetConfig @getRivetConfigParams
-    if( -not $Configuration )
+    $session = New-RivetSession -ConfigurationPath $ConfigFilePath -Environment $Environment -Database $Database
+    if( -not $session )
     {
         return
     }
 
-    Import-RivetPlugin -Path $Configuration.PluginPaths -ModuleName $Configuration.PluginModules
+    Import-RivetPlugin -Path $session.PluginPaths -ModuleName $session.PluginModules
     Write-Timing -Message 'Get-Migration  Import-RivetPlugin'
 
     $getMigrationFileParams = @{}
@@ -137,7 +137,7 @@ function Get-Migration
                                                     }
                                                 }
 
-    Get-MigrationFile -Configuration $Configuration @getMigrationFileParams |
+    Get-MigrationFile -Session $session @getMigrationFileParams |
         Where-Object {
             if( $PSBoundParameters.ContainsKey( 'Before' ) )
             {
@@ -158,7 +158,7 @@ function Get-Migration
             }
             return $true
         } |
-        Convert-FileInfoToMigration -Configuration $Configuration
+        Convert-FileInfoToMigration -Session $Session
 
     Write-Timing -Message 'Get-Migration  END' -Outdent
 }

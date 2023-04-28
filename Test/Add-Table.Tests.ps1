@@ -88,7 +88,8 @@ Describe 'Add-Table' {
     }
 '@ | New-TestMigration -Name 'CreateTableWithCustomFileGroup'
 
-        Invoke-RTRivet -Push 'CreateTableWithCustomFileGroup' -ErrorAction SilentlyContinue
+        { Invoke-RTRivet -Push 'CreateTableWithCustomFileGroup' -ErrorAction SilentlyContinue } |
+            Should -Throw '*Invalid filegroup*'
         $Global:Error.Count | Should -BeGreaterThan 0
         (Test-Table -Name 'CustomFileGroup') | Should -BeFalse
     }
@@ -108,7 +109,8 @@ Describe 'Add-Table' {
     }
 '@ | New-TestMigration -Name 'CreateTableWithCustomTextImageFileGroup'
 
-        Invoke-RTRivet -Push 'CreateTableWithCustomTextImageFileGroup' -ErrorAction SilentlyContinue
+        { Invoke-RTRivet -Push 'CreateTableWithCustomTextImageFileGroup' -ErrorAction SilentlyContinue } |
+            Should -Throw '*TEXTIMAGE_ON*'
         $Global:Error.Count | Should -BeGreaterThan 0
         (Test-Table -Name 'CustomTextImageFileGroup') | Should -BeFalse
     }
@@ -127,7 +129,8 @@ Describe 'Add-Table' {
         Remove-Table 'CustomTextImageFileGroup'
     }
 '@ | New-TestMigration -Name 'CreateTableWithCustomFileStreamFileGroup'
-        Invoke-RTRivet -Push 'CreateTableWithCustomFileStreamFileGroup' -ErrorAction SilentlyContinue
+        { Invoke-RTRivet -Push 'CreateTableWithCustomFileStreamFileGroup' -ErrorAction SilentlyContinue } |
+            Should -Throw '*FILESTREAM_ON*'
         $Global:Error.Count | Should -BeGreaterThan 0
         (Test-Table -Name 'CustomFileStreamFileGroup') | Should -BeFalse
     }

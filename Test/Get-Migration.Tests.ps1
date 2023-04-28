@@ -54,6 +54,7 @@ BeforeAll {
         )
         $Global:Error.Clear()
         Start-RivetTest @StartArgument
+        $script:migrations = @()
     }
 
     function Reset
@@ -197,7 +198,9 @@ Describe 'Get-Migration' {
 
         try
         {
-            $result = Get-Migration -ConfigFilePath $RTConfigFilePath -ErrorAction SilentlyContinue
+            $result =
+                { Get-Migration -ConfigFilePath $RTConfigFilePath } |
+                Should -Throw '*Push-Migration function not found*'
             $result | Should -BeNullOrEmpty
             $Global:Error.Count | Should -BeGreaterThan 0
             $Global:Error[0] | Should -Match 'Push-Migration.*not found'
@@ -218,7 +221,9 @@ Describe 'Get-Migration' {
 
         try
         {
-            $result = Get-Migration -ConfigFilePath $RTConfigFilePath -ErrorAction SilentlyContinue
+            $result =
+                { Get-Migration -ConfigFilePath $RTConfigFilePath } |
+                Should -Throw '*Pop-Migration function not found*'
             $result | Should -BeNullOrEmpty
             $Global:Error.Count | Should -BeGreaterThan 0
             $Global:Error[0] | Should -Match 'Pop-Migration.*not found'
@@ -485,7 +490,7 @@ function Pop-Migration
         $script:migrations.PopOperations | Where-Object { $_ -is [Rivet.Operations.AddSchemaOperation] } | Should -HaveCount 2
     }
 
-    It ('should fail') {
+    It 'runs before operation load plugins' {
         GivenFile $script:pluginModulePath @'
 function OnAdd
 {
@@ -507,9 +512,9 @@ function Pop-Migration
     Invoke-Ddl 'select 2'
 }
 '@ | New-TestMigration -Name 'One'
-        WhenGettingMigrations -ErrorAction SilentlyContinue
+        { WhenGettingMigrations } |
+            Should -Throw '*"BeforeOperationLoad" event must have a named "Migration" parameter*'
         $script:migrations | Should -BeNullOrEmpty
-        $Global:Error | Should -Match '"BeforeOperationLoad"\ event\ must\ have\ a\ named\ "Migration"\ parameter'
     }
 
     It ('should fail') {
@@ -534,9 +539,9 @@ function Pop-Migration
     Invoke-Ddl 'select 2'
 }
 '@ | New-TestMigration -Name 'One'
-        WhenGettingMigrations -ErrorAction SilentlyContinue
+        { WhenGettingMigrations } |
+            Should -Throw '*"BeforeOperationLoad" event must have a named "Operation" parameter*'
         $script:migrations | Should -BeNullOrEmpty
-        $Global:Error | Should -Match '"BeforeOperationLoad"\ event\ must\ have\ a\ named\ "Operation"\ parameter'
     }
 
     It ('should run the plugin') {
@@ -632,9 +637,8 @@ function Pop-Migration
     Invoke-Ddl 'select 2'
 }
 '@ | New-TestMigration -Name 'One'
-        WhenGettingMigrations -ErrorAction SilentlyContinue
+        { WhenGettingMigrations } | Should -Throw '*"AfterOperationLoad" event must have a named "Migration" parameter*'
         $script:migrations | Should -BeNullOrEmpty
-        $Global:Error | Should -Match '"AfterOperationLoad"\ event\ must\ have\ a\ named\ "Migration"\ parameter'
     }
 
     It ('should fail') {
@@ -659,9 +663,9 @@ function Pop-Migration
     Invoke-Ddl 'select 2'
 }
 '@ | New-TestMigration -Name 'One'
-        WhenGettingMigrations -ErrorAction SilentlyContinue
+        { WhenGettingMigrations } | Should -Throw '*"AfterOperationLoad" event must have a named "Operation" parameter*'
         $script:migrations | Should -BeNullOrEmpty
-        $Global:Error | Should -Match '"AfterOperationLoad"\ event\ must\ have\ a\ named\ "Operation"\ parameter'
+        $Global:Error | Should -Match
     }
 
     It ('should run the plugin') {
@@ -771,8 +775,7 @@ function Pop-Migration
     Invoke-Ddl 'select 2'
 }
 '@ | New-TestMigration -Name 'One'
-        WhenGettingMigrations -ErrorAction SilentlyContinue
+        { WhenGettingMigrations } | Should -Throw '*Please add a schema!*'
         $script:migrations | Should -BeNullOrEmpty
-        $Global:Error | Should -Match 'Please add a schema!'
     }
 }

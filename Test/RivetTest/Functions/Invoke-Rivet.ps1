@@ -83,7 +83,7 @@ function Invoke-RTRivet
     #>
 
     $script:RTLastMigrationFailed = $true
-    Invoke-Rivet @PSBoundParameters @customParams
+    Invoke-Rivet @PSBoundParameters @customParams | Out-String | Where-Object { $_ } | Write-Verbose
     $script:RTLastMigrationFailed = $false
 }
 

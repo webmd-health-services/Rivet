@@ -10,7 +10,7 @@ BeforeAll {
     $script:rivetPath = Join-Path -Path $PSScriptRoot -ChildPath '..\Rivet\rivet.ps1' -Resolve
     $script:convertRivetMigration = Join-Path -Path $PSScriptRoot -ChildPath '..\Rivet\RivetSamples\Convert-Migration.ps1' -Resolve
     $script:outputDir = $null
-    $script:testedOperations = @{ }
+    $global:testedOperations = @{ }
     $script:testsRun = 0
 
     function Global:Watch-Operation
@@ -22,7 +22,7 @@ BeforeAll {
             $Operation
         )
 
-        $script:testedOperations[$Operation.GetType()] = $true
+        $global:testedOperations[$Operation.GetType()] = $true
     }
 
     function Assert-ConvertMigration
@@ -237,6 +237,7 @@ BeforeAll {
 
 AfterAll {
     Remove-Item -Path 'function:Watch-Operation'
+    Remove-Variable -Name 'testedOperations' -Scope Global
 }
 
 Describe 'Convert-Migration.when output path doesn''t exist' {
@@ -1436,7 +1437,7 @@ function Pop-Migration
                             ForEach-Object { $_.GetTypes() } |
                             Where-Object { $_.IsSubclassOf([Rivet.Operations.Operation]) } |
                             Where-Object { -not $_.IsAbstract } |
-                            Where-Object { -not $script:testedOperations.ContainsKey( $_ ) } |
+                            Where-Object { -not $global:testedOperations.ContainsKey( $_ ) } |
                             Where-Object { -not $opsToSkip.ContainsKey($_) } #|
                             # Select-Object -ExpandProperty 'Name' |
                             # Sort-Object

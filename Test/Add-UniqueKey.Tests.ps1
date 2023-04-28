@@ -143,7 +143,8 @@ function Pop-Migration()
     Remove-Table AddUniqueKey
 }
 '@ | New-TestMigration -Name 'AddUniqueKeyWithCustomFileGroup'
-        Invoke-RTRivet -Push 'AddUniqueKeyWithCustomFileGroup' -ErrorAction SilentlyContinue
+        { Invoke-RTRivet -Push 'AddUniqueKeyWithCustomFileGroup' -ErrorAction SilentlyContinue } |
+            Should -Throw '*Invalid filegroup*'
         $Global:Error.Count | Should -BeGreaterThan 0
     }
 

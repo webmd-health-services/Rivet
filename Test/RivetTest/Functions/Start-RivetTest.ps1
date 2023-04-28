@@ -15,37 +15,47 @@ function Start-RivetTest
 
         [int] $CommandTimeout = 30
     )
-    
+
     Set-StrictMode -Version Latest
 
     Write-RTTiming ('Start-RivetTest  BEGIN')
 
     $Global:Error.Clear()
 
+    $testDirectory = Join-Path -Path ([IO.Path]::GetTempPath()) -ChildPath ([IO.Path]::GetRandomFileName())
     if( (Test-Pester) )
     {
-        $testDirectory = $TestDrive
-        if( $testDirectory | Get-Member -Name 'FullName' )
+        if ($TestDrive | Get-Member -Name 'FullName')
         {
-            $testDirectory = $testDirectory.FullName
+            $testDirectory = $TestDrive.FullName
         }
-        
-        $script:RTTestRoot = Join-Path -Path $testDirectory -ChildPath ([IO.Path]::GetRandomFileName())
-        New-Item -Path $RTTestRoot -ItemType 'Directory' | Out-Null
-    }
-    else
-    {
-        $script:RTTestRoot = New-TempDir -Prefix 'RivetTest'
+        else
+        {
+            $testDirectory = $TestDrive
+        }
     }
 
-    $script:RTDatabasesRoot = Join-Path -Path $RTTestRoot -ChildPath 'Databases'
+    if (-not (Test-Path -Path $testDirectory))
+    {
+        New-Item -Path $testDirectory -ItemType 'Directory' | Out-Null
+    }
+
+    Get-ChildItem -Path $testDirectory | Remove-Item -Recurse -Force -ErrorAction Continue
+
+    $script:RTTestRoot = Join-Path -Path $testDirectory -ChildPath ([IO.Path]::GetRandomFileName())
+    if (-not (Test-Path -Path $script:RTTestRoot))
+    {
+        New-Item -Path $script:RTTestRoot -ItemType 'Directory' | Out-Null
+    }
+
+    $script:RTDatabasesRoot = Join-Path -Path $script:RTTestRoot -ChildPath 'Databases'
     foreach( $name in $PhysicalDatabase )
     {
         $script:RTDatabaseRoot = Join-Path $RTDatabasesRoot $name
         $script:RTDatabaseMigrationRoot = Join-Path -Path $RTDatabaseRoot -ChildPath 'Migrations'
         $null = New-Item -Path $RTDatabaseMigrationRoot -ItemType Container -Force
     }
-    
+
     $script:RTConfigFilePath = Join-Path -Path $RTTestRoot -ChildPath 'rivet.json'
 
     Push-Location -Path $RTTestRoot

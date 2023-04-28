@@ -46,7 +46,13 @@ BeforeAll {
             $ModuleName
         )
 
-        Stop-RivetTest -ErrorAction Ignore
+        try
+        {
+            Stop-RivetTest -ErrorAction Ignore
+        }
+        catch
+        {
+        }
 
         if( $ModuleName )
         {
@@ -107,9 +113,7 @@ Describe 'Import-RivetPlugin' {
     }
 '@ | New-TestMigration -Name 'AddMyTable'
 
-        Invoke-RTRivet -Push -ErrorAction SilentlyContinue
-        $Global:Error.Count | Should -BeGreaterThan 0
-        $Global:Error[0] | Should -Match 'invalid\ plugin\ file'
+        { Invoke-RTRivet -Push } | Should -Throw '*invalid plugin file*'
     }
 }
 
@@ -147,7 +151,7 @@ Describe 'Import-RivetPlugin' {
 Describe 'Import-RivetPlugin' {
     BeforeEach { Init }
     AfterEach { Reset -ModuleName 'ImportRivetPluginPlugins' }
-    It 'should load plugins automatically' {
+    It 'should not load plugins automatically' {
         GivenPlugin
         @'
     function Push-Migration
@@ -163,9 +167,8 @@ Describe 'Import-RivetPlugin' {
 
         Set-PluginPath -PluginModule 'ImportRivetPluginPlugins'
 
-        Invoke-RTRivet -Push -ErrorAction SilentlyContinue
+        { Invoke-RTRivet -Push } | Should -Throw '*the module is not loaded*'
 
-        $Global:Error | Should -Match 'the module is not loaded'
         (Join-Path -Path $RTTestRoot -ChildPath 'pluginran') | Should -Not -Exist
         Assert-Table 'MyTable' -Not -Exists
         Get-Module -Name 'ImportRivetPluginPlugins' | Should -BeNullOrEmpty
@@ -197,7 +200,6 @@ Describe 'Import-RivetPlugin' {
     }
 '@ | New-TestMigration -Name 'AddMyTable'
 
-        Invoke-RTRivet -Push -ErrorAction SilentlyContinue
-        $Global:Error.Count | Should -BeGreaterThan 0
+        { Invoke-RTRivet -Push } | Should -Throw '*must be a PowerShell module*'
     }
 }

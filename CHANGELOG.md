@@ -15,7 +15,8 @@ of current state.
 
 ## Fixed
 
-* Fixed: Rivet no longer shows multiple errors when it encounters a terminating error.
+* Shows too many errors.
+* `Remove-ForeignKey` prompts for `TableName` and `ReferencesTableName` arguments.
 
 
 # 0.19.0
