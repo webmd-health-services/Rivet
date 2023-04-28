@@ -1,25 +1,27 @@
 <!--markdownlint-disable MD012 no-multiple-blanks -->
 <!--markdownlint-disable MD024 no-duplicate-heading/no-duplicate-header -->
 
-# 0.20.0
+# Rivet Changelog
 
-## Added
+## 0.20.0
+
+### Added
 
 * `New-RivetSession` function for creating a Rivet session. A `Rivet_Session` is the object used by Rivet to keep track
 of current state.
 
-## Changed
+### Changed
 
 * Rivet internals no longer use global variables for managing connections and current state.
 * Default migration output now quotes SQL Server names and database names with `[]`.
 
-## Fixed
+### Fixed
 
 * Shows too many errors.
 * `Remove-ForeignKey` prompts for `TableName` and `ReferencesTableName` arguments.
 
 
-# 0.19.0
+## 0.19.0
 
 > Released 3 Apr 2023
 
@@ -29,7 +31,7 @@ of current state.
   `schema.ps1` file that is generated from `Checkpoint-Migration`.
 
 
-# 0.18.0
+## 0.18.0
 
 > Released 22 Feb 2023
 
@@ -40,18 +42,18 @@ be the ordered-list of databases to migrate.
 * `Export-Migration` will now include extended properties on schemas, views, and view columns.
 
 
-# 0.17.0
+## 0.17.0
 
 > Released 26 Oct 2022
 
-## Changes
+### Changes
 
 * When initializing a database, Rivet now runs the migrations found in the schema.ps1 file, which contains the baseline
 database schema upon which all migrations should be applied. You can use the `Checkpoint-Migration` function to create
 a baseline `schema.ps1` file for your database(s).
 
 
-# 0.16.0
+## 0.16.0
 
 > Released 18 Oct 2022
 
@@ -63,14 +65,14 @@ that is being checkpointed.
 * Migrations that have been checkpointed will be removed from the Migrations directory.
 
 
-# 0.15.0
+## 0.15.0
 
 > Released 11 Oct 2022
 
 * Added `Checkpoint-Migration` function that checkpoints the current state of the database so that it can be re-created.
 
 
-# 0.14.0
+## 0.14.0
 
 > Released 29 Aug 2022
 
@@ -78,18 +80,18 @@ that is being checkpointed.
 before the transaction has been commited. Use this event for any validations that require a fully loaded migration.
 
 
-# 0.13.0
+## 0.13.0
 
 > Released 23 Jun 2022
 
 * Added a `Reset` switch to `rivet.ps1` that will drop the database(s) for the current environment when given.
 
 
-# 0.12.0
+## 0.12.0
 
 > Released 5 May 2020
 
-## Upgrade Instructions
+### Upgrade Instructions
 
 * This version of Rivet is backwards-incompatible. It changes the way plug-ins work. In order to upgrade to this
 version, you'll need to update your plugins and your rivet.json file.
@@ -105,7 +107,7 @@ module, set the `PluginModules` property to a list of module names that contain 
 
 * See `about_Rivet_Plugins` for more information.
 
-## Changes
+### Changes
 
 * Created `Export-Migration` function for exporting database objects as Rivet migrations.
 * Rivet can now add XML columns that don't have schema associated with them.
@@ -144,14 +146,14 @@ parameter.
 * Fixed: the idempotent queries for renaming a data type and index don't work.
 
 
-# 0.9.1
+## 0.9.1
 
 > Released 27 Mar 2020
 
 * Fixed: `Merge-Migration` fails in certain situations if a migration contains a `Rename-Column` operation.
 
 
-# 0.9.0
+## 0.9.0
 
 > Released 27 Nov 2018
 
@@ -161,42 +163,42 @@ your rivet.json file. It should be set to a list of databases and Rivet will app
 order. See `help about_Rivet_Configuration` for more information.
 
 
-# 0.8.1
+## 0.8.1
 
 > Released 26 Nov 2016
 
 * Removing a custom operation that isn't part of core Rivet.
 
 
-# 0.8.0
+## 0.8.0
 
 > Released 25 Nov 2016
 
-## Enhancements
+### Enhancements
 
 * Created `Merge-Migration` function for creating cumulative, roll up migrations.
 
 
-# 0.7.0
+## 0.7.0
 
-## Enhancements
+### Enhancements
 
 * Fixed: `Add-Index` operation times out when creating new indexes on large table. Added a `Timeout` parameter to
 control how long to wait for an operation to finish.
 * `Add-Index` re-implemented as a C# cmdlet.
 
 
-# 0.6.1
+## 0.6.1
 
-## Bug Fixes
+### Bug Fixes
 
 * `Rename-Column`, `Rename-DataType`, `Rename-Index`, and `Rename-Object` operations didn't properly quote schema and
 object names.
 
 
-# 0.6.0
+## 0.6.0
 
-## Enhancements
+### Enhancements
 
 * Improving verbose output to be more recognizable and include query timings.
 * `Convert-Migration.ps1` extra script now puts triggers, constraints, foreign keys, and types into separate files.
@@ -224,29 +226,29 @@ multiple names, IDs, or file names).
 * Plug-ins now get passed a `Rivet.Migration` object for the operation being processed.
 * Rivet now supports writing custom operations.
 
-## Bug Fixes
+### Bug Fixes
 
 * Results from `Invoke-SqlScript` operations cause silent error when formatted as a table.
 * Path to rivet.json file not showing in an error message when using implicit path.
 
 
-# 0.5.1
+## 0.5.1
 
-## Enhancements
+### Enhancements
 
 * Improving `WhatIf` support: some actions that shouldn't be conditional now ignore `WhatIf` flag.
 * Invoke-SqlScript operation no longer splits script into batches, since that is now handled internally when executing
 all operations.
 * Improving verbose output: adding a message for each already-applied migration.
 
-## Bug Fixes
+### Bug Fixes
 
 * Get-Migration fails when run from Convert-Migration: it doesn't know the path to use to load migrations from.
 
 
-# 0.5.0
+## 0.5.0
 
-## Enhancements
+### Enhancements
 
 * The Add-Schema operation is now idempotent.
 * Removed all Write-Host output.
@@ -257,48 +259,48 @@ output replaces the old Write-Host output).
 * Moved `Rivet.Operations.Operation` object into `Rivet` namespace; so full type name is now `Rivet.Operation`.
 
 
-# 0.4.0
+## 0.4.0
 
-## Enhancements
+### Enhancements
 
 * NOCHECK parameter has been added to `Add-ForeignKey` and `Add-CheckConstraint` operations
 * `Disable-CheckConstraint` and `Enable-CheckConstraint` functions have been added.
 * `Disable-ForeignKey` and `Enable-ForeignKey` functions have been added.
 
-## Bug Fixes
+### Bug Fixes
 
 * Convert-Migration.ps1 generates incorrect SQL if a migration removes then re-adds a column.
 
 
-# 0.3.3
+## 0.3.3
 
 * Improved error message when failing to connect to SQL Server.
 * `Add-Index` operation now supports INCLUDE clause.
 
 
-# 0.3.2
+## 0.3.2
 
-## Bug Fixes
+### Bug Fixes
 
 * `Invoke-SqlScript` fails when `NonQuery` switch is used.
 
 
-# 0.3.1
+## 0.3.1
 
-## Enhancements
+### Enhancements
 
 * `Get-RivetConfig` is now a publicly exposed function.  Use this method to parse a Rivet JSON configuration file.
 It returns a `Rivet.Configuration.Configuration` object.
 
 
-# 0.3.0
+## 0.3.0
 
-## Enhancements
+### Enhancements
 
 * `Get-Migration` now returns a `Rivet.Operations.ScriptFileOperation` object instead of a
 `Rivet.Operations.RawQueryOperation` for `Invoke-SqlQuery` operations.
 
-## Bug Fixes
+### Bug Fixes
 
 * `Invoke-SqlScript` ignoring `CommandTimeout` parameter.
 * `Invoke-SqlScript` didn't rollback migration if the script file was not found.
@@ -307,14 +309,14 @@ It returns a `Rivet.Configuration.Configuration` object.
 `Pop-Migration` function.
 
 
-# 0.2.1
+## 0.2.1
 
-## Bug Fixes
+### Bug Fixes
 
 * If a database has multipe target databases and no migrations directory, Rivet stops after the first target database.
 
 
-# 0.2.0
+## 0.2.0
 
 * Databases are now created if they don't exist.
 * A single database connection is now re-used when migrating multiple databases, instead of establishing a new
