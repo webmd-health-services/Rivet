@@ -3,9 +3,18 @@
 
 # 0.20.0
 
+## Added
+
+* `New-RivetSession` function for creating a Rivet session. A `Rivet_Session` is the object used by Rivet to keep track
+of current state.
+
+## Changed
+
 * Rivet internals no longer use global variables for managing connections and current state.
-* Created `New-RivetSession` function for creating a Rivet session. A `Rivet_Session` is the object used by Rivet to
-keep track of current state.
+* Default migration output now quotes SQL Server names and database names with `[]`.
+
+## Fixed
+
 * Fixed: Rivet no longer shows multiple errors when it encounters a terminating error.
 
 
