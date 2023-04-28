@@ -14,33 +14,37 @@ function Remove-ForeignKey
     #>
     [CmdletBinding(DefaultParameterSetName='ByDefaultName')]
     param(
-        [Parameter(Mandatory=$true,Position=0)]
-        [string]
         # The name of the table.
-        $TableName,
+        [Parameter(Mandatory, Position=0)]
+        [String] $TableName,
 
-        [Parameter()]
-        [string]
         # The schema name of the table.  Defaults to `dbo`.
-        $SchemaName = 'dbo',
+        [String] $SchemaName = 'dbo',
 
-        [Parameter(Mandatory=$true,Position=1,ParameterSetName='ByDefaultName')]
-        [string]
         # OBSOLETE. Use the `Name` parameter to specify the foreign key to remove.
-        $References,
+        [Parameter(Mandatory, Position=1, ParameterSetName='ByDefaultName')]
+        [String] $References,
 
+        # OBSOLETE. Use the `Name` parameter to specify the foreign key to remove.
         [Parameter(ParameterSetName='ByDefaultName')]
-        [string]
-        # OBSOLETE. Use the `Name` parameter to specify the foreign key to remove.
-        $ReferencesSchema = 'dbo',
+        [String] $ReferencesSchema = 'dbo',
 
-        [Parameter(Mandatory=$true,ParameterSetName='ByCustomName')]
-        [string]
         # The name of the foreign key to remove.
-        $Name
+        [Parameter(Mandatory, ParameterSetName='ByCustomName')]
+        [String] $Name
     )
 
     Set-StrictMode -Version 'Latest'
+    Use-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+
+    if ($PSCmdlet.ParameterSetName -eq 'ByDefaultName')
+    {
+        $Name = New-ConstraintName -ForeignKey `
+                                   -SchemaName $SchemaName `
+                                   -TableName $TableName `
+                                   -ReferencesSchema $ReferencesSchema `
+                                   -ReferencesTableName $References
+    }
 
     [Rivet.Operations.RemoveForeignKeyOperation]::New($SchemaName, $TableName, $Name)
 }
