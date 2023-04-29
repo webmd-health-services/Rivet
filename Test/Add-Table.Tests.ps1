@@ -151,16 +151,15 @@ Describe 'Add-Table' {
     }
 '@ | New-TestMigration -Name 'CreateTableWithOption'
 
-        Invoke-RTRivet -Push 'CreateTableWithOption' -ErrorAction SilentlyContinue
-
-        if( $Global:Error )
+        try
+        {
+            Invoke-RTRivet -Push 'CreateTableWithOption'
+            Assert-Table 'AddTableWithOption' -Description 'Testing Add-Table migration' -DataCompression 2
+        }
+        catch
         {
             $bingo = $Global:Error | Where-Object { $_ -like '*Cannot enable compression for object ''AddTableWithOption''*' }
             $bingo | Should -Not -BeNullOrEmpty
-        }
-        else
-        {
-            Assert-Table 'AddTableWithOption' -Description 'Testing Add-Table migration' -DataCompression 2
         }
     }
 

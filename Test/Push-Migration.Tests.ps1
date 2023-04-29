@@ -354,8 +354,7 @@ Describe 'Push-Migration' {
     }
 '@ | New-TestMigration -Name 'AddTableWithNOColumns'
 
-        Invoke-RTRivet -Push -ErrorAction SilentlyContinue -ErrorVariable rivetError
-        ($rivetError.Count -gt 0) | Should -BeTrue
+        { Invoke-RTRivet -Push } | Should -Throw '*incorrect syntax*'
 
         ('TableWithoutColumnsWithColumn','TableWithoutColumns','FourthTable') | ForEach-Object {
             (Test-Table -Name $_) | Should -BeFalse
@@ -372,8 +371,6 @@ Describe 'Push-Migration' {
     }
 
     It 'should fail if migration name does not exist' {
-        Invoke-RTRivet -Push 'AMigrationWhichDoesNotExist' -ErrorAction SilentlyContinue
-        $Global:Error.Count | Should -BeGreaterThan 0
-        $Global:Error[0] | Should -Match 'not found'
+        { Invoke-RTRivet -Push 'AMigrationWhichDoesNotExist' } | Should -Throw '*not found*'
     }
 }

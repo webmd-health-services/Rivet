@@ -35,9 +35,7 @@ Describe 'Stop-Migration' {
         $count = Measure-Migration
         try
         {
-            Invoke-RTRivet -Pop -ErrorAction SilentlyContinue
-            $Global:Error.Count | Should -BeGreaterThan 0
-            $Global:Error[0] | Should -Match ([regex]::Escape('This migration can''t be reversed. Sorry!'))
+            { Invoke-RTRivet -Pop -ErrorAction SilentlyContinue } | Should -Throw '*can''t be reversed*'
             (Measure-Migration) | Should -Be $count
         }
         finally

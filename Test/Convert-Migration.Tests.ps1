@@ -16,7 +16,7 @@ BeforeAll {
     function Global:Watch-Operation
     {
         [CmdletBinding()]
-        [Rivet.Plugin([Rivet.Events]::BeforeOperationLoad)]
+        [Rivet.Plugin('BeforeOperationLoad')]
         param(
             $Migration,
             $Operation

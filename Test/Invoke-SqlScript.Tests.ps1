@@ -61,8 +61,7 @@ Describe 'Invoke-SqlScript' {
 
         try
         {
-            Invoke-RTRivet -Push 'InvokeSqlScript' -ErrorAction SilentlyContinue
-
+            { Invoke-RTRivet -Push 'InvokeSqlScript' } | Should -Throw '*not found*'
             (Test-Schema 'invokesqlscript') | Should -BeFalse
         }
         finally

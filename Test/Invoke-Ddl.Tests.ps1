@@ -49,7 +49,7 @@ Describe 'Invoke-Ddl' {
         (Test-Schema 'Invoke-Ddl') | Should -BeTrue
     }
 
-    It 'should invoke ddl with commented out g o' {
+    It 'should invoke ddl with commented out go' {
         @"
     function Push-Migration
     {
@@ -78,9 +78,7 @@ Describe 'Invoke-Ddl' {
 
 "@ | New-TestMigration -Name 'CreateInvokeDdlFunction'
 
-        Invoke-RTRivet -Push 'CreateInvokeDdlFunction' -ErrorAction SilentlyContinue
-        $Global:Error.Count | Should -BeGreaterThan 0
-
+        { Invoke-RTRivet -Push 'CreateInvokeDdlFunction' } | Should -Throw '*incorrect syntax*'
         (Test-DatabaseObject -ScalarFunction -Name 'InvokeDdl') | Should -BeFalse
         (Test-Schema 'Invoke-Ddl') | Should -BeFalse
     }

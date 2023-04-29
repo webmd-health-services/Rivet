@@ -10,8 +10,7 @@ BeforeAll {
     function Assert-OperationsReturned
     {
         param(
-            [object[]]
-            $Operation
+            [Object[]] $Operation
         )
 
         $Operation | Should -Not -BeNullOrEmpty
@@ -47,7 +46,13 @@ Describe 'Invoke-Rivet' {
     }
 
     AfterEach {
-        Stop-RivetTest
+        try
+        {
+            Stop-RivetTest
+        }
+        catch
+        {
+        }
         Clear-TestDatabase -Name $RTDatabase2Name
     }
 
@@ -70,7 +75,7 @@ Describe 'Invoke-Rivet' {
     }
 '@ | New-TestMigration -Name 'CreateDatabase'
 
-        $result = Invoke-RTRivet -Push
+        $result = Invoke-Rivet -ConfigFilePath $RTConfigFilePath -Database $RTDatabaseName -Push
         $Global:Error.Count | Should -Be 0
         Assert-OperationsReturned $result
 
@@ -94,7 +99,7 @@ Describe 'Invoke-Rivet' {
     }
 '@ | New-TestMigration -Name 'TargetDatabases' -Database $RTDatabaseName
 
-        $result = Invoke-RTRivet -Push -Database $RTDatabaseName
+        $result = Invoke-Rivet -ConfigFilePath $RTConfigFilePath -Database $RTDatabaseName -Push
         $Global:Error.Count | Should -Be 0
         Assert-OperationsReturned $result
 
@@ -112,7 +117,7 @@ Describe 'Invoke-Rivet' {
 
         Remove-Item -Path $RTDatabaseMigrationRoot -Recurse
 
-        $result = Invoke-RTRivet -Push -Database $RTDatabaseName
+        $result = Invoke-Rivet -ConfigFilePath $RTConfigFilePath -Database $RTDatabaseName -Push
         $Global:Error.Count | Should -Be 0
         (Test-Database) | Should -BeTrue
         (Test-Database $RTDatabase2Name) | Should -BeTrue
@@ -149,14 +154,13 @@ Describe 'Invoke-Rivet' {
         $file | Should -Not -BeNullOrEmpty
         $file = Rename-Item -Path $file -NewName ('00010100999999_HasReservedID.ps1') -PassThru
 
-        Invoke-RTRivet -Push -ErrorAction SilentlyContinue
-        $Global:Error.Count | Should -BeGreaterThan 0
-        $Global:Error[0] | Should -Match 'reserved'
+        { Invoke-Rivet -ConfigFilePath $RTConfigFilePath -Database $RTDatabaseName -Push } |
+            Should -Throw '*reserved*'
         (Test-Schema -Name 'fubar') | Should -BeFalse
 
         $Global:Error.Clear()
         Rename-Item -Path $file -NewName ('00010101000000_HasReservedID.ps1')
-        Invoke-RTRivet -Push
+        Invoke-Rivet -ConfigFilePath $RTConfigFilePath -Database $RTDatabaseName -Push
         $Global:Error.Count | Should -Be 0
         Assert-Schema -Name 'fubar'
     }
@@ -169,11 +173,8 @@ Describe 'Invoke-Rivet' {
 
         try
         {
-            Invoke-RTRivet -Push -ErrorAction SilentlyContinue
-            $Global:Error.Count | Should -BeGreaterThan 0
-            $expectedErrMsg = '\[\.\\IDoNotExist\]\.\[master\]: A network-related or instance-specific error ' +
-                              'occurred while establishing a connection to SQL Server'
-            $Global:Error[0] | Should -Match $expectedErrMsg
+            { Invoke-Rivet -ConfigFilePath $RTConfigFilePath -Database $RTDatabaseName -Push } |
+                Should -Throw '*network-related or instance-specific error*'
         }
         finally
         {
@@ -206,7 +207,7 @@ Describe 'Invoke-Rivet' {
     function Pop-Migration { Invoke-Ddl 'select 1' }
 '@ | New-TestMigration -Name $_
                 }
-        [Rivet.OperationResult[]]$result = Invoke-Rivet -Push -Name 'One','Three' -ConfigFilePath $RTConfigFilePath
+        [Rivet.OperationResult[]]$result = Invoke-Rivet -Name 'One','Three' -ConfigFilePath $RTConfigFilePath -Push
         Assert-OperationsReturned $result
         $result[0].Migration.Name | Should -Be 'One'
         $result[1].Migration.Name | Should -Be 'Three'
@@ -220,7 +221,7 @@ Describe 'Invoke-Rivet' {
     function Pop-Migration { Invoke-Ddl 'select 1' }
 '@ | New-TestMigration -Name $_
                 }
-        Invoke-Rivet -Push -Name 'One','Three' -ConfigFilePath $RTConfigFilePath
+        Invoke-Rivet -Name 'One','Three' -ConfigFilePath $RTConfigFilePath -Push
         [Rivet.OperationResult[]]$result = Invoke-Rivet -Pop -Name 'One','Three' -ConfigFilePath $RTConfigFilePath
         Assert-OperationsReturned $result
         $result[0].Migration.Name | Should -Be 'Three'
@@ -236,13 +237,13 @@ Describe 'Invoke-Rivet' {
         $config | ConvertTo-Json | Set-Content -Path $RTConfigFilePath
 
         # Create databases first
-        Invoke-RTRivet -Push -Database $RTDatabaseName
+        Invoke-Rivet -ConfigFilePath $RTConfigFilePath -Database $RTDatabaseName -Push
         $Global:Error.Count | Should -Be 0
         (Test-Database) | Should -BeTrue
         (Test-Database $RTDatabase2Name) | Should -BeTrue
 
         # Now drop the databases
-        Invoke-RTRivet -DropDatabase -Force
+        Invoke-Rivet -ConfigFilePath $RTConfigFilePath -Database $RTDatabaseName -DropDatabase -Force
         $Global:Error.Count | Should -Be 0
         (Test-Database) | Should -BeFalse
         (Test-Database $RTDatabase2Name) | Should -BeFalse
@@ -257,13 +258,13 @@ Describe 'Invoke-Rivet' {
         $config | ConvertTo-Json | Set-Content -Path $RTConfigFilePath
 
         # Create databases first
-        Invoke-RTRivet -Push -Database $RTDatabaseName
+        Invoke-Rivet -ConfigFilePath $RTConfigFilePath -Database $RTDatabaseName -Push
         $Global:Error.Count | Should -Be 0
         (Test-Database) | Should -BeTrue
         (Test-Database $RTDatabase2Name) | Should -BeTrue
 
         # Now drop the database
-        Invoke-RTRivet -DropDatabase -Force -Database 'RivetTest2'
+        Invoke-Rivet -ConfigFilePath $RTConfigFilePath -DropDatabase -Force -Database 'RivetTest2'
         $Global:Error.Count | Should -Be 0
         (Test-Database) | Should -BeTrue
         (Test-Database $RTDatabase2Name) | Should -BeFalse
@@ -275,7 +276,7 @@ Describe 'Invoke-Rivet' {
         (Test-Database) | Should -BeFalse
 
         # Now drop the database
-        Invoke-RTRivet -DropDatabase -Force -Database 'RivetTest'
+        Invoke-Rivet -ConfigFilePath $RTConfigFilePath -DropDatabase -Force -Database 'RivetTest'
         $Global:Error.Count | Should -Be 0
         (Test-Database) | Should -BeFalse
     }
@@ -290,7 +291,7 @@ function MyPlugin
 {
 }
 '@
-        Invoke-RTRivet -Push
+        Invoke-Rivet -ConfigFilePath $RTConfigFilePath -Database $RTDatabaseName -Push
         Get-Module -Name 'InvokeRivetTestPlugin' | Should -Not -BeNullOrEmpty
     }
 }
@@ -309,7 +310,7 @@ function MyPlugin2
 {
 }
 '@
-        Invoke-RTRivet -Push
+        Invoke-Rivet -ConfigFilePath $RTConfigFilePath -Database $RTDatabaseName -Push
         Get-Module -Name 'InvokeRivetTestPlugin' | Should -Not -BeNullOrEmpty
         Get-Module -Name 'InvokeRivetTestPlugin2' | Should -Not -BeNullOrEmpty
     }
@@ -324,7 +325,7 @@ function MyPlugin
 {
 }
 '@
-        Invoke-RTRivet -Push
+        Invoke-Rivet -ConfigFilePath $RTConfigFilePath -Database $RTDatabaseName -Push
         Get-Module -Name 'InvokeRivetTestPlugin' | Should -Not -BeNullOrEmpty
         Get-Command -Name 'MyPlugin' | Should -Not -BeNullOrEmpty
 
@@ -334,7 +335,7 @@ function NewMyPlugin
 {
 }
 '@
-        Invoke-RTRivet -Push
+        Invoke-Rivet -ConfigFilePath $RTConfigFilePath -Database $RTDatabaseName -Push
         Get-Module -Name 'InvokeRivetTestPlugin' | Should -Not -BeNullOrEmpty
         Get-Command -Name 'MyPlugin' -ErrorAction Ignore | Should -BeNullOrEmpty
         Get-Command -Name 'NewMyPlugin' | Should -Not -BeNullOrEmpty

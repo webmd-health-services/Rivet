@@ -35,10 +35,9 @@ Describe 'ScriptStackTrace' {
 
         try
         {
-            Invoke-RTRivet -Push 'BogusMigration' -ErrorAction SilentlyContinue
+            { Invoke-RTRivet -Push 'BogusMigration' } | Should -Throw '*parameter cannot be found*'
             $Global:Error.Count | Should -BeGreaterThan 0
             $Global:Error[0] | Should -Match 'TestingScriptStackTrace'
-            $Global:Error.Count | Should -BeGreaterThan 0
             $Global:Error[0] | Should -Match 'STACKTRACE'
         }
         finally

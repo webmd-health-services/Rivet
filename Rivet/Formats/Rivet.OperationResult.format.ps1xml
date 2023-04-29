@@ -50,7 +50,7 @@
 
                                     if( ($op -is [Rivet.Operations.ExtendedPropertyOperation]) )
                                     {
-                                        return $op.ObjectName
+                                        return $op.Name
                                     }
 
                                     if( ($op | Get-Member -Name 'Name') )
