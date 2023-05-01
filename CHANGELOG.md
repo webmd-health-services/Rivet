@@ -10,8 +10,6 @@
 * `New-RivetSession` function for creating a Rivet session. A `Rivet_Session` is the object used by Rivet to keep track
 of current state.
 * `Connect-RivetSession` function for connecting to the databases in a Rivet session.
-* `Get-MSSqlExtendedProperty` function for getting extended property information.
-* `Test-MSSqlExtendedProperty` function for testing if an object has an extended property.
 
 ### Changed
 

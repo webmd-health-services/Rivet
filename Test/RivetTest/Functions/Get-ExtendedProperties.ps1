@@ -6,13 +6,13 @@ function Get-ExtendedProperties
     #>
 
     param(
-        
+
     )
-    
+
     Set-StrictMode -Version Latest
 
     $query = @'
-    select * 
+    select *
     from sys.extended_properties
 '@
     Invoke-RivetTestQuery -Query $query

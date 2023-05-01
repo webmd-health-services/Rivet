@@ -34,11 +34,11 @@ Describe 'Add-ExtendedProperty' {
 
         Invoke-RTRivet -Push 'AddExtendedPropertyToSchema'
 
-        $expinfo = Get-MSSqlExtendedProperty -Session $RTSession -SchemaName 'fizz'
+        $expinfo = Get-ExtendedProperties
 
         $expinfo[0].name | Should -Be 'Deploy'
         $expinfo[0].value | Should -Be 'TRUE'
-        $expinfo[0].objtype | Should -Be 'SCHEMA'
+        $expinfo[0].class_desc | Should -Be 'SCHEMA'
     }
 
     It 'should add extended property to table' {
@@ -61,11 +61,11 @@ Describe 'Add-ExtendedProperty' {
 
         Invoke-RTRivet -Push 'AddExtendedPropertyToTable'
 
-        $expinfo = Get-MSSqlExtendedProperty -Session $RTSession -TableName 'Foobar'
+        $expinfo = Get-ExtendedProperties
 
         $expinfo[0].name | Should -Be 'Deploy'
         $expinfo[0].value | Should -Be 'TRUE'
-        $expinfo[0].objtype | Should -Be 'TABLE'
+        $expinfo[0].class_desc | Should -Be 'OBJECT_OR_COLUMN'
 
     }
 
@@ -87,11 +87,11 @@ Describe 'Add-ExtendedProperty' {
 
         Invoke-RTRivet -Push 'AddExtendedPropertyToView'
 
-        $expinfo = Get-MSSqlExtendedProperty -Session $RTSession -ViewName 'Foobar'
+        $expinfo = Get-ExtendedProperties
 
         $expinfo[0].name | Should -Be 'Deploy'
         $expinfo[0].value | Should -Be 'TRUE'
-        $expinfo[0].objtype | Should -Be 'VIEW'
+        $expinfo[0].class_desc | Should -Be 'OBJECT_OR_COLUMN'
 
     }
 
@@ -116,11 +116,11 @@ Describe 'Add-ExtendedProperty' {
 
         Invoke-RTRivet -Push 'AddExtendedPropertyToView'
 
-        $expinfo = Get-MSSqlExtendedProperty -Session $RTSession -SchemaName 'metric' -ViewName 'Foobar'
+        $expinfo = Get-ExtendedProperties
 
         $expinfo[0].name | Should -Be 'Deploy'
         $expinfo[0].value | Should -Be 'TRUE'
-        $expinfo[0].objtype | Should -Be 'VIEW'
+        $expinfo[0].class_desc | Should -Be 'OBJECT_OR_COLUMN'
 
     }
 
@@ -144,11 +144,11 @@ Describe 'Add-ExtendedProperty' {
 
         Invoke-RTRivet -Push 'AddExtendedPropertyToTableColumn'
 
-        $expinfo = Get-MSSqlExtendedProperty -Session $RTSession -TableName 'Foobar' -ColumnName 'ID'
+        $expinfo = Get-ExtendedProperties
 
         $expinfo[0].name | Should -Be 'Deploy'
         $expinfo[0].value | Should -Be 'TRUE'
-        $expinfo[0].objtype | Should -Be 'COLUMN'
+        $expinfo[0].class_desc | Should -Be 'OBJECT_OR_COLUMN'
 
     }
 
@@ -175,11 +175,11 @@ Describe 'Add-ExtendedProperty' {
 
         Invoke-RTRivet -Push 'AddExtendedPropertyToViewColumn'
 
-        $expinfo = Get-MSSqlExtendedProperty -Session $RTSession -ViewName 'Foobar' -ColumnName 'ID'
+        $expinfo = Get-ExtendedProperties
 
         $expinfo[0].name | Should -Be 'Deploy'
         $expinfo[0].value | Should -Be 'TRUE'
-        $expinfo[0].objtype | Should -Be 'COLUMN'
+        $expinfo[0].class_desc | Should -Be 'OBJECT_OR_COLUMN'
 
     }
 
@@ -203,7 +203,7 @@ Describe 'Add-ExtendedProperty' {
 
         Invoke-RTRivet -Push 'AllowNullPropertyValue'
 
-        $expinfo = Get-MSSqlExtendedProperty -Session $RTSession -TableName 'Foobar' -ColumnName 'ID'
+        $expinfo = Get-ExtendedProperties
 
         $expInfo[0].value | Should -BeNullOrEmpty
     }
@@ -229,7 +229,7 @@ Describe 'Add-ExtendedProperty' {
 
         Invoke-RTRivet -Push 'AddExtendedPropertyToColumn'
 
-        $expinfo = Get-MSSqlExtendedProperty -Session $RTSession -TableName 'Foobar' -ColumnName 'ID'
+        $expinfo = Get-ExtendedProperties
 
         $expInfo[0].value | Should -Be ''
 

@@ -653,7 +653,7 @@ Describe 'Convert-Migration' {
             (Test-Column @schema @farmers -Name 'RemoveMe') | Should -BeFalse
             (Test-DataType @schema -Name 'GUID') | Should -BeFalse
             (Test-DefaultConstraint @schema @crops -ColumnName 'Name') | Should -BeFalse
-            Test-MSSqlExtendedProperty -Session $RTSession @schema @crops -ColumnName 'Name' -Name 'MS_Description' |
+            Test-ExtendedProperty @schema @crops -ColumnName 'Name' -Name 'MS_Description' |
                 Should -BeFalse
             (Test-ForeignKey @schema @crops -ReferencesSchema $schema.SchemaName -References $farmers.TableName) | Should -BeFalse
             (Test-Index @schema @crops -ColumnName 'Name') | Should -BeFalse

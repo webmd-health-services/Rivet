@@ -54,7 +54,6 @@ Build:
     - Rivet\Functions\*.ps1
     - Rivet\Functions\Columns\*.ps1
     - Rivet\Functions\Operations\*.ps1
-    - Rivet\Functions\Metadata\*.ps1
     DestinationPath: Rivet\Rivet.psm1
     DeleteSourceFiles: true
     TextSeparator: "$(NewLine)$(NewLine)"

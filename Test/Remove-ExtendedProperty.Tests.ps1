@@ -35,7 +35,7 @@ function Pop-Migration
 
         Invoke-RTRivet -Push 'RemoveExtendedPropertyToSchema'
 
-        Test-MSSqlExtendedProperty -Session $RTSession -SchemaName 'fizz' | Should -BeFalse
+        Test-ExtendedProperty -SchemaName 'fizz' | Should -BeFalse
     }
 
     It 'should remove extended property to table' {
@@ -59,7 +59,7 @@ function Pop-Migration
 
         Invoke-RTRivet -Push 'RemoveExtendedPropertyToTable'
 
-        Test-MSSqlExtendedProperty -Session $RTSession -TableName 'Deploy' | Should -BeFalse
+        Test-ExtendedProperty -TableName 'Deploy' | Should -BeFalse
     }
 
     It 'should remove extended property to view' {
@@ -80,7 +80,7 @@ function Pop-Migration
 
         Invoke-RTRivet -Push 'RemoveExtendedPropertyToView'
 
-        Test-MSSqlExtendedProperty -Session $RTSession -ViewName 'Foobar' | Should -BeFalse
+        Test-ExtendedProperty -ViewName 'Foobar' | Should -BeFalse
     }
 
     It 'should remove extended property to view in custom schema' {
@@ -103,7 +103,7 @@ function Pop-Migration
 
         Invoke-RTRivet -Push 'RemoveExtendedPropertyToView'
 
-        Test-MSSqlExtendedProperty -Session $RTSession -SchemaName 'metric' -ViewName 'Foobar' | Should -BeFalse
+        Test-ExtendedProperty -SchemaName 'metric' -ViewName 'Foobar' | Should -BeFalse
     }
 
     It 'should remove extended property to table column' {
@@ -127,7 +127,7 @@ function Pop-Migration
 
         Invoke-RTRivet -Push 'RemoveExtendedPropertyToTableColumn'
 
-        Test-MSSqlExtendedProperty -Session $RTSession -TableName 'Foobar' -ColumnName 'ID' | Should -BeFalse
+        Test-ExtendedProperty -TableName 'Foobar' -ColumnName 'ID' | Should -BeFalse
     }
 
     It 'should remove extended property to view column' {
@@ -152,6 +152,6 @@ function Pop-Migration
 
         Invoke-RTRivet -Push 'RemoveExtendedPropertyToViewColumn'
 
-        Test-MSSqlExtendedProperty -Session $RTSession -ViewName 'Foobar' -ColumnName 'ID' | Should -BeFalse
+        Test-ExtendedProperty -ViewName 'Foobar' -ColumnName 'ID' | Should -BeFalse
     }
 }
