@@ -221,7 +221,6 @@ Test-RivetTypeDataMember -TypeName 'Rivet.Scale' -MemberName 'Value'
     Join-Path -Path $rivetModuleRoot -ChildPath 'Functions'
     Join-Path -Path $rivetModuleRoot -ChildPath 'Functions\Columns'
     Join-Path -Path $rivetModuleRoot -ChildPath 'Functions\Operations'
-    Join-Path -Path $rivetModuleRoot -ChildPath 'Functions\Metadata'
 } |
     Where-Object { Test-Path -Path $_ -PathType Container } |
     Get-ChildItem -Filter '*-*.ps1' |
