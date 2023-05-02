@@ -7,11 +7,10 @@ function New-RivetSession
 
     .DESCRIPTION
     The `New-RivetSession` function creates a Rivet session. By default, the function will use the configuration from
-    the `rivet.json` in the current directory. To use a custom `rivet.json` file, pass its path to the `rivet.json` file
-    to use for the session's configuration to the `ConfigurationPath` parameter. To create a session to only a specific
-    set of databases, pass their names to the `Database` parameter. The default is to create a session to operate
-    against all databases. To use environment-specific settings from the rivet.json file, pass the environment name to
-    the `Environment` parameter.
+    the `rivet.json` in the current directory. To use a custom `rivet.json` file, pass the path to the `rivet.json` file
+    to use to the `ConfigurationPath` parameter. To create a session to only a specific set of databases, pass their
+    names to the `Database` parameter. The default is to create a session to operate against all databases. To use
+    environment-specific settings from the rivet.json file, pass the environment name to the `Environment` parameter.
 
     .EXAMPLE
     New-RivetSession -ConfigurationPath '.\rivet.json'
@@ -22,7 +21,7 @@ function New-RivetSession
     .EXAMPLE
     New-RivetSession -ConfigurationPath '.\rivet.json' -Database @('UseThisOne', 'AndThisOne')
 
-    Demonstrates how to create a session objerct that only operates on a specific database. IN this example, Rivet will
+    Demonstrates how to create a session objerct that only operates on a specific database. In this example, Rivet will
     only operate on the `UseThisOne` and `AndThisOne` databases.
 
     .EXAMPLE
