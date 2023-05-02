@@ -6,7 +6,9 @@ function Export-Migration
     Exports objects from a database as Rivet migrations.
 
     .DESCRIPTION
-    The `Export-Migration` function exports database objects, schemas, and data types as a Rivet migration. By default, it exports *all* non-system, non-Rivet objects, data types, and schemas. You can filter specific objects by passing their full name to the `Include` parameter. Wildcards are supported. Objects are matched on their schema *and* name.
+    The `Export-Migration` function exports database objects, schemas, and data types as a Rivet migration. By default
+    it exports *all* non-system, non-Rivet objects, data types, and schemas. You can filter specific objects by passing
+    their full name to the `Include` parameter. Wildcards are supported. Objects are matched on their schema *and* name.
 
     .EXAMPLE
     Export-Migration -SqlServerName 'some\instance' -Database 'database'
@@ -15,21 +17,30 @@ function Export-Migration
     #>
     [CmdletBinding()]
     param(
+        # The session to use.
+        [Parameter(Mandatory, ParameterSetName='WithSession')]
+        [Rivet_Session] $Session,
+
         # The connection string for the database to connect to.
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory, ParameterSetName='WithoutSession')]
         [String] $SqlServerName,
+
+        # The path to the Rivet configuration file to load. Defaults to `rivet.json` in the current directory.
+        [Parameter(ParameterSetName='WithoutSession')]
+        [String] $ConfigFilePath,
+
+        # The name of the environment whose settings to return. If not provided, uses the default settings.
+        [Parameter(ParameterSetName='WithoutSession')]
+        [String] $Environment,
 
         # The database to connect to.
         [Parameter(Mandatory)]
         [String] $Database,
-        
+
         # The names of the objects to export. Must include the schema if exporting a specific object. Wildcards supported.
         #
         # The default behavior is to export all non-system objects.
         [String[]] $Include,
-        
-        # The name of the environment whose settings to return. If not provided, uses the default settings.
-        [String] $Environment,
 
         # The names of any objects *not* to export. Matches the object name *and* its schema name, i.e. `schema.name`. Wildcards supported.
         [String[]] $Exclude,
@@ -37,9 +48,6 @@ function Export-Migration
         # Any object types to exclude.
         [ValidateSet('CheckConstraint','DataType','DefaultConstraint','ForeignKey','Function','Index','PrimaryKey','Schema','StoredProcedure','Synonym','Table','Trigger','UniqueKey','View','XmlSchema')]
         [String[]] $ExcludeType,
-
-        # The path to the Rivet configuration file to load. Defaults to `rivet.json` in the current directory.
-        [String] $ConfigFilePath,
 
         [Switch] $NoProgress,
 
@@ -50,12 +58,16 @@ function Export-Migration
     Set-StrictMode -Version 'Latest'
     Use-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
-    [Rivet.Configuration.Configuration]$settings = Get-RivetConfig -Path $ConfigFilePath -Environment $Environment
+    if ($PSCmdlet.ParameterSetName -eq 'WithoutSession')
+    {
+        $Session = New-RivetSession -ConfigurationPath $ConfigFilePath -Environment $Environment
+        $Session.SqlServerName = $SqlServerName
+    }
 
     $pops = New-Object 'Collections.Generic.Stack[string]'
     $popsHash = @{}
     $exportedObjects = @{ }
-    $exportedSchemas = @{ 
+    $exportedSchemas = @{
                             'dbo' = $true;
                             'guest' = $true;
                             'sys' = $true;
@@ -64,9 +76,9 @@ function Export-Migration
     $exportedTypes = @{ }
     $exportedIndexes = @{ }
     $exportedXmlSchemas = @{ }
-    $rivetColumnTypes = Get-Alias | 
-                            Where-Object { $_.Source -eq 'Rivet' } | 
-                            Where-Object { $_.ReferencedCommand -like 'New-*Column' } | 
+    $rivetColumnTypes = Get-Alias |
+                            Where-Object { $_.Source -eq 'Rivet' } |
+                            Where-Object { $_.ReferencedCommand -like 'New-*Column' } |
                             Select-Object -ExpandProperty 'Name'
 
     $dependencies = @{ }
@@ -120,7 +132,7 @@ function Export-Migration
     $xmlSchemaDependencies = @{ }
     $xmlSchemasByID = @{ }
 
-    $exclusionTypeMap = @{ 
+    $exclusionTypeMap = @{
         'CheckConstraint' = 'CHECK_CONSTRAINT';
         'DefaultConstraint' = 'DEFAULT_CONSTRAINT';
         'ForeignKey' = 'FOREIGN_KEY_CONSTRAINT';
@@ -176,19 +188,19 @@ function Export-Migration
 
     $checkConstraintsQuery = '
 -- CHECK CONSTRAINTS
-select 
+select
     sys.check_constraints.object_id,
-    schema_name(sys.tables.schema_id) as schema_name, 
-    sys.tables.name as table_name, 
-    sys.check_constraints.name as name, 
+    schema_name(sys.tables.schema_id) as schema_name,
+    sys.tables.name as table_name,
+    sys.check_constraints.name as name,
     sys.check_constraints.is_not_trusted,
 	sys.check_constraints.is_not_for_replication,
 	sys.check_constraints.is_disabled,
     sys.check_constraints.definition
-from 
-    sys.check_constraints 
-        join 
-    sys.tables 
+from
+    sys.check_constraints
+        join
+    sys.tables
             on sys.check_constraints.parent_object_id = sys.tables.object_id
 --where
 --    sys.check_constraints.object_id = @object_id'
@@ -227,7 +239,7 @@ from
         {
             continue
         }
-            
+
         Export-DependentObject -ObjectID $constraint.object_id
 
         Write-ExportingMessage -Schema $constraint.schema_name -Name $constraint.name -Type CheckConstraint
@@ -259,13 +271,13 @@ from
 
     $columnsQuery = '
 -- COLUMNS
-select 
+select
     sys.columns.object_id,
     sys.columns.is_nullable,
-	sys.types.name as type_name, 
-	sys.columns.name as column_name, 
-	sys.types.collation_name as type_collation_name, 
-	sys.columns.max_length as max_length, 
+	sys.types.name as type_name,
+	sys.columns.name as column_name,
+	sys.types.collation_name as type_collation_name,
+	sys.columns.max_length as max_length,
 	sys.extended_properties.value as description,
     sys.columns.is_identity,
     sys.identity_columns.increment_value,
@@ -286,11 +298,11 @@ select
     sys.columns.xml_collection_id,
 	sys.xml_schema_collections.name as xml_schema_name,
     sys.types.max_length as default_max_length
-from 
-	sys.columns 
-		inner join 
-	sys.types 
-			on columns.user_type_id = sys.types.user_type_id  
+from
+	sys.columns
+		inner join
+	sys.types
+			on columns.user_type_id = sys.types.user_type_id
         left join
 	sys.extended_properties
 			on sys.columns.object_id = sys.extended_properties.major_id
@@ -425,31 +437,31 @@ from
 
     $dataTypesQuery = '
 -- DATA TYPES
-select 
-    schema_name(sys.types.schema_id) as schema_name, 
-    sys.types.name, 
+select
+    schema_name(sys.types.schema_id) as schema_name,
+    sys.types.name,
     sys.types.max_length,
     sys.types.precision,
     sys.types.scale,
     sys.types.collation_name,
     sys.types.is_nullable,
-    systype.name as from_name, 
+    systype.name as from_name,
     systype.max_length as from_max_length,
     systype.precision as from_precision,
     systype.scale as from_scale,
     systype.collation_name as from_collation_name,
     sys.types.is_table_type,
     sys.table_types.type_table_object_id
-from 
-    sys.types 
-        left join 
-    sys.types systype 
-            on sys.types.system_type_id = systype.system_type_id 
-            and sys.types.system_type_id = systype.user_type_id 
+from
+    sys.types
+        left join
+    sys.types systype
+            on sys.types.system_type_id = systype.system_type_id
+            and sys.types.system_type_id = systype.user_type_id
         left join
     sys.table_types
             on sys.types.user_type_id = sys.table_types.user_type_id
-where 
+where
     sys.types.is_user_defined = 1'
     function Export-DataType
     {
@@ -483,7 +495,7 @@ where
             Write-Debug ('Skipping   ALREADY EXPORTED  {0}' -f $Object.name)
             continue
         }
-        
+
         Export-Schema -Name $Object.schema_name
 
         Write-ExportingMessage -SchemaName $Object.schema_name -Name $Object.name -Type DataType
@@ -531,27 +543,27 @@ where
 
     $defaultConstraintsQuery = '
 -- DEFAULT CONSTRAINTS
-select 
-    schema_name(sys.tables.schema_id) as schema_name, 
-    sys.tables.name as table_name, 
-    sys.default_constraints.name as name, 
-    sys.columns.name as column_name, 
+select
+    schema_name(sys.tables.schema_id) as schema_name,
+    sys.tables.name as table_name,
+    sys.default_constraints.name as name,
+    sys.columns.name as column_name,
     definition,
     sys.default_constraints.object_id,
 	sys.default_constraints.parent_object_id
-from 
-    sys.objects 
-        join 
+from
+    sys.objects
+        join
     sys.default_constraints
             on sys.default_constraints.object_id = sys.objects.object_id
-	    join 
-    sys.columns 
+	    join
+    sys.columns
 	    	on sys.columns.object_id = sys.default_constraints.parent_object_id
 		    and sys.columns.column_id = sys.default_constraints.parent_column_id
-        left join 
-    sys.tables 
+        left join
+    sys.tables
             on sys.objects.parent_object_id = sys.tables.object_id
-        left join 
+        left join
     sys.schemas
             on sys.schemas.schema_id = sys.tables.schema_id
 -- where
@@ -671,19 +683,19 @@ from
 '
     $foreignKeyColumnsQuery = '
 -- FOREIGN KEY COLUMNS
-select 
+select
     sys.foreign_key_columns.constraint_object_id,
 	sys.columns.name as name,
 	referenced_columns.name as referenced_name,
     sys.foreign_key_columns.constraint_column_id
-from 
+from
 	sys.foreign_key_columns
 		join
 	sys.columns
 			on sys.foreign_key_columns.parent_object_id = sys.columns.object_id
 			and sys.foreign_key_columns.parent_column_id = sys.columns.column_id
 		join
-	sys.columns as referenced_columns		
+	sys.columns as referenced_columns
 			on sys.foreign_key_columns.referenced_object_id = referenced_columns.object_id
 			and sys.foreign_key_columns.referenced_column_id = referenced_columns.column_id
 '
@@ -749,23 +761,23 @@ from
 
     $indexesQuery = '
 -- INDEXES
-select 
+select
     sys.indexes.object_id,
     schema_name(sys.tables.schema_id) as schema_name,
     sys.indexes.name,
-    sys.tables.name as table_name, 
+    sys.tables.name as table_name,
     sys.indexes.is_unique,
     sys.indexes.type_desc,
     sys.indexes.has_filter,
     sys.indexes.filter_definition,
     sys.indexes.index_id
-from 
-    sys.indexes 
-        join 
-    sys.tables 
-            on sys.indexes.object_id = sys.tables.object_id 
-where 
-    is_primary_key = 0 and 
+from
+    sys.indexes
+        join
+    sys.tables
+            on sys.indexes.object_id = sys.tables.object_id
+where
+    is_primary_key = 0 and
     sys.indexes.type != 0 and
     sys.indexes.is_unique_constraint != 1 and
     sys.tables.is_ms_shipped = 0'
@@ -780,16 +792,16 @@ select
     sys.index_columns.is_included_column,
     sys.index_columns.is_descending_key
 from
-	sys.indexes 
-		join 
-	sys.index_columns 
-			on sys.indexes.object_id = sys.index_columns.object_id 
-			and sys.indexes.index_id = sys.index_columns.index_id 
+	sys.indexes
+		join
+	sys.index_columns
+			on sys.indexes.object_id = sys.index_columns.object_id
+			and sys.indexes.index_id = sys.index_columns.index_id
 		join
 	sys.columns
 			on sys.indexes.object_id = sys.columns.object_id
 			and sys.index_columns.column_id = sys.columns.column_id
--- where 
+-- where
 --    sys.indexes.object_id = @object_id and
 --    sys.indexes.index_id = @index_id
 '
@@ -902,31 +914,31 @@ from
 
     $objectsQuery = '
 -- OBJECTS
-select 
-    sys.schemas.name as schema_name, 
-    sys.objects.name as object_name, 
+select
+    sys.schemas.name as schema_name,
+    sys.objects.name as object_name,
     sys.objects.name as name,
-    sys.schemas.name + ''.'' + sys.objects.name as full_name, 
+    sys.schemas.name + ''.'' + sys.objects.name as full_name,
     sys.extended_properties.value as description,
     parent_objects.name as parent_object_name,
     sys.objects.object_id as object_id,
     RTRIM(sys.objects.type) as type,
     sys.objects.type_desc,
     sys.objects.parent_object_id
-from 
-    sys.objects 
-        join 
-    sys.schemas 
-            on sys.objects.schema_id = sys.schemas.schema_id 
+from
+    sys.objects
+        join
+    sys.schemas
+            on sys.objects.schema_id = sys.schemas.schema_id
         left join
     sys.extended_properties
-            on sys.objects.object_id = sys.extended_properties.major_id 
+            on sys.objects.object_id = sys.extended_properties.major_id
             and sys.extended_properties.minor_id = 0
             and sys.extended_properties.name = ''MS_Description''
         left join
     sys.objects parent_objects
         on sys.objects.parent_object_id = parent_objects.object_id
-where 
+where
     sys.objects.is_ms_shipped = 0 and
     (parent_objects.is_ms_shipped is null or parent_objects.is_ms_shipped = 0) and
     sys.schemas.name != ''rivet'''
@@ -974,12 +986,13 @@ where
 
             if( $externalDependencies.ContainsKey($object.object_id) )
             {
-                $indexOfReferencedDatabase = [array]::IndexOf($settings.Databases.Name, $externalDependencies[$object.object_id].DatabaseName)
-                $indexOfCurrentDatabase = [array]::IndexOf($settings.Databases.Name, $Database)
+                $indexOfReferencedDatabase = [array]::IndexOf($Session.Databases.Name, $externalDependencies[$object.object_id].DatabaseName)
+                $indexOfCurrentDatabase = [array]::IndexOf($Session.Databases.Name, $Database)
 
                 # If the external depenedency's database does not get applied BEFORE the current database, do not allow
                 # references to the external dependency.
-                if( ($indexOfReferencedDatabase -gt $indexOfCurrentDatabase) -or ($indexOfReferencedDatabase -lt 0) -or ($indexOfCurrentDatabase -lt 0) )
+                if (($indexOfReferencedDatabase -gt $indexOfCurrentDatabase) -or `
+                    ($indexOfReferencedDatabase -lt 0) -or ($indexOfCurrentDatabase -lt 0))
                 {
                     Write-Warning -Message ('Unable to export {0} {1}: it depends on external object {2}.' -f $object.type_desc,$object.full_name,$externalDependencies[$object.object_id].ExternalName)
                     $exportedObjects[$object.object_id] = $true
@@ -1067,42 +1080,42 @@ where
     # PRIMARY KEYS
     $primaryKeysQuery = '
 -- PRIMARY KEYS
-select 
+select
 	sys.key_constraints.object_id,
     sys.indexes.type_desc
-from 
-	sys.key_constraints 
-		join 
-	sys.indexes 
-			on sys.key_constraints.parent_object_id = sys.indexes.object_id 
-			and sys.key_constraints.unique_index_id = sys.indexes.index_id 
-where 
-	sys.key_constraints.type = ''PK'' 
+from
+	sys.key_constraints
+		join
+	sys.indexes
+			on sys.key_constraints.parent_object_id = sys.indexes.object_id
+			and sys.key_constraints.unique_index_id = sys.indexes.index_id
+where
+	sys.key_constraints.type = ''PK''
 	and sys.key_constraints.is_ms_shipped = 0'
 
     # PRIMARY KEY COLUMNS
     $primaryKeyColumnsQuery = '
 -- PRIMARY KEY COLUMNS
-select 
+select
     sys.objects.object_id,
-	sys.schemas.name as schema_name, 
-	sys.tables.name as table_name, 
-	sys.columns.name as column_name, 
+	sys.schemas.name as schema_name,
+	sys.tables.name as table_name,
+	sys.columns.name as column_name,
 	sys.indexes.type_desc,
     sys.index_columns.key_ordinal
-from 
-    sys.objects 
-    join sys.tables 
+from
+    sys.objects
+    join sys.tables
         on sys.objects.parent_object_id = sys.tables.object_id
     join sys.schemas
         on sys.schemas.schema_id = sys.tables.schema_id
     join sys.indexes
         on sys.indexes.object_id = sys.tables.object_id
-	join sys.index_columns 
-		on sys.indexes.object_id = sys.index_columns.object_id 
+	join sys.index_columns
+		on sys.indexes.object_id = sys.index_columns.object_id
         and sys.indexes.index_id = sys.index_columns.index_id
-	join sys.columns 
-		on sys.indexes.object_id = sys.columns.object_id 
+	join sys.columns
+		on sys.indexes.object_id = sys.columns.object_id
 		and sys.columns.column_id = sys.index_columns.column_id
 where
 --    sys.objects.object_id = @object_id and
@@ -1151,7 +1164,7 @@ where
         {
             # PK on a table-valued function.
             $exportedObjects[$Object.object_id] = $true
-            return        
+            return
         }
 
         $schema = ConvertTo-SchemaParameter -SchemaName $Object.schema_name
@@ -1172,14 +1185,14 @@ where
 
     $schemasQuery = '
 -- SCHEMAS
-select 
-    sys.schemas.name, 
+select
+    sys.schemas.name,
     sys.sysusers.name as owner,
     sys.extended_properties.value as description
-from 
-    sys.schemas 
-        join 
-    sys.sysusers 
+from
+    sys.schemas
+        join
+    sys.sysusers
             on sys.schemas.principal_id = sys.sysusers.uid
         left join
     sys.extended_properties
@@ -1259,7 +1272,7 @@ from
 
     $synonymsQuery = '
 -- SYNONYMS
-select 
+select
     sys.synonyms.object_id,
     parsename(base_object_name,3) as database_name,
     parsename(base_object_name,2) as schema_name,
@@ -1269,7 +1282,7 @@ from
     sys.synonyms
 		left join
 	sys.objects
-			on parsename(sys.synonyms.base_object_name,2) = schema_name(sys.objects.schema_id) 
+			on parsename(sys.synonyms.base_object_name,2) = schema_name(sys.objects.schema_id)
 			and parsename(sys.synonyms.base_object_name,1) = sys.objects.name
 '
     function Export-Synonym
@@ -1279,7 +1292,7 @@ from
             [object]
             $Object
         )
-        
+
         $schema = ConvertTo-SchemaParameter -SchemaName $Object.schema_name
         $synonym = $synonymsByID[$Object.object_id]
 
@@ -1288,7 +1301,7 @@ from
             Export-Object -ObjectID $synonym.target_object_id
         }
 
-        if( $synonym.database_name -and $synonym.database_name -ne $Database )
+        if( $synonym.database_name -and $synonym.database_name -ne $currentDatabase.Name )
         {
             Write-Warning -Message ('Unable to export SYNONYM {0}.{1}: it depends on external object [{2}].[{3}].[{4}].' -f $Object.schema_name,$Object.name,$synonym.database_name,$synonym.schema_name,$synonym.object_name)
             $exportedObjects[$Object.object_id] = $true
@@ -1438,24 +1451,24 @@ where
 
     $uniqueKeysColumnsQuery = '
 -- UNIQUE KEY COLUMNS
-select 
+select
     sys.key_constraints.object_id,
     sys.columns.name
-from 
-	sys.key_constraints 
+from
+	sys.key_constraints
 		join
 	sys.indexes
 			on sys.key_constraints.parent_object_id = sys.indexes.object_id
 			and sys.key_constraints.unique_index_id = sys.indexes.index_id
-		join 
-	sys.index_columns 
-			on sys.indexes.object_id = sys.index_columns.object_id 
-			and sys.indexes.index_id = sys.index_columns.index_id 
+		join
+	sys.index_columns
+			on sys.indexes.object_id = sys.index_columns.object_id
+			and sys.indexes.index_id = sys.index_columns.index_id
 		join
 	sys.columns
 			on sys.indexes.object_id = sys.columns.object_id
 			and sys.index_columns.column_id = sys.columns.column_id
-where 
+where
     sys.key_constraints.type = ''UQ'''
     function Export-UniqueKey
     {
@@ -1561,12 +1574,12 @@ where
             {
                 $description = ' -Description ''{0}''' -f ($description -replace '''','''''')
             }
-    
+
             $view = $view -replace $createPreambleRegex,''
             '    Add-View{0} -Name ''{1}''{2} -Definition @''{3}{4}{3}''@' -f $schema,$Object.name,$description,[Environment]::NewLine,$view
 
             # Get view's columns that have extended properties
-            $viewColumns = Invoke-Query -Query $columnsQuery | Where-Object { $_.object_id -eq $Object.object_id -and $_.description }
+            $viewColumns = Invoke-Query -Session $Session -Query $columnsQuery | Where-Object { $_.object_id -eq $Object.object_id -and $_.description }
             foreach( $column in $viewColumns )
             {
                 $colDescription = ' -Description ''{0}''' -f ($column.description -replace '''','''''')
@@ -1582,14 +1595,14 @@ where
     }
 
     $xmlSchemaQuery = '
-select 
+select
     schema_name(schema_id) as schema_name,
     name,
 	xml_collection_id,
 	XML_SCHEMA_NAMESPACE(schema_name(schema_id),sys.xml_schema_collections.name) as xml_schema
-from 
+from
 	sys.xml_schema_collections
-where 
+where
 	sys.xml_schema_collections.name != ''sys'''
     function Export-XmlSchema
     {
@@ -1757,7 +1770,7 @@ where
         Write-Verbose -Message $message
     }
 
-    $activity = 'Exporting migrations from {0}.{1}' -f $SqlServerName,$Database
+    $activity = 'Exporting migrations from {0}.{1}' -f $Session.SqlServerName,$Database
     $writeProgress = [Environment]::UserInteractive
     if( $NoProgress )
     {
@@ -1765,12 +1778,12 @@ where
     }
     $event = $null
 
-    Connect-Database -SqlServerName $SqlServerName -Database $Database -ErrorAction Stop | Out-Null
+    Connect-Database -Session $Session -Name $Database -ErrorAction Stop | Out-Null
     try
     {
         #region QUERIES
         # OBJECTS
-        $objects = Invoke-Query -Query $objectsQuery
+        $objects = Invoke-Query -Session $Session -Query $objectsQuery
         $objects | ForEach-Object { $objectsByID[$_.object_id] = $_ }
         $objects | Group-Object -Property 'parent_object_id' | ForEach-Object { $objectsByParentID[[int]$_.Name] = $_.Group }
         $objectTypes = $objects | Select-Object -ExpandProperty 'type_desc' | Select-Object -Unique
@@ -1778,62 +1791,62 @@ where
         # CHECK CONSTRAINTS
         if( $objectTypes -contains 'CHECK_CONSTRAINT' )
         {
-            $checkConstraints = Invoke-Query -Query $checkConstraintsQuery
+            $checkConstraints = Invoke-Query -Session $Session -Query $checkConstraintsQuery
             $checkConstraints | ForEach-Object { $checkConstraintsByID[$_.object_id] = $_ }
         }
 
         # DATA TYPES
-        $dataTypes = Invoke-Query -Query $dataTypesQuery
+        $dataTypes = Invoke-Query -Session $Session -Query $dataTypesQuery
 
         # COLUMNS
         if( $objectTypes -contains 'USER_TABLE' -or $dataTypes )
         {
-            $columns = Invoke-Query -Query $columnsQuery
+            $columns = Invoke-Query -Session $Session -Query $columnsQuery
             $columns | Group-Object -Property 'object_id' | ForEach-Object { $columnsByTable[[int]$_.Name] = $_.Group }
         }
 
         # DEFAULT CONSTRAINTS
         if( $objectTypes -contains 'DEFAULT_CONSTRAINT' )
         {
-            $defaultConstraints = Invoke-Query -Query $defaultConstraintsQuery #-Parameter @{ '@object_id' = $constraintObject.object_id }
+            $defaultConstraints = Invoke-Query -Session $Session -Query $defaultConstraintsQuery #-Parameter @{ '@object_id' = $constraintObject.object_id }
             $defaultConstraints | ForEach-Object { $defaultConstraintsByID[$_.object_id] = $_ }
         }
 
         # FOREIGN KEYS
         if( $objectTypes -contains 'FOREIGN_KEY_CONSTRAINT' )
         {
-            $foreignKeys = Invoke-Query -Query $foreignKeysQuery
+            $foreignKeys = Invoke-Query -Session $Session -Query $foreignKeysQuery
             $foreignKeys | ForEach-Object { $foreignKeysByID[$_.object_id] = $_ }
 
             # FOREIGN KEY COLUMNS
-            $foreignKeyColumns = Invoke-Query -Query $foreignKeyColumnsQuery
+            $foreignKeyColumns = Invoke-Query -Session $Session -Query $foreignKeyColumnsQuery
             $foreignKeyColumns | Group-Object -Property 'constraint_object_id' | ForEach-Object { $foreignKeyColumnsByObjectID[[int]$_.Name] = $_.Group }
         }
 
         # INDEXES
         if( $objectTypes -contains 'USER_TABLE' )
         {
-            $indexes = Invoke-Query -Query $indexesQuery
+            $indexes = Invoke-Query -Session $Session -Query $indexesQuery
             $indexes | Group-Object -Property 'object_id' | ForEach-Object { $indexesByObjectID[[int]$_.Name] = $_.Group }
 
             # INDEX COLUMNS
-            $indexColumns = Invoke-Query -Query $indexesColumnsQuery
+            $indexColumns = Invoke-Query -Session $Session -Query $indexesColumnsQuery
             $indexColumns | Group-Object -Property 'object_id' | ForEach-Object { $indexColumnsByObjectID[[int]$_.Name] = $_.Group }
         }
 
         if( $objectTypes -contains 'PRIMARY_KEY_CONSTRAINT' )
         {
-            $primaryKeys = Invoke-Query -Query $primaryKeysQuery
+            $primaryKeys = Invoke-Query -Session $Session -Query $primaryKeysQuery
             $primaryKeys | ForEach-Object { $primaryKeysByID[$_.object_id] = $_ }
 
-            $primaryKeyColumns = Invoke-Query -Query $primaryKeyColumnsQuery
+            $primaryKeyColumns = Invoke-Query -Session $Session -Query $primaryKeyColumnsQuery
             $primaryKeyColumns | Group-Object -Property 'object_id' | ForEach-Object { $primaryKeyColumnsByObjectID[[int]$_.Name] = $_.Group }
         }
 
         # SCHEMAS
         if( ($objects | Where-Object { $_.schema_name -ne 'dbo' }) -or ($dataTypes | Where-Object { $_.schema_name -ne 'dbo' }) )
         {
-            $schemas = Invoke-Query -Query $schemasQuery
+            $schemas = Invoke-Query -Session $Session -Query $schemasQuery
             $schemas | ForEach-Object { $schemasByName[$_.name] = $_ }
         }
 
@@ -1841,21 +1854,21 @@ where
         if( $objectTypes -contains 'SQL_INLINE_TABLE_VALUED_FUNCTION' -or $objectTypes -contains 'SQL_SCALAR_FUNCTION' -or $objectTypes -contains 'SQL_STORED_PROCEDURE' -or $objectTypes -contains 'SQL_TABLE_VALUED_FUNCTION' -or $objectTypes -contains 'SQL_TRIGGER' -or $objectTypes -contains 'VIEW' )
         {
             $query = 'select object_id, definition from sys.sql_modules'
-            $modules = Invoke-Query -Query $query
+            $modules = Invoke-Query -Session $Session -Query $query
             $modules | ForEach-Object { $modulesByID[$_.object_id] = $_ }
         }
 
         # SYNONYMS
         if( $objectTypes -contains 'SYNONYM' )
         {
-            $synonyms = Invoke-Query -Query $synonymsQuery
+            $synonyms = Invoke-Query -Session $Session -Query $synonymsQuery
             $synonyms | ForEach-Object { $synonymsByID[$_.object_id] = $_ }
         }
 
         # TRIGGERS
         if( $objectTypes -contains 'SQL_TRIGGER' )
         {
-            $triggers = Invoke-Query -Query $triggersQuery
+            $triggers = Invoke-Query -Session $Session -Query $triggersQuery
             $triggers | ForEach-Object { $triggersByID[$_.object_id] = $_ }
             $triggers | Group-Object -Property 'parent_id' | ForEach-Object { $triggersByTable[[int]$_.Name] = $_.Group }
         }
@@ -1863,42 +1876,42 @@ where
         if( $objectTypes -contains 'UNIQUE_CONSTRAINT' )
         {
             # UNIQUE KEYS
-            $uniqueKeys =  Invoke-Query -Query $uniqueKeysQuery
+            $uniqueKeys =  Invoke-Query -Session $Session -Query $uniqueKeysQuery
             $uniqueKeys | ForEach-Object { $uniqueKeysByID[$_.object_id] = $_ }
             $uniqueKeys | Group-Object -Property 'parent_object_id' | ForEach-Object { $uniqueKeysByTable[[int]$_.Name] = $_.Group }
-    
+
             # UNIQUE KEY COLUMNS
-            $uniqueKeyColumns = Invoke-Query -Query $uniqueKeysColumnsQuery
+            $uniqueKeyColumns = Invoke-Query -Session $Session -Query $uniqueKeysColumnsQuery
             $uniqueKeyColumns | Group-Object -Property 'object_id' | ForEach-Object { $uniqueKeyColumnsByObjectID[[int]$_.Name] = $_.Group }
         }
 
         if( $columns | Where-Object { $_.xml_collection_id } )
         {
             $query = '
-select 
+select
 	sys.columns.object_id,
 	sys.columns.xml_collection_id
-from 
-	sys.columns 
+from
+	sys.columns
 		join
 	sys.types
 			on sys.columns.user_type_id=sys.types.user_type_id
 			and sys.columns.system_type_id=sys.types.system_type_id
-where 
+where
 	sys.types.name = ''xml'' and
 	sys.columns.xml_collection_id != 0
 '
-            $objectsWithXmlSchemas = Invoke-Query -Query $query
+            $objectsWithXmlSchemas = Invoke-Query -Session $Session -Query $query
             $objectsWithXmlSchemas | Group-Object -Property 'object_id' | ForEach-Object { $xmlSchemaDependencies[[int]$_.Name] = $_.Group | Select-Object -ExpandProperty 'xml_collection_id' | Select-Object -Unique }
 
-            $xmlSchemas = Invoke-Query -Query $xmlSchemaQuery
+            $xmlSchemas = Invoke-Query -Session $Session -Query $xmlSchemaQuery
             $xmlSchemas | ForEach-Object { $xmlSchemasByID[$_.xml_collection_id] = $_ }
         }
         #endregion
 
         $sysDatabases = @( 'master', 'model', 'msdb', 'tempdb' )
         $query = 'select * from sys.sql_expression_dependencies'
-        foreach( $row in (Invoke-Query -Query $query) )
+        foreach( $row in (Invoke-Query -Session $Session -Query $query) )
         {
             $externalName = '[{0}]' -f $row.referenced_entity_name
             if( $row.referenced_schema_name )
@@ -1920,7 +1933,9 @@ where
                 $externalName = '[{0}].{1}' -f $row.referenced_server_name,$externalName
             }
 
-            if( $row.referenced_server_name -or ($row.referenced_database_name -ne $null -and $row.referenced_database_name -ne $Database) )
+            if ($row.referenced_server_name -or `
+                ($null -ne $row.referenced_database_name -and `
+                $row.referenced_database_name -ne $Database))
             {
                 $externalDependencies[$row.referencing_id] = @{ ExternalName = $externalName; DatabaseName = $row.referenced_database_name }
             }
@@ -1956,7 +1971,7 @@ where
             Add-Member -MemberType NoteProperty -Name 'Activity' -Value $activity -PassThru |
             Add-Member -MemberType NoteProperty -Name 'CurrentOperation' -Value '' -PassThru |
             Add-Member -MemberType NoteProperty -Name 'TotalCount' -Value $totalOperationCount
-    
+
         if( $writeProgress )
         {
             # Write-Progress is *expensive*. Only do it if the user is interactive and only every 1/10th of a second.
@@ -1978,7 +1993,7 @@ where
             Export-Index
             if( $Checkpoint )
             {
-                $rivetMigrationsTableData = Invoke-Query -Query $rivetMigrationsTableQuery
+                $rivetMigrationsTableData = Invoke-Query -Session $Session -Query $rivetMigrationsTableQuery
                 Export-RivetMigrationsTable
             }
         '}'
@@ -2000,6 +2015,6 @@ where
             Write-Progress -Activity $activity -PercentComplete 99
             Write-Progress -Activity $activity -Completed
         }
-        Disconnect-Database
+        Disconnect-Database -Session $Session
     }
 }

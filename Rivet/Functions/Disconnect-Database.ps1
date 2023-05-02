@@ -2,10 +2,14 @@
 function Disconnect-Database
 {
     param(
+        [Parameter(Mandatory)]
+        [Rivet_Session] $Session
     )
-    
-    if( $Connection -and $Connection.State -ne [Data.ConnectionState]::Closed )
+
+    $conn = $Session.Connection
+
+    if ($conn -and $conn.State -ne [Data.ConnectionState]::Closed)
     {
-        $Connection.Close()
+        $conn.Close()
     }
 }

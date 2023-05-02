@@ -6,15 +6,21 @@ function Get-Migration
     Gets the migrations for all or specific databases.
 
     .DESCRIPTION
-    The `Get-Migration` function returns `Rivet.Migration` objects for all the migrations in all or specific databases. With no parameters, looks in the current directory for a `rivet.json` file and returns all the migrations for all the databases based on that configuration. Use the `ConfigFilePath` to load and use a specific `rivet.json` file.
+    The `Get-Migration` function returns `Rivet.Migration` objects for all the migrations in all or specific
+    databases.With no parameters, looks in the current directory for a `rivet.json` file and returns all the migrations
+    for all the databases based on that configuration. Use the `ConfigFilePath` to load and use a specific `rivet.json`
+    file.
 
-    You can return migrations from specific databases by passing those database names as values to the `Database` parameter. 
+    You can return migrations from specific databases by passing those database names as values to the `Database`
+    parameter.
 
     The `Environment` parameter is used to load the correct environment-specific settings from the `rivet.json` file.
 
-    You can filter what migrations are returned using the `Include` or `Exclude` parameters, which support wildcards, and will match any part of the migration's filename, including the ID.
+    You can filter what migrations are returned using the `Include` or `Exclude` parameters, which support wildcards,
+    and will match any part of the migration's filename, including the ID.
 
-    Use the `Before` and `After` parameters to return migrations whose timestamps/IDs come before and after the given dates.
+    Use the `Before` and `After` parameters to return migrations whose timestamps/IDs come before and after the given
+    dates.
 
     .OUTPUTS
     Rivet.Migration.
@@ -32,8 +38,9 @@ function Get-Migration
     .EXAMPLE
     Get-Migration -Include 'CreateDeathStarTable','20150101000648','20150101150448_CreateRebelBaseTable','*Hoth*','20150707*'
 
-    Demonstrates how to get use the `Include` parameter to find migrations by name, ID, or file name. In this case, the following migrations will be returned:
-    
+    Demonstrates how to get use the `Include` parameter to find migrations by name, ID, or file name. In this case, the
+    following migrations will be returned:
+
      * The migration whose name is `CreateDeathStarTable`.
      * The migration whose ID is `20150101000648`.
      * The migration whose full name is `20150101150448_CreateRebelBaseTable`.
@@ -43,8 +50,9 @@ function Get-Migration
     .EXAMPLE
     Get-Migration -Exclude 'CreateDeathStarTable','20150101000648','20150101150448_CreateRebelBaseTable','*Hoth*','20150707*'
 
-    Demonstrates how to get use the `Exclude` parameter to skip/not return certain migrations by name, ID, or file name. In this case, the following migrations will be *not* be returned:
-    
+    Demonstrates how to get use the `Exclude` parameter to skip/not return certain migrations by name, ID, or file name.
+    In this case, the following migrations will be *not* be returned:
+
      * The migration whose name is `CreateDeathStarTable`.
      * The migration whose ID is `20150101000648`.
      * The migration whose full name is `20150101150448_CreateRebelBaseTable`.
@@ -54,43 +62,38 @@ function Get-Migration
     [CmdletBinding(DefaultParameterSetName='External')]
     [OutputType([Rivet.Migration])]
     param(
-        [Parameter(ParameterSetName='External')]
-        [string[]]
         # The database whose migrations to get.np
-        $Database,
-
         [Parameter(ParameterSetName='External')]
-        [string]
+        [String[]] $Database,
+
         # The environment settings to use.
-        $Environment,
-
         [Parameter(ParameterSetName='External')]
-        [string]
+        [String] $Environment,
+
         # The path to the rivet.json file to use. Defaults to `rivet.json` in the current directory.
-        $ConfigFilePath,
+        [Parameter(ParameterSetName='External')]
+        [String] $ConfigFilePath,
 
-        [string[]]
-        # A list of migrations to include. Matches against the migration's ID or Name or the migration's file name (without extension). Wildcards permitted.
-        $Include,
+        # A list of migrations to include. Matches against the migration's ID or Name or the migration's file name
+        # (without extension). Wildcards permitted.
+        [String[]] $Include,
 
-        [string[]]
-        # A list of migrations to exclude. Matches against the migration's ID or Name or the migration's file name (without extension). Wildcards permitted.
-        $Exclude,
+        # A list of migrations to exclude. Matches against the migration's ID or Name or the migration's file name
+        # (without extension). Wildcards permitted.
+        [String[]] $Exclude,
 
-        [DateTime]
         # Only get migrations before this date.  Default is all.
-        $Before,
+        [DateTime] $Before,
 
-        [DateTime]
         # Only get migrations after this date.  Default is all.
-        $After
+        [DateTime] $After
     )
 
     Set-StrictMode -Version 'Latest'
     Use-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
     Write-Timing -Message 'Get-Migration  BEGIN' -Indent
-    
+
     function Clear-Migration
     {
         ('function:Push-Migration','function:Pop-Migration') |
@@ -117,13 +120,13 @@ function Get-Migration
         $getRivetConfigParams['Environment'] = $Environment
     }
 
-    $Configuration = Get-RivetConfig @getRivetConfigParams
-    if( -not $Configuration )
+    $session = New-RivetSession -ConfigurationPath $ConfigFilePath -Environment $Environment -Database $Database
+    if( -not $session )
     {
         return
     }
 
-    Import-RivetPlugin -Path $Configuration.PluginPaths -ModuleName $Configuration.PluginModules
+    Import-RivetPlugin -Path $session.PluginPaths -ModuleName $session.PluginModules
     Write-Timing -Message 'Get-Migration  Import-RivetPlugin'
 
     $getMigrationFileParams = @{}
@@ -134,7 +137,7 @@ function Get-Migration
                                                     }
                                                 }
 
-    Get-MigrationFile -Configuration $Configuration @getMigrationFileParams |
+    Get-MigrationFile -Session $session @getMigrationFileParams |
         Where-Object {
             if( $PSBoundParameters.ContainsKey( 'Before' ) )
             {
@@ -155,7 +158,7 @@ function Get-Migration
             }
             return $true
         } |
-        Convert-FileInfoToMigration -Configuration $Configuration
+        Convert-FileInfoToMigration -Session $Session
 
     Write-Timing -Message 'Get-Migration  END' -Outdent
 }

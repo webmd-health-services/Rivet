@@ -17,14 +17,19 @@ function Checkpoint-Migration
     #>
     [CmdletBinding()]
     param(
+        [Parameter(Mandatory, ParameterSetName='WithSession')]
+        [Rivet_Session] $Session,
+
         # The database(s) to migrate.
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory, ParameterSetName='WithoutSession')]
         [String[]] $Database,
 
         # The environment you're working in.
+        [Parameter(ParameterSetName='WithoutSession')]
         [String] $Environment,
 
         # The path to the Rivet configuration file. Default behavior is to look in the current directory for a `rivet.json` file.
+        [Parameter(ParameterSetName='WithoutSession')]
         [String] $ConfigFilePath,
 
         # If a schema.ps1 script already exists at the output path it will be overwritten when Force is given.
@@ -34,24 +39,23 @@ function Checkpoint-Migration
     Set-StrictMode -Version 'Latest'
     Use-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
-    [Rivet.Configuration.Configuration]$settings = Get-RivetConfig -Database $Database -Path $ConfigFilePath -Environment $Environment
+    if ($PSCmdlet.ParameterSetName -eq 'WithoutSession')
+    {
+        $Session = New-RivetSession -ConfigurationPath $ConfigFilePath -Environment $Environment -Database $Database
+    }
 
-    foreach( $databaseItem in $settings.Databases )
+    foreach( $databaseItem in $Session.Databases )
     {
         $OutputPath = Join-Path -Path $databaseItem.MigrationsRoot -ChildPath "schema.ps1"
 
-        if ( (Test-Path -Path $OutputPath) -and -not $Force )
+        if ((Test-Path -Path $OutputPath) -and -not $Force)
         {
             Write-Error "Checkpoint output path ""$($OutputPath)"" already exists. Use the -Force switch to overwrite."
             return
         }
 
         Write-Debug "Checkpoint-Migration: Exporting migration on database $($databaseItem.Name)"
-        $migration = Export-Migration -SqlServerName $settings.SqlServerName `
-                                      -Database $databaseItem.Name `
-                                      -ConfigFilePath $ConfigFilePath `
-                                      -Checkpoint
-                                      
+        $migration = Export-Migration -Session $Session -Database $databaseItem.Name -Checkpoint
         $migration = $migration -join [Environment]::NewLine
         Set-Content -Path $OutputPath -Value $migration
     }

@@ -1,5 +1,49 @@
 
-$Connection = New-Object Data.SqlClient.SqlConnection
+# public classes *have* to be in this .psm1 file.
+class Rivet_Session
+{
+    Rivet_Session([Rivet.Configuration.Configuration] $settings)
+    {
+        $this.CommandTimeout = $settings.CommandTimeout
+        $this.ConnectionTimeout = $settings.ConnectionTimeout
+        $this.Databases = $settings.Databases
+        $this.DatabasesRoot = $settings.DatabasesRoot
+        $this.Environment = $settings.Environment
+        $this.Path = $settings.Path
+        $this.PluginModules = $settings.PluginModules
+        $this.PluginPaths = $settings.PluginPaths
+        $this.SqlServerName = $settings.SqlServerName
+    }
+
+    [Object] $Connection
+
+    [int] $CommandTimeout
+
+    [int] $ConnectionTimeout
+
+    [Collections.Generic.List[Rivet.Configuration.Database]] $Databases
+
+    [string] $DatabasesRoot
+
+    [string] $Environment
+
+    [string] $Path
+
+    [string[]] $PluginModules
+
+    [string[]] $PluginPaths
+
+    [string] $SqlServerName
+
+    [Object] $CurrentTransaction
+
+    [Rivet.Configuration.Database] $CurrentDatabase
+}
+
+enum Rivet_QueryKeyword
+{
+    Default = 1
+}
 
 $RivetSchemaName = 'rivet'
 $RivetMigrationsTableName = 'Migrations'
@@ -70,7 +114,7 @@ function Write-Timing
             [TimeSpan]$TimeSpan
         )
 
-        process 
+        process
         {
             Set-StrictMode -Version 'Latest'
 
@@ -95,7 +139,7 @@ function Write-Timing
             return "$($hours)$($minutes)$($seconds)$($TimeSpan.Milliseconds.ToString('000'))ms"
         }
     }
-    
+
     # $DebugPreference = 'Continue'
 
     if( $DebugPreference -eq 'Continue' )

@@ -1,140 +1,139 @@
 #Requires -Version 5.1
 Set-StrictMode -Version 'Latest'
 
-& (Join-Path -Path $PSScriptRoot -ChildPath 'Initialize-Test.ps1' -Resolve)
+BeforeAll {
+    Set-StrictMode -Version 'Latest'
 
-$migration = $null
-$originalMigration = $null
+    & (Join-Path -Path $PSScriptRoot -ChildPath 'Initialize-Test.ps1' -Resolve)
 
-function Init
-{
     $script:migration = $null
     $script:originalMigration = $null
-}
 
-function GivenDatabase
-{
-    param(
-        [Parameter(Mandatory)]
-        [String[]] $Name
-    )
+    function GivenDatabase
+    {
+        param(
+            [Parameter(Mandatory)]
+            [String[]] $Name
+        )
 
-    $script:databases += $Name
-}
+        $script:databases += $Name
+    }
 
-function GivenMigrationContent
-{
-    param(
-        [Parameter(Mandatory)]
-        [String] $Content
-    )
+    function GivenMigrationContent
+    {
+        param(
+            [Parameter(Mandatory)]
+            [String] $Content
+        )
 
-    $script:originalMigration = $Content
-}
+        $script:originalMigration = $Content
+    }
 
-function ThenNoErrors
-{
-    It ('should not write any errors') {
+    function ThenNoErrors
+    {
         $Global:Error | Should -BeNullOrEmpty
     }
-}
 
-function ThenMigration
-{
-    param(
-        [Switch] $Not,
+    function ThenMigration
+    {
+        param(
+            [Switch] $Not,
 
-        [Parameter(Mandatory)]
-        [String] $HasContent
-    )
+            [Parameter(Mandatory)]
+            [String] $HasContent
+        )
 
-    It ('should export operations') {
         if( $Not )
         {
-            ($migration -join [Environment]::NewLine) | Should -Not -BeLike ('*{0}*' -f [wildcardpattern]::Escape($HasContent))
+            ($script:migration -join [Environment]::NewLine) | Should -Not -BeLike ('*{0}*' -f [wildcardpattern]::Escape($HasContent))
         }
         else
         {
-            ($migration -join [Environment]::NewLine) | Should -BeLike ('*{0}*' -f [wildcardpattern]::Escape($HasContent))
+            ($script:migration -join [Environment]::NewLine) | Should -BeLike ('*{0}*' -f [wildcardpattern]::Escape($HasContent))
         }
     }
-}
 
-function WhenExporting
-{
-    [CmdletBinding()]
-    param(
-        [String[]] $Include,
-
-        [Switch] $SkipVerification,
-
-        [String[]] $ExcludeType,
-
-        [String[]] $Exclude,
-
-        [String] $Database
-    )
-
-    if( -not $Database )
+    function WhenExporting
     {
-        $Database = $RTDatabaseName
-    }
+        [CmdletBinding()]
+        param(
+            [String[]] $Include,
 
-    Start-RivetTest -DatabaseName $Database
-    try
-    {
-        $testDirectory = Get-ChildItem -Path $TestDrive.FullName | Sort-Object -Property LastWriteTime | Select-Object -Last 1
-        $configFilePath = Join-Path -Path $testDirectory.FullName -ChildPath 'rivet.json'
+            [Switch] $SkipVerification,
 
-        $migrationPath = ''
-        if( $originalMigration )
+            [String[]] $ExcludeType,
+
+            [String[]] $Exclude,
+
+            [String] $Database
+        )
+
+        if( -not $Database )
         {
-            $migrationPath = $originalMigration | New-TestMigration -Name 'ExportMigration' -DatabaseName $Database -ConfigFilePath $configFilePath
+            $Database = $RTDatabaseName
         }
 
-        Invoke-RTRivet -Push -ConfigFilePath $configFilePath -Database $Database
-        $optionalParams = @{}
-        if( $PSBoundParameters.ContainsKey('Include') )
+        Start-RivetTest -DatabaseName $Database
+        try
         {
-            $optionalParams['Include'] = $Include
-        }
+            $testDirectory = Get-ChildItem -Path $TestDrive | Sort-Object -Property LastWriteTime | Select-Object -Last 1
+            $configFilePath = Join-Path -Path $testDirectory.FullName -ChildPath 'rivet.json'
 
-        if( $PSBoundParameters.ContainsKey('ExcludeType') )
-        {
-            $optionalParams['ExcludeType'] = $ExcludeType
-        }
+            $script:migrationPath = ''
+            if( $script:originalMigration )
+            {
+                $script:migrationPath =
+                    $script:originalMigration |
+                    New-TestMigration -Name 'ExportMigration' -DatabaseName $Database -ConfigFilePath $configFilePath
+            }
 
-        if( $PSBoundParameters.ContainsKey('Exclude') )
-        {
-            $optionalParams['Exclude'] = $Exclude
-        }
+            Invoke-RTRivet -Push -ConfigFilePath $configFilePath -Database $Database
+            $optionalParams = @{}
+            if( $PSBoundParameters.ContainsKey('Include') )
+            {
+                $optionalParams['Include'] = $Include
+            }
 
-        $Global:Error.Clear()
+            if( $PSBoundParameters.ContainsKey('ExcludeType') )
+            {
+                $optionalParams['ExcludeType'] = $ExcludeType
+            }
 
-        $script:migration = Export-Migration -SqlServerName $RTServer -Database $Database -ConfigFilePath $configFilePath @optionalParams
-        Write-Debug -Message ($migration -join [Environment]::NewLine)
+            if( $PSBoundParameters.ContainsKey('Exclude') )
+            {
+                $optionalParams['Exclude'] = $Exclude
+            }
 
-        if( -not $SkipVerification )
-        {
-            It ('should export a runnable migration') {
+            $Global:Error.Clear()
+
+            $script:migration = Export-Migration -SqlServerName $RTServer -Database $Database -ConfigFilePath $configFilePath @optionalParams
+            Write-Debug -Message ($script:migration -join [Environment]::NewLine)
+
+            if( -not $SkipVerification )
+            {
                 # Now, check that the migration is runnable
                 Invoke-RTRivet -Pop
 
-                $migration | Set-Content -Path $migrationPath
+                $script:migration | Set-Content -Path $script:migrationPath
                 Invoke-RTRivet -Push -ErrorAction Stop
                 Invoke-RTRivet -Pop -ErrorAction Stop
             }
         }
-    }
-    finally
-    {
-        Stop-RivetTest -DatabaseName $Database
+        finally
+        {
+            Stop-RivetTest -DatabaseName $Database
+        }
     }
 }
 
-Describe 'Export-Migration.when exporting a table' {
-    Init
-    GivenMigrationContent @'
+Describe 'Export-Migration' {
+    BeforeEach {
+        $script:migration = $null
+        $script:originalMigration = $null
+    }
+
+    It 'exports a table' {
+        GivenMigrationContent @'
 function Push-Migration
 {
     Add-DataType -Name 'CID' -From 'char(8)'
@@ -156,7 +155,7 @@ function Push-Migration
         New-Column -DataType 'text' -Name 'textcolumn' -Description 'a text column'
         New-Column -DataType 'ntext' -Name 'ntextcolumn' -NotNull
         New-Column -DataType 'image' -Name 'imagecolumn'
-        New-Column -DataType 'sysname' -Name 'sysnamecolumn' -NotNull 
+        New-Column -DataType 'sysname' -Name 'sysnamecolumn' -NotNull
         New-Column -DataType 'sql_variant' -Name 'sql_variantcolumn' -Sparse
         New-Column -DataType 'CID' -Name 'CID' -NotNull
         varbinary 'VarBinDefault' -Size 1
@@ -185,9 +184,9 @@ function Pop-Migration
     Remove-DataType 'CID'
 }
 '@
-    WhenExporting
-    ThenMigration -Not -HasContent 'Add-Schema -Name ''dbo'''
-    ThenMigration -HasContent @'
+        WhenExporting
+        ThenMigration -Not -HasContent 'Add-Schema -Name ''dbo'''
+        ThenMigration -HasContent @'
     Add-Table -Name 'Migrations' -Description 'some table''s description' -Column {
         int 'ID' -Identity
         bigint 'BigID' -NotNull -Description 'some bigint column''s description'
@@ -221,35 +220,34 @@ function Pop-Migration
         varchar 'ExplicitMaxSize' -Size 8000
     }
 '@
-    ThenMigration -HasContent @'
+        ThenMigration -HasContent @'
     Add-PrimaryKey -TableName 'Migrations' -ColumnName 'ID' -Name 'PK_Migrations'
 '@
-    ThenMigration -HasContent @'
+        ThenMigration -HasContent @'
     Add-DefaultConstraint -TableName 'Migrations' -ColumnName 'AtUtc' -Name 'DF_Migrations_AtUtc' -Expression '(getutcdate())'
 '@
-    ThenMigration -HasContent @'
+        ThenMigration -HasContent @'
     Add-CheckConstraint -TableName 'Migrations' -Name 'CK_Migrations_Name' -Expression '([Name]=''Fubar'')'
 '@
-    ThenMigration -HasContent 'Add-CheckConstraint -TableName ''Migrations'' -Name ''CK_Migrations_Name2'' -Expression ''([Name]=''''Snafu'''')'' -NotForReplication -NoCheck'
-    ThenMigration -HasContent 'Add-Index -TableName ''Migrations'' -ColumnName ''BigID'' -Name ''IX_Migrations_BigID'''
-    ThenMigration -HasContent 'Add-UniqueKey -TableName ''Migrations'' -ColumnName ''Korean'' -Name ''AK_Migrations_Korean'''
-    ThenMigration -HasContent 'Add-Trigger -Name ''MigrationsTrigger'' -Definition @''
+        ThenMigration -HasContent 'Add-CheckConstraint -TableName ''Migrations'' -Name ''CK_Migrations_Name2'' -Expression ''([Name]=''''Snafu'''')'' -NotForReplication -NoCheck'
+        ThenMigration -HasContent 'Add-Index -TableName ''Migrations'' -ColumnName ''BigID'' -Name ''IX_Migrations_BigID'''
+        ThenMigration -HasContent 'Add-UniqueKey -TableName ''Migrations'' -ColumnName ''Korean'' -Name ''AK_Migrations_Korean'''
+        ThenMigration -HasContent 'Add-Trigger -Name ''MigrationsTrigger'' -Definition @''
 ON [dbo].[Migrations] for insert as select 1
 ''@'
-    
-    ThenMigration -HasContent 'Remove-Table -Name ''Migrations'''
-    ThenMigration -Not -HasContent 'Remove-Schema'
-    ThenMigration -Not -HasContent 'Remove-PrimaryKey'
-    ThenMigration -Not -HasContent 'Remove-DefaultConstraint'
-    ThenMigration -Not -HasContent 'Remove-CheckConstraint'
-    ThenMigration -Not -HasContent 'Remove-Index'
-    ThenMigration -Not -HasContent 'Remove-UniqueKey'
-    ThenMigration -Not -HasContent 'Remove-Trigger'
-}
 
-Describe 'Export-Migration.when identity column is not for replication' {
-    Init
-    GivenMigrationContent @'
+        ThenMigration -HasContent 'Remove-Table -Name ''Migrations'''
+        ThenMigration -Not -HasContent 'Remove-Schema'
+        ThenMigration -Not -HasContent 'Remove-PrimaryKey'
+        ThenMigration -Not -HasContent 'Remove-DefaultConstraint'
+        ThenMigration -Not -HasContent 'Remove-CheckConstraint'
+        ThenMigration -Not -HasContent 'Remove-Index'
+        ThenMigration -Not -HasContent 'Remove-UniqueKey'
+        ThenMigration -Not -HasContent 'Remove-Trigger'
+    }
+
+    It 'exports identity column that is not for replication' {
+        GivenMigrationContent @'
 function Push-Migration
 {
     Add-Table -Name 'Replicated' -Column {
@@ -266,22 +264,21 @@ function Pop-Migration
     Remove-Table 'NotReplicated'
 }
 '@
-    WhenExporting
-    ThenMigration -HasContent @'
+        WhenExporting
+        ThenMigration -HasContent @'
     Add-Table -Name 'Replicated' -Column {
         int 'ID' -Identity
     }
 '@
-    ThenMigration -HasContent @'
+     ThenMigration -HasContent @'
     Add-Table -Name 'NotReplicated' -Column {
         int 'ID' -Identity -NotForReplication
     }
 '@
-}
+    }
 
-Describe 'Export-Migration.when table has a custom data type as its identity' {
-    Init
-    GivenMigrationContent @'
+    It 'exports table that has a custom data type as its identity' {
+        GivenMigrationContent @'
 function Push-Migration
 {
     Add-DataType -Name 'SID' -From 'int'
@@ -297,32 +294,31 @@ function Pop-Migration
     Remove-DataType 'SID'
 }
 '@
-    WhenExporting
-    ThenMigration -HasContent @'
+        WhenExporting
+        ThenMigration -HasContent @'
     Add-DataType -Name 'SID' -From 'int'
     Add-Table -Name 'Migrations' -Description 'some table''s description' -Column {
         New-Column -DataType 'SID' -Name 'SidColumn' -Identity -Seed 300000000 -Increment 1 -NotForReplication
     }
     Add-PrimaryKey -TableName 'Migrations' -ColumnName 'SidColumn'
 '@
-}
+    }
 
-Describe 'Export-Migration.when XML column has a schema' {
-    Init
-    GivenMigrationContent @'
+    It 'exports XML column that has a schema' {
+        GivenMigrationContent @'
 function Push-Migration
 {
     Invoke-Ddl -Query '
-    create xml schema collection EmptyXsd as 
+    create xml schema collection EmptyXsd as
     N''
-    <xsd:schema targetNamespace="http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelManuInstructions" 
-       xmlns          ="http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelManuInstructions" 
-       elementFormDefault="qualified" 
+    <xsd:schema targetNamespace="http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelManuInstructions"
+       xmlns          ="http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelManuInstructions"
+       elementFormDefault="qualified"
        attributeFormDefault="unqualified"
        xmlns:xsd="http://www.w3.org/2001/XMLSchema" >
-    
+
         <xsd:element  name="root" />
-    
+
     </xsd:schema>
     ''
 '
@@ -339,20 +335,19 @@ function Pop-Migration
     Invoke-Ddl 'drop xml schema collection EmptyXsd'
 }
 '@
-    WhenExporting
-    ThenMigration -HasContent @'
+        WhenExporting
+        ThenMigration -HasContent @'
     Add-Table -Name 'Xml' -Column {
         xml 'Content' -XmlSchemaCollection 'EmptyXsd'
         Xml 'Document' -Document -XmlSchemaCollection 'EmptyXsd'
     }
 '@
-    ThenMigration -HasContent 'create xml schema collection [dbo].[EmptyXsd]'
-    ThenMigration -HasContent 'drop xml schema collection [dbo].[EmptyXsd]'
-}
+        ThenMigration -HasContent 'create xml schema collection [dbo].[EmptyXsd]'
+        ThenMigration -HasContent 'drop xml schema collection [dbo].[EmptyXsd]'
+    }
 
-Describe 'Export-Migration.when exporting with wildcards' {
-    Init
-    GivenMigrationContent @'
+    It 'exports objects with wildcards' {
+        GivenMigrationContent @'
 function Push-Migration
 {
     Add-Schema -Name 'export'
@@ -377,23 +372,22 @@ function Pop-Migration
     Remove-Schema 'export'
 }
 '@
-    WhenExporting 'export.*'
-    ThenMigration -HasContent @'
+        WhenExporting 'export.*'
+        ThenMigration -HasContent @'
     Add-Table -SchemaName 'export' -Name 'Migrations' -Column {
         bigint 'ID' -NotNull
         nvarchar 'Name' -Size 241 -NotNull
         datetime2 'AtUtc' -NotNull
     }
 '@
-    ThenMigration -HasContent 'Add-PrimaryKey -SchemaName ''export'''
-    ThenMigration -HasContent 'Add-StoredProcedure -SchemaName ''export'' -Name ''DoSomething'' -Definition'
-    ThenMigration -Not -HasContent 'DoSomethingElse'
-}
+        ThenMigration -HasContent 'Add-PrimaryKey -SchemaName ''export'''
+        ThenMigration -HasContent 'Add-StoredProcedure -SchemaName ''export'' -Name ''DoSomething'' -Definition'
+        ThenMigration -Not -HasContent 'DoSomethingElse'
+    }
 
-Describe 'Export-Migration.when exporting default constraints' {
-    Init
-    GivenMigrationContent @'
-function Push-Migration 
+    It 'exports default constraints' {
+        GivenMigrationContent @'
+function Push-Migration
 {
     Add-Table 'Fubar' {
         int 'ID'
@@ -424,17 +418,16 @@ function Pop-Migration
     Remove-Table 'Fubar'
 }
 '@
-    WhenExporting 'dbo.DF_Fubar_*','dbo.DF__*' -SkipVerification
-    ThenMigration -HasContent 'Add-DefaultConstraint -TableName ''Fubar'' -ColumnName ''ID'' -Name ''DF_Fubar_ID'' -Expression ''((1))'''
-    ThenMigration -HasContent 'Add-DefaultConstraint -TableName ''Fubar'' -ColumnName ''YN'' -Name ''DF_Fubar_YN'' -Expression ''(''''N'''')'''
-    ThenMigration -HasContent 'Remove-DefaultConstraint -TableName ''Fubar'' -Name ''DF_Fubar_ID'''
-    ThenMigration -Not -HasContent 'DF__'
-}
+        WhenExporting 'dbo.DF_Fubar_*','dbo.DF__*' -SkipVerification
+        ThenMigration -HasContent 'Add-DefaultConstraint -TableName ''Fubar'' -ColumnName ''ID'' -Name ''DF_Fubar_ID'' -Expression ''((1))'''
+        ThenMigration -HasContent 'Add-DefaultConstraint -TableName ''Fubar'' -ColumnName ''YN'' -Name ''DF_Fubar_YN'' -Expression ''(''''N'''')'''
+        ThenMigration -HasContent 'Remove-DefaultConstraint -TableName ''Fubar'' -Name ''DF_Fubar_ID'''
+        ThenMigration -Not -HasContent 'DF__'
+    }
 
-Describe 'Export-Migration.when exporting a primary key' {
-    Init
-    GivenMigrationContent @'
-function Push-Migration 
+    It 'exports a primary key' {
+        GivenMigrationContent @'
+function Push-Migration
 {
     Add-Table 'Fubar' {
         int 'ID' -NotNull
@@ -447,15 +440,14 @@ function Pop-Migration
     Remove-Table 'Fubar'
 }
 '@
-    WhenExporting 'dbo.PK_Fubar' -SkipVerification
-    ThenMigration -HasContent 'Add-PrimaryKey -TableName ''Fubar'' -ColumnName ''ID'' -Name ''PK_Fubar'''
-    ThenMigration -HasContent 'Remove-PrimaryKey -TableName ''Fubar'' -Name ''PK_Fubar'''
-}
+        WhenExporting 'dbo.PK_Fubar' -SkipVerification
+        ThenMigration -HasContent 'Add-PrimaryKey -TableName ''Fubar'' -ColumnName ''ID'' -Name ''PK_Fubar'''
+        ThenMigration -HasContent 'Remove-PrimaryKey -TableName ''Fubar'' -Name ''PK_Fubar'''
+    }
 
-Describe 'Export-Migration.when exporting a non-clustered primary key' {
-    Init
-    GivenMigrationContent @'
-function Push-Migration 
+    It 'exports a non-clustered primary key' {
+        GivenMigrationContent @'
+function Push-Migration
 {
     Add-Table 'Fubar' {
         int 'ID' -NotNull
@@ -468,15 +460,14 @@ function Pop-Migration
     Remove-Table 'Fubar'
 }
 '@
-    WhenExporting
-    ThenMigration -HasContent 'Add-PrimaryKey -TableName ''Fubar'' -ColumnName ''ID'' -Name ''PK_Fubar'' -NonClustered'
-    ThenMigration -HasContent 'Remove-Table -Name ''Fubar'''
-    ThenMigration -Not -HasContent 'Remove-PrimaryKey'
-}
+        WhenExporting
+        ThenMigration -HasContent 'Add-PrimaryKey -TableName ''Fubar'' -ColumnName ''ID'' -Name ''PK_Fubar'' -NonClustered'
+        ThenMigration -HasContent 'Remove-Table -Name ''Fubar'''
+        ThenMigration -Not -HasContent 'Remove-PrimaryKey'
+    }
 
-Describe 'Export-Migration.when exporting check constraints' {
-    Init
-    GivenMigrationContent @'
+    It 'exports check constraints' {
+        GivenMigrationContent @'
 function Push-Migration
 {
     Add-Table 'CheckConstraint' {
@@ -495,18 +486,17 @@ function Pop-Migration
     Remove-Table 'CheckConstraint'
 }
 '@
-    WhenExporting 'dbo.CK_CheckConstraint_*' -SkipVerification
-    ThenMigration -HasContent 'Add-CheckConstraint -TableName ''CheckConstraint'' -Name ''CK_CheckConstraint_ID'' -Expression ''([ID]>(0) AND [ID]<(10))'''
-    ThenMigration -HasContent 'Add-CheckConstraint -TableName ''CheckConstraint'' -Name ''CK_CheckConstraint_YN'' -Expression ''([YN]=''''Y'''' OR [YN]=''''N'''')'' -NoCheck'
-    ThenMigration -HasContent 'Add-CheckConstraint -TableName ''CheckConstraint'' -Name ''CK_CheckConstraint_ID_LessThan10'' -Expression ''([LessThan10]<(10))'''
-    ThenMigration -HasContent 'Disable-Constraint -TableName ''CheckConstraint'' -Name ''CK_CheckConstraint_ID_LessThan10'''
-    ThenMigration -HasContent 'Remove-CheckConstraint -TableName ''CheckConstraint'' -Name ''CK_CheckConstraint_ID'''
-    ThenMigration -Not -HasContent 'Add-Table'
-}
+        WhenExporting 'dbo.CK_CheckConstraint_*' -SkipVerification
+        ThenMigration -HasContent 'Add-CheckConstraint -TableName ''CheckConstraint'' -Name ''CK_CheckConstraint_ID'' -Expression ''([ID]>(0) AND [ID]<(10))'''
+        ThenMigration -HasContent 'Add-CheckConstraint -TableName ''CheckConstraint'' -Name ''CK_CheckConstraint_YN'' -Expression ''([YN]=''''Y'''' OR [YN]=''''N'''')'' -NoCheck'
+        ThenMigration -HasContent 'Add-CheckConstraint -TableName ''CheckConstraint'' -Name ''CK_CheckConstraint_ID_LessThan10'' -Expression ''([LessThan10]<(10))'''
+        ThenMigration -HasContent 'Disable-Constraint -TableName ''CheckConstraint'' -Name ''CK_CheckConstraint_ID_LessThan10'''
+        ThenMigration -HasContent 'Remove-CheckConstraint -TableName ''CheckConstraint'' -Name ''CK_CheckConstraint_ID'''
+        ThenMigration -Not -HasContent 'Add-Table'
+    }
 
-Describe 'Export-Migration.when exporting a stored procedure' {
-    Init
-    GivenMigrationContent @'
+    It 'exports a stored procedure' {
+        GivenMigrationContent @'
 function Push-Migration
 {
     Add-StoredProcedure -Name 'DoSomething' -Definition 'as select 1'
@@ -517,18 +507,17 @@ function Pop-Migration
     Remove-StoredProcedure -Name 'DoSomething'
 }
 '@
-    WhenExporting 'dbo.DoSomething'
-    ThenMigration -HasContent @"
+        WhenExporting 'dbo.DoSomething'
+        ThenMigration -HasContent @"
     Add-StoredProcedure -Name 'DoSomething' -Definition @'
 as select 1
 '@
 "@
-    ThenMigration -HasContent 'Remove-StoredProcedure -Name ''DoSomething'''
-}
+        ThenMigration -HasContent 'Remove-StoredProcedure -Name ''DoSomething'''
+    }
 
-Describe 'Export-Migration.when exporting a stored procedure not added with Rivet' {
-    Init
-    GivenMigrationContent @'
+    It 'exports a stored procedure not added with Rivet' {
+        GivenMigrationContent @'
 function Push-Migration
 {
     Invoke-Ddl 'create procedure DoSomething as select 1'
@@ -539,18 +528,17 @@ function Pop-Migration
     Remove-StoredProcedure -Name 'DoSomething'
 }
 '@
-    WhenExporting 'dbo.DoSomething'
-    ThenMigration -HasContent @"
+        WhenExporting 'dbo.DoSomething'
+        ThenMigration -HasContent @"
     Invoke-Ddl -Query @'
 create procedure DoSomething as select 1
 '@
 "@
-    ThenMigration -HasContent 'Remove-StoredProcedure -Name ''DoSomething'''
-}
+        ThenMigration -HasContent 'Remove-StoredProcedure -Name ''DoSomething'''
+    }
 
-Describe 'Export-Migration.when exporting a view' {
-    Init
-    GivenMigrationContent @'
+    It 'exports a view' {
+        GivenMigrationContent @'
 function Push-Migration
 {
     Add-View -Name 'ViewSomething' -Definition 'as select 1 as one'
@@ -561,18 +549,17 @@ function Pop-Migration
     Remove-View -Name 'ViewSomething'
 }
 '@
-    WhenExporting 'dbo.ViewSomething'
-    ThenMigration -HasContent @"
+        WhenExporting 'dbo.ViewSomething'
+        ThenMigration -HasContent @"
     Add-View -Name 'ViewSomething' -Definition @'
 as select 1 as one
 '@
 "@
-    ThenMigration -HasContent 'Remove-View -Name ''ViewSomething'''
-}
+        ThenMigration -HasContent 'Remove-View -Name ''ViewSomething'''
+    }
 
-Describe 'Export-Migration.when exporting a view not added with Rivet' {
-    Init
-    GivenMigrationContent @'
+    It 'exports a view not added with Rivet' {
+        GivenMigrationContent @'
 function Push-Migration
 {
     Invoke-Ddl 'create view ViewSomething as select 1 as one'
@@ -583,18 +570,17 @@ function Pop-Migration
     Remove-View -Name 'ViewSomething'
 }
 '@
-    WhenExporting 'dbo.ViewSomething'
-    ThenMigration -HasContent @"
+        WhenExporting 'dbo.ViewSomething'
+        ThenMigration -HasContent @"
     Invoke-Ddl -Query @'
 create view ViewSomething as select 1 as one
 '@
 "@
-    ThenMigration -HasContent 'Remove-View -Name ''ViewSomething'''
-}
+        ThenMigration -HasContent 'Remove-View -Name ''ViewSomething'''
+    }
 
-Describe 'Export-Migration.when exporting a function' {
-    Init
-    GivenMigrationContent @'
+    It 'exports a function' {
+        GivenMigrationContent @'
 function Push-Migration
 {
     Add-UserDefinedFunction -Name 'CallSomething' -Definition '() returns tinyint as begin return 1 end'
@@ -609,31 +595,30 @@ function Pop-Migration
     Remove-UserDefinedFunction -Name 'CallSomething'
 }
 '@
-    WhenExporting 'dbo.Call*','*.PK*'
-    ThenMigration -HasContent @"
+        WhenExporting 'dbo.Call*','*.PK*'
+        ThenMigration -HasContent @"
     Add-UserDefinedFunction -Name 'CallSomething' -Definition @'
 () returns tinyint as begin return 1 end
 '@
 "@
-    ThenMigration -HasContent @"
+        ThenMigration -HasContent @"
     Add-UserDefinedFunction -Name 'CallInlineTable' -Definition @'
 () returns table as return( select 1 as name )
 '@
 "@
-    ThenMigration -HasContent @"
+        ThenMigration -HasContent @"
     Add-UserDefinedFunction -Name 'CallTable' -Definition @'
 () returns @Table TABLE ( ID int primary key ) as begin insert into @Table select 1 return end
 '@
 "@
-    ThenMigration -HasContent 'Remove-UserDefinedFunction -Name ''CallSomething'''
-    ThenMigration -HasContent 'Remove-UserDefinedFunction -Name ''CallInlineTable'''
-    ThenMigration -HasContent 'Remove-UserDefinedFunction -Name ''CallTable'''
-    ThenMigration -Not -HasContent 'Add-PrimaryKey'
-}
+        ThenMigration -HasContent 'Remove-UserDefinedFunction -Name ''CallSomething'''
+        ThenMigration -HasContent 'Remove-UserDefinedFunction -Name ''CallInlineTable'''
+        ThenMigration -HasContent 'Remove-UserDefinedFunction -Name ''CallTable'''
+        ThenMigration -Not -HasContent 'Add-PrimaryKey'
+    }
 
-Describe 'Export-Migration.when exporting a function not added with Rivet' {
-    Init
-    GivenMigrationContent @'
+    It 'exports a function not added with Rivet' {
+        GivenMigrationContent @'
 function Push-Migration
 {
     Invoke-Ddl 'create function CallSomething () returns tinyint as begin return 1 end'
@@ -644,25 +629,23 @@ function Pop-Migration
     Remove-UserDefinedFunction -Name 'CallSomething'
 }
 '@
-    WhenExporting 'dbo.CallSomething'
-    ThenMigration -HasContent @"
+        WhenExporting 'dbo.CallSomething'
+        ThenMigration -HasContent @"
     Invoke-Ddl -Query @'
 create function CallSomething () returns tinyint as begin return 1 end
 '@
 "@
-    ThenMigration -HasContent 'Remove-UserDefinedFunction -Name ''CallSomething'''
-}
+        ThenMigration -HasContent 'Remove-UserDefinedFunction -Name ''CallSomething'''
+    }
 
-Describe 'Export-Migration.when exporting entire database' {
-    Init
-    WhenExporting -SkipVerification
-    ThenMigration -Not -HasContent 'rivet'
-    ThenNoErrors
-}
+    It 'exports entire database' {
+        WhenExporting -SkipVerification
+        ThenMigration -Not -HasContent 'rivet'
+        ThenNoErrors
+    }
 
-Describe 'Export-Migration.when exporting data type' {
-    Init
-    GivenMigrationContent @'
+    It 'exports data type' {
+        GivenMigrationContent @'
 function Push-Migration
 {
     Add-Schema 'export'
@@ -696,36 +679,35 @@ function Pop-Migration
     Remove-Schema 'export'
 }
 '@
-    WhenExporting
-    ThenMigration -HasContent 'Add-DataType -Name ''GUID'' -From ''uniqueidentifier'''
-    ThenMigration -HasContent 'Add-DataType -Name ''SID'' -From ''int'''
-    ThenMigration -HasContent 'Add-DataType -Name ''CID'' -From ''char(8)'''
-    ThenMigration -HasContent 'Add-DataType -Name ''mymoney'' -From ''decimal(20,2) not null'''
-    ThenMigration -HasContent 'Add-DataType -Name ''lotsa'' -From ''varchar(max)'''
-    ThenMigration -HasContent 'Add-DataType -SchemaName ''export'' -Name ''GUID2'' -From ''uniqueidentifier'''
-    ThenMigration -HasContent 'Add-Schema -Name ''export'
-    ThenMigration -HasContent 'Remove-DataType -Name ''GUID'''
-    ThenMigration -HasContent 'Remove-DataType -SchemaName ''export'' -Name ''GUID2'''
-    ThenMigration -HasContent 'Remove-Schema -Name ''export'''
-    ThenMigration -HasContent @'
+        WhenExporting
+        ThenMigration -HasContent 'Add-DataType -Name ''GUID'' -From ''uniqueidentifier'''
+        ThenMigration -HasContent 'Add-DataType -Name ''SID'' -From ''int'''
+        ThenMigration -HasContent 'Add-DataType -Name ''CID'' -From ''char(8)'''
+        ThenMigration -HasContent 'Add-DataType -Name ''mymoney'' -From ''decimal(20,2) not null'''
+        ThenMigration -HasContent 'Add-DataType -Name ''lotsa'' -From ''varchar(max)'''
+        ThenMigration -HasContent 'Add-DataType -SchemaName ''export'' -Name ''GUID2'' -From ''uniqueidentifier'''
+        ThenMigration -HasContent 'Add-Schema -Name ''export'
+        ThenMigration -HasContent 'Remove-DataType -Name ''GUID'''
+        ThenMigration -HasContent 'Remove-DataType -SchemaName ''export'' -Name ''GUID2'''
+        ThenMigration -HasContent 'Remove-Schema -Name ''export'''
+        ThenMigration -HasContent @'
     Add-DataType -Name 'TableType' -AsTable {
         uniqueidentifier 'uniqueID' -NotNull
         smallint 'appID' -NotNull
         int 'statusID' -NotNull
     }
 '@
-    ThenMigration -HasContent @'
+        ThenMigration -HasContent @'
     Add-DataType -SchemaName 'export' -Name 'TableType2' -AsTable {
         uniqueidentifier 'uniqueID2'
         smallint 'appID2'
         int 'statusID2'
     }
 '@
-}
+    }
 
-Describe 'Export-Migration.when exporting filtered data type' {
-    Init
-    GivenMigrationContent @'
+    It 'exports filtered data type' {
+        GivenMigrationContent @'
 function Push-Migration
 {
     Add-Schema 'export'
@@ -739,17 +721,17 @@ function Pop-Migration
     Remove-Schema 'export'
 }
 '@
-    WhenExporting 'dbo.*'
-    ThenMigration -HasContent 'Add-DataType -Name ''GUID'' -From ''uniqueidentifier'''
-    ThenMigration -Not -HasContent 'Add-DataType -SchemaName ''export'' -Name ''GUID2'' -From ''uniqueidentifier'''
-    ThenMigration -Not -HasContent 'Add-Schema -Name ''export'
-    ThenMigration -HasContent 'Remove-DataType -Name ''GUID'''
-    ThenMigration -Not -HasContent 'Remove-DataType -SchemaName ''export'' -Name ''GUID2'''
-    ThenMigration -Not -HasContent 'Remove-Schema -Name ''export'''}
+        WhenExporting 'dbo.*'
+        ThenMigration -HasContent 'Add-DataType -Name ''GUID'' -From ''uniqueidentifier'''
+        ThenMigration -Not -HasContent 'Add-DataType -SchemaName ''export'' -Name ''GUID2'' -From ''uniqueidentifier'''
+        ThenMigration -Not -HasContent 'Add-Schema -Name ''export'
+        ThenMigration -HasContent 'Remove-DataType -Name ''GUID'''
+        ThenMigration -Not -HasContent 'Remove-DataType -SchemaName ''export'' -Name ''GUID2'''
+        ThenMigration -Not -HasContent 'Remove-Schema -Name ''export'''
+    }
 
-Describe 'Export-Migration.when identity has custom seed and increment' {
-    Init
-    GivenMigrationContent @'
+    It 'exports identity that has custom seed and increment' {
+        GivenMigrationContent @'
 function Push-Migration
 {
     Add-Table -Name 'SeedAndIncrement' -Column {
@@ -763,14 +745,13 @@ function Pop-Migration
     Remove-Table 'SeedAndIncrement'
 }
 '@
-    WhenExporting 'dbo.SeedAndIncrement'
-    ThenMigration -HasContent 'int ''ID'' -Identity -Seed 1000 -Increment 7'
-    ThenMigration -HasContent 'nvarchar ''OtherColumn'' -Size 50'
-}
+        WhenExporting 'dbo.SeedAndIncrement'
+        ThenMigration -HasContent 'int ''ID'' -Identity -Seed 1000 -Increment 7'
+        ThenMigration -HasContent 'nvarchar ''OtherColumn'' -Size 50'
+    }
 
-Describe 'Export-Migration.when exporting indexes' {
-    Init
-    GivenMigrationContent @'
+    It 'exports indexes' {
+        GivenMigrationContent @'
 function Push-Migration
 {
     Add-Table -Name 'Indexes' -Column {
@@ -822,28 +803,27 @@ function Pop-Migration
     Remove-Table 'Indexes'
 }
 '@
-    WhenExporting '*.*_Indexes*' -SkipVerification
-    ThenMigration -HasContent 'Add-Index -TableName ''Indexes'' -ColumnName ''ID'' -Name ''IX_Indexes_ID'''
-    ThenMigration -HasContent 'Add-Index -TableName ''Indexes'' -Columnname ''ID2'',''ID3'' -Name ''IX_Indexes_ID2_ID3'''
-    ThenMigration -HasContent 'Add-Index -TableName ''Indexes'' -ColumnName ''ID4'' -Name ''UIX_Indexes_ID4'' -Unique'
-    ThenMigration -HasContent 'Add-Index -TableName ''Indexes'' -ColumnName ''ID5'' -Name ''IX_Indexes_ID5'' -Clustered'
-    ThenMigration -HasContent 'Add-Index -TableName ''Indexes'' -ColumnName ''ID6'' -Name ''IX_Indexes_ID6'' -Where ''([ID6]<=(100))'''
-    ThenMigration -HasContent 'Add-Index -SchemaName ''export'' -TableName ''Indexes2'' -ColumnName ''ID'' -Name ''IX_export_Indexes2_ID'''
-    ThenMigration -HasContent 'Add-Index -TableName ''IndexesWithInclude'' -ColumnName ''ID'' -Name ''IX_IndexesWithInclude_ID'' -Include ''ID4'',''ID5'',''ID6'''
-    ThenMigration -HasContent 'Add-Index -TableName ''IndexesWithDescending'' -ColumnName ''ID'',''ID2'',''ID3'' -Name ''IX_IndexesWithDescending_ID_ID2_ID3'' -Descending $true,$false,$true'
-    ThenMigration -Not -HasContent 'Add-Index -SchemaName ''export'' -TableName ''Indexes2'' -ColumnName '''' -Name '''''
+        WhenExporting '*.*_Indexes*' -SkipVerification
+        ThenMigration -HasContent 'Add-Index -TableName ''Indexes'' -ColumnName ''ID'' -Name ''IX_Indexes_ID'''
+        ThenMigration -HasContent 'Add-Index -TableName ''Indexes'' -Columnname ''ID2'',''ID3'' -Name ''IX_Indexes_ID2_ID3'''
+        ThenMigration -HasContent 'Add-Index -TableName ''Indexes'' -ColumnName ''ID4'' -Name ''UIX_Indexes_ID4'' -Unique'
+        ThenMigration -HasContent 'Add-Index -TableName ''Indexes'' -ColumnName ''ID5'' -Name ''IX_Indexes_ID5'' -Clustered'
+        ThenMigration -HasContent 'Add-Index -TableName ''Indexes'' -ColumnName ''ID6'' -Name ''IX_Indexes_ID6'' -Where ''([ID6]<=(100))'''
+        ThenMigration -HasContent 'Add-Index -SchemaName ''export'' -TableName ''Indexes2'' -ColumnName ''ID'' -Name ''IX_export_Indexes2_ID'''
+        ThenMigration -HasContent 'Add-Index -TableName ''IndexesWithInclude'' -ColumnName ''ID'' -Name ''IX_IndexesWithInclude_ID'' -Include ''ID4'',''ID5'',''ID6'''
+        ThenMigration -HasContent 'Add-Index -TableName ''IndexesWithDescending'' -ColumnName ''ID'',''ID2'',''ID3'' -Name ''IX_IndexesWithDescending_ID_ID2_ID3'' -Descending $true,$false,$true'
+        ThenMigration -Not -HasContent 'Add-Index -SchemaName ''export'' -TableName ''Indexes2'' -ColumnName '''' -Name '''''
 
-    ThenMigration -HasContent 'Remove-Index -TableName ''Indexes'' -Name ''IX_Indexes_ID'''
-    ThenMigration -HasContent 'Remove-Index -TableName ''Indexes'' -Name ''IX_Indexes_ID2_ID3'''
-    ThenMigration -HasContent 'Remove-Index -TableName ''Indexes'' -Name ''UIX_Indexes_ID4'''
-    ThenMigration -HasContent 'Remove-Index -TableName ''Indexes'' -Name ''IX_Indexes_ID5'''
-    ThenMigration -HasContent 'Remove-Index -TableName ''Indexes'' -Name ''IX_Indexes_ID6'''
-    ThenMigration -HasContent 'Remove-Index -SchemaName ''export'' -TableName ''Indexes2'' -Name ''IX_export_Indexes2_ID'''
-}
+        ThenMigration -HasContent 'Remove-Index -TableName ''Indexes'' -Name ''IX_Indexes_ID'''
+        ThenMigration -HasContent 'Remove-Index -TableName ''Indexes'' -Name ''IX_Indexes_ID2_ID3'''
+        ThenMigration -HasContent 'Remove-Index -TableName ''Indexes'' -Name ''UIX_Indexes_ID4'''
+        ThenMigration -HasContent 'Remove-Index -TableName ''Indexes'' -Name ''IX_Indexes_ID5'''
+        ThenMigration -HasContent 'Remove-Index -TableName ''Indexes'' -Name ''IX_Indexes_ID6'''
+        ThenMigration -HasContent 'Remove-Index -SchemaName ''export'' -TableName ''Indexes2'' -Name ''IX_export_Indexes2_ID'''
+    }
 
-Describe 'Export-Migration.when exporting unique keys' {
-    Init
-    GivenMigrationContent @'
+    It 'exports unique keys' {
+        GivenMigrationContent @'
 function Push-Migration
 {
     Add-Schema 'export'
@@ -868,21 +848,20 @@ function Pop-Migration
     Remove-Schema 'export'
 }
 '@
-    WhenExporting '*.*_ID*' -SkipVerification
-    ThenMigration -Not -HasContent 'Add-Table'
-    ThenMigration -HasContent 'Add-Schema -Name ''export'''
-    ThenMigration -HasContent 'Add-UniqueKey -SchemaName ''export'' -TableName ''UK'' -ColumnName ''ID'',''ID2'' -Name ''AK_export_UK_ID_ID2'''
-    ThenMigration -HasContent 'Add-UniqueKey -TableName ''UK2'' -ColumnName ''ID3'',''ID4'' -Name ''AK_UK2_ID3_ID4'''
-    ThenMigration -HasContent 'Add-UniqueKey -TableName ''UK2'' -ColumnName ''ID5'' -Clustered -Name ''AK_UK2_ID5'''
-    ThenMigration -HasContent 'Remove-Schema -Name ''export'''
-    ThenMigration -HasContent 'Remove-UniqueKey -SchemaName ''export'' -TableName ''UK'' -Name ''AK_export_UK_ID_ID2'''
-    ThenMigration -HasContent 'Remove-UniqueKey -TableName ''UK2'' -Name ''AK_UK2_ID3_ID4'''
-    ThenMigration -HasContent 'Remove-UniqueKey -TableName ''UK2'' -Name ''AK_UK2_ID5'''
-}
+        WhenExporting '*.*_ID*' -SkipVerification
+        ThenMigration -Not -HasContent 'Add-Table'
+        ThenMigration -HasContent 'Add-Schema -Name ''export'''
+        ThenMigration -HasContent 'Add-UniqueKey -SchemaName ''export'' -TableName ''UK'' -ColumnName ''ID'',''ID2'' -Name ''AK_export_UK_ID_ID2'''
+        ThenMigration -HasContent 'Add-UniqueKey -TableName ''UK2'' -ColumnName ''ID3'',''ID4'' -Name ''AK_UK2_ID3_ID4'''
+        ThenMigration -HasContent 'Add-UniqueKey -TableName ''UK2'' -ColumnName ''ID5'' -Clustered -Name ''AK_UK2_ID5'''
+        ThenMigration -HasContent 'Remove-Schema -Name ''export'''
+        ThenMigration -HasContent 'Remove-UniqueKey -SchemaName ''export'' -TableName ''UK'' -Name ''AK_export_UK_ID_ID2'''
+        ThenMigration -HasContent 'Remove-UniqueKey -TableName ''UK2'' -Name ''AK_UK2_ID3_ID4'''
+        ThenMigration -HasContent 'Remove-UniqueKey -TableName ''UK2'' -Name ''AK_UK2_ID5'''
+    }
 
-Describe 'Export-Migration.when exporting triggers' {
-    Init
-    GivenMigrationContent @'
+    It 'exports triggers' {
+        GivenMigrationContent @'
 function Push-Migration
 {
     Add-Table -Name 'TriggerSource' {
@@ -907,20 +886,19 @@ function Pop-Migration
     Remove-Table 'TriggerSource'
 }
 '@
-    WhenExporting '*.TableTrigger*' -SkipVerification
-    ThenMigration -Not -HasContent 'Add-Table'
-    ThenMigration -Not -HasContent 'TableTriggerDB'
-    ThenMigration -HasContent 'Add-Trigger -Name ''TableTrigger'' -Definition @''
+        WhenExporting '*.TableTrigger*' -SkipVerification
+        ThenMigration -Not -HasContent 'Add-Table'
+        ThenMigration -Not -HasContent 'TableTriggerDB'
+        ThenMigration -HasContent 'Add-Trigger -Name ''TableTrigger'' -Definition @''
 ON [dbo].[TriggerSource] for insert as select 1
 ''@'
-    ThenMigration -HasContent 'Add-Trigger -SchemaName ''export'' -Name ''TableTrigger2'' -Definition @''
+        ThenMigration -HasContent 'Add-Trigger -SchemaName ''export'' -Name ''TableTrigger2'' -Definition @''
 ON [export].[TriggerSource2] for insert as select 1
 ''@'
-}
+    }
 
-Describe 'Export-Migration.when exporting synonyms' {
-    Init
-    GivenMigrationContent @'
+    It 'exports synonyms' {
+        GivenMigrationContent @'
 function Push-Migration
 {
     Add-Table -Name 'Target' {
@@ -949,20 +927,19 @@ function Pop-Migration
     Remove-Schema 'export'
 }
 '@
-    WhenExporting '*.Syn*'
-    ThenMigration -Not -HasContent 'Add-Table'
-    ThenMigration -Not -HasContent 'AnotherSyn'
-    ThenMigration -HasContent 'Add-Synonym -Name ''Syn1'' -TargetSchemaName ''dbo'' -TargetObjectName ''Target'''
-    ThenMigration -HasContent 'Add-Synonym -SchemaName ''export'' -Name ''Syn2'' -TargetSchemaName ''dbo'' -TargetObjectName ''Target'''
-    ThenMigration -HasContent 'Add-Synonym -SchemaName ''export'' -Name ''Syn3'' -TargetSchemaName ''export'' -TargetObjectName ''Target2'''
-    ThenMigration -HasContent 'Remove-Synonym -Name ''Syn1'''
-    ThenMigration -HasContent 'Remove-Synonym -SchemaName ''export'' -Name ''Syn2'''
-    ThenMigration -HasContent 'Remove-Synonym -SchemaName ''export'' -Name ''Syn3'''
-}
+        WhenExporting '*.Syn*'
+        ThenMigration -Not -HasContent 'Add-Table'
+        ThenMigration -Not -HasContent 'AnotherSyn'
+        ThenMigration -HasContent 'Add-Synonym -Name ''Syn1'' -TargetSchemaName ''dbo'' -TargetObjectName ''Target'''
+        ThenMigration -HasContent 'Add-Synonym -SchemaName ''export'' -Name ''Syn2'' -TargetSchemaName ''dbo'' -TargetObjectName ''Target'''
+        ThenMigration -HasContent 'Add-Synonym -SchemaName ''export'' -Name ''Syn3'' -TargetSchemaName ''export'' -TargetObjectName ''Target2'''
+        ThenMigration -HasContent 'Remove-Synonym -Name ''Syn1'''
+        ThenMigration -HasContent 'Remove-Synonym -SchemaName ''export'' -Name ''Syn2'''
+        ThenMigration -HasContent 'Remove-Synonym -SchemaName ''export'' -Name ''Syn3'''
+    }
 
-Describe 'Export-Migration.when synonyms points to internal object' {
-    Init
-    GivenMigrationContent @'
+    It 'exports synonym that points to internal object' {
+        GivenMigrationContent @'
 function Push-Migration
 {
     Add-Table -Name 'Target' {
@@ -984,18 +961,17 @@ function Pop-Migration
     Remove-Table 'Target'
 }
 '@
-    WhenExporting 
-    ThenMigration -HasContent @'
+        WhenExporting
+        ThenMigration -HasContent @'
     Add-Table -Name 'Target' -Column {
         int 'ID' -NotNull
     }
     Add-Synonym -Name 'Syn1' -TargetSchemaName 'dbo' -TargetObjectName 'Target'
 '@
-}
+    }
 
-Describe 'Export-Migration.when exporting foreign keys' {
-    Init
-    GivenMigrationContent @'
+    It 'exports foreign keys' {
+        GivenMigrationContent @'
 function Push-Migration
 {
     Add-Table 'Table' {
@@ -1025,7 +1001,7 @@ function Push-Migration
         int 'Table4_ID' -NotNull
     }
     Add-PrimaryKey -SchemaName 'export' -TableName 'Table4' -ColumnName 'Table4_ID'
-    
+
     Add-ForeignKey -SchemaName 'export' -TableName 'Table3' -ColumnName 'Table3_ID' -ReferencesSchema 'export' -References 'Table4' -ReferencedColumn 'Table4_ID' -OnDelete 'CASCADE' -OnUpdate 'CASCADE' -NotForReplication
 }
 function Pop-Migration
@@ -1037,18 +1013,17 @@ function Pop-Migration
     Remove-Schema 'export'
 }
 '@
-    WhenExporting '*.FK_*' -SkipVerification
-    ThenMigration -Not -HasContent 'Add-Table'
-    ThenMigration -Not -HasContent 'Add-PrimaryKey'
-    ThenMigration -HasContent 'Add-ForeignKey -TableName ''Table'' -ColumnName ''Table_ID'',''Table_ID2'' -References ''Table2'' -ReferencedColumn ''Table2_ID'',''Table2_ID2'' -Name ''FK_Table_Table2'''
-    ThenMigration -HasContent 'Add-ForeignKey -SchemaName ''export'' -TableName ''Table3'' -ColumnName ''Table3_ID'' -ReferencesSchema ''export'' -References ''Table4'' -ReferencedColumn ''Table4_ID'' -Name ''FK_export_Table3_export_Table4'' -OnDelete ''CASCADE'' -OnUpdate ''CASCADE'' -NotForReplication -NoCheck'
-    ThenMigration -HasContent 'Disable-Constraint -TableName ''Table'' -Name ''FK_Table_Table2'''
-    ThenMigration -Not -HasContent 'Disable-Constraint -SchemaName ''export'' -TableName ''Table3'''
-}
+        WhenExporting '*.FK_*' -SkipVerification
+        ThenMigration -Not -HasContent 'Add-Table'
+        ThenMigration -Not -HasContent 'Add-PrimaryKey'
+        ThenMigration -HasContent 'Add-ForeignKey -TableName ''Table'' -ColumnName ''Table_ID'',''Table_ID2'' -References ''Table2'' -ReferencedColumn ''Table2_ID'',''Table2_ID2'' -Name ''FK_Table_Table2'''
+        ThenMigration -HasContent 'Add-ForeignKey -SchemaName ''export'' -TableName ''Table3'' -ColumnName ''Table3_ID'' -ReferencesSchema ''export'' -References ''Table4'' -ReferencedColumn ''Table4_ID'' -Name ''FK_export_Table3_export_Table4'' -OnDelete ''CASCADE'' -OnUpdate ''CASCADE'' -NotForReplication -NoCheck'
+        ThenMigration -HasContent 'Disable-Constraint -TableName ''Table'' -Name ''FK_Table_Table2'''
+        ThenMigration -Not -HasContent 'Disable-Constraint -SchemaName ''export'' -TableName ''Table3'''
+    }
 
-Describe 'Export-Migration.when exporting a table with a custom identity seed or increment' {
-    Init
-    GivenMigrationContent @'
+    It 'exports a table with a custom identity seed or increment' {
+        GivenMigrationContent @'
 function Push-Migration
 {
     Add-Table -Name 'Seed' {
@@ -1068,15 +1043,14 @@ function Pop-Migration
     Remove-Table -Name 'Seed'
 }
 '@
-    WhenExporting
-    ThenMigration -HasContent 'int ''ID'' -Identity -Seed 101 -Increment 1'
-    ThenMigration -HasContent 'int ''ID2'' -Identity -Seed 1 -Increment 101'
-    ThenMigration -HasContent 'int ''ID3'' -Identity'
-}
+        WhenExporting
+        ThenMigration -HasContent 'int ''ID'' -Identity -Seed 101 -Increment 1'
+        ThenMigration -HasContent 'int ''ID2'' -Identity -Seed 1 -Increment 101'
+        ThenMigration -HasContent 'int ''ID3'' -Identity'
+    }
 
-Describe 'Export-Migration.when exporting a table with a custom identity seed or increment' {
-    Init
-    GivenMigrationContent @'
+    It 'exports a table with a custom identity seed or increment' {
+        GivenMigrationContent @'
 function Push-Migration
 {
     Add-Table -Name 'Seed' {
@@ -1096,28 +1070,27 @@ function Pop-Migration
     Remove-Table -Name 'Seed'
 }
 '@
-    WhenExporting
-    ThenMigration -HasContent 'int ''ID'' -Identity -Seed 101 -Increment 1'
-    ThenMigration -HasContent 'int ''ID2'' -Identity -Seed 1 -Increment 101'
-    ThenMigration -HasContent 'int ''ID3'' -Identity'
-}
+        WhenExporting
+        ThenMigration -HasContent 'int ''ID'' -Identity -Seed 101 -Increment 1'
+        ThenMigration -HasContent 'int ''ID2'' -Identity -Seed 1 -Increment 101'
+        ThenMigration -HasContent 'int ''ID3'' -Identity'
+    }
 
-Describe 'Export-Migration.when excluding objects by type' {
-    Init
-    GivenMigrationContent @'
+    It 'excludes objects by type' {
+        GivenMigrationContent @'
 function Push-Migration
 {
     Invoke-Ddl -Query '
-    create xml schema collection EmptyXsd as 
+    create xml schema collection EmptyXsd as
     N''
-    <xsd:schema targetNamespace="http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelManuInstructions" 
-       xmlns          ="http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelManuInstructions" 
-       elementFormDefault="qualified" 
+    <xsd:schema targetNamespace="http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelManuInstructions"
+       xmlns          ="http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelManuInstructions"
+       elementFormDefault="qualified"
        attributeFormDefault="unqualified"
        xmlns:xsd="http://www.w3.org/2001/XMLSchema" >
-    
+
         <xsd:element  name="root" />
-    
+
     </xsd:schema>
     ''
 '
@@ -1167,19 +1140,18 @@ function Pop-Migration
     Invoke-Ddl 'drop xml schema collection [EmptyXsd]'
 }
 '@
-    WhenExporting -ExcludeType @('CheckConstraint','DataType','DefaultConstraint','ForeignKey','Function','Index','PrimaryKey','Schema','StoredProcedure','Synonym','Table','Trigger','UniqueKey','View','XmlSchema') `
-                  -SkipVerification
-    ThenMigration -HasContent 'function Push-Migration
+        WhenExporting -ExcludeType @('CheckConstraint','DataType','DefaultConstraint','ForeignKey','Function','Index','PrimaryKey','Schema','StoredProcedure','Synonym','Table','Trigger','UniqueKey','View','XmlSchema') `
+                    -SkipVerification
+        ThenMigration -HasContent 'function Push-Migration
 {
 }'
-    ThenMigration -HasContent 'function Pop-Migration
+        ThenMigration -HasContent 'function Pop-Migration
 {
 }'
-}
+    }
 
-Describe 'Export-Migration.when excluding objects by name' {
-    Init
-    GivenMigrationContent @'
+    It 'excludes objects by name' {
+        GivenMigrationContent @'
 function Push-Migration
 {
     Add-DataType 'SID' -From 'int'
@@ -1195,7 +1167,7 @@ function Push-Migration
 
     Add-Schema -Name 'export'
     Add-UserDefinedFunction -SchemaName 'export' -Name 'CallSomething' -Definition '() returns tinyint as begin return 1 end'
-    
+
     Add-Schema -Name 'export2'
     Add-UserDefinedFunction -SchemaName 'export2' -Name 'CallInlineTable' -Definition '() returns table as return( select 1 as name )'
 
@@ -1220,26 +1192,25 @@ function Pop-Migration
     Remove-DataType 'SID'
 }
 '@
-    WhenExporting -Exclude 'export.*' -SkipVerification
-    ThenMigration -Not -HasContent '-SchemaName ''export'''
-    ThenMigration -Not -HasContent 'Add-Schema -Name ''export'''
-    ThenMigration -HasContent 'Add-Schema -Name ''export2'''
-    ThenMigration -HasContent 'Add-Table -Name ''Table1'''
-    ThenMigration -HasContent 'Add-DataType -Name ''SID'''
-    ThenMigration -HasContent 'Add-Index -TableName ''Table1'''
+        WhenExporting -Exclude 'export.*' -SkipVerification
+        ThenMigration -Not -HasContent '-SchemaName ''export'''
+        ThenMigration -Not -HasContent 'Add-Schema -Name ''export'''
+        ThenMigration -HasContent 'Add-Schema -Name ''export2'''
+        ThenMigration -HasContent 'Add-Table -Name ''Table1'''
+        ThenMigration -HasContent 'Add-DataType -Name ''SID'''
+        ThenMigration -HasContent 'Add-Index -TableName ''Table1'''
 
-    WhenExporting -Exclude '*.SID','*.Table1' -SkipVerification
-    ThenMigration -Not -HasContent 'Add-DataType'
-    ThenMigration -Not -HasContent 'Add-Table -TableName ''Table1'''
-    ThenMigration -HasContent 'Add-PrimaryKey'
-    ThenMigration -HasContent 'Add-CheckConstraint'
-    ThenMigration -HasContent 'Add-DefaultConstraint'
-    ThenMigration -HasContent 'Add-Index -TableName ''Table1'' -ColumnName ''AnotherID'''
-}
+        WhenExporting -Exclude '*.SID','*.Table1' -SkipVerification
+        ThenMigration -Not -HasContent 'Add-DataType'
+        ThenMigration -Not -HasContent 'Add-Table -TableName ''Table1'''
+        ThenMigration -HasContent 'Add-PrimaryKey'
+        ThenMigration -HasContent 'Add-CheckConstraint'
+        ThenMigration -HasContent 'Add-DefaultConstraint'
+        ThenMigration -HasContent 'Add-Index -TableName ''Table1'' -ColumnName ''AnotherID'''
+    }
 
-Describe 'Export-Migration.when schema has an extended property' {
-    Init
-    GivenMigrationContent @'
+    It 'exports schema that has an extended property' {
+        GivenMigrationContent @'
     function Push-Migration
     {
         Add-Schema 'snap'
@@ -1248,45 +1219,43 @@ Describe 'Export-Migration.when schema has an extended property' {
             int 'ID' -NotNull
         }
     }
-    
+
     function Pop-Migration
     {
         Remove-Table -Schema 'snap' -Name 'SnapTable'
         Remove-Schema -Name 'snap'
     }
 '@
-    
-    WhenExporting
-    ThenMigration -HasContent 'Add-Schema -Name ''snap'' -Owner ''dbo'' -Description ''This is the MS Description for the schema snap'''
-    ThenMigration -HasContent 'Add-Table -SchemaName ''snap'' -Name ''SnapTable'''
-}
 
-Describe 'Export-Migration.when view has an extended property' {
-    Init
-    GivenMigrationContent @'
+        WhenExporting
+        ThenMigration -HasContent 'Add-Schema -Name ''snap'' -Owner ''dbo'' -Description ''This is the MS Description for the schema snap'''
+        ThenMigration -HasContent 'Add-Table -SchemaName ''snap'' -Name ''SnapTable'''
+    }
+
+    It 'exports view that has an extended property' {
+        GivenMigrationContent @'
     function Push-Migration
     {
         Add-Schema 'crackle'
         Add-View -SchemaName 'crackle' -Name 'CrackleView' -Definition 'as select 1 as one'
         Add-ExtendedProperty -Name 'MS_Description' -SchemaName 'crackle' -ViewName 'CrackleView' -Value 'This is the MS Description for the view CrackleView'
     }
-    
+
     function Pop-Migration
     {
         Remove-View -SchemaName 'crackle' -Name 'CrackleView'
         Remove-Schema 'crackle'
     }
 '@
-    
-    WhenExporting
-    ThenMigration -HasContent 'Add-Schema -Name ''crackle'''
-    ThenMigration -HasContent 'Add-View -SchemaName ''crackle'' -Name ''CrackleView'''
-    ThenMigration -HasContent 'Add-View -SchemaName ''crackle'' -Name ''CrackleView'' -Description ''This is the MS Description for the view CrackleView'''
-}
 
-Describe 'Export-Migration.when view column has an extended property' {
-    Init
-    GivenMigrationContent @'
+        WhenExporting
+        ThenMigration -HasContent 'Add-Schema -Name ''crackle'''
+        ThenMigration -HasContent 'Add-View -SchemaName ''crackle'' -Name ''CrackleView'''
+        ThenMigration -HasContent 'Add-View -SchemaName ''crackle'' -Name ''CrackleView'' -Description ''This is the MS Description for the view CrackleView'''
+    }
+
+    It 'exports view column that has an extended property' {
+        GivenMigrationContent @'
     function Push-Migration
     {
         Add-Schema 'pop'
@@ -1296,7 +1265,7 @@ Describe 'Export-Migration.when view column has an extended property' {
         Add-View -Name 'PopView' -SchemaName 'pop' -Definition 'as select * from PopTable'
         Add-ExtendedProperty -Name 'MS_Description' -SchemaName 'pop' -ViewName 'PopView' -ColumnName 'ID' -Value 'This is the MS Description for column ID in the view PopView'
     }
-    
+
     function Pop-Migration
     {
         Remove-Table -SchemaName 'pop' -Name 'PopTable'
@@ -1304,144 +1273,161 @@ Describe 'Export-Migration.when view column has an extended property' {
         Remove-Schema 'pop'
     }
 '@
-    
-    WhenExporting
-    ThenMigration -HasContent 'Add-Schema -Name ''pop'''
-    ThenMigration -HasContent 'Add-Table -SchemaName ''pop'' -Name ''PopTable'''
-    ThenMigration -HasContent 'Add-View -SchemaName ''pop'' -Name ''PopView'''
-    ThenMigration -HasContent 'Add-ExtendedProperty -SchemaName ''pop'' -ViewName ''PopView'' -ColumnName ''ID'' -Value  -Description ''This is the MS Description for column ID in the view PopView'''
-}
 
-Describe 'Export-Migration.when an object references another database that was applied before it' {
-    Init
-    $Databases = @($RTDatabaseName, $RTDatabase2Name)
+        WhenExporting
+        ThenMigration -HasContent 'Add-Schema -Name ''pop'''
+        ThenMigration -HasContent 'Add-Table -SchemaName ''pop'' -Name ''PopTable'''
+        ThenMigration -HasContent 'Add-View -SchemaName ''pop'' -Name ''PopView'''
+        ThenMigration -HasContent 'Add-ExtendedProperty -SchemaName ''pop'' -ViewName ''PopView'' -ColumnName ''ID'' -Value  -Description ''This is the MS Description for column ID in the view PopView'''
+    }
 
-    # Has Database Order
-    Start-RivetTest -PhysicalDatabase $Databases -ConfigurationDatabase $Databases
-    $testDirectory = Get-ChildItem -Path $TestDrive.FullName
-    $configFilePath = Join-Path -Path $testDirectory.FullName -ChildPath 'rivet.json'
+    It 'exports an object that references another database that was applied before it' {
+        $Databases = @($RTDatabaseName, $RTDatabase2Name)
 
-    $db1Migration = @'
+        # Has Database Order
+        Start-RivetTest -PhysicalDatabase $Databases -ConfigurationDatabase $Databases
+        try
+        {
+            $testDirectory = Get-ChildItem -Path $TestDrive
+            $configFilePath = Join-Path -Path $testDirectory.FullName -ChildPath 'rivet.json'
+
+            $db1Migration = @'
     function Push-Migration
     {
         Add-Table -Name 'Table1DB1' -Column {
             int 'ID' -NotNull
         }
     }
-    
+
     function Pop-Migration
     {
         Remove-Table -Name 'Table1DB1'
     }
 '@
-    $db1Migration | New-TestMigration -Name 'ExportMigration' -DatabaseName $RTDatabaseName -ConfigFilePath $configFilePath
-    Invoke-RTRivet -Push -ConfigFilePath $configFilePath -Database $RTDatabaseName
+            $db1Migration | New-TestMigration -Name 'ExportMigration' -DatabaseName $RTDatabaseName -ConfigFilePath $configFilePath
+            Invoke-RTRivet -Push -ConfigFilePath $configFilePath -Database $RTDatabaseName
 
-    $db2Migration = @"
+            $db2Migration = @"
     function Push-Migration
     {
         Add-View -Name 'ViewOfTable1DB1' -Definition 'as select * from $($RTDatabaseName).dbo.Table1DB1'
     }
-    
+
     function Pop-Migration
     {
         Remove-View -Name 'ViewOfTable1DB1'
     }
 "@
-    $db2Migration | New-TestMigration -Name 'ExportMigration' -DatabaseName $RTDatabase2Name -ConfigFilePath $configFilePath
-    Invoke-RTRivet -Push -ConfigFilePath $configFilePath -Database $RTDatabase2Name
+            $db2Migration | New-TestMigration -Name 'ExportMigration' -DatabaseName $RTDatabase2Name -ConfigFilePath $configFilePath
+            Invoke-RTRivet -Push -ConfigFilePath $configFilePath -Database $RTDatabase2Name
 
-    $script:migration = Export-Migration -SqlServerName $RTServer -Database $RTDatabase2Name -ConfigFilePath $configFilePath
-    ThenMigration -HasContent 'Add-View -Name ''ViewOfTable1DB1'''
-    Stop-RivetTest -DatabaseName $Databases
-    ThenNoErrors
-}
+            $script:migration = Export-Migration -SqlServerName $RTServer -Database $RTDatabase2Name -ConfigFilePath $configFilePath
+            ThenMigration -HasContent 'Add-View -Name ''ViewOfTable1DB1'''
+        }
+        finally
+        {
+            Stop-RivetTest -DatabaseName $Databases
+        }
+        ThenNoErrors
+    }
 
-Describe 'Export-Migration.when an object references another database that was applied after it' {
-    Init
-    $Databases = @($RTDatabase2Name, $RTDatabaseName)
+    It 'exports an object that references another database that was applied after it' {
+        $Databases = @($RTDatabase2Name, $RTDatabaseName)
 
-    # Has Database Order
-    Start-RivetTest -PhysicalDatabase $Databases -ConfigurationDatabase $Databases
-    $testDirectory = Get-ChildItem -Path $TestDrive.FullName
-    $configFilePath = Join-Path -Path $testDirectory.FullName -ChildPath 'rivet.json'
+        # Has Database Order
+        Start-RivetTest -PhysicalDatabase $Databases -ConfigurationDatabase $Databases
 
-    $db1Migration = @'
+        try
+        {
+            $testDirectory = Get-ChildItem -Path $TestDrive
+            $configFilePath = Join-Path -Path $testDirectory.FullName -ChildPath 'rivet.json'
+
+            $db1Migration = @'
     function Push-Migration
     {
         Add-Table -Name 'Table1DB1' -Column {
             int 'ID' -NotNull
         }
     }
-    
+
     function Pop-Migration
     {
         Remove-Table -Name 'Table1DB1'
     }
 '@
-    $db1Migration | New-TestMigration -Name 'ExportMigration' -DatabaseName $RTDatabaseName -ConfigFilePath $configFilePath
-    Invoke-RTRivet -Push -ConfigFilePath $configFilePath -Database $RTDatabaseName
+            $db1Migration | New-TestMigration -Name 'ExportMigration' -DatabaseName $RTDatabaseName -ConfigFilePath $configFilePath
+            Invoke-RTRivet -Push -ConfigFilePath $configFilePath -Database $RTDatabaseName
 
-    $db2Migration = @"
+            $db2Migration = @"
     function Push-Migration
     {
         Add-View -Name 'ViewOfTable1DB1' -Definition 'as select * from $($RTDatabaseName).dbo.Table1DB1'
     }
-    
+
     function Pop-Migration
     {
         Remove-View -Name 'ViewOfTable1DB1'
     }
 "@
-    $db2Migration | New-TestMigration -Name 'ExportMigration' -DatabaseName $RTDatabase2Name -ConfigFilePath $configFilePath
-    Invoke-RTRivet -Push -ConfigFilePath $configFilePath -Database $RTDatabase2Name
+            $db2Migration | New-TestMigration -Name 'ExportMigration' -DatabaseName $RTDatabase2Name -ConfigFilePath $configFilePath
+            Invoke-RTRivet -Push -ConfigFilePath $configFilePath -Database $RTDatabase2Name
 
-    $script:migration = Export-Migration -SqlServerName $RTServer -Database $RTDatabase2Name -ConfigFilePath $configFilePath
-    ThenMigration -Not -HasContent 'Add-View -Name ''ViewOfTable1DB1'''
-    Stop-RivetTest -DatabaseName $Databases
-}
+            $script:migration = Export-Migration -SqlServerName $RTServer -Database $RTDatabase2Name -ConfigFilePath $configFilePath
+            ThenMigration -Not -HasContent 'Add-View -Name ''ViewOfTable1DB1'''
+        }
+        finally
+        {
+            Stop-RivetTest -DatabaseName $Databases
+        }
+    }
 
-Describe 'Export-Migration.when an object references another database and no ConfigurationDatabase is specified' {
-    Init
-    $Databases = @($RTDatabase2Name, $RTDatabaseName)
+    It 'exports an object that references another database and no ConfigurationDatabase is specified' {
+        $Databases = @($RTDatabase2Name, $RTDatabaseName)
 
-    # No Database Order
-    Start-RivetTest -PhysicalDatabase $Databases
-    $testDirectory = Get-ChildItem -Path $TestDrive.FullName
-    $configFilePath = Join-Path -Path $testDirectory.FullName -ChildPath 'rivet.json'
+        # No Database Order
+        Start-RivetTest -PhysicalDatabase $Databases
+        try
+        {
+            $testDirectory = Get-ChildItem -Path $TestDrive
+            $configFilePath = Join-Path -Path $testDirectory.FullName -ChildPath 'rivet.json'
 
-    $db1Migration = @'
+            $db1Migration = @'
     function Push-Migration
     {
         Add-Table -Name 'Table1DB1' -Column {
             int 'ID' -NotNull
         }
     }
-    
+
     function Pop-Migration
     {
         Remove-Table -Name 'Table1DB1'
     }
 '@
-    $db1Migration | New-TestMigration -Name 'ExportMigration' -DatabaseName $RTDatabaseName -ConfigFilePath $configFilePath
-    Invoke-RTRivet -Push -ConfigFilePath $configFilePath -Database $RTDatabaseName
+            $db1Migration | New-TestMigration -Name 'ExportMigration' -DatabaseName $RTDatabaseName -ConfigFilePath $configFilePath
+            Invoke-RTRivet -Push -ConfigFilePath $configFilePath -Database $RTDatabaseName
 
-    $db2Migration = @"
+            $db2Migration = @"
     function Push-Migration
     {
         Add-View -Name 'ViewOfTable1DB1' -Definition 'as select * from $($RTDatabaseName).dbo.Table1DB1'
     }
-    
+
     function Pop-Migration
     {
         Remove-View -Name 'ViewOfTable1DB1'
     }
 "@
-    $db2Migration | New-TestMigration -Name 'ExportMigration' -DatabaseName $RTDatabase2Name -ConfigFilePath $configFilePath
-    Invoke-RTRivet -Push -ConfigFilePath $configFilePath -Database $RTDatabase2Name
+            $db2Migration | New-TestMigration -Name 'ExportMigration' -DatabaseName $RTDatabase2Name -ConfigFilePath $configFilePath
+            Invoke-RTRivet -Push -ConfigFilePath $configFilePath -Database $RTDatabase2Name
 
-    $script:migration = Export-Migration -SqlServerName $RTServer -Database $RTDatabase2Name -ConfigFilePath $configFilePath
-    ThenMigration -HasContent 'Add-View -Name ''ViewOfTable1DB1'''
-    Stop-RivetTest -DatabaseName $Databases
-    ThenNoErrors
+            $script:migration = Export-Migration -SqlServerName $RTServer -Database $RTDatabase2Name -ConfigFilePath $configFilePath
+            ThenMigration -HasContent 'Add-View -Name ''ViewOfTable1DB1'''
+        }
+        finally
+        {
+            Stop-RivetTest -DatabaseName $Databases
+        }
+        ThenNoErrors
+    }
 }

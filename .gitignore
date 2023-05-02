@@ -14,3 +14,7 @@
 *.pdb
 *.suo
 *.user
+
+/Rivet/LICENSE
+/Rivet/NOTICE
+/Rivet/*.md

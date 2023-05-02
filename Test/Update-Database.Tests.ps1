@@ -2,27 +2,26 @@
 #Requires -Version 5.1
 Set-StrictMode -Version 'Latest'
 
-& (Join-Path -Path $PSScriptRoot -ChildPath 'Initialize-Test.ps1' -Resolve)
-
-function Init
-{
-    Start-RivetTest
-}
-
-function Reset
-{
-    Invoke-RTRivet -Pop -All
-    Stop-RivetTest
+BeforeAll {
+    Set-StrictMode -Version 'Latest'
+    & (Join-Path -Path $PSScriptRoot -ChildPath 'Initialize-Test.ps1' -Resolve)
 }
 
 Describe 'Update-Database' {
-    AfterEach { Reset }
-    It 'should allow long migration names' {
-        Init
+    BeforeEach {
+        Start-RivetTest
+    }
+
+    AfterEach {
+        Invoke-RTRivet -Pop -All
+        Stop-RivetTest
+    }
+
+    It 'allows long migration names' {
         $migrationPathLength = $RTDatabaseMigrationRoot.Length
         # remove length of the separator, timestamp, underscore and extension
         $name = 'a' * (259 - $migrationPathLength - 1 - 14 - 1 - 4)
-    
+
         @'
     function Push-Migration
     {
@@ -30,24 +29,20 @@ Describe 'Update-Database' {
             BigInt ID
         }
     }
-    
+
     function Pop-Migration
     {
         Remove-Table 'Foobar'
     }
-    
+
 '@ | New-TestMigration -Name $name
-    
+
         Invoke-RTRivet -Push
         $Global:Error.Count | Should -Be 0
         (Test-Table 'Foobar') | Should -BeTrue
     }
-}
 
-Describe 'Update-Database.when a migration has already been applied' {
-    AfterEach { Reset }
-    It 'should not parse migrations already applied' {
-        Init
+    It 'does not parse already applied migrations' {
         $migrationContent = @'
 function Push-Migration
 {

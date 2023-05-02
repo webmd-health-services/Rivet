@@ -2,21 +2,21 @@
 #Requires -Version 5.1
 Set-StrictMode -Version 'Latest'
 
-& (Join-Path -Path $PSScriptRoot -ChildPath 'Initialize-Test.ps1' -Resolve)
+BeforeAll {
+    Set-StrictMode -Version 'Latest'
 
-function Init
-{
-    Start-RivetTest
-}
-
-function Reset
-{
-    Stop-RivetTest
+    & (Join-Path -Path $PSScriptRoot -ChildPath 'Initialize-Test.ps1' -Resolve)
 }
 
 Describe 'Add-UniqueKey' {
-    BeforeEach { Init }
-    AfterEach { Reset }
+    BeforeEach {
+        Start-RivetTest
+    }
+
+    AfterEach {
+        Stop-RivetTest
+    }
+
 
     It 'should add unique key to one column' {
         # Yes.  Spaces in names so we check that the names get quoted.
@@ -143,7 +143,8 @@ function Pop-Migration()
     Remove-Table AddUniqueKey
 }
 '@ | New-TestMigration -Name 'AddUniqueKeyWithCustomFileGroup'
-        Invoke-RTRivet -Push 'AddUniqueKeyWithCustomFileGroup' -ErrorAction SilentlyContinue
+        { Invoke-RTRivet -Push 'AddUniqueKeyWithCustomFileGroup' -ErrorAction SilentlyContinue } |
+            Should -Throw '*Invalid filegroup*'
         $Global:Error.Count | Should -BeGreaterThan 0
     }
 
@@ -184,7 +185,7 @@ function Pop-Migration()
 }
 '@ | New-TestMigration -Name 'AddUniqueKeyWithCustomName'
         Invoke-RTRivet -Push 'AddUniqueKeyWithCustomName'
-        
+
         $UQC = Invoke-RivetTestQuery -Query "select * from sys.indexes where is_unique_constraint='True'"
 
         $UQC.name | Should -Be 'Custom'

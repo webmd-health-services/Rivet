@@ -15,10 +15,10 @@ function Start-MigrationOperation
 
     Set-StrictMode -Version 'Latest'
     Use-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-    
+
     function Test-DescriptionOperation
     {
-        $Operation.ChildOperations | 
+        $Operation.ChildOperations |
             Where-Object { $_ -is [Rivet.Operations.AddExtendedPropertyOperation] } |
             Where-Object { $_.Name -eq [Rivet.Operations.ExtendedPropertyOperation]::DescriptionPropertyName } |
             Where-Object { $_.SchemaName -eq $Operation.SchemaName } |
@@ -41,15 +41,15 @@ function Start-MigrationOperation
         }
         Invoke-Command {
             smalldatetime 'CreateDate' -NotNull -Default 'getdate()' -DefaultConstraintName "$($defaultConstraintNamePrefix)CreateDate" -Description 'Record created date'
-            datetime 'LastUpdated' -NotNull -Default 'getdate()' -DefaultConstraintName "$($defaultConstraintNamePrefix)LastUpdated" -Description 'Date this record was last updated' 
+            datetime 'LastUpdated' -NotNull -Default 'getdate()' -DefaultConstraintName "$($defaultConstraintNamePrefix)LastUpdated" -Description 'Date this record was last updated'
         } | ForEach-Object { $Operation.Columns.Add( $_ ) }
 
-        $skipRowGuidCol = $Operation.Columns | 
+        $skipRowGuidCol = $Operation.Columns |
                             Where-Object { $_.DataType -eq [Rivet.DataType]::UniqueIdentifier } |
                             Where-Object { $_.RowGuidCol }
         if( -not $skipRowGuidCol )
         {
-            $Operation.Columns.Add( 
+            $Operation.Columns.Add(
                 (uniqueidentifier 'rowguid' -NotNull -RowGuidCol -Default 'newsequentialid()' -DefaultConstraintName "$($defaultConstraintNamePrefix)rowguid" -Description 'rowguid column used for replication')
             )
 
@@ -60,7 +60,7 @@ function Start-MigrationOperation
 
     if( ($Operation -is [Rivet.Operations.AddTableOperation]) -or ($Operation -is [Rivet.Operations.UpdateTableOperation]) )
     {
-        ('Columns','AddColumns') | 
+        ('Columns','AddColumns') |
             Where-Object { $Operation | Get-Member $_ } |
             ForEach-Object { $Operation | Select-Object -ExpandProperty $_ } |
             Where-Object { -not $_.Description } |
@@ -69,7 +69,7 @@ function Start-MigrationOperation
                 $problems = $true
             }
 
-        ('Columns','AddColumns','UpdateColumns') | 
+        ('Columns','AddColumns','UpdateColumns') |
             Where-Object { $Operation | Get-Member $_ } |
             ForEach-Object { $Operation | Select-Object -ExpandProperty $_ } |
             ForEach-Object {
@@ -91,17 +91,21 @@ function Start-MigrationOperation
         $Operation.NotForReplication = $true
     }
 
-    if( $Operation -is [Rivet.Operations.AddTriggerOperation] -or $Operation -is [Rivet.Operations.UpdateTriggerOperation] )
+    if( $Operation -is [Rivet.Operations.AddTriggerOperation] -or `
+        $Operation -is [Rivet.Operations.UpdateTriggerOperation] )
     {
         if( $Operation.Definition -notmatch 'not for replication' )
         {
-            Write-Error ('Trigger {0}: all user-defined triggers must have ''not for replication'' clause specified.  Please add the ''not for replication'' clause to your trigger.' -f $_.Name)
+            $msg = "Trigger $($Operation.Name)}: all user-defined triggers must have ""not for replication"" clause " +
+                   'specified. Please add the "not for replication" clause to your trigger.'
+            Write-Error -Message $msg
             $problems = $true
         }
     }
 
     if( $problems )
     {
-        throw ('There were errors running ''{0}''.  Please see previous errors for details.' -f $Operation.GetType().Name)
+        $msg = "There were errors running ""$($Operation.GetType().Name)"". Please see previous errors for details."
+        Write-Error -Message $msg -ErrorAction Stop
     }
 }

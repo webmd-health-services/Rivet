@@ -8,7 +8,15 @@ function New-File
 
     Set-StrictMode -Version 'Latest'
 
-    $root = $TestDrive.FullName
+    if ($TestDrive | Get-Member 'FullName')
+    {
+        $root = $TestDrive.FullName
+    }
+    else
+    {
+        $root = $TestDrive
+    }
+
     if( $RTTestRoot )
     {
         $root = $RTTestRoot

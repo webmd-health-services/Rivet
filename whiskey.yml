@@ -60,7 +60,7 @@ Build:
 
 - MergeFile:
     OnlyBy: BuildServer
-    IfExists: Rivet\Functions\*.ps1
+    IfExists: Test\RivetTest\Functions\*.ps1
     Path:
     - Test\RivetTest\Functions\*.ps1
     - Test\RivetTest\RivetTest.Exports.ps1
@@ -68,121 +68,9 @@ Build:
     DeleteSourceFiles: true
     TextSeparator: "$(NewLine)$(NewLine)"
 
-- Pester4:
-    Verbose: false  # Rivet is super chatty with Verbose messages.
-    Script:
-        - "Test\\Add-DataType.Tests.ps1"
-        - "Test\\Add-DefaultConstraint.Tests.ps1"
-        - "Test\\Add-Description.Tests.ps1"
-        - "Test\\Add-ForeignKey.Tests.ps1"
-        - "Test\\Add-Index.Tests.ps1"
-        - "Test\\Add-PrimaryKey.Tests.ps1"
-        - "Test\\Add-Table.Tests.ps1"
-        - "Test\\Add-UniqueKey.Tests.ps1"
-        - "Test\\bigint.Tests.ps1"
-        - "Test\\Columns.Tests.ps1"
-        - "Test\\Convert-Migration.Tests.ps1"
-        - "Test\\decimal.Tests.ps1"
-        - "Test\\Export-Migration.Tests.ps1"
-        - "Test\\Functions.Tests.ps1"
-        - "Test\\Get-Migration.Tests.ps1"
-        - "Test\\Get-RivetConfig.Tests.ps1"
-        - "Test\\Import-RivetPlugin.Tests.ps1"
-        - "Test\\Initialize-Database.Tests.ps1"
-        - "Test\\int.Tests.ps1"
-        - "Test\\Invoke-MigrationOperation.Tests.ps1"
-        - "Test\\Invoke-Query.Tests.ps1"
-        - "Test\\Invoke-Rivet.Tests.ps1"
-        - "Test\\Merge-Migration.Tests.ps1"
-        - "Test\\New-Migration.Tests.ps1"
-        - "Test\\Pop-Migration.Tests.ps1"
-        - "Test\\Remove-CheckConstraint.Tests.ps1"
-        - "Test\\Remove-DefaultConstraint.Tests.ps1"
-        - "Test\\Remove-Description.Tests.ps1"
-        - "Test\\Remove-ForeignKey.Tests.ps1"
-        - "Test\\Remove-Index.Tests.ps1"
-        - "Test\\Remove-PrimaryKey.Tests.ps1"
-        - "Test\\Remove-UniqueKey.Tests.ps1"
-        - "Test\\Rename-Datatype.Tests.ps1"
-        - "Test\\Rename-Object.Tests.ps1"
-        - "Test\\smallint.Tests.ps1"
-        - "Test\\Split-SqlBatchQuery.Tests.ps1"
-        - "Test\\tinyint.Tests.ps1"
-        - "Test\\Update-CodeObjectMetadata.Tests.ps1"
-        - "Test\\Update-Database.Tests.ps1"
-        - "Test\\Update-Description.Tests.ps1"
-        - "Test\\Update-Table.Tests.ps1"
-        - "Test\\varbinary.Tests.ps1"
-        - "Test\\varchar.Tests.ps1"
-        - "Test\\xml.Tests.ps1"
-
-- Pester:
-    AsJob: true
-    Configuration:
-        TestResult:
-            Enabled: true
-            OutputPath: .output\pester.xml
-            TestSuiteName: Rivet
-        Output:
-            Verbosity: Detailed
-        Run:
-            Path: Test\*.Tests.ps1
-            ExcludePath:
-            - "*\\Test\\Add-DataType.Tests.ps1"
-            - "*\\Test\\Add-DefaultConstraint.Tests.ps1"
-            - "*\\Test\\Add-Description.Tests.ps1"
-            - "*\\Test\\Add-ForeignKey.Tests.ps1"
-            - "*\\Test\\Add-Index.Tests.ps1"
-            - "*\\Test\\Add-PrimaryKey.Tests.ps1"
-            - "*\\Test\\Add-Table.Tests.ps1"
-            - "*\\Test\\Add-UniqueKey.Tests.ps1"
-            - "*\\Test\\bigint.Tests.ps1"
-            - "*\\Test\\Columns.Tests.ps1"
-            - "*\\Test\\Convert-Migration.Tests.ps1"
-            - "*\\Test\\decimal.Tests.ps1"
-            - "*\\Test\\Export-Migration.Tests.ps1"
-            - "*\\Test\\Functions.Tests.ps1"
-            - "*\\Test\\Get-Migration.Tests.ps1"
-            - "*\\Test\\Get-RivetConfig.Tests.ps1"
-            - "*\\Test\\Import-RivetPlugin.Tests.ps1"
-            - "*\\Test\\Initialize-Database.Tests.ps1"
-            - "*\\Test\\int.Tests.ps1"
-            - "*\\Test\\Invoke-MigrationOperation.Tests.ps1"
-            - "*\\Test\\Invoke-Query.Tests.ps1"
-            - "*\\Test\\Invoke-Rivet.Tests.ps1"
-            - "*\\Test\\Merge-Migration.Tests.ps1"
-            - "*\\Test\\New-Migration.Tests.ps1"
-            - "*\\Test\\Pop-Migration.Tests.ps1"
-            - "*\\Test\\Remove-CheckConstraint.Tests.ps1"
-            - "*\\Test\\Remove-DefaultConstraint.Tests.ps1"
-            - "*\\Test\\Remove-Description.Tests.ps1"
-            - "*\\Test\\Remove-ForeignKey.Tests.ps1"
-            - "*\\Test\\Remove-Index.Tests.ps1"
-            - "*\\Test\\Remove-PrimaryKey.Tests.ps1"
-            - "*\\Test\\Remove-UniqueKey.Tests.ps1"
-            - "*\\Test\\Rename-Datatype.Tests.ps1"
-            - "*\\Test\\Rename-Object.Tests.ps1"
-            - "*\\Test\\smallint.Tests.ps1"
-            - "*\\Test\\Split-SqlBatchQuery.Tests.ps1"
-            - "*\\Test\\tinyint.Tests.ps1"
-            - "*\\Test\\Update-CodeObjectMetadata.Tests.ps1"
-            - "*\\Test\\Update-Database.Tests.ps1"
-            - "*\\Test\\Update-Description.Tests.ps1"
-            - "*\\Test\\Update-Table.Tests.ps1"
-            - "*\\Test\\varbinary.Tests.ps1"
-            - "*\\Test\\varchar.Tests.ps1"
-            - "*\\Test\\xml.Tests.ps1"
-
-- PowerShell:
-    OnlyDuring: Build
-    Path: test.ps1
-
-# Build runs twice on some servers, so delete any ZIP file created by another build.
-- Delete:
-    Path: .output\*.zip
-
 - CopyFile:
     Path:
+    - CHANGELOG.md
     - README.md
     - LICENSE
     - NOTICE
@@ -200,6 +88,80 @@ Build:
     OnlyBy: BuildServer
     Path: appveyor
     Argument: [ 'PushArtifact', '.output/Rivet-$(WHISKEY_SEMVER2).zip', '-DeploymentName', 'GitHub' ]
+
+- Pester:
+    Configuration:
+        TestResult:
+            Enabled: true
+            OutputPath: .output\pester.xml
+            TestSuiteName: Rivet
+        Output:
+            Verbosity: Detailed
+        Run:
+            Path: Test\*.Tests.ps1
+            ExcludePath:
+            - "*\\Test\\Add-DataType.Tests.ps1"
+            - "*\\Test\\Add-DefaultConstraint.Tests.ps1"
+            - "*\\Test\\Add-Description.Tests.ps1"
+            - "*\\Test\\Add-ForeignKey.Tests.ps1"
+            - "*\\Test\\Add-PrimaryKey.Tests.ps1"
+            - "*\\Test\\bigint.Tests.ps1"
+            - "*\\Test\\Columns.Tests.ps1"
+            - "*\\Test\\decimal.Tests.ps1"
+            - "*\\Test\\Functions.Tests.ps1"
+            - "*\\Test\\Get-RivetConfig.Tests.ps1"
+            - "*\\Test\\int.Tests.ps1"
+            - "*\\Test\\Merge-Migration.Tests.ps1"
+            - "*\\Test\\New-Migration.Tests.ps1"
+            - "*\\Test\\Remove-CheckConstraint.Tests.ps1"
+            - "*\\Test\\Remove-DefaultConstraint.Tests.ps1"
+            - "*\\Test\\Remove-Description.Tests.ps1"
+            - "*\\Test\\Remove-Index.Tests.ps1"
+            - "*\\Test\\Remove-PrimaryKey.Tests.ps1"
+            - "*\\Test\\Remove-UniqueKey.Tests.ps1"
+            - "*\\Test\\Rename-Datatype.Tests.ps1"
+            - "*\\Test\\Rename-Object.Tests.ps1"
+            - "*\\Test\\smallint.Tests.ps1"
+            - "*\\Test\\Split-SqlBatchQuery.Tests.ps1"
+            - "*\\Test\\tinyint.Tests.ps1"
+            - "*\\Test\\Update-CodeObjectMetadata.Tests.ps1"
+            - "*\\Test\\Update-Description.Tests.ps1"
+            - "*\\Test\\varbinary.Tests.ps1"
+            - "*\\Test\\varchar.Tests.ps1"
+            - "*\\Test\\xml.Tests.ps1"
+
+- Pester4:
+    Verbose: false  # Rivet is super chatty with Verbose messages.
+    Script:
+        - "Test\\Add-DataType.Tests.ps1"
+        - "Test\\Add-DefaultConstraint.Tests.ps1"
+        - "Test\\Add-Description.Tests.ps1"
+        - "Test\\Add-ForeignKey.Tests.ps1"
+        - "Test\\Add-PrimaryKey.Tests.ps1"
+        - "Test\\bigint.Tests.ps1"
+        - "Test\\Columns.Tests.ps1"
+        - "Test\\decimal.Tests.ps1"
+        - "Test\\Functions.Tests.ps1"
+        - "Test\\Get-RivetConfig.Tests.ps1"
+        - "Test\\int.Tests.ps1"
+        - "Test\\Merge-Migration.Tests.ps1"
+        - "Test\\New-Migration.Tests.ps1"
+        - "Test\\Remove-CheckConstraint.Tests.ps1"
+        - "Test\\Remove-DefaultConstraint.Tests.ps1"
+        - "Test\\Remove-Description.Tests.ps1"
+        - "Test\\Remove-Index.Tests.ps1"
+        - "Test\\Remove-PrimaryKey.Tests.ps1"
+        - "Test\\Remove-UniqueKey.Tests.ps1"
+        - "Test\\Rename-Datatype.Tests.ps1"
+        - "Test\\Rename-Object.Tests.ps1"
+        - "Test\\smallint.Tests.ps1"
+        - "Test\\Split-SqlBatchQuery.Tests.ps1"
+        - "Test\\tinyint.Tests.ps1"
+        - "Test\\Update-CodeObjectMetadata.Tests.ps1"
+        - "Test\\Update-Description.Tests.ps1"
+        - "Test\\varbinary.Tests.ps1"
+        - "Test\\varchar.Tests.ps1"
+        - "Test\\xml.Tests.ps1"
 
 - PublishPowerShellModule:
     Path: Rivet

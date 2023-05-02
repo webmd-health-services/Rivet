@@ -160,6 +160,7 @@
         'RTRivetRoot',
         'RTRivetSchemaName',
         'RTServer',
+        'RTSession',
         'RTTestRoot',
         'RTTimestamp'
     )

@@ -2,69 +2,71 @@
 function Connect-Database
 {
     param(
-        [Parameter(Mandatory=$true)]
-        [string]
-        # The SQL Server instance to connect to.
-        $SqlServerName,
-        
-        [Parameter(Mandatory=$true)]
-        [string]
-        # The database to connect to.
-        $Database,
-        
-        [UInt32]
-        # The time (in seconds) to wait for a connection to open. The default is 10 seconds.
-        $ConnectionTimeout = 10
+        [Parameter(Mandatory)]
+        [Rivet_Session] $Session,
+
+        [String] $Name
     )
-    
+
     Set-StrictMode -Version 'Latest'
+    Use-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+
+    if (-not $Name)
+    {
+        if ($Session.Databases.Count -eq 0)
+        {
+            $msg = 'Unable to connect to database because the current Rivet session has no databases.'
+            Write-Error -Message $msg
+            return
+        }
+
+        if ($Session.Databases.Count -gt 1)
+        {
+            $msg = 'Unable to connect to database because the current Rivet session has multiple databases and we ' +
+                   'don''t know which one to connect to. Please pass a database name to the `Connect-Database` ' +
+                   'function''s `Name` parameter.'
+            Write-Error -Message $msg
+            return
+        }
+
+        $Name = $Session.Databases[0].Name
+    }
 
     $startedAt = Get-Date
 
-    if( -not $Connection -or $Connection.DataSource -ne $SqlServerName -or $Connection.State -eq [Data.ConnectionState]::Closed)
+    $connection = $Session.Connection
+    $sqlServerName = $Session.SqlServerName
+    $connTimeout = $Session.ConnectionTimeout
+
+    if (-not $connection -or `
+        $connection.DataSource -ne $sqlServerName -or `
+        $connection.State -eq [Data.ConnectionState]::Closed)
     {
-        Disconnect-Database
+        Disconnect-Database -Session $Session
 
-        $connString = 'Server={0};Database=master;Integrated Security=True;Connection Timeout={1}' -f $SqlServerName,$ConnectionTimeout
-        Set-Variable -Name 'Connection' -Scope 1 -Value (New-Object 'Data.SqlClient.SqlConnection' ($connString)) -Confirm:$False -WhatIf:$false
-        try
-        {
-            $Connection.Open()
-        }
-        catch
-        {
-            $ex = $_.Exception
-            while( $ex.InnerException )
-            {
-                $ex = $ex.InnerException
-            }
+        $connString =
+            "Server=${sqlServerName};Database=master;Integrated Security=True;Connection Timeout=${connTimeout}"
+        $Session.Connection = $connection = [Data.SqlClient.SqlConnection]::New($connString)
 
-            Write-Error ('Failed to connect to SQL Server "{0}" (connection string: {1}). Does this database server exist? ({2})' -f $SqlServerName,$connString,$ex.Message)
-            return $false
-        }
+        $connection.Open()
     }
 
-    if( -not ($Connection | Get-Member -Name 'Transaction' ) )
+    if ($connection.Database -ne 'master')
     {
-        $Connection |
-            Add-Member -MemberType NoteProperty -Name 'Transaction' -Value $null
+        $connection.ChangeDatabase('master')
     }
 
-    if( $Connection.Database -ne 'master' )
+    $query = "select 1 from sys.databases where name='${Name}'"
+    $dbExists = Invoke-Query -Session $Session -Query $query -AsScalar
+    if (-not $dbExists)
     {
-        $Connection.ChangeDatabase( 'master' )
+        Write-Debug -Message ('Creating database {0}.{1}.' -f $SqlServerName,$Name)
+        $query = "create database [${Name}]"
+        Invoke-Query -Session $Session -Query $query -NonQuery
     }
 
-    $query = 'select 1 from sys.databases where name=''{0}''' -f $Database
-    $dbExists = Invoke-Query -Query $query -AsScalar
-    if( -not $dbExists )
-    {
-        Write-Debug -Message ('Creating database {0}.{1}.' -f $SqlServerName,$Database)
-        $query = 'create database [{0}]' -f $Database
-        Invoke-Query -Query $query -NonQuery
-    }
-
-    $Connection.ChangeDatabase( $Database )
+    $connection.ChangeDatabase($Name)
+    $Session.CurrentDatabase = $Session.Databases | Where-Object 'Name' -EQ $Name
 
     Write-Debug -Message ('{0,8} (ms)   Connect-Database' -f ([int]((Get-Date) - $startedAt).TotalMilliseconds))
     return $true

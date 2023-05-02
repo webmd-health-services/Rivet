@@ -11,7 +11,7 @@
     RootModule = 'Rivet.psm1'
 
     # Version number of this module.
-    ModuleVersion = '0.19.0'
+    ModuleVersion = '0.20.0'
 
     # ID used to uniquely identify this module
     GUID = '8af34b47-259b-4630-a945-75d38c33b94d'
@@ -93,12 +93,12 @@ Rivet is a database migration/change management/versioning tool inspired by Ruby
         'Add-UserDefinedFunction',
         'Add-View',
         'Checkpoint-Migration',
+        'Connect-RivetSession',
         'Disable-Constraint',
         'Enable-Constraint',
         'Export-Migration',
         'Get-Migration',
         'Get-Migration',
-        'Get-RivetConfig',
         'Get-RivetConfig',
         'Import-RivetPlugin',
         'Invoke-Ddl',
@@ -125,6 +125,7 @@ Rivet is a database migration/change management/versioning tool inspired by Ruby
         'New-NCharColumn',
         'New-NVarCharColumn',
         'New-RealColumn',
+        'New-RivetSession',
         'New-RowVersionColumn',
         'New-SmallDateTimeColumn',
         'New-SmallIntColumn',
@@ -241,7 +242,7 @@ Rivet is a database migration/change management/versioning tool inspired by Ruby
             Prerelease = ''
 
             # ReleaseNotes of this module
-            ReleaseNotes = 'https://github.com/webmd-health-services/Rivet/blob/master/CHANGELOG.md'
+            ReleaseNotes = 'https://github.com/webmd-health-services/Rivet/blob/main/CHANGELOG.md'
         } # End of PSData hashtable
 
     } # End of PrivateData hashtable

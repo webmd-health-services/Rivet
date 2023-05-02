@@ -16,12 +16,15 @@ function Invoke-MigrationOperation
     [CmdletBinding(DefaultParameterSetName='AsReader')]
     param(
         [Parameter(Mandatory)]
-        # The migration this operation is from.
-        [Rivet.Migration]$Migration,
+        [Rivet_Session] $Session,
 
-        [Parameter(Mandatory,ValueFromPipeline)]
+        # The migration this operation is from.
+        [Parameter(Mandatory)]
+        [Rivet.Migration] $Migration,
+
         # The migration object to invoke.
-        [Rivet.Operations.Operation]$Operation
+        [Parameter(Mandatory, ValueFromPipeline)]
+        [Rivet.Operations.Operation] $Operation
     )
 
     begin
@@ -31,18 +34,19 @@ function Invoke-MigrationOperation
     process
     {
         Set-StrictMode -Version 'Latest'
+        Use-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
-        $optionalParams = @{ }
+        $optionalArgs = @{ }
         $nonQuery = $false
         $asScalar = $false
         if( $Operation.QueryType -eq [Rivet.OperationQueryType]::NonQuery -or $Operation.QueryType -eq [Rivet.OperationQueryType]::Ddl )
         {
-            $optionalParams['NonQuery'] = $true
+            $optionalArgs['NonQuery'] = $true
             $nonQuery = $true
         }
         elseif( $Operation.QueryType -eq [Rivet.OperationQueryType]::Scalar )
         {
-            $optionalParams['AsScalar'] = $true
+            $optionalArgs['AsScalar'] = $true
             $asScalar = $true
         }
 
@@ -56,29 +60,18 @@ function Invoke-MigrationOperation
                 $rowsAffected = -1
                 $rowCount = $null
 
-                try
+                if( $Operation -is [Rivet.Operations.RemoveRowOperation] -and $Operation.Truncate)
                 {
-                    if( $Operation -is [Rivet.Operations.RemoveRowOperation] -and $Operation.Truncate )
-                    {
-                        $rowCount = Invoke-Query -Query ('select count(*) from [{0}].[{1}]' -f $Operation.SchemaName,$Operation.TableName) -AsScalar
-                    }
+                    $query = "select count(*) from [$($Operation.SchemaName)].[$($Operation.TableName)]"
+                    $rowCount = Invoke-Query -Session $Session -Query $query -AsScalar
+                }
 
-                    $result = Invoke-Query -Query $batchQuery -Parameter $Operation.Parameters -CommandTimeout $Operation.CommandTimeout @optionalParams
-                }
-                catch
-                {
-                    Write-RivetError -Message ('Migration {0} failed' -f $migrationInfo.FullName) `
-                                        -CategoryInfo $_.CategoryInfo.Category `
-                                        -ErrorID $_.FullyQualifiedErrorID `
-                                        -Exception $_.Exception `
-                                        -CallStack ($_.ScriptStackTrace) `
-                                        -Query $batchQuery
-                    throw (New-Object ApplicationException 'Migration failed.',$_.Exception)
-                }
+                $result =
+                    Invoke-Query -Session $Session -Query $batchQuery -Parameter $Operation.Parameters @optionalArgs
 
                 if( $nonQuery )
                 {
-                    if( $rowCount -eq $null )
+                    if ($null -eq $rowCount)
                     {
                         $rowsAffected = $result
                     }
@@ -87,23 +80,23 @@ function Invoke-MigrationOperation
                 {
                     if( $result -ne 0 )
                     {
-                        if( $Operation -is [Rivet.Operations.UpdateCodeObjectMetadataOperation] )
+                        if ($Operation -is [Rivet.Operations.UpdateCodeObjectMetadataOperation])
                         {
-                            $exMsg = "Failed to refresh {0}.{1}" -f $Operation.SchemaName,$Operation.Name
+                            $exMsg = "Failed to refresh [$($Operation.SchemaName)].[$($Operation.Name)]"
                         }
-                        elseif( $Operation -is [Rivet.Operations.RenameColumnOperation] )
+                        elseif ($Operation -is [Rivet.Operations.RenameColumnOperation])
                         {
                             $exMsg = "Failed to rename column {0}.{1}.{2} to {0}.{1}.{3}" -f $Operation.SchemaName,$Operation.TableName,$Operation.Name,$Operation.NewName
                         }
-                        elseif( $Operation -is [Rivet.Operations.RenameOperation] )
+                        elseif ($Operation -is [Rivet.Operations.RenameOperation])
                         {
                             $exMsg = "Failed to rename object {0}.{1} to {0}.{2}" -f $Operation.SchemaName,$Operation.Name,$Operation.NewName
                         }
                         throw ('{0}: error code {1}' -f $exMsg,$result)
                     }
                 }
-                        
-                return New-Object 'Rivet.OperationResult' $Migration,$Operation,$batchQuery,$rowsAffected              
+
+                return [Rivet.OperationResult]::New($Migration, $Operation, $batchQuery, $rowsAffected)
             }
     }
 

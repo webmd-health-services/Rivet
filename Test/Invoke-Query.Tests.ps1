@@ -1,28 +1,34 @@
 
-#Requires -Version 4
+using module '..\Rivet'
+
+#Requires -Version 5.1
 Set-StrictMode -Version 'Latest'
 
-& (Join-Path -Path $PSScriptRoot -ChildPath 'Initialize-Test.ps1' -Resolve)
+BeforeAll {
+    Set-StrictMode -Version 'Latest'
+    & (Join-Path -Path $PSScriptRoot -ChildPath 'Initialize-Test.ps1' -Resolve)
+}
 
-Describe 'Invoke-Query.when passing command timeout' {
-    It ('should fail') {
-        New-Database $RTDatabaseName
+Describe 'Invoke-Query' {
+    BeforeEach {
+        Start-RivetTest
+        $script:session = New-RivetSession -ConfigurationPath $RTConfigFilePath
+    }
+
+    It 'can customize command timeout' {
         $failed = $false
         try
         {
+            $script:session.CommandTimeout = 1
+            $session = $script:session
             InModuleScope -ModuleName 'Rivet' {
-                $Connection = New-SqlConnection
-                $Connection | Add-Member -Name 'Transaction' -Value $null -MemberType NoteProperty
-                $Connection.Transaction = $Connection.BeginTransaction()
-                try
-                {
-                    Invoke-Query -Query 'WAITFOR DELAY ''00:00:05''' -CommandTimeout 1
-                }
-                finally
-                {
-                    $Connection.Transaction.Rollback()
-                }
-            }
+                param(
+                    [Object] $Session
+                )
+
+                Connect-Database -Session $Session -Name $Session.Databases.Name
+                Invoke-Query -Session $Session -Query 'WAITFOR DELAY ''00:00:05'''
+            } -ArgumentList $script:session
         }
         catch [Data.SqlClient.SqlException]
         {

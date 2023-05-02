@@ -48,11 +48,12 @@ function New-ConstraintName
         [Parameter(ParameterSetName='FK')]
         [String]$ReferencesSchemaName = 'dbo',
 
-        [Parameter(Mandatory,ParameterSetName='FK',Position=1)]
+        [Parameter(Mandatory, ParameterSetName='FK', Position=1)]
         [String]$ReferencesTableName
     )
 
     Set-StrictMode -Version 'Latest'
+    Use-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
     $op = switch( $PSCmdlet.ParameterSetName )
     {

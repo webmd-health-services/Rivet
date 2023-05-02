@@ -15,9 +15,9 @@
                                             $dataSource = $_.DataSource
                                             if( $dataSource )
                                             {
-                                                $dataSource = '{0}.' -f $dataSource
+                                                $dataSource = '{0}].[' -f $dataSource
                                             }
-                                            '{0}{1}' -f $dataSource,$_.Database
+                                            '[{0}{1}]' -f $dataSource,$_.Database
                                         </ScriptBlock>
                                     </ExpressionBinding>
                                     <NewLine/>

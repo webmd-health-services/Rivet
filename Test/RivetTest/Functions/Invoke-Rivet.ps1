@@ -11,7 +11,7 @@ function Invoke-RTRivet
         [Parameter(Mandatory,ParameterSetName='PopByCount')]
         [Parameter(Mandatory,ParameterSetName='PopAll')]
         [switch]$Pop,
-        
+
         [Parameter(Position=1,ParameterSetName='Push')]
         [Parameter(Mandatory,Position=0,ParameterSetName='PushByName')]
         [Parameter(Mandatory,Position=1,ParameterSetName='PopByName')]
@@ -54,7 +54,7 @@ function Invoke-RTRivet
         # Initializes the database, including baseline schema. Use the -Checkpoint switch to create a database baseline.
         $InitializeSchema
     )
-    
+
     Set-StrictMode -Version Latest
     Use-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
@@ -82,19 +82,9 @@ function Invoke-RTRivet
     Write-Host -Foregroundcolor green @customParams
     #>
 
-    try
-    {
-        Invoke-Rivet @PSBoundParameters @customParams
-    }
-    catch
-    {
-        $script:RTLastMigrationFailed = $true
-        if( $ErrorActionPreference -ne [Management.Automation.ActionPreference]::SilentlyContinue -and `
-            $ErrorActionPreference -ne [Management.Automation.ActionPreference]::Ignore )
-        {
-            $_ | Out-String | Write-Host -ForegroundColor Red
-        }
-    }
+    $script:RTLastMigrationFailed = $true
+    Invoke-Rivet @PSBoundParameters @customParams | Out-String | Where-Object { $_ } | Write-Verbose
+    $script:RTLastMigrationFailed = $false
 }
 
 Set-Alias -Name 'WhenMigrating' -Value 'Invoke-RTRivet'
