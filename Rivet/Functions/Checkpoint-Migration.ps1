@@ -46,17 +46,41 @@ function Checkpoint-Migration
 
     foreach( $databaseItem in $Session.Databases )
     {
-        $OutputPath = Join-Path -Path $databaseItem.MigrationsRoot -ChildPath "schema.ps1"
+        $schemaPs1Path = Join-Path -Path $databaseItem.MigrationsRoot -ChildPath $script:schemaFileName
 
-        if ((Test-Path -Path $OutputPath) -and -not $Force)
+        $schemaPs1Exists = Test-Path -Path $schemaPs1Path
+        if (($schemaPs1Exists) -and -not $Force)
         {
-            Write-Error "Checkpoint output path ""$($OutputPath)"" already exists. Use the -Force switch to overwrite."
+            Write-Error "Checkpoint output path ""$($schemaPs1Path)"" already exists. Use the -Force switch to overwrite."
             return
         }
 
-        Write-Debug "Checkpoint-Migration: Exporting migration on database $($databaseItem.Name)"
+        $databaseName = $databaseItem.Name
+        Write-Debug "Checkpoint-Migration: Exporting migration on database ${databaseName}"
         $migration = Export-Migration -Session $Session -Database $databaseItem.Name -Checkpoint
         $migration = $migration -join [Environment]::NewLine
-        Set-Content -Path $OutputPath -Value $migration
+        Set-Content -Path $schemaPs1Path -Value $migration
+
+        if (-not $schemaPs1Exists)
+        {
+            $displayPath = $schemaPs1Path | Resolve-Path -Relative
+            if ($displayPath -match '\.\.[\\/]')
+            {
+                $displayPath = $schemaPs1Path
+            }
+            if ($displayPath -match '\s')
+            {
+                $displayPath = """${displayPath}"""
+            }
+
+            $displayName = $databaseName
+            if ($displayName -match '\s')
+            {
+                $displayName = """${displayName}"""
+            }
+            $msg = "Rivet created the ${displayName} database's baseline schema file ${displayPath}. Please check " +
+                   'this file into source control.'
+            Write-Information $msg -InformationAction Continue
+        }
     }
 }

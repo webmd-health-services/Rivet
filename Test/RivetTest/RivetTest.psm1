@@ -1,4 +1,6 @@
 
+using module '..\..\Rivet'
+
 param(
     [String]$RivetRoot
 )
