@@ -40,11 +40,6 @@ class Rivet_Session
     [Rivet.Configuration.Database] $CurrentDatabase
 }
 
-enum Rivet_QueryKeyword
-{
-    Default = 1
-}
-
 $RivetSchemaName = 'rivet'
 $RivetMigrationsTableName = 'Migrations'
 $RivetMigrationsTableFullName = "[$($RivetSchemaName)].[$($RivetMigrationsTableName)]"
