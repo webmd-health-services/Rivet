@@ -21,7 +21,7 @@ function Initialize-Database
 
     # Add schema.ps1 file from database's migration directory if it exists
     $databaseItem = $Session.CurrentDatabase
-    $schemaFilePath = Join-Path -Path $databaseItem.MigrationsRoot -ChildPath 'schema.ps1'
+    $schemaFilePath = Join-Path -Path $databaseItem.MigrationsRoot -ChildPath $script:schemaFileName
     if( (Test-Path -Path $schemaFilePath) )
     {
         $migrationPaths.Add($schemaFilePath) | Out-Null

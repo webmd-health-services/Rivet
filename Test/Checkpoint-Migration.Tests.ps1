@@ -1,3 +1,4 @@
+
 #Requires -Version 5.1
 Set-StrictMode -Version 'Latest'
 
@@ -121,7 +122,7 @@ BeforeAll {
                 Migration = $schemaFileContents
             }
             $script:checkpointedMigrations.Add($checkpointedMigration)
-            
+
             Remove-RivetTestDatabase -Name $databaseName
             # Now, check that the schema.ps1 script is runnable
             Invoke-RTRivet -InitializeSchema -Database $databaseName -ErrorAction Stop
@@ -151,7 +152,7 @@ BeforeAll {
         {
             foreach( $path in $script:migrationPaths )
             {
-                Set-Content -Path (Join-Path -Path $path.Directory.FullName -ChildPath 'schema.ps1') -Value $existingSchemaContents 
+                Set-Content -Path (Join-Path -Path $path.Directory.FullName -ChildPath 'schema.ps1') -Value $existingSchemaContents
             }
         }
 
@@ -218,7 +219,7 @@ function Pop-Migration
 '@ -ContainsRowsFor 'CheckpointMigration' -Database ($script:database)
         ThenNoErrors
     }
-    
+
     It 'should fail when schema.ps1 file already exists' {
         GivenMigrationContent -Name 'CheckpointMigration' -Content @'
 function Push-Migration
@@ -237,7 +238,7 @@ function Pop-Migration
         WhenCheckpointingMigration -ExistingSchemaFile -ErrorAction SilentlyContinue
         ThenFailed -WithError 'schema.ps1" already exists.'
     }
-    
+
     It 'should overwrite contents when schema.ps1 file already exists but -Force switch is given' {
         GivenMigrationContent -Name 'CheckpointMigration' -Content @'
 function Push-Migration
@@ -265,7 +266,7 @@ function Pop-Migration
 '@ -ContainsRowsFor 'CheckpointMigration' -Database $RTDatabaseName
         ThenNoErrors
     }
-    
+
     It 'should pass when checkpointing a migration' {
         GivenMigrationContent -Name 'CheckpointMigration' -Content @'
 function Push-Migration
@@ -289,7 +290,7 @@ function Push-Migration
         New-Column -DataType 'text' -Name 'textcolumn' -Description 'a text column'
         New-Column -DataType 'ntext' -Name 'ntextcolumn' -NotNull
         New-Column -DataType 'image' -Name 'imagecolumn'
-        New-Column -DataType 'sysname' -Name 'sysnamecolumn' -NotNull 
+        New-Column -DataType 'sysname' -Name 'sysnamecolumn' -NotNull
         New-Column -DataType 'sql_variant' -Name 'sql_variantcolumn' -Sparse
         New-Column -DataType 'CID' -Name 'CID' -NotNull
         varbinary 'VarBinDefault' -Size 1
@@ -374,7 +375,7 @@ ON [dbo].[Migrations] for insert as select 1
         ThenSchema -HasContent @'
     Add-Row -SchemaName 'rivet' -TableName 'Migrations' -Column @{
 '@ -ContainsRowsFor 'CheckpointMigration' -Database $RTDatabaseName
-        
+
         ThenSchema -HasContent 'Remove-Table -Name ''Migrations''' -Database $RTDatabaseName
         ThenSchema -Not -HasContent 'Remove-Schema' -Database $RTDatabaseName
         ThenSchema -Not -HasContent 'Remove-PrimaryKey' -Database $RTDatabaseName
@@ -385,7 +386,7 @@ ON [dbo].[Migrations] for insert as select 1
         ThenSchema -Not -HasContent 'Remove-Trigger' -Database $RTDatabaseName
         ThenNoErrors
     }
-    
+
     It 'should only checkpoint pushed migrations when there are multiple migrations but only one has been pushed' {
         GivenMigrationContent -Name 'CheckpointMigration' -Content @'
 function Push-Migration
@@ -477,7 +478,7 @@ function Pop-Migration
 '@ -ContainsRowsFor 'CheckpointMigration', 'CheckpointMigration2' -Database $RTDatabaseName
         ThenNoErrors
     }
-    
+
     It 'should do nothing when no migrations have been pushed' {
         # Nothing to push here. Just running push here to initialize database with rivet.migrations table.
         Invoke-RTRivet -Push -Database $RTDatabaseName

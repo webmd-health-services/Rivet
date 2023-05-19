@@ -5,6 +5,8 @@
 
 ## 0.20.0
 
+> Released 19 May 2023
+
 ### Added
 
 * `New-RivetSession` function for creating a Rivet session. A `Rivet_Session` is the object used by Rivet to keep track
@@ -21,6 +23,8 @@ of current state.
 
 * Shows too many errors.
 * `Remove-ForeignKey` prompts for `TableName` and `ReferencesTableName` arguments.
+* Creating a new migration also creates an unused schema.ps1 file and writes a warning that it should be added to source
+control
 
 
 ## 0.19.0
