@@ -3,6 +3,16 @@
 
 # Rivet Changelog
 
+## 0.21.0
+
+> Released 24 May 2023
+
+### Changed
+
+* Added an optional `Database` parameter to `Connect-RivetSession` function that allows specifying the default database
+to connect to when the Rivet session contains multiple databases.
+
+
 ## 0.20.0
 
 > Released 19 May 2023
