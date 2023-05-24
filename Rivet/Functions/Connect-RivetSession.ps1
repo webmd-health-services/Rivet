@@ -28,6 +28,6 @@ function Connect-RivetSession
     
     foreach ($db in $databasesToConnect)
     {
-        Connect-Database -Session $Session -Name $db
+        Connect-Database -Session $Session -Name $db | Out-Null
     }
 }

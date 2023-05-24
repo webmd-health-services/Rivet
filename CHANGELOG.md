@@ -3,6 +3,15 @@
 
 # Rivet Changelog
 
+## 0.21.1
+
+> Released 24 May 2023
+
+### Fixed
+
+* Fixed: `Connect-RivetSession` no longer returns errant boolean values.
+
+
 ## 0.21.0
 
 > Released 24 May 2023
