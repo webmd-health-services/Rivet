@@ -87,6 +87,8 @@ function Convert-FileInfoToMigration
             $dbName = Split-Path -Parent -Path $dbName
             $dbName = Split-Path -Leaf -Path $dbName
 
+            Connect-Database -Session $Session -Name $dbName
+
             $m = New-Object 'Rivet.Migration' $fileInfo.MigrationID, $fileInfo.MigrationName, $fileInfo.FullName, $dbName
             Write-Timing -Message ('Convert-FileInfoToMigration  {0}' -f $m.FullName)
 

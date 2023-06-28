@@ -8,6 +8,7 @@
 ### Fixed
 
 * Getting migrations fails if a plugin returns any values to the pipeline.
+* If plugins use the Rivet session connection to run queries, the plugins fail when using `Get-Migration`.
 
 ## 0.21.1
 
