@@ -62,12 +62,11 @@ function Connect-Database
     {
         Write-Debug -Message ('Creating database {0}.{1}.' -f $SqlServerName,$Name)
         $query = "create database [${Name}]"
-        Invoke-Query -Session $Session -Query $query -NonQuery
+        Invoke-Query -Session $Session -Query $query -NonQuery | Out-Null
     }
 
     $connection.ChangeDatabase($Name)
     $Session.CurrentDatabase = $Session.Databases | Where-Object 'Name' -EQ $Name
 
     Write-Debug -Message ('{0,8} (ms)   Connect-Database' -f ([int]((Get-Date) - $startedAt).TotalMilliseconds))
-    return $true
 }

@@ -186,11 +186,7 @@ Found no databases to migrate. This can be a few things:
         $databaseName = $databaseItem.Name
         $dbMigrationsPath = $databaseItem.MigrationsRoot
 
-        $result = Connect-Database -Session $session -Name $databaseName
-        if (-not $result)
-        {
-            continue
-        }
+        Connect-Database -Session $session -Name $databaseName -ErrorAction Stop
 
         try
         {
