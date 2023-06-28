@@ -3,6 +3,12 @@
 
 # Rivet Changelog
 
+## 0.21.2
+
+### Fixed
+
+* Getting migrations fails if a plugin returns any values to the pipeline.
+
 ## 0.21.1
 
 > Released 24 May 2023
