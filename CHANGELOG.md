@@ -3,6 +3,13 @@
 
 # Rivet Changelog
 
+## 0.22.0
+
+### Added
+
+* Verbose messages when connecting to SQL Server and switching databases that shows the current SQL Server and database
+name.
+
 ## 0.21.2
 
 ### Fixed
