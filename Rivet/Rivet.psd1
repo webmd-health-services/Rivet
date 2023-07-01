@@ -93,7 +93,6 @@ Rivet is a database migration/change management/versioning tool inspired by Ruby
         'Add-UserDefinedFunction',
         'Add-View',
         'Checkpoint-Migration',
-        'Connect-RivetSession',
         'Disable-Constraint',
         'Enable-Constraint',
         'Export-Migration',

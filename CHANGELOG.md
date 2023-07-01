@@ -10,6 +10,11 @@
 * Verbose messages when connecting to SQL Server and switching databases that shows the current SQL Server and database
 name.
 
+### Removed
+
+* Function `Connect-RivetSession`. Improved internal Rivet connection management so this function is no longer
+  necessary.
+
 ## 0.21.2
 
 ### Fixed
