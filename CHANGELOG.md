@@ -10,6 +10,10 @@
 * Verbose messages when connecting to SQL Server and switching databases that shows the current SQL Server and database
 name.
 
+### Changed
+
+* Verbose messages that show queries now show query duration in seconds.
+
 ### Removed
 
 * Function `Connect-RivetSession`. Improved internal Rivet connection management so this function is no longer

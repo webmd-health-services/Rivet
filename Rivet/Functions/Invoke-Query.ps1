@@ -157,8 +157,13 @@ function Invoke-Query
                     $queryBatch -split ([regex]::Escape([Environment]::NewLine))
                 }
                 $cmd.Dispose()
-                Write-Verbose -Message ('{0,8} (ms)   {1}' -f ([int]([DateTime]::UtcNow - $cmdStartedAt).TotalMilliseconds),($queryLines | Select-Object -First 1))
-                $queryLines | Select-Object -Skip 1 | ForEach-Object {  Write-Verbose -Message ('{0}   {1}' -f (' ' * 13),$_) }
+
+                $firstLine = $queryLines | Select-Object -First 1
+                $duration = [DateTime]::UtcNow - $cmdStartedAt
+                $durationMsg = '{0,11:#,##0.000} (s)  ' -f $duration.TotalSeconds
+                Write-Verbose -Message "${durationMsg}${firstLine}"
+                $indent = ' ' * $durationMsg.Length
+                $queryLines | Select-Object -Skip 1 | ForEach-Object { Write-Verbose -Message "${indent}${_}" }
             }
         }
     }
