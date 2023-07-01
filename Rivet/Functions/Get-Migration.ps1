@@ -62,7 +62,7 @@ function Get-Migration
     [CmdletBinding(DefaultParameterSetName='External')]
     [OutputType([Rivet.Migration])]
     param(
-        # The database whose migrations to get.np
+        # The database names whose migrations to get. The default is to get migrations from all databases.
         [Parameter(ParameterSetName='External')]
         [String[]] $Database,
 
@@ -102,23 +102,8 @@ function Get-Migration
     }
 
     Clear-Migration
+
     Write-Timing -Message 'Get-Migration  Clear-Migration'
-
-    $getRivetConfigParams = @{ }
-    if( $Database )
-    {
-        $getRivetConfigParams['Database'] = $Database
-    }
-
-    if( $ConfigFilePath )
-    {
-        $getRivetConfigParams['Path'] = $ConfigFilePath
-    }
-
-    if( $Environment )
-    {
-        $getRivetConfigParams['Environment'] = $Environment
-    }
 
     $session = New-RivetSession -ConfigurationPath $ConfigFilePath -Environment $Environment -Database $Database
     if( -not $session )
@@ -126,20 +111,34 @@ function Get-Migration
         return
     }
 
-    Import-RivetPlugin -Path $session.PluginPaths -ModuleName $session.PluginModules
-    Write-Timing -Message 'Get-Migration  Import-RivetPlugin'
+    if ($null -eq $Database)
+    {
+        $Database = @()
+    }
 
     $getMigrationFileParams = @{}
-    @( 'Include', 'Exclude' ) | ForEach-Object {
-                                                    if( $PSBoundParameters.ContainsKey($_) )
-                                                    {
-                                                        $getMigrationFileParams[$_] = $PSBoundParameters[$_]
-                                                    }
-                                                }
+    if ($PSBoundParameters.ContainsKey('Include'))
+    {
+        $getMigrationFileParams['Include'] = $Include
+    }
 
-    Get-MigrationFile -Session $session @getMigrationFileParams |
+    if ($PSBoundParameters.ContainsKey('Exclude'))
+    {
+        $getMigrationFileParams['Exclude'] = $Exclude
+    }
+
+    $session.Databases |
         Where-Object {
-            if( $PSBoundParameters.ContainsKey( 'Before' ) )
+            if (-not $Database.Length)
+            {
+                return $true
+            }
+
+            return $_.Name -in $Database
+        } |
+        Get-MigrationFile @getMigrationFileParams |
+        Where-Object {
+            if ($PSBoundParameters.ContainsKey('Before'))
             {
                 $beforeTimestamp = [uint64]$Before.ToString('yyyyMMddHHmmss')
                 if( $_.MigrationID -gt $beforeTimestamp )
@@ -148,7 +147,7 @@ function Get-Migration
                 }
             }
 
-            if( $PSBoundParameters.ContainsKey( 'After' ) )
+            if ($PSBoundParameters.ContainsKey('After'))
             {
                 $afterTimestamp = [uint64]$After.ToString('yyyyMMddHHmmss')
                 if( $_.MigrationID -lt $afterTimestamp )
@@ -158,7 +157,8 @@ function Get-Migration
             }
             return $true
         } |
-        Convert-FileInfoToMigration -Session $Session
+        Convert-FileInfoToMigration -Session $session |
+        Write-Output
 
     Write-Timing -Message 'Get-Migration  END' -Outdent
 }

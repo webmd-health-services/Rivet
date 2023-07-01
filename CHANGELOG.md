@@ -13,6 +13,7 @@ name.
 ### Changed
 
 * Verbose messages that show queries now show query duration in seconds.
+* Improvements to Rivet internals.
 
 ### Removed
 

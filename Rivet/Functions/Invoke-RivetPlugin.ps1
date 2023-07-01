@@ -52,7 +52,7 @@ function Invoke-RivetPlugin
                 }
             }
 
-            & $plugin.Name @Parameter | Out-Null
+            & $plugin.Name @Parameter | Write-Output
             Write-Timing -Message ('                     {0}' -f $plugin.Name)
         }
     }

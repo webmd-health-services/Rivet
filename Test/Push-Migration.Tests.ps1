@@ -371,6 +371,7 @@ Describe 'Push-Migration' {
     }
 
     It 'should fail if migration name does not exist' {
-        { Invoke-RTRivet -Push 'AMigrationWhichDoesNotExist' } | Should -Throw '*not found*'
+        { Invoke-RTRivet -Push 'AMigrationWhichDoesNotExist' } |
+            Should -Throw '*AMigrationWhichDoesNotExist*does not exist*'
     }
 }

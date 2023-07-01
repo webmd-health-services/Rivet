@@ -21,7 +21,6 @@ Describe 'Rivet' {
                                 'Get-MigrationScript' = $true;
                                 'Import-Rivet' = $true;
                                 'Invoke-Query' = $true;
-                                'Initialize-Database' = $true;
                                 'Invoke-MigrationOperation' = $true;
                                 'New-ConstraintName' = $true;
                                 'New-TestMigration' = $true;
@@ -35,7 +34,7 @@ Describe 'Rivet' {
                                 'Use-CallerPreference' = $true;
                                 'Write-RivetError' = $true;
                              }
-    
+
         $private =
             & {
                     Get-ChildItem -Path (Join-Path -Path $PSScriptRoot -ChildPath ..\Rivet\Functions) *-*.ps1
@@ -45,7 +44,7 @@ Describe 'Rivet' {
                 Where-Object { -not (Get-Command -Module Rivet -Name $_.BaseName -ErrorAction Ignore) } |
                 Sort-Object -Property BaseName
         $private | Should -BeNullOrEmpty
-    
+
         $exposedFunctions = $privateFunctions.Keys |
                                 Where-Object { (Get-Command -Module 'Rivet' -Name $_ -ErrorAction Ignore) }
         $exposedFunctions | Should -BeNullOrEmpty

@@ -23,21 +23,13 @@ function Convert-FileInfoToMigration
         Use-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
         Write-Timing -Message 'Convert-FileInfoToMigration  BEGIN' -Indent
-        function Clear-Migration
-        {
-            ('function:Push-Migration','function:Pop-Migration') |
-                Where-Object { Test-Path -Path $_ } |
-                Remove-Item -WhatIf:$false -Confirm:$false
-        }
 
-        Clear-Migration
-    }
-
-    process
-    {
         function Add-Operation
         {
             param(
+                [Parameter(Mandatory)]
+                [Rivet.Migration] $Migration,
+
                 # The migration object to invoke.
                 [Parameter(Mandatory, ValueFromPipeline)]
                 [Object] $Operation,
@@ -62,7 +54,7 @@ function Convert-FileInfoToMigration
                     # Set CommandTimeout on operation to value from Rivet configuration.
                     $operationItem.CommandTimeout = $Session.CommandTimeout
 
-                    $pluginParameter = @{ Migration = $m ; Operation = $_ }
+                    $pluginParameter = @{ Migration = $Migration ; Operation = $_ }
 
                     [Rivet.Operations.Operation[]]$operations = & {
                             Invoke-RivetPlugin -Session $Session `
@@ -81,15 +73,29 @@ function Convert-FileInfoToMigration
             }
         }
 
+        function Clear-Migration
+        {
+            ('function:Push-Migration','function:Pop-Migration') |
+                Where-Object { Test-Path -Path $_ } |
+                Remove-Item -WhatIf:$false -Confirm:$false
+        }
+
+        Clear-Migration
+
+        Import-RivetPlugin -Path $Session.PluginPaths -ModuleName $Session.PluginModules
+    }
+
+    process
+    {
         foreach( $fileInfo in $InputObject )
         {
-            $dbName = Split-Path -Parent -Path $fileInfo.FullName
-            $dbName = Split-Path -Parent -Path $dbName
-            $dbName = Split-Path -Leaf -Path $dbName
+            $dbName = $fileInfo.DatabaseName
 
             Connect-Database -Session $Session -Name $dbName
 
-            $m = New-Object 'Rivet.Migration' $fileInfo.MigrationID, $fileInfo.MigrationName, $fileInfo.FullName, $dbName
+            $m = [Rivet.Migration]::New($fileInfo.MigrationID, $fileInfo.MigrationName, $fileInfo.FullName, $dbName)
+            $m | Add-Member -Name 'IsRivetMigration' -MemberType NoteProperty -Value $fileInfo.IsRivetMigration
+
             Write-Timing -Message ('Convert-FileInfoToMigration  {0}' -f $m.FullName)
 
             # Do not remove. It's a variable expected in some migrations.
@@ -113,7 +119,7 @@ Push-Migration function not found. All migrations are required to have a Push-Mi
 '@)
                 }
 
-                Push-Migration | Add-Operation -OperationsList $m.PushOperations
+                Push-Migration | Add-Operation -Migration $m -OperationsList $m.PushOperations
                 if( $m.PushOperations.Count -eq 0 )
                 {
                     return
@@ -132,7 +138,7 @@ Pop-Migration function not found. All migrations are required to have a Pop-Migr
                     return
                 }
 
-                Pop-Migration | Add-Operation -OperationsList $m.PopOperations
+                Pop-Migration | Add-Operation -Migration $m -OperationsList $m.PopOperations
                 if( $m.PopOperations.Count -eq 0 )
                 {
                     return

@@ -126,7 +126,7 @@ Describe 'Get-Migration' {
     {
         Invoke-Ddl 'select 1'
     }
-    1 # See that guy? We should protect ourselves against shit like that.
+    1 # See that guy? We should protect ourselves against 💩 like that.
     function Pop-Migration
     {
         Invoke-Ddl 'select 1'
@@ -235,10 +235,8 @@ Describe 'Get-Migration' {
     }
 
     It 'should write an error if included migration not found' {
-        $result = Get-Migration -ConfigFilePath $RTConfigFilePath -Include 'nomigrationbythisname' -ErrorAction SilentlyContinue
-        $result | Should -BeNullOrEmpty
-        $Global:Error.Count | Should -BeGreaterThan 0
-        $Global:Error[0] | Should -Match 'Migration "nomigrationbythisname" not found\.'
+        { Get-Migration -ConfigFilePath $RTConfigFilePath -Include 'nomigrationbythisname' } |
+            Should -Throw "*""nomigrationbythisname""*does not exist*"
     }
 
     It 'should not write an error if included wildcarded migration not found' {
@@ -515,6 +513,56 @@ function Pop-Migration
         { WhenGettingMigrations } |
             Should -Throw '*"BeforeOperationLoad" event must have a named "Migration" parameter*'
         $script:migrations | Should -BeNullOrEmpty
+    }
+
+    It 'ignores objects returned by plugin' {
+        GivenFile $script:pluginModulePath @'
+function BeforeOpLoad
+{
+    [Rivet.Plugin([Rivet.Events]::BeforeOperationLoad)]
+    param(
+        $Migration,
+        $Operation
+    )
+
+    return 'BeforeOperationLoad'
+}
+
+function AfterOpLoad
+{
+    [Rivet.Plugin([Rivet.Events]::AfterOperationLoad)]
+    param(
+        $Migration,
+        $Operation
+    )
+
+    return 'AfterOperationLoad'
+}
+
+function AfterMigrationLoad
+{
+    [Rivet.Plugin([Rivet.Events]::BeforeOperationLoad)]
+    [Rivet.Plugin([Rivet.Events]::AfterOperationLoad)]
+    [Rivet.Plugin([Rivet.Events]::AfterMigrationLoad)]
+    param(
+        $Migration,
+        $Operation
+    )
+
+    return 'AfterMigrationLoad'
+}
+'@
+        @'
+function Push-Migration
+{
+    Invoke-Ddl 'select 1'
+}
+function Pop-Migration
+{
+    Invoke-Ddl 'select 2'
+}
+'@ | New-TestMigration -Name 'One'
+        { WhenGettingMigrations } | Should -Not -Throw
     }
 
     It ('should fail') {

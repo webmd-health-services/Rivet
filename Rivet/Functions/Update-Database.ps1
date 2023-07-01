@@ -23,9 +23,8 @@ function Update-Database
         [Parameter(Mandatory)]
         [Rivet_Session] $Session,
 
-        # The path to the migration.
-        [Parameter(Mandatory)]
-        [String[]] $Path,
+        [Parameter(Mandatory, ParameterSetName='Redo')]
+        [switch] $Redo,
 
         # Reverse the given migration(s).
         [Parameter(Mandatory, ParameterSetName='Pop')]
@@ -36,7 +35,7 @@ function Update-Database
 
         [Parameter(ParameterSetName='Push')]
         [Parameter(Mandatory, ParameterSetName='PopByName')]
-        [string[]] $Name,
+        [string[]] $MigrationName,
 
         # Reverse the given migration(s).
         [Parameter(Mandatory, ParameterSetName='PopByCount')]
@@ -46,11 +45,8 @@ function Update-Database
         [Parameter(Mandatory, ParameterSetName='PopAll')]
         [switch] $All,
 
-        # Running internal Rivet migrations. This is for internal use only. If you use this flag, Rivet will break when
-        # you upgrade. You've been warned!
-        [switch] $RivetSchema,
-
         # Force popping a migration you didn't apply or that is old.
+        [Parameter(ParameterSetName='Redo')]
         [Parameter(ParameterSetName='Pop')]
         [Parameter(ParameterSetName='PopByCount')]
         [Parameter(ParameterSetName='PopByName')]
@@ -112,143 +108,168 @@ function Update-Database
         return $howLongAgoMsg.ToString()
     }
 
-    $popping = ($PSCmdlet.ParameterSetName -like 'Pop*')
-    $numPopped = 0
+    if ($Redo)
+    {
+        $updateArgs = [hashtable]::New($PSBoundParameters)
+        $updateArgs.Remove('Redo')
+        Update-Database -Pop -Count 1 @updateArgs
+        Update-Database @updateArgs
+        return
+    }
 
     $who = ('{0}\{1}' -f $env:USERDOMAIN,$env:USERNAME);
 
-    #$matchedNames = @{ }
     $byName = @{ }
-    if( $PSBoundParameters.ContainsKey('Name') )
+    if ($PSBoundParameters.ContainsKey('MigrationName'))
     {
-        $byName['Include'] = $Name
+        $byName['Include'] = $MigrationName
     }
 
-    $query = 'if (object_id(''{0}'', ''U'') is not null) select ID, Name, Who, AtUtc from {0}' -f $RivetMigrationsTableFullName
-    $appliedMigrations = @{}
-    foreach( $migration in (Invoke-Query -Session $Session -Query $query) )
+    $popping = ($PSCmdlet.ParameterSetName -like 'Pop*')
+
+    # We have to load all the migrations from files at the same time so that `Get-MigrationFile` can better track if
+    # a migration with a specific name exists or not.
+    $migrationFilesByDb =
+        $Session.Databases |
+        Get-MigrationFile @byName -ForExecution -Descending:$popping |
+        Group-Object -Property 'DatabaseName'
+
+    try
     {
-        $appliedMigrations[$migration.ID] = $migration
-    }
+        foreach ($dbInfo in $Session.Databases)
+        {
+            Connect-Database -Session $Session -Name $dbInfo.Name
 
-    $migrations =
-        Get-MigrationFile -Path $Path -Session $Session @byName -ErrorAction Stop |
-        Sort-Object -Property 'MigrationID' -Descending:$popping |
-        Where-Object {
-            if( $RivetSchema )
+            $query = "if (object_id('${RivetMigrationsTableFullName}', 'U') is not null) " +
+                        "select ID, Name, Who, AtUtc from ${RivetMigrationsTableFullName}"
+            $appliedMigrations = @{}
+            foreach( $migration in (Invoke-Query -Session $Session -Query $query) )
             {
-                return $true
+                $appliedMigrations[$migration.ID] = $migration
             }
 
-            if( [int64]$_.MigrationID -lt $script:firstMigrationId )
-            {
-                Write-Error "Migration '$($_.FullName)' has an invalid ID. IDs lower than $($script:firstMigrationId) are reserved for internal use." -ErrorAction Stop
-                return $false
-            }
-            return $true
-        } |
-        Where-Object {
-            $migration = $appliedMigrations[$_.MigrationID]
+            $numPopped = 0
 
-            if( $popping )
-            {
-                if( $PSCmdlet.ParameterSetName -eq 'PopByCount' -and $numPopped -ge $Count )
-                {
-                    return $false
-                }
-                $numPopped++
+            $migrations =
+                $migrationFilesByDb |
+                Where-Object 'Name' -eq $dbInfo.Name |
+                Select-Object -ExpandProperty Group |
+                Where-Object {
+                    $appliedMigration = $appliedMigrations[$_.MigrationID]
 
-                # Don't need to pop if migration hasn't been applied.
-                if( -not $migration )
-                {
-                    return $false
-                }
+                    # Only need to parse/push if migration hasn't already been pushed.
+                    if (-not $popping -or $_.IsRivetMigration)
+                    {
+                        if ($appliedMigration)
+                        {
+                            return $false
+                        }
+                        return $true
+                    }
 
-                $youngerThan = ((Get-Date).ToUniversalTime()) - (New-TimeSpan -Minutes 20)
-                if( $migration.Who -ne $who -or $migration.AtUtc -lt $youngerThan )
-                {
-                    $howLongAgo = ConvertTo-RelativeTime -DateTime ($migration.AtUtc.ToLocalTime())
-                    $confirmQuery = "Are you sure you want to pop migration {0} from database {1} on {2} applied by {3} {4}?" -f $_.FullName,$conn.Database,$conn.DataSource,$migration.Who,$howLongAgo
-                    $confirmCaption = "Pop Migration {0}?" -f $_.FullName
-                    if( -not $Force -and -not $PSCmdlet.ShouldContinue( $confirmQuery, $confirmCaption ) )
+                    if( $PSCmdlet.ParameterSetName -eq 'PopByCount' -and $numPopped -ge $Count )
                     {
                         return $false
                     }
+                    $numPopped++
+
+                    # Don't need to pop if migration hasn't been applied.
+                    if (-not $appliedMigration)
+                    {
+                        return $false
+                    }
+
+                    $youngerThan = ((Get-Date).ToUniversalTime()) - (New-TimeSpan -Minutes 20)
+                    if( $appliedMigration.Who -ne $who -or $appliedMigration.AtUtc -lt $youngerThan )
+                    {
+                        $howLongAgo = ConvertTo-RelativeTime -DateTime ($appliedMigration.AtUtc.ToLocalTime())
+                        $conn = $Session.Connection
+                        $confirmQuery = "Are you sure you want to pop migration $($_.FullName) from database " +
+                                        "$($conn.Database) on $($conn.DataSource) applied by $($appliedMigration.Who) " +
+                                        "${howLongAgo}?"
+                        $confirmCaption = "Pop Migration {0}?" -f $_.FullName
+                        if( -not $Force -and -not $PSCmdlet.ShouldContinue( $confirmQuery, $confirmCaption ) )
+                        {
+                            return $false
+                        }
+                    }
+                    return $true
+                } |
+                Convert-FileInfoToMigration -Session $Session
+
+            if (-not $migrations)
+            {
+                continue
+            }
+
+            $conn = $Session.Connection
+            foreach( $migrationInfo in $migrations )
+            {
+                $migrationInfo.DataSource = $conn.DataSource
+
+                $trx = $Session.CurrentTransaction = $conn.BeginTransaction()
+                $rollback = $true
+                try
+                {
+                    # Rivet's internal migrations should *always* be pushed.
+                    if ($Pop -and -not $migrationInfo.IsRivetMigration)
+                    {
+                        $operations = $migrationInfo.PopOperations
+                        $action = 'Pop'
+                        $sprocName = 'RemoveMigration'
+                    }
+                    else
+                    {
+                        $operations = $migrationInfo.PushOperations
+                        $action = 'Push'
+                        $sprocName = 'InsertMigration'
+                    }
+
+                    if (-not $operations.Count)
+                    {
+                        Write-Error ('{0} migration''s {1}-Migration function is empty.' -f $migrationInfo.FullName,$action)
+                        return
+                    }
+
+                    $operations | Invoke-MigrationOperation -Session $Session -Migration $migrationInfo
+
+                    $query = "exec [rivet].[${sprocName}] @ID = @ID, @Name = @Name, @Who = @Who, @ComputerName = @ComputerName"
+                    $parameters = @{
+                        ID = [int64]$migrationInfo.ID;
+                        Name = $migrationInfo.Name;
+                        Who = $who;
+                        ComputerName = $env:COMPUTERNAME;
+                    }
+                    Invoke-Query -Session $Session -Query $query -NonQuery -Parameter $parameters  | Out-Null
+
+                    $target = '{0}.{1}' -f $conn.DataSource,$conn.Database
+                    $operation = '{0} migration {1} {2}' -f $PSCmdlet.ParameterSetName,$migrationInfo.ID,$migrationInfo.Name
+                    if ($PSCmdlet.ShouldProcess($target, $operation))
+                    {
+                        $trx.Commit()
+                    }
+                    else
+                    {
+                        $trx.Rollback()
+                        $rollback = $false
+                        break
+                    }
+                    $rollback = $false
                 }
-                return $true
-            }
+                finally
+                {
+                    if ($rollback)
+                    {
+                        $trx.Rollback()
+                    }
 
-            # Only need to parse/push if migration hasn't already been pushed.
-            if( $migration )
-            {
-                return $false
+                    $Session.CurrentTransaction = $null
+                }
             }
-            return $true
-        } |
-        Convert-FileInfoToMigration -Session $Session
-
-    $conn = $Session.Connection
-    foreach( $migrationInfo in $migrations )
+        }
+    }
+    finally
     {
-        $migrationInfo.DataSource = $conn.DataSource
-
-        $trx = $Session.CurrentTransaction = $conn.BeginTransaction()
-        $rollback = $true
-        try
-        {
-
-            if( $Pop )
-            {
-                $operations = $migrationInfo.PopOperations
-                $action = 'Pop'
-                $sprocName = 'RemoveMigration'
-            }
-            else
-            {
-                $operations = $migrationInfo.PushOperations
-                $action = 'Push'
-                $sprocName = 'InsertMigration'
-            }
-
-            if( -not $operations.Count )
-            {
-                Write-Error ('{0} migration''s {1}-Migration function is empty.' -f $migrationInfo.FullName,$action)
-                return
-            }
-
-            $operations | Invoke-MigrationOperation -Session $Session -Migration $migrationInfo
-
-            $query = 'exec [rivet].[{0}] @ID = @ID, @Name = @Name, @Who = @Who, @ComputerName = @ComputerName' -f $sprocName
-            $parameters = @{
-                                ID = [int64]$migrationInfo.ID;
-                                Name = $migrationInfo.Name;
-                                Who = $who;
-                                ComputerName = $env:COMPUTERNAME;
-                            }
-            Invoke-Query -Session $Session -Query $query -NonQuery -Parameter $parameters  | Out-Null
-
-            $target = '{0}.{1}' -f $conn.DataSource,$conn.Database
-            $operation = '{0} migration {1} {2}' -f $PSCmdlet.ParameterSetName,$migrationInfo.ID,$migrationInfo.Name
-            if ($PSCmdlet.ShouldProcess($target, $operation))
-            {
-                $trx.Commit()
-            }
-            else
-            {
-                $trx.Rollback()
-                $rollback = $false
-                break
-            }
-            $rollback = $false
-        }
-        finally
-        {
-            if ($rollback)
-            {
-                $trx.Rollback()
-            }
-
-            $Session.CurrentTransaction = $null
-        }
+        Disconnect-Database -Session $Session
     }
 }
