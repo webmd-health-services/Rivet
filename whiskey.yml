@@ -100,16 +100,6 @@ Build:
         Run:
             Path: Test\*.Tests.ps1
             ExcludePath:
-            - "*\\Test\\Add-DataType.Tests.ps1"
-            - "*\\Test\\Add-DefaultConstraint.Tests.ps1"
-            - "*\\Test\\Add-Description.Tests.ps1"
-            - "*\\Test\\Add-ForeignKey.Tests.ps1"
-            - "*\\Test\\Add-PrimaryKey.Tests.ps1"
-            - "*\\Test\\bigint.Tests.ps1"
-            - "*\\Test\\Columns.Tests.ps1"
-            - "*\\Test\\decimal.Tests.ps1"
-            - "*\\Test\\Functions.Tests.ps1"
-            - "*\\Test\\Get-RivetConfig.Tests.ps1"
             - "*\\Test\\int.Tests.ps1"
             - "*\\Test\\Merge-Migration.Tests.ps1"
             - "*\\Test\\New-Migration.Tests.ps1"
@@ -133,16 +123,6 @@ Build:
 - Pester4:
     Verbose: false  # Rivet is super chatty with Verbose messages.
     Script:
-        - "Test\\Add-DataType.Tests.ps1"
-        - "Test\\Add-DefaultConstraint.Tests.ps1"
-        - "Test\\Add-Description.Tests.ps1"
-        - "Test\\Add-ForeignKey.Tests.ps1"
-        - "Test\\Add-PrimaryKey.Tests.ps1"
-        - "Test\\bigint.Tests.ps1"
-        - "Test\\Columns.Tests.ps1"
-        - "Test\\decimal.Tests.ps1"
-        - "Test\\Functions.Tests.ps1"
-        - "Test\\Get-RivetConfig.Tests.ps1"
         - "Test\\int.Tests.ps1"
         - "Test\\Merge-Migration.Tests.ps1"
         - "Test\\New-Migration.Tests.ps1"
