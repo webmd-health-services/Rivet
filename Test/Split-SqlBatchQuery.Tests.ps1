@@ -1,19 +1,28 @@
 
+#Requires -Version 5.1
+Set-StrictMode -Version 'Latest'
+
+BeforeAll {
+    Set-StrictMode -Version 'Latest'
+
+    & (Join-Path -Path $PSScriptRoot -ChildPath 'Initialize-Test.ps1' -Resolve)
+}
+
 Describe 'Split-SqlBatchQuery' {
     InModuleScope -ModuleName 'Rivet' {
         It 'should split batch' {
             $query1 = @"
 create function [InvokeQuery] ()
-returns int 
+returns int
 begin
-    return 1 
+    return 1
 end
 
 "@
 
             $query2 = @"
 drop function [InvokeQuery]
-"@ 
+"@
 
             $query = @"
 $($query1)GO
@@ -21,16 +30,16 @@ $query2
 "@
 
             $result = Split-SqlBatchQuery -Query $query
-            $result[0] | Should Be $query1
-            $result[1] | Should Be $query2
+            $result[0] | Should -Be $query1
+            $result[1] | Should -Be $query2
         }
 
         It 'should split batch with commented out g o' {
             $query = @'
 create function [InvokeQuery] ()
-returns int 
+returns int
 begin
-    return 1 
+    return 1
 end
 
 /*
@@ -40,8 +49,8 @@ GO
 drop function [InvokeQuery]
 '@
 
-            $result = $query | Split-SqlBatchQuery 
-            $result | Should Be $query
+            $result = $query | Split-SqlBatchQuery
+            $result | Should -Be $query
         }
 
         It 'should split crazy queries' {
@@ -53,8 +62,8 @@ IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[Rivet
 
             $ignoredStuff = @'
 /*
-Nested 
-    /* comment 
+Nested
+    /* comment
     */
 with a go
 go
@@ -97,14 +106,14 @@ $($query2)GO
 $query3
 "@
             $result = Split-SqlBatchQuery $query | Where-Object { $_.Trim() }
-            $result[0] | Should Be $query1
-            $result[2] | Should Be $query2
-            $result[3] | Should Be $query3
+            $result[0] | Should -Be $query1
+            $result[2] | Should -Be $query2
+            $result[3] | Should -Be $query3
         }
 
         It 'should split with nested string' {
             $query = @'
-if object_id('rivet.InsertMigration', 'P') is null 
+if object_id('rivet.InsertMigration', 'P') is null
     exec sp_executesql N'
         create procedure [rivet].[InsertMigration]
             @ID bigint,
@@ -122,7 +131,7 @@ if object_id('rivet.InsertMigration', 'P') is null
 '@
 
             $result = Split-SqlBatchQuery $query
-            $result | Should Be $query
+            $result | Should -Be $query
         }
 
         It 'should split with variable set to empty string' {
@@ -135,7 +144,7 @@ Select @EmptyGoal
 '@
 
             $result = Split-SqlBatchQuery $query
-            $result | Should Be $query
+            $result | Should -Be $query
         }
 
         It 'should ignore anything in single line comments' {
@@ -147,29 +156,29 @@ DECLARE @EmptyGoal Varchar(3000)
 Select @EmptyGoal
 '@
 
-            $result = Split-SqlBatchQuery $query 
-            $result | Should Be $query
+            $result = Split-SqlBatchQuery $query
+            $result | Should -Be $query
         }
 
         It 'should ignore string that ends in escaped quote' {
             $query = @'
-IF OBJECT_ID(N'[dbo].[GetFeatureActivationsBySponsor]') IS NULL 
+IF OBJECT_ID(N'[dbo].[GetFeatureActivationsBySponsor]') IS NULL
     EXEC (N'CREATE PROCEDURE [dbo].[GetFeatureActivationsBySponsor] AS select col1 = ''StubColumn''')
 '@
 
             $result = Split-SqlBatchQuery $query
-            $result | Should Be $query
+            $result | Should -Be $query
         }
 
         It 'should handle go at end of query' {
             $query = @'
-IF OBJECT_ID(N'[dbo].[GetFeatureActivationsBySponsor]') IS NULL 
+IF OBJECT_ID(N'[dbo].[GetFeatureActivationsBySponsor]') IS NULL
     EXEC (N'CREATE PROCEDURE [dbo].[GetFeatureActivationsBySponsor] AS select col1 = ''StubColumn''')
 
 '@
 
             $result = Split-SqlBatchQuery ("{0}GO`n" -f $query)
-            $result | Should Be $query
+            $result | Should -Be $query
         }
 
         It 'should parse really scary embedded string' {
@@ -182,7 +191,7 @@ END
 "@
 
             $result = Split-SqlBatchQuery ("{0}GO`n" -f $query)
-            $result | Should Be $query
+            $result | Should -Be $query
         }
     }
 }
