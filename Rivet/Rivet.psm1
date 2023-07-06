@@ -1,5 +1,6 @@
 
 # public classes *have* to be in this .psm1 file.
+
 class Rivet_Session
 {
     Rivet_Session([Rivet.Configuration.Configuration] $settings)
@@ -48,6 +49,7 @@ $rivetModuleRoot = $PSScriptRoot
 $script:firstMigrationId = [Int64]'00010101000000' # 1/1/1 00:00:00
 $script:schemaMigrationId = [Int64]'00010000000000' # Special ID for schema.ps1, 1/0/0 00:00:00.
 $script:schemaFileName = 'schema.ps1'
+$script:rivetInternalMigrationsPath = Join-Path -Path $rivetModuleRoot -ChildPath 'Migrations' -Resolve
 $script:defaultSchemaPs1Content = @"
 # DO NOT MODIFY THIS FILE. The current database schema is saved to this file as a Rivet migration when you checkpoint
 # your database. Any changes manually made to this file will eventually be lost. This file should be checked into source

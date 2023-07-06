@@ -1778,7 +1778,7 @@ where
     }
     $event = $null
 
-    Connect-Database -Session $Session -Name $Database -ErrorAction Stop | Out-Null
+    Connect-Database -Session $Session -Name $Database -ErrorAction Stop
     try
     {
         #region QUERIES

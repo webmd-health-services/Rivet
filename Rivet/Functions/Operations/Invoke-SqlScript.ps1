@@ -4,7 +4,7 @@ function Invoke-SqlScript
     <#
     .SYNOPSIS
     Runs a SQL script file as part of a migration.
-    
+
     .DESCRIPTION
     The SQL script is split on GO statements, which must be by themselves on a line, e.g.
 
@@ -25,11 +25,11 @@ function Invoke-SqlScript
         [Parameter(Mandatory=$true,ParameterSetName='AsScalar')]
         [Switch]
         $AsScalar,
-        
+
         [Parameter(Mandatory=$true,ParameterSetName='AsNonQuery')]
         [Switch]
         $NonQuery,
-        
+
         [UInt32]
         # The time in seconds to wait for the command to execute. The default is 30 seconds.
         $CommandTimeout = 30
@@ -38,7 +38,7 @@ function Invoke-SqlScript
     Set-StrictMode -Version 'Latest'
 
     $invokeMigrationParams = @{
-                                    CommandTimeout = $CommandTimeout; 
+                                    CommandTimeout = $CommandTimeout;
                               }
 
     if( $pscmdlet.ParameterSetName -eq 'AsScalar' )
@@ -49,7 +49,7 @@ function Invoke-SqlScript
     {
         $invokeMigrationParams.NonQuery = $true
     }
-    
+
     if( -not ([IO.Path]::IsPathRooted( $Path )) )
     {
         $Path = Join-Path $DBMigrationsRoot $Path
@@ -57,12 +57,12 @@ function Invoke-SqlScript
 
     if( -not (Test-Path -Path $Path -PathType Leaf) )
     {
-        throw ('SQL script ''{0}'' not found.' -f $Path)
+        Write-Error -Message ('SQL script ''{0}'' not found.' -f $Path) -ErrorAction Stop
         return
     }
 
     $Path = Resolve-Path -Path $Path | Select-Object -ExpandProperty 'ProviderPath'
-    
+
     $sql = Get-Content -Path $Path -Raw
     New-Object 'Rivet.Operations.ScriptFileOperation' $Path,$sql
 }

@@ -214,9 +214,7 @@ Describe 'Pop-Migration' {
 
 
     It 'should pop by name with no match' {
-        { Invoke-RTRivet -Pop 'Blah' } | Should -Throw '*Migration "Blah" not found*'
-        $Global:Error.Count | Should -BeGreaterThan 0
-        $Global:Error[0] | Should -Match 'not found'
+        { Invoke-RTRivet -Pop 'Blah' } | Should -Throw '*Blah*does not exist*'
 
         (Test-Table -Name 'Migration4') | Should -BeTrue
         (Test-Table -Name 'Migration3') | Should -BeTrue

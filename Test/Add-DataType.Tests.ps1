@@ -2,7 +2,11 @@
 #Requires -Version 5.1
 Set-StrictMode -Version 'Latest'
 
-& (Join-Path -Path $PSScriptRoot -ChildPath 'Initialize-Test.ps1' -Resolve)
+BeforeAll {
+    Set-StrictMode -Version 'Latest'
+
+    & (Join-Path -Path $PSScriptRoot -ChildPath 'Initialize-Test.ps1' -Resolve)
+}
 
 Describe 'Add-DataType' {
     BeforeEach { Start-RivetTest }
@@ -16,7 +20,7 @@ function Push-Migration
     Add-DataType 'G U I D' 'uniqueidentifier'
 
     Add-Table 'important' {
-        New-Column -DataType '[G U I D]' -Name 'ident' 
+        New-Column -DataType '[G U I D]' -Name 'ident'
     }
 }
 
@@ -70,7 +74,7 @@ function Pop-Migration
 "@ | New-TestMigration -Name 'ByAssembly'
 
         Invoke-RTRivet -Push 'ByAssembly'
-        
+
         Assert-DataType -Name 'Point Point' -BaseTypeName $null -UserDefined -AssemblyType
         Assert-Table 'important'
         Assert-Column 'ident' -DataType 'Point Point' -TableName 'important'
@@ -81,8 +85,8 @@ function Pop-Migration
         @'
 function Push-Migration
 {
-    Add-DataType 'U s e r s' -AsTable { 
-        varchar 'Name' 50 
+    Add-DataType 'U s e r s' -AsTable {
+        varchar 'Name' 50
         varchar 'Email' 255
    } -TableConstraint 'primary key'
 }

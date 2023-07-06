@@ -23,16 +23,13 @@ function Start-RivetTest
     $Global:Error.Clear()
 
     $testDirectory = Join-Path -Path ([IO.Path]::GetTempPath()) -ChildPath ([IO.Path]::GetRandomFileName())
-    if( (Test-Pester) )
+    if ($TestDrive | Get-Member -Name 'FullName')
     {
-        if ($TestDrive | Get-Member -Name 'FullName')
-        {
-            $testDirectory = $TestDrive.FullName
-        }
-        else
-        {
-            $testDirectory = $TestDrive
-        }
+        $testDirectory = $TestDrive.FullName
+    }
+    else
+    {
+        $testDirectory = $TestDrive
     }
 
     if (-not (Test-Path -Path $testDirectory))
@@ -109,7 +106,6 @@ function Start-RivetTest
     $content | Set-Content -Path $RTConfigFilePath
 
     $script:RTSession = New-RivetSession -ConfigurationPath $script:RTConfigFilePath
-    Connect-RivetSession -Session $script:RTSession
 
     Write-RTTiming ('Start-RivetTest  END')
 }

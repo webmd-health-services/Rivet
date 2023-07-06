@@ -11,7 +11,7 @@
     RootModule = 'Rivet.psm1'
 
     # Version number of this module.
-    ModuleVersion = '0.21.1'
+    ModuleVersion = '0.22.0'
 
     # ID used to uniquely identify this module
     GUID = '8af34b47-259b-4630-a945-75d38c33b94d'
@@ -75,6 +75,25 @@ Rivet is a database migration/change management/versioning tool inspired by Ruby
 
     # Functions to export from this module
     FunctionsToExport = @(
+        # Functions
+        # TODO: only `Invoke-Rivet` should be exported. These functions should be made private and a parameter set
+        # added to `Invoke-Rivet` that calls them:
+        #
+        # TODO: should be made private and exposed with a `rivet -Export` command.
+        'Export-Migration',
+        # TODO: should be made private and exposed with a `rivet -Get` command.
+        'Get-Migration',
+        # TODO: should be made private and exposed with a `rivet -Configuration` command (maybe find a better way).
+        'Get-RivetConfig',
+        'Import-RivetPlugin',
+        'Invoke-Rivet',
+        'Invoke-RivetPlugin',
+        # TODO: Should be made private and exposed with a `rivet -Get -Merge` command.
+        'Merge-Migration',
+        # TODO: should be made private. Already exposed as `rivet -New` command.
+        'New-Migration',
+
+        # Operations
         'Add-CheckConstraint',
         'Add-DataType',
         'Add-DefaultConstraint',
@@ -92,51 +111,10 @@ Rivet is a database migration/change management/versioning tool inspired by Ruby
         'Add-UniqueKey',
         'Add-UserDefinedFunction',
         'Add-View',
-        'Checkpoint-Migration',
-        'Connect-RivetSession',
         'Disable-Constraint',
         'Enable-Constraint',
-        'Export-Migration',
-        'Get-Migration',
-        'Get-Migration',
-        'Get-RivetConfig',
-        'Import-RivetPlugin',
         'Invoke-Ddl',
-        'Invoke-Rivet',
-        'Invoke-Rivet',
-        'Invoke-RivetPlugin',
         'Invoke-SqlScript',
-        'Merge-Migration',
-        'New-BigIntColumn',
-        'New-BinaryColumn',
-        'New-BitColumn',
-        'New-CharColumn',
-        'New-Column',
-        'New-DateColumn',
-        'New-DateTime2Column',
-        'New-DateTimeColumn',
-        'New-DateTimeOffsetColumn',
-        'New-DecimalColumn',
-        'New-FloatColumn',
-        'New-HierarchyIDColumn',
-        'New-IntColumn',
-        'New-Migration',
-        'New-MoneyColumn',
-        'New-NCharColumn',
-        'New-NVarCharColumn',
-        'New-RealColumn',
-        'New-RivetSession',
-        'New-RowVersionColumn',
-        'New-SmallDateTimeColumn',
-        'New-SmallIntColumn',
-        'New-SmallMoneyColumn',
-        'New-SqlVariantColumn',
-        'New-TimeColumn',
-        'New-TinyIntColumn',
-        'New-UniqueIdentifierColumn',
-        'New-VarBinaryColumn',
-        'New-VarCharColumn',
-        'New-XmlColumn',
         'Remove-CheckConstraint',
         'Remove-DataType',
         'Remove-DefaultConstraint',
@@ -168,7 +146,38 @@ Rivet is a database migration/change management/versioning tool inspired by Ruby
         'Update-Table',
         'Update-Trigger',
         'Update-UserDefinedFunction',
-        'Update-View'
+        'Update-View',
+
+        # Columns
+        'New-BigIntColumn',
+        'New-BinaryColumn',
+        'New-BitColumn',
+        'New-CharColumn',
+        'New-Column',
+        'New-DateColumn',
+        'New-DateTime2Column',
+        'New-DateTimeColumn',
+        'New-DateTimeOffsetColumn',
+        'New-DecimalColumn',
+        'New-FloatColumn',
+        'New-HierarchyIDColumn',
+        'New-IntColumn',
+        'New-MoneyColumn',
+        'New-NCharColumn',
+        'New-NVarCharColumn',
+        'New-RealColumn',
+        'New-RivetSession',
+        'New-RowVersionColumn',
+        'New-SmallDateTimeColumn',
+        'New-SmallIntColumn',
+        'New-SmallMoneyColumn',
+        'New-SqlVariantColumn',
+        'New-TimeColumn',
+        'New-TinyIntColumn',
+        'New-UniqueIdentifierColumn',
+        'New-VarBinaryColumn',
+        'New-VarCharColumn',
+        'New-XmlColumn'
     )
 
     # Cmdlets to export from this module

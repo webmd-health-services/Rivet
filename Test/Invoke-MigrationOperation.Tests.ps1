@@ -43,6 +43,10 @@ Describe 'Invoke-MigrationOperation' {
         Assert-Column -Name RowGuid -DataType uniqueidentifier -NotNull -RowGuidCol -TableName "Foobar" -SchemaName 'fubar'
         Assert-Column -Name SkipBit -DataType bit -TableName "Foobar" -SchemaName 'fubar'
         Assert-Index -TableName 'Foobar' -ColumnName 'rowguid' -Unique -SchemaName 'fubar'
+        Assert-DefaultConstraint -SchemaName 'fubar' `
+                                 -TableName 'Foobar' `
+                                 -ColumnName 'rowguid' `
+                                 -Name 'DF_fubar_Foobar_rowguid'
         Assert-Trigger -Name 'trFoobar_Activity' -SchemaName 'fubar'
     }
 

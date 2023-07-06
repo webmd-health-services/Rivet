@@ -1,8 +1,14 @@
 
-& (Join-Path -Path $PSScriptRoot -ChildPath 'Initialize-Test.ps1' -Resolve)
+#Requires -Version 5.1
+Set-StrictMode -Version 'Latest'
+
+BeforeAll {
+    Set-StrictMode -Version 'Latest'
+
+    & (Join-Path -Path $PSScriptRoot -ChildPath 'Initialize-Test.ps1' -Resolve)
+}
 
 Describe 'Columns' {
-
     BeforeEach {
         Start-RivetTest
     }
@@ -16,11 +22,11 @@ Describe 'Columns' {
 function Push-Migration
 {
     Invoke-Ddl -Query @'
-create xml schema collection EmptyXsd as 
+create xml schema collection EmptyXsd as
 N'
-<xsd:schema targetNamespace="http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelManuInstructions" 
-   xmlns          ="http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelManuInstructions" 
-   elementFormDefault="qualified" 
+<xsd:schema targetNamespace="http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelManuInstructions"
+   xmlns          ="http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelManuInstructions"
+   elementFormDefault="qualified"
    attributeFormDefault="unqualified"
    xmlns:xsd="http://www.w3.org/2001/XMLSchema" >
 
@@ -34,7 +40,7 @@ N'
         int 'ID' -NotNull
     }
 
-    Update-Table -Name 'AddColumnNoDefaultsAllNull' -AddColumn { 
+    Update-Table -Name 'AddColumnNoDefaultsAllNull' -AddColumn {
         VarChar 'varchar' -Size 20 -Description 'varchar(20) null'
         VarChar 'varcharmax' -Max -Description 'varchar(max) null'
         Char 'char' -Size 10 -Description 'char(10) null'
@@ -48,7 +54,7 @@ N'
         Int 'int' -Description 'int null'
         SmallInt 'smallint' -Description 'smallint null'
         TinyInt 'tinyint' -Description 'tinyint null'
-        Decimal 'decimal' -Precision 4 -Description 'decimal(4) null'     
+        Decimal 'decimal' -Precision 4 -Description 'decimal(4) null'
         Decimal 'decimalwithscale' -Precision 5 -Scale 5 -Description 'decimal(5,5) null'
         Bit 'bit' -Description 'bit null'
         Money 'money' -Description 'money null'
@@ -121,11 +127,11 @@ function Pop-Migration
 function Push-Migration()
 {
     Invoke-Ddl -Query @'
-create xml schema collection EmptyXsd as 
+create xml schema collection EmptyXsd as
 N'
-<xsd:schema targetNamespace="http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelManuInstructions" 
-   xmlns          ="http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelManuInstructions" 
-   elementFormDefault="qualified" 
+<xsd:schema targetNamespace="http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelManuInstructions"
+   xmlns          ="http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelManuInstructions"
+   elementFormDefault="qualified"
    attributeFormDefault="unqualified"
    xmlns:xsd="http://www.w3.org/2001/XMLSchema" >
 
@@ -139,7 +145,7 @@ N'
         int 'id' -NotNull
     }
 
-    Update-Table -Name 'AddColumnDefaultsNotNull' -AddColumn { 
+    Update-Table -Name 'AddColumnDefaultsNotNull' -AddColumn {
         VarChar 'varchar' -Size 20 -NotNull -Default "'varchar'" -Description 'varchar(20) not null'
         VarChar 'varcharmax' -Max -NotNull -Default "'varcharmax'" -Description 'varchar(max) not null'
         Char 'char' -Size 10 -NotNull -Default "'char'" -Description 'char(10) not null'
@@ -153,7 +159,7 @@ N'
         Int 'int' -NotNull -Default ([int]::MaxValue) -Description 'int not null'
         SmallInt 'smallint' -NotNull -Default ([int16]::MaxValue) -Description 'smallint not null'
         TinyInt 'tinyint' -NotNull -Default ([byte]::MaxValue) -Description 'tinyint not null'
-        Decimal 'decimal' -Precision 4 -NotNull -Default '3.33' -Description 'decimal(4) not null'     
+        Decimal 'decimal' -Precision 4 -NotNull -Default '3.33' -Description 'decimal(4) not null'
         Decimal 'decimalwithscale' -Precision 5 -Scale 5 -NotNull -Default '4.44' -Description 'decimal(5,5) not null'
         Bit 'bit' -NotNull -Default '1' -Description 'bit not null'
         Money 'money' -NotNull -Default '6.66' -Description 'money not null'
@@ -285,7 +291,7 @@ function Push-Migration()
     Add-Table 'WithRowGuidCol' {
         varchar 'name' -Max -NotNull
     }
-    
+
     Update-Table -Name 'WithRowGuidCol' -AddColumn {  UniqueIdentifier 'uniqueidentiferasrowguidcol' -RowGuidCol  }
 }
 
@@ -307,11 +313,11 @@ function Pop-Migration()
 function Push-Migration()
 {
     Invoke-Ddl -Query @'
-create xml schema collection EmptyXsd as 
+create xml schema collection EmptyXsd as
 N'
-<xsd:schema targetNamespace="http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelManuInstructions" 
-   xmlns          ="http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelManuInstructions" 
-   elementFormDefault="qualified" 
+<xsd:schema targetNamespace="http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelManuInstructions"
+   xmlns          ="http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelManuInstructions"
+   elementFormDefault="qualified"
    attributeFormDefault="unqualified"
    xmlns:xsd="http://www.w3.org/2001/XMLSchema" >
 
@@ -323,7 +329,7 @@ N'
     Add-Table 'WithXmlDocument' {
         varchar 'name' -max -notnull
     }
-    
+
     Update-Table -Name 'WithXmlDocument' -AddColumn {  Xml 'xmlasdocument' -Document -XmlSchemaCollection 'EmptyXsd'  }
 }
 
@@ -394,10 +400,10 @@ function Pop-Migration()
 
         Assert-Table 'WithCustomCollation'
 
-        Assert-Column -Name 'char' 'char' -Collation 'Japanese_BIN' -TableName 'WithCustomCollation'    
-        Assert-Column -Name 'nchar' 'nchar' -Collation 'Korean_Wansung_BIN' -TableName 'WithCustomCollation'    
-        Assert-Column -Name 'varchar' 'varchar' -Collation 'Chinese_Taiwan_Stroke_BIN' -TableName 'WithCustomCollation'    
-        Assert-Column -Name 'nvarchar' 'nvarchar' -Collation 'Thai_BIN' -TableName 'WithCustomCollation'    
+        Assert-Column -Name 'char' 'char' -Collation 'Japanese_BIN' -TableName 'WithCustomCollation'
+        Assert-Column -Name 'nchar' 'nchar' -Collation 'Korean_Wansung_BIN' -TableName 'WithCustomCollation'
+        Assert-Column -Name 'varchar' 'varchar' -Collation 'Chinese_Taiwan_Stroke_BIN' -TableName 'WithCustomCollation'
+        Assert-Column -Name 'nvarchar' 'nvarchar' -Collation 'Thai_BIN' -TableName 'WithCustomCollation'
     }
 
 
@@ -406,11 +412,11 @@ function Pop-Migration()
 function Push-Migration()
 {
     Invoke-Ddl -Query @'
-create xml schema collection EmptyXsd as 
+create xml schema collection EmptyXsd as
 N'
-<xsd:schema targetNamespace="http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelManuInstructions" 
-   xmlns          ="http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelManuInstructions" 
-   elementFormDefault="qualified" 
+<xsd:schema targetNamespace="http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelManuInstructions"
+   xmlns          ="http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelManuInstructions"
+   elementFormDefault="qualified"
    attributeFormDefault="unqualified"
    xmlns:xsd="http://www.w3.org/2001/XMLSchema" >
 
@@ -424,7 +430,7 @@ N'
         varchar 'name' -Max -NotNull
     }
 
-    Update-Table -Name 'WithSparseColumns' -AddColumn { 
+    Update-Table -Name 'WithSparseColumns' -AddColumn {
         VarChar 'varchar' -Size 20 -Sparse -Description 'varchar(20) sparse'
         VarChar 'varcharmax' -Max -Sparse -Description 'varchar(max) sparse'
         Char 'char' -Size 10 -Sparse -Description 'char(10) sparse'
@@ -438,7 +444,7 @@ N'
         Int 'int' -Sparse -Description 'int sparse'
         SmallInt 'smallint' -Sparse -Description 'smallint sparse'
         TinyInt 'tinyint' -Sparse -Description 'tinyint sparse'
-        Decimal 'decimal' -Precision 4 -Sparse -Description 'decimal(4) sparse'     
+        Decimal 'decimal' -Precision 4 -Sparse -Description 'decimal(4) sparse'
         Decimal 'decimalwithscale' -Precision 5 -Scale 5 -Sparse -Description 'decimal(5,5) sparse'
         Bit 'bit' -Sparse -Description 'bit sparse'
         Money 'money' -Sparse -Description 'money sparse'
@@ -504,7 +510,6 @@ function Pop-Migration()
         Assert-Column -Name 'hierarchyid' 'hierarchyid' -Sparse -Description 'hierarchyid sparse' @commonArgs
     }
 
-
     It 'should create identities not for replication' {
     @"
 function Push-Migration()
@@ -528,7 +533,7 @@ function Push-Migration()
     Add-Table DecimalIdentity {
         varchar 'name' -Max -NotNull
     }
-    
+
     Update-Table -Name 'BigIntIdentity' -AddColumn {  BigInt 'bigintidentity' -Identity 1 2 -NotForReplication  }
     Update-Table -Name 'IntIdentity' -AddColumn {  Int 'intidentity' -Identity 3 5 -NotForReplication  }
     Update-Table -Name 'SmallIntIdentity' -AddColumn {  SmallInt 'smallintidentity' -Identity 7 11 -NotForReplication  }
@@ -563,17 +568,9 @@ function Pop-Migration()
         Assert-Table 'DecimalIdentity'
         Assert-Column -Name 'decimalidentity' 'decimal' -Size 5 -Seed 37 -Increment 41 -NotNull -NotForReplication  -TableName 'DecimalIdentity'
     }
-}
 
-function Init
-{
-    Stop-RivetTest
-    Start-RivetTest
-}
-
-Describe 'Columns.when adding generic columns' {
-    Init
-    GivenMigration -Named 'Columns' @'
+    It 'adds generic columns' {
+        GivenMigration -Named 'Columns' @'
 function Push-Migration
 {
     Add-Table 'CustomColumns' {
@@ -607,32 +604,24 @@ function Pop-Migration
     Remove-Table 'CustomColumns'
 }
 '@
-    WhenMigrating 'Columns'
-    try
-    {
-        It 'should create table with correct columns' {
-            Assert-Table 'CustomColumns'
-            Assert-Column -TableName 'CustomColumns' -Name 'ID' -DataType 'int' -NotNull -Seed 101 -Increment 11 -NotForReplication
-            Assert-Column -TableName 'CustomColumns' -Name 'one' -DataType 'varchar' -Size 1 -Collation 'Korean_100_CS_AS_KS_WS_SC' -Default 'fubar' -Description 'snafu'
-            Assert-Column -TableName 'CustomColumns' -Name 'two' -DataType 'varchar' -Size 50 -NotNull
-            Assert-Column -TableName 'CustomColumns' -Name 'three' -DataType 'varchar' -Size 51 -Sparse
-            Assert-Column -TableName 'CustomColumns' -Name 'four' -DataType 'decimal' -Precision 4 -Scale 2 -NotNull
-            Assert-Column -TableName 'CustomColumns' -Name 'five' -DataType 'decimal' -Precision 3 -Scale 1 -Sparse
-            Assert-Column -TableName 'CustomColumns' -Name 'six' -DataType 'time' -Scale 4 -NotNull
-            Assert-Column -TableName 'CustomColumns' -Name 'seven' -DataType 'time' -Scale 3 -Sparse
-            Assert-Column -TableName 'CustomColumns' -Name 'eight' -DataType 'int' -NotNull
-            Assert-Column -TableName 'CustomColumns' -Name 'nine' -DataType 'money' -Sparse
-            Assert-Column -TableName 'CustomColumns' -Name 'ten' -DataType 'uniqueidentifier' -RowGuidCol
-            Assert-Column -TableName 'CustomColumns' -Name 'eleven' -DataType 'decimal' -Precision 5 -Scale 2
-            Assert-Column -TableName 'CustomColumns' -Name 'twelve' -DataType 'varchar' -Max -NotNull
-            Assert-Table 'DefaultIdentity'
-            Assert-Column -TableName 'DefaultIdentity' -Name 'ID' -DataType 'int' -NotNull -Seed 1 -Increment 1
-            Assert-Table 'NotForReplicationIdentity'
-            Assert-Column -TableName 'NotForReplicationIdentity' -Name 'ID' -DataType 'int' -NotNull -Seed 1 -Increment 1 -NotForReplication
-        }
-    }
-    finally
-    {
-        Stop-RivetTest
+        WhenMigrating 'Columns'
+        Assert-Table 'CustomColumns'
+        Assert-Column -TableName 'CustomColumns' -Name 'ID' -DataType 'int' -NotNull -Seed 101 -Increment 11 -NotForReplication
+        Assert-Column -TableName 'CustomColumns' -Name 'one' -DataType 'varchar' -Size 1 -Collation 'Korean_100_CS_AS_KS_WS_SC' -Default 'fubar' -Description 'snafu'
+        Assert-Column -TableName 'CustomColumns' -Name 'two' -DataType 'varchar' -Size 50 -NotNull
+        Assert-Column -TableName 'CustomColumns' -Name 'three' -DataType 'varchar' -Size 51 -Sparse
+        Assert-Column -TableName 'CustomColumns' -Name 'four' -DataType 'decimal' -Precision 4 -Scale 2 -NotNull
+        Assert-Column -TableName 'CustomColumns' -Name 'five' -DataType 'decimal' -Precision 3 -Scale 1 -Sparse
+        Assert-Column -TableName 'CustomColumns' -Name 'six' -DataType 'time' -Scale 4 -NotNull
+        Assert-Column -TableName 'CustomColumns' -Name 'seven' -DataType 'time' -Scale 3 -Sparse
+        Assert-Column -TableName 'CustomColumns' -Name 'eight' -DataType 'int' -NotNull
+        Assert-Column -TableName 'CustomColumns' -Name 'nine' -DataType 'money' -Sparse
+        Assert-Column -TableName 'CustomColumns' -Name 'ten' -DataType 'uniqueidentifier' -RowGuidCol
+        Assert-Column -TableName 'CustomColumns' -Name 'eleven' -DataType 'decimal' -Precision 5 -Scale 2
+        Assert-Column -TableName 'CustomColumns' -Name 'twelve' -DataType 'varchar' -Max -NotNull
+        Assert-Table 'DefaultIdentity'
+        Assert-Column -TableName 'DefaultIdentity' -Name 'ID' -DataType 'int' -NotNull -Seed 1 -Increment 1
+        Assert-Table 'NotForReplicationIdentity'
+        Assert-Column -TableName 'NotForReplicationIdentity' -Name 'ID' -DataType 'int' -NotNull -Seed 1 -Increment 1 -NotForReplication
     }
 }

@@ -2,34 +2,31 @@
 #Requires -Version 5.1
 Set-StrictMode -Version 'Latest'
 
-& (Join-Path -Path $PSScriptRoot -ChildPath 'Initialize-Test.ps1' -Resolve)
+BeforeAll {
+    Set-StrictMode -Version 'Latest'
 
-function Init
-{
-    Start-RivetTest
-    @'
-    function Push-Migration()
-    {
-        Add-Table -Name 'PrimaryKey' {
-            Int 'id' -NotNull
-        }
-    }
-    
-    function Pop-Migration()
-    {
-        Remove-Table -Name 'PrimaryKey'
-    }
-'@ | New-TestMigration -Name 'CreateTable'
-}
-
-function Reset
-{
-    Stop-RivetTest
+    & (Join-Path -Path $PSScriptRoot -ChildPath 'Initialize-Test.ps1' -Resolve)
 }
 
 Describe 'Remove-PrimaryKey' {
-    BeforeEach { Init }
-    AfterEach { Reset }
+    BeforeEach {
+        Start-RivetTest
+        @'
+        function Push-Migration()
+        {
+            Add-Table -Name 'PrimaryKey' {
+                Int 'id' -NotNull
+            }
+        }
+
+        function Pop-Migration()
+        {
+            Remove-Table -Name 'PrimaryKey'
+        }
+'@ | New-TestMigration -Name 'CreateTable'
+    }
+
+    AfterEach { Stop-RivetTest }
 
     It 'should remove primary key' {
         @"
@@ -37,7 +34,7 @@ Describe 'Remove-PrimaryKey' {
     {
         Add-PrimaryKey -TableName 'PrimaryKey' -ColumnName 'id'
     }
-    
+
     function Pop-Migration()
     {
         Remove-PrimaryKey -TableName 'PrimaryKey' -Name '$(New-RTConstraintName -PrimaryKey 'PrimaryKey')'
@@ -46,18 +43,18 @@ Describe 'Remove-PrimaryKey' {
         Invoke-RTRivet -Push
         (Test-Table 'PrimaryKey') | Should -BeTrue
         Assert-PrimaryKey -TableName 'PrimaryKey' -ColumnName 'id'
-    
+
         Invoke-RTRivet -Pop
         (Test-PrimaryKey -TableName 'PrimaryKey') | Should -BeFalse
     }
-    
+
     It 'should quote primary key name' {
         @"
     function Push-Migration()
     {
         Add-PrimaryKey -TableName 'PrimaryKey' -ColumnName 'id' -Name 'Primary Key'
     }
-    
+
     function Pop-Migration()
     {
         Remove-PrimaryKey -TableName 'PrimaryKey' -Name 'Primary Key'
@@ -67,14 +64,14 @@ Describe 'Remove-PrimaryKey' {
         Invoke-RTRivet -Pop
         (Test-PrimaryKey -TableName 'Remove-PrimaryKey') | Should -BeFalse
     }
-    
+
     It 'should remove primary key with default name' {
     @"
     function Push-Migration()
     {
         Add-PrimaryKey -TableName 'PrimaryKey' -ColumnName 'id'
     }
-    
+
     function Pop-Migration()
     {
         Remove-PrimaryKey -TableName 'PrimaryKey'
@@ -83,9 +80,9 @@ Describe 'Remove-PrimaryKey' {
         Invoke-RTRivet -Push
         (Test-Table 'PrimaryKey') | Should -BeTrue
         Assert-PrimaryKey -TableName 'PrimaryKey' -ColumnName 'id'
-    
+
         Invoke-RTRivet -Pop
         (Test-PrimaryKey -TableName 'PrimaryKey') | Should -BeFalse
     }
-    
+
 }

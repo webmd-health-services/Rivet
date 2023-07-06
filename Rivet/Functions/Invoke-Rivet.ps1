@@ -123,8 +123,6 @@ Found no databases to migrate. This can be a few things:
         $Count = 1
     }
 
-    Import-RivetPlugin -Path $session.PluginPaths -ModuleName $session.PluginModules
-
     if( $PSCmdlet.ParameterSetName -eq 'New' )
     {
         $session.Databases |
@@ -181,75 +179,41 @@ Found no databases to migrate. This can be a few things:
         return
     }
 
-    foreach ($databaseItem in $session.Databases)
+    $updateArgs = @{}
+
+    if ($PSBoundParameters.ContainsKey('Name'))
     {
-        $databaseName = $databaseItem.Name
-        $dbMigrationsPath = $databaseItem.MigrationsRoot
+        $updateArgs['MigrationName'] = $Name
+    }
 
-        $result = Connect-Database -Session $session -Name $databaseName
-        if (-not $result)
+    if ($Force)
+    {
+        $updateArgs['Force'] = $Force
+    }
+
+    if ( $PSCmdlet.ParameterSetName -like 'Pop*')
+    {
+        $updateArgs['Pop'] = $true
+
+        if ($PSCmdlet.ParameterSetName -in @('Pop', 'PopByCount'))
         {
-            continue
+            if (-not $PSBoundParameters.ContainsKey('Count'))
+            {
+                $Count = 1
+            }
+            $updateArgs['Count'] = $Count
         }
-
-        try
+        elseif( $PSCmdlet.ParameterSetName -eq 'PopAll')
         {
-            Initialize-Database -Session $session
-            if( $InitializeSchema )
-            {
-                continue
-            }
-
-            $updateParams = @{
-                Path = $dbMigrationsPath;
-                Session = $session;
-            }
-
-            if( -not (Test-Path -Path $dbMigrationsPath -PathType Container) )
-            {
-                Write-Warning ('{0} database migrations directory ({1}) not found.' -f $databaseName,$dbMigrationsPath)
-                continue
-            }
-
-            if( $PSBoundParameters.ContainsKey('Name') )
-            {
-                $updateParams.Name = $Name    # Join-Path $dbMigrationsPath ("*_{0}.ps1" -f $Name)
-            }
-
-            $conn = $session.Connection
-            Write-Debug -Message "# $($conn.DataSource).$($conn.Database)"
-
-            if( $PSCmdlet.ParameterSetName -eq 'Push' )
-            {
-                Update-Database @updateParams
-            }
-            elseif( $PSCmdlet.ParameterSetName -eq 'Pop' )
-            {
-                Update-Database -Pop -Count 1 -Force:$Force @updateParams
-            }
-            elseif( $PSCmdlet.ParameterSetName -eq 'PopByName' )
-            {
-                Update-Database -Pop -Force:$Force @updateParams
-            }
-            elseif( $PSCmdlet.ParameterSetName -eq 'PopByCount' )
-            {
-                Update-Database -Pop -Count $Count -Force:$Force @updateParams
-            }
-            elseif ( $PSCmdlet.ParameterSetName -eq 'PopAll' )
-            {
-                Update-Database -Pop -All -Force:$Force @updateParams
-            }
-            elseif( $PSCmdlet.ParameterSetName -eq 'Redo' )
-            {
-                Update-Database -Pop -Count 1 @updateParams
-                Update-Database @updateParams
-            }
-        }
-        finally
-        {
-            Disconnect-Database -Session $session
+            $updateArgs['All'] = $true
         }
     }
+    elseif ($PSCmdlet.ParameterSetName -eq 'Redo')
+    {
+        $updateArgs['Redo'] = $true
+    }
+
+    Update-Database -Session $Session @updateArgs
 }
 
 Set-Alias -Name 'rivet' -Value 'Invoke-Rivet'

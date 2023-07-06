@@ -130,7 +130,6 @@
         'Test-ExtendedProperty',
         'Test-ForeignKey',
         'Test-Index',
-        'Test-Pester',
         'Test-PrimaryKey',
         'Test-Row',
         'Test-Schema',

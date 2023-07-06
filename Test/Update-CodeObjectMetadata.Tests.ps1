@@ -1,23 +1,30 @@
 
-& (Join-Path -Path $PSScriptRoot -ChildPath 'Initialize-Test.ps1' -Resolve)
+#Requires -Version 5.1
+Set-StrictMode -Version 'Latest'
+
+BeforeAll {
+    Set-StrictMode -Version 'Latest'
+
+    & (Join-Path -Path $PSScriptRoot -ChildPath 'Initialize-Test.ps1' -Resolve)
+}
 
 Describe 'Update-CodeObjectMetadata' {
     BeforeEach {
         Start-RivetTest
     }
-    
+
     AfterEach {
         Stop-RivetTest
     }
-    
+
     It 'should update metadata' {
         @'
     function Push-Migration
     {
         Add-Schema 'refresh'
-    
+
         Add-DataType -SchemaName 'refresh' -Name 'mytype' -From 'nvarchar(5)'
-    
+
         Add-UserDefinedFunction -SchemaName 'refresh' -Name 'to_upper' -Definition @"
     (@a mytype)
     RETURNS mytype
@@ -28,7 +35,7 @@ Describe 'Update-CodeObjectMetadata' {
     END
 "@
     }
-    
+
     function Pop-Migration
     {
         Remove-UserDefinedFunction -SchemaName 'refresh' 'to_upper'
@@ -36,13 +43,13 @@ Describe 'Update-CodeObjectMetadata' {
         Remove-Schema 'refresh'
     }
 '@ | New-TestMigration -Name 'CreateToUpper'
-    
+
         Invoke-RTRivet -Push
-    
+
         $query = 'select refresh.to_upper(''abcdefgh'') Result'
         $result = Invoke-RivetTestQuery -Query $query -AsScalar
         ($result -ceq 'ABCDE') | Should -BeTrue
-    
+
         @'
     function Push-Migration
     {
@@ -50,7 +57,7 @@ Describe 'Update-CodeObjectMetadata' {
         Add-DataType -SchemaName 'refresh' -Name 'mytype' -From 'nvarchar(10)'
         Update-CodeObjectMetadata -SchemaName 'refresh' -Name 'to_upper'
     }
-    
+
     function Pop-Migration
     {
         Rename-DataType -SchemaName 'refresh' -Name 'mytype' -NewName 'mytype_REMOVE'
@@ -59,9 +66,9 @@ Describe 'Update-CodeObjectMetadata' {
         Remove-DataType -SchemaName 'refresh' -Name 'mytype_REMOVE'
     }
 '@ | New-TestMigration -Name 'IncreaseToUpperLength'
-    
+
         Invoke-RTRivet -Push
-    
+
         $result = Invoke-RivetTestQuery -Query $query -AsScalar
         ($result -ceq 'ABCDEFGH') | Should -BeTrue
     }

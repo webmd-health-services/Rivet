@@ -36,7 +36,7 @@ function Assert-PrimaryKey
         [Switch]
         $IgnoreDupKey
     )
-    
+
     Set-StrictMode -Version Latest
 
     if( $PSCmdlet.ParameterSetName -eq 'ByName' )
@@ -50,52 +50,25 @@ function Assert-PrimaryKey
 
     $pk = Get-PrimaryKey @getPrimaryKeyParams
 
-    if( (Test-Pester) )
+    $pk | Should -Not -BeNullOrEmpty
+
+    if ($NonClustered)
     {
-        $pk | Should -Not -BeNullOrEmpty
-
-        if ($NonClustered)
-        {
-            $pk[0].type_desc | Should -Be "NONCLUSTERED"  
-        }
-
-        $pk.ignore_dup_key | Should -Be $IgnoreDupKey 
-
-        if( $PSBoundParameters.ContainsKey('FillFactor') )
-        {
-            $pk.fill_factor | Should -Be $FillFactor 
-        }
-
-        $pk.Columns.Count | Should -Be $ColumnName.Count 
-        for( $idx = 0; $idx -lt $ColumnName.Count; ++$idx )
-        {
-            $ordinal = $idx + 1
-            $pk.Columns[$idx].column_name | Should -Be $ColumnName[$idx] -Because ('{0}.{1}: Unexpected column at ordinal {2}' -f $SchemaName,$TableName,$ordinal)
-            $pk.Columns[$idx].key_ordinal | Should -Be $ordinal 
-        }
+        $pk[0].type_desc | Should -Be "NONCLUSTERED"
     }
-    else
+
+    $pk.ignore_dup_key | Should -Be $IgnoreDupKey
+
+    if( $PSBoundParameters.ContainsKey('FillFactor') )
     {
-        Assert-NotNull $pk ('Primary Key on table {0}.{1} doesn''t exist.' -f $SchemaName,$TableName)
+        $pk.fill_factor | Should -Be $FillFactor
+    }
 
-        if ($NonClustered)
-        {
-            Assert-Equal "NONCLUSTERED" $pk[0].type_desc 
-        }
-
-        Assert-Equal $IgnoreDupKey $pk.ignore_dup_key
-
-        if( $PSBoundParameters.ContainsKey('FillFactor') )
-        {
-            Assert-Equal $FillFactor $pk.fill_factor
-        }
-
-        Assert-Equal $ColumnName.Count $pk.Columns.Count
-        for( $idx = 0; $idx -lt $ColumnName.Count; ++$idx )
-        {
-            $ordinal = $idx + 1
-            Assert-Equal $ColumnName[$idx] $pk.Columns[$idx].column_name ('{0}.{1}: Unexpected column at ordinal {2}' -f $SchemaName,$TableName,$ordinal)
-            Assert-Equal $ordinal $pk.Columns[$idx].key_ordinal
-        }
+    $pk.Columns.Count | Should -Be $ColumnName.Count
+    for( $idx = 0; $idx -lt $ColumnName.Count; ++$idx )
+    {
+        $ordinal = $idx + 1
+        $pk.Columns[$idx].column_name | Should -Be $ColumnName[$idx] -Because ('{0}.{1}: Unexpected column at ordinal {2}' -f $SchemaName,$TableName,$ordinal)
+        $pk.Columns[$idx].key_ordinal | Should -Be $ordinal
     }
 }
