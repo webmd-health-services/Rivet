@@ -19,44 +19,21 @@ function Assert-CheckConstraint
 
     $constraint = Get-CheckConstraint -Name $Name
 
-    if( (Test-Pester) )
+    $constraint | Should -Not -BeNullOrEmpty -Because ('check constraint ''{0}'' not found' -f $Name)
+
+    $constraint.is_not_for_replication | Should -Be $NotForReplication
+
+    if( $IsDisabled )
     {
-        $constraint | Should -Not -BeNullOrEmpty -Because ('check constraint ''{0}'' not found' -f $Name)
-
-        $constraint.is_not_for_replication | Should -Be $NotForReplication 
-
-        if( $IsDisabled )
-        {
-            $constraint.is_disabled | Should -BeTrue
-        }
-        else
-        {
-            $constraint.is_disabled | Should -BeFalse
-        }
-
-        if( $PSBoundParameters.ContainsKey('Definition') )
-        {
-            $constraint.definition | Should -Be $Definition 
-        }
+        $constraint.is_disabled | Should -BeTrue
     }
     else
     {
-        Assert-NotNull $constraint ('check constraint ''{0}'' not found' -f $Name)
+        $constraint.is_disabled | Should -BeFalse
+    }
 
-        Assert-Equal $NotForReplication $constraint.is_not_for_replication
-
-        if( $IsDisabled )
-        {
-            Assert-True $constraint.is_disabled
-        }
-        else
-        {
-            Assert-False $constraint.is_disabled
-        }
-
-        if( $PSBoundParameters.ContainsKey('Definition') )
-        {
-            Assert-Equal $Definition $constraint.definition
-        }
+    if( $PSBoundParameters.ContainsKey('Definition') )
+    {
+        $constraint.definition | Should -Be $Definition
     }
 }

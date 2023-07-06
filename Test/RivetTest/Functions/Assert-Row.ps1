@@ -10,7 +10,7 @@ function Assert-Row
         [string]
         # The schema of the table being checked.  Default is `dbo`.
         $SchemaName = 'dbo',
-        
+
         [Parameter(Mandatory=$true)]
         [string]
         # The table to read the row from.
@@ -25,25 +25,14 @@ function Assert-Row
         # Asserts the values of the row.
         $Column
     )
-    
+
     Set-StrictMode -Version Latest
 
     $row = Get-Row -SchemaName $SchemaName -TableName $TableName -Where $Where
 
-    if( (Test-Pester) )
-    {
-        $row | Should -Not -BeNullOrEmpty
+    $row | Should -Not -BeNullOrEmpty
 
-        $Column.Keys | ForEach-Object {
-            $Column.$_ | Should -Be $row.$_
-        }
-    }
-    else
-    {
-        Assert-NotNull $row
-
-        $Column.Keys | ForEach-Object {
-            Assert-Equal $row.$_ $Column.$_
-        }
+    $Column.Keys | ForEach-Object {
+        $Column.$_ | Should -Be $row.$_
     }
 }

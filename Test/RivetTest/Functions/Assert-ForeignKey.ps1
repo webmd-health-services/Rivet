@@ -51,7 +51,7 @@ function Assert-ForeignKey
         # Test Disabled
         $IsDisabled
     )
-    
+
     Set-StrictMode -Version Latest
 
     if( $PSCmdlet.ParameterSetName -eq 'ByDefaultName' )
@@ -63,100 +63,49 @@ function Assert-ForeignKey
         $fk = Get-ForeignKey -Name $Name
     }
 
-    if( (Test-Pester) )
+    #Test for non-null objects
+    $fk | Should -Not -BeNullOrEmpty -Because ('foreign Key on table {0}.{1} doesn''t exist.' -f $SchemaName,$TableName)
+
+    foreach ($_ in $fk.Columns)
     {
-        #Test for non-null objects
-        $fk | Should -Not -BeNullOrEmpty -Because ('foreign Key on table {0}.{1} doesn''t exist.' -f $SchemaName,$TableName)
+        $_.constraint_object_id | Should -Be $fk.object_id
+        $_.parent_object_id | Should -Be $fk.parent_object_id
+        $_.referenced_object_id | Should -Be $fk.referenced_object_id
+    }
 
-        foreach ($_ in $fk.Columns)
-        {
-            $_.constraint_object_id | Should -Be $fk.object_id 
-            $_.parent_object_id | Should -Be $fk.parent_object_id 
-            $_.referenced_object_id | Should -Be $fk.referenced_object_id 
-        }
-
-        if ($OnDelete)
-        {
-            $fk.delete_referential_action_desc | Should -Be $OnDelete 
-        }
-        else
-        {
-            $fk.delete_referential_action_desc | Should -Be "NO_ACTION" 
-        }
-
-        if ($OnUpdate)
-        {
-            $fk.update_referential_action_desc | Should -Be $OnUpdate 
-        }
-        else
-        {
-            $fk.update_referential_action_desc | Should -Be "NO_ACTION" 
-        }
-
-        if ($NotForReplication)
-        {
-            $fk.is_not_for_replication | Should -BeTrue
-        }
-        else
-        {
-            $fk.is_not_for_replication | Should -BeFalse
-        }
-
-        if ($IsDisabled) 
-        {
-            $fk.is_disabled | Should -BeTrue
-        }
-        else
-        {
-            $fk.is_disabled | Should -BeFalse
-        }
+    if ($OnDelete)
+    {
+        $fk.delete_referential_action_desc | Should -Be $OnDelete
     }
     else
     {
-        #Test for non-null objects
-        Assert-NotNull $fk ('foreign Key on table {0}.{1} doesn''t exist.' -f $SchemaName,$TableName)
+        $fk.delete_referential_action_desc | Should -Be "NO_ACTION"
+    }
 
-        foreach ($_ in $fk.Columns)
-        {
-            Assert-Equal $fk.object_id $_.constraint_object_id
-            Assert-Equal $fk.parent_object_id $_.parent_object_id
-            Assert-Equal $fk.referenced_object_id $_.referenced_object_id
-        }
+    if ($OnUpdate)
+    {
+        $fk.update_referential_action_desc | Should -Be $OnUpdate
+    }
+    else
+    {
+        $fk.update_referential_action_desc | Should -Be "NO_ACTION"
+    }
 
-        if ($OnDelete)
-        {
-            Assert-Equal $OnDelete $fk.delete_referential_action_desc 
-        }
-        else
-        {
-            Assert-Equal "NO_ACTION" $fk.delete_referential_action_desc 
-        }
+    if ($NotForReplication)
+    {
+        $fk.is_not_for_replication | Should -BeTrue
+    }
+    else
+    {
+        $fk.is_not_for_replication | Should -BeFalse
+    }
 
-        if ($OnUpdate)
-        {
-            Assert-Equal $OnUpdate $fk.update_referential_action_desc 
-        }
-        else
-        {
-            Assert-Equal "NO_ACTION" $fk.update_referential_action_desc 
-        }
-
-        if ($NotForReplication)
-        {
-            Assert-Equal "True" $fk.is_not_for_replication
-        }
-        else
-        {
-            Assert-Equal "False" $fk.is_not_for_replication
-        }
-
-        if ($IsDisabled) 
-        {
-            Assert-True $fk.is_disabled
-        }
-        else
-        {
-            Assert-False $fk.is_disabled
-        }
-    }    
+    if ($IsDisabled)
+    {
+        $fk.is_disabled | Should -BeTrue
+    }
+    else
+    {
+        $fk.is_disabled | Should -BeFalse
+    }
 }

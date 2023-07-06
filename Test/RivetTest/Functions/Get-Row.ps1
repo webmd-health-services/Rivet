@@ -4,26 +4,19 @@ function Get-Row
     param(
         [string]
         $SchemaName = 'dbo',
-        
+
         [string]
         $TableName,
 
         [string]
         $Where
     )
-    
+
     Set-StrictMode -Version Latest
 
     $table = Get-Table -Name $TableName -SchemaName $SchemaName
 
-    if( (Test-Pester) )
-    {
-        $table | Should -Not -BeNullOrEmpty ('table {0} not found' -f $TableName) 
-    }
-    else
-    {
-        Assert-NotNull $table ('table {0} not found' -f $TableName) 
-    }
+    $table | Should -Not -BeNullOrEmpty ('table {0} not found' -f $TableName)
 
     $whereClause = ''
     if( $PSBoundParameters.ContainsKey('Where') )

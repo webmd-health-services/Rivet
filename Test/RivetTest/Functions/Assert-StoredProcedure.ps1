@@ -23,29 +23,17 @@ function Assert-StoredProcedure
         [string]
         $DatabaseName
     )
-    
+
     Set-StrictMode -Version Latest
 
     $sp = Get-StoredProcedure -SchemaName $SchemaName -Name $Name -DatabaseName $DatabaseName
 
     $expectedDefinition = "CREATE procedure [{0}].[{1}] {2}" -f $SchemaName, $Name, $Definition
 
-    if( (Test-Pester) )
-    {
-        $sp | Should -Not -BeNullOrEmpty
+    $sp | Should -Not -BeNullOrEmpty
 
-        if( $PSBoundParameters.ContainsKey('Definition') )
-        {    
-            $sp.definition | Should -Match ([Text.RegularExpressions.Regex]::Escape($expectedDefinition))
-        }
-    }
-    else
+    if( $PSBoundParameters.ContainsKey('Definition') )
     {
-        Assert-NotNull $sp ('Stored Procedure {0}.{1} doesn''t exist.' -f $SchemaName,$Name)
-
-        if( $PSBoundParameters.ContainsKey('Definition') )
-        {    
-            Assert-Match $sp.definition ([Text.RegularExpressions.Regex]::Escape($expectedDefinition))
-        }
+        $sp.definition | Should -Match ([Text.RegularExpressions.Regex]::Escape($expectedDefinition))
     }
 }
