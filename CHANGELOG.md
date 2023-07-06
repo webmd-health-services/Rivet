@@ -5,6 +5,8 @@
 
 ## 0.22.0
 
+> Released 6 Jul 2023
+
 ### Added
 
 * Verbose messages when connecting to SQL Server and switching databases that shows the current SQL Server and database
@@ -15,17 +17,16 @@ name.
 * Verbose messages that show queries now show query duration in seconds.
 * Improvements to Rivet internals.
 
+## Fixed
+
+* `Get-Migration` fails when plugins use Rivet's database connection.
+* Rivet fails if a plugin returns non-operation objects to the pipeline.
+
 ### Removed
 
 * Function `Connect-RivetSession`. Improved internal Rivet connection management so this function is no longer
   necessary.
 
-## 0.21.2
-
-### Fixed
-
-* Getting migrations fails if a plugin returns any values to the pipeline.
-* If plugins use the Rivet session connection to run queries, the plugins fail when using `Get-Migration`.
 
 ## 0.21.1
 
