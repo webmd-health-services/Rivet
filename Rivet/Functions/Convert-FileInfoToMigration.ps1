@@ -54,7 +54,7 @@ function Convert-FileInfoToMigration
                     # Set CommandTimeout on operation to value from Rivet configuration.
                     $operationItem.CommandTimeout = $Session.CommandTimeout
 
-                    $pluginParameter = @{ Migration = $Migration ; Operation = $_ }
+                    $pluginParameter = @{ Migration = $Migration ; Operation = $operationItem }
 
                     [Rivet.Operations.Operation[]]$operations = & {
                             Invoke-RivetPlugin -Session $Session `
