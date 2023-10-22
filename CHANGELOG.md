@@ -3,6 +3,12 @@
 
 # Rivet Changelog
 
+## 0.22.1
+
+> Released 23 Oct 2023
+
+* Removed warnings about missing constraint names.
+
 ## 0.22.0
 
 > Released 6 Jul 2023
