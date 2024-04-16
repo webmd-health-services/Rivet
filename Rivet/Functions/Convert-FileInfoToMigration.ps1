@@ -73,14 +73,14 @@ function Convert-FileInfoToMigration
             }
         }
 
-        function Clear-Migration
+        function Clear-MigrationFunction
         {
             ('function:Push-Migration','function:Pop-Migration') |
                 Where-Object { Test-Path -Path $_ } |
                 Remove-Item -WhatIf:$false -Confirm:$false
         }
 
-        Clear-Migration
+        Clear-MigrationFunction
 
         Import-RivetPlugin -Path $Session.PluginPaths -ModuleName $Session.PluginModules
     }
@@ -154,7 +154,7 @@ Pop-Migration function not found. All migrations are required to have a Pop-Migr
             }
             finally
             {
-                Clear-Migration
+                Clear-MigrationFunction
             }
         }
     }
