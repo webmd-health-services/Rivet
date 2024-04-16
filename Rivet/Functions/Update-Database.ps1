@@ -152,7 +152,7 @@ function Update-Database
 
             $migrations =
                 $migrationFilesByDb |
-                Where-Object 'Name' -eq $dbInfo.Name |
+                Where-Object { $_.Name -eq $dbInfo.Name } |
                 Select-Object -ExpandProperty Group |
                 Where-Object {
                     $appliedMigration = $appliedMigrations[$_.MigrationID]
