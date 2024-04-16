@@ -1224,7 +1224,7 @@ from
         }
 
         Write-ExportingMessage -Schema $Object.schema_name -Type Schema
-        '    Add-Schema -Name ''{0}'' -Owner ''{1}''{2}' -f $schema.name,$schema.owner, $description
+        "    Add-Schema -Name '$($schema.name)'${description}"
         $exportedSchemas[$schema.name] = $true
         Push-PopOperation ('Remove-Schema -Name ''{0}''' -f $schema.name)
     }

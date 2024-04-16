@@ -1228,7 +1228,7 @@ function Pop-Migration
 '@
 
         WhenExporting
-        ThenMigration -HasContent 'Add-Schema -Name ''snap'' -Owner ''dbo'' -Description ''This is the MS Description for the schema snap'''
+        ThenMigration -HasContent 'Add-Schema -Name ''snap'' -Description ''This is the MS Description for the schema snap'''
         ThenMigration -HasContent 'Add-Table -SchemaName ''snap'' -Name ''SnapTable'''
     }
 

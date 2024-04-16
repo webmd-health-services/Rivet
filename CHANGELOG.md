@@ -5,6 +5,12 @@
 
 ## 0.23.0
 
+### Changed
+
+* `Export-Migration` no longer creates an `Add-Schema` operation that includes owner information (i.e. the `Owner`
+parameter is omitted). When exporting a schema to DDL in SQL Server Management Studio, the owner information is also
+omitted so we think this change should be OK.
+
 ### Removed
 
 * Removed the `InitializeSchema` switch from `rivet.ps1` and `Invoke-Rivet` as it was not actually implemented.
