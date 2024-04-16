@@ -3,6 +3,13 @@
 
 # Rivet Changelog
 
+## 0.23.0
+
+### Removed
+
+* Removed the `InitializeSchema` switch from `rivet.ps1` and `Invoke-Rivet` as it was not actually implemented.
+
+
 ## 0.22.0
 
 > Released 6 Jul 2023

@@ -47,12 +47,7 @@ function Invoke-RTRivet
         [Parameter(ParameterSetName='Checkpoint')]
         [Switch]
         # Checkpoints the current state of the database so that it can be re-created.
-        $Checkpoint,
-
-        [Parameter(ParameterSetName='InitializeSchema')]
-        [Switch]
-        # Initializes the database, including baseline schema. Use the -Checkpoint switch to create a database baseline.
-        $InitializeSchema
+        $Checkpoint
     )
 
     Set-StrictMode -Version Latest

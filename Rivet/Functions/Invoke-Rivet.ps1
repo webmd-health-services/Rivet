@@ -56,7 +56,6 @@ function Invoke-Rivet
         [Parameter(ParameterSetName='Redo')]
         [Parameter(ParameterSetName='DropDatabase')]
         [Parameter(ParameterSetName='Checkpoint')]
-        [Parameter(ParameterSetName='InitializeSchema')]
         [String[]] $Database,
 
         # The environment you're working in.  Controls which settings Rivet loads from the `rivet.json` configuration file.
@@ -69,7 +68,6 @@ function Invoke-Rivet
         [Parameter(ParameterSetName='Redo')]
         [Parameter(ParameterSetName='DropDatabase')]
         [Parameter(ParameterSetName='Checkpoint')]
-        [Parameter(ParameterSetName='InitializeSchema')]
         [String] $Environment,
 
         # The path to the Rivet configuration file.  Default behavior is to look in the current directory for a
@@ -83,7 +81,6 @@ function Invoke-Rivet
         [Parameter(ParameterSetName='Redo')]
         [Parameter(ParameterSetName='DropDatabase')]
         [Parameter(ParameterSetName='Checkpoint')]
-        [Parameter(ParameterSetName='InitializeSchema')]
         [String] $ConfigFilePath,
 
         # Drops the database(s) for the current environment when given. User will be prompted for confirmation when
@@ -93,11 +90,7 @@ function Invoke-Rivet
 
         # Checkpoints the current state of the database so that it can be re-created.
         [Parameter(ParameterSetName='Checkpoint')]
-        [switch] $Checkpoint,
-
-        # Initializes the database, including baseline schema. Use the -Checkpoint switch to create a database baseline.
-        [Parameter(ParameterSetName='InitializeSchema')]
-        [switch] $InitializeSchema
+        [switch] $Checkpoint
     )
 
     Set-StrictMode -Version 'Latest'

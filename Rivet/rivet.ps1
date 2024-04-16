@@ -31,7 +31,7 @@ Applies all migrations.
 .EXAMPLE
 rivet.ps1 -Push 'CreateTableStarships'
 
-Demonstrates how to apply a named migration.  Don't include the timestamp.  Wildcards are permitted.  
+Demonstrates how to apply a named migration.  Don't include the timestamp.  Wildcards are permitted.
 
 *Be careful with this syntax!*  If the named migration(s) depend on other migrations that haven't been run, the migration will fail.
 
@@ -53,7 +53,7 @@ Demonstrates how to pop a specific migration.  Wildcards supported.  Will match 
 .EXAMPLE
 rivet.ps1 -Redo
 
-Reverts the last migration script, then reapplies its.  Equivalent to 
+Reverts the last migration script, then reapplies its.  Equivalent to
 
     rivet.ps1 -Pop
     rivet.ps1 -Push
@@ -75,12 +75,12 @@ param(
     [Switch]
     # Creates a new migration.
     $New,
-    
+
     [Parameter(Mandatory=$true,ParameterSetName='Push')]
     [Switch]
     # Applies migrations.
     $Push,
-    
+
     [Parameter(Mandatory=$true,ParameterSetName='Pop')]
     [Parameter(Mandatory=$true,ParameterSetName='PopByCount')]
     [Parameter(Mandatory=$true,ParameterSetName='PopByName')]
@@ -88,7 +88,7 @@ param(
     [Switch]
     # Reverts migrations.
     $Pop,
-    
+
     [Parameter(Mandatory=$true,ParameterSetName='Redo')]
     [Switch]
     # Reverts a migration, then re-applies it.
@@ -101,7 +101,7 @@ param(
     [string[]]
     # The name of the migrations to create, push, or pop. Matches against the migration's ID, Name, or file name (without extension). Wildcards permitted.
     $Name,
-    
+
     [Parameter(Mandatory=$true,ParameterSetName='PopByCount',Position=1)]
     [UInt32]
     # The number of migrations to pop. Default is 1.
@@ -130,7 +130,6 @@ param(
     [Parameter(ParameterSetName='Redo')]
     [Parameter(ParameterSetName='DropDatabase')]
     [Parameter(ParameterSetName='Checkpoint')]
-    [Parameter(ParameterSetName='InitializeSchema')]
     [string[]]
     # The database(s) to migrate. Optional.  Will operate on all databases otherwise.
     $Database,
@@ -144,7 +143,6 @@ param(
     [Parameter(ParameterSetName='Redo')]
     [Parameter(ParameterSetName='DropDatabase')]
     [Parameter(ParameterSetName='Checkpoint')]
-    [Parameter(ParameterSetName='InitializeSchema')]
     [string]
     # The environment you're working in.  Controls which settings Rivet loads from the `rivet.json` configuration file.
     $Environment,
@@ -158,7 +156,6 @@ param(
     [Parameter(ParameterSetName='Redo')]
     [Parameter(ParameterSetName='DropDatabase')]
     [Parameter(ParameterSetName='Checkpoint')]
-    [Parameter(ParameterSetName='InitializeSchema')]
     [string]
     # The path to the Rivet configuration file.  Default behavior is to look in the current directory for a `rivet.json` file.  See `about_Rivet_Configuration` for more information.
     $ConfigFilePath,
@@ -171,12 +168,7 @@ param(
     [Parameter(ParameterSetName='Checkpoint')]
     [Switch]
     # Checkpoints the current state of the database so that it can be re-created.
-    $Checkpoint,
-
-    [Parameter(ParameterSetName='InitializeSchema')]
-    [Switch]
-    # Initializes the database, including baseline schema. Use the -Checkpoint switch to create a database baseline.
-    $InitializeSchema
+    $Checkpoint
 )
 
 Set-StrictMode -Version Latest
@@ -189,6 +181,6 @@ if( $PSCmdlet.ParameterSetName -eq 'ShowHelp' )
 
 & (Join-Path -Path $PSScriptRoot -ChildPath Import-Rivet.ps1 -Resolve)
 
-Invoke-Rivet @PSBoundParameters 
+Invoke-Rivet @PSBoundParameters
 
 exit $error.Count

@@ -125,7 +125,7 @@ BeforeAll {
 
             Remove-RivetTestDatabase -Name $databaseName
             # Now, check that the schema.ps1 script is runnable
-            Invoke-RTRivet -InitializeSchema -Database $databaseName -ErrorAction Stop
+            Invoke-RTRivet -Database $databaseName -ErrorAction Stop
             Invoke-RTRivet -Pop -Database $databaseName -ErrorAction Stop
         }
     }
