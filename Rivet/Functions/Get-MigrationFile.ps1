@@ -67,6 +67,7 @@ function Get-MigrationFile
                 Write-Debug -Message $Path
                 if( (Test-Path -Path $Path -PathType Container) )
                 {
+                    Get-ChildItem -Path $Path -Filter $script:schemaFileName -ErrorAction Ignore
                     return Get-ChildItem -Path $Path -Filter '*_*.ps1'
                 }
 
@@ -76,10 +77,12 @@ function Get-MigrationFile
                 }
             } |
             ForEach-Object {
+                $isBaseline = $false
                 if( $_.BaseName -eq 'schema' )
                 {
                     $id = $script:schemaMigrationId # midnight on year 1, month 0, day 0.
                     $name = $_.BaseName
+                    $isBaseline = $true
                 }
                 elseif( $_.BaseName -notmatch '^(\d{14})_(.+)' )
                 {
@@ -98,7 +101,8 @@ function Get-MigrationFile
                     Add-Member -MemberType NoteProperty -Name 'MigrationID' -Value $id -PassThru |
                     Add-Member -MemberType NoteProperty -Name 'MigrationName' -Value $name -PassThru |
                     Add-Member -MemberType NoteProperty -Name 'DatabaseName' -Value $DatabaseName -PassThru |
-                    Add-Member -MemberType NoteProperty -Name 'IsRivetMigration' -Value $isRivetMigration -PassThru
+                    Add-Member -MemberType NoteProperty -Name 'IsRivetMigration' -Value $isRivetMigration -PassThru |
+                    Add-Member -Membertype NoteProperty -Name 'IsBaselineMigration' -Value $isBaseline -PassThru
             } |
             Where-Object {
                 if (-not ($PSBoundParameters.ContainsKey('Include')))
@@ -134,8 +138,8 @@ function Get-MigrationFile
                 foreach( $pattern in $Exclude )
                 {
                     $foundMatch = $migration.MigrationID -like $pattern -or `
-                                $migration.MigrationName -like $pattern -or `
-                                $migration.BaseName -like $pattern
+                                  $migration.MigrationName -like $pattern -or `
+                                  $migration.BaseName -like $pattern
                     if( $foundMatch )
                     {
                         return $false
@@ -150,10 +154,10 @@ function Get-MigrationFile
                     return $true
                 }
 
-                if ($_.IsRivetMigration)
+                if ($_.IsRivetMigration -and -not $_.IsBaselineMigration)
                 {
-                    $msg = "Migration '$($_.FullName)' has an invalid ID. IDs lower than $($script:firstMigrationId) " +
-                        'are reserved for Rivet''s internal use.'
+                    $msg = "Migration '$($_.FullName)' has invalid ID ""$($_.MigrationID)"". IDs lower than $($script:firstMigrationId) " +
+                           'are reserved for Rivet''s internal use.'
                     Write-Error $msg -ErrorAction Stop
                     return $false
                 }

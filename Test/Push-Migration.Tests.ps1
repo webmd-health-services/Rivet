@@ -173,6 +173,8 @@ Describe 'Push-Migration' {
 '@ | Set-Content -Path $objectMadeWithRelativePathath
 
         $script:testStartedAt = Invoke-RivetTestQuery -Query 'select getutcdate()' -AsScalar
+
+        $Global:Error.Clear()
     }
 
     AfterEach {

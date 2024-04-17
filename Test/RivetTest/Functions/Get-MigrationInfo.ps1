@@ -8,13 +8,21 @@ function Get-MigrationInfo
 
         $Connection,
 
-        $DatabaseName
+        $DatabaseName,
+
+        [switch] $Force
     )
-    
+
     Set-StrictMode -Version Latest
 
+    $whereClause = " where ID >= $($script:firstMigrationId)"
+    if ($Force)
+    {
+        $whereClause = ''
+    }
+
     # Exclude Rivet's internal migrations.
-    $query = "select * from $($RTRivetSchemaName).Migrations where ID >= $($script:firstMigrationId)"
+    $query = "select * from $($RTRivetSchemaName).Migrations${whereClause}"
     if( $Name )
     {
         $query = '{0} and  name = ''{1}''' -f $query,$Name

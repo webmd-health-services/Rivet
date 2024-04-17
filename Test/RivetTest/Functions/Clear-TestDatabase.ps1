@@ -5,9 +5,7 @@ function Clear-TestDatabase
     #>
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory)]
-        [string]
-        $Name
+        [string] $Name = $RTDatabaseName
     )
 
     Set-StrictMode -Version 'Latest'

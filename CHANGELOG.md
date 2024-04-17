@@ -10,10 +10,15 @@
 * `Export-Migration` no longer creates an `Add-Schema` operation that includes owner information (i.e. the `Owner`
 parameter is omitted). When exporting a schema to DDL in SQL Server Management Studio, the owner information is also
 omitted so we think this change should be OK.
+* Pushing to a database will now apply the baseline schema if it hasn't been applied.
+
+### Fixed
+
+* Baseline schema in schema.ps1 doesn't get applied when pushing migrations.
 
 ### Removed
 
-* Removed the `InitializeSchema` switch from `rivet.ps1` and `Invoke-Rivet` as it was not actually implemented.
+Removed the `InitializeSchema` switch from `rivet.ps1` and `Invoke-Rivet` as it was not actually implemented.
 
 
 ## 0.22.0
