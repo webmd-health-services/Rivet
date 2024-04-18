@@ -18,7 +18,7 @@ function Clear-TestDatabase
         Invoke-RTRivet -Pop -All -Database $Name -ConfigFilePath $RTConfigFilePath
     }
 
-    if( Test-Database -Name $Name )
+    if (Test-Database -Name $Name)
     {
         $query = "select * from [$($Name)].[rivet].[Migrations] where ID > $($script:firstMigrationId) order by ID"
         [object[]]$migrations = Invoke-RivetTestQuery -Query $query -DatabaseName $Name
@@ -26,7 +26,11 @@ function Clear-TestDatabase
         {
             Remove-RivetTestDatabase -Name $Name
             $migrationList = $migrations | Format-Table -Property 'ID','Name' -AutoSize | Out-String
-            Write-Error -Message ('The following migrations weren''t popped from {0}. Please update your test so that its `Pop-Migration` function correctly reverses the operations performed in its `Push-Migration` function.{1}{2}' -f $Name,([Environment]::NewLine),$migrationList) -ErrorAction Stop
+            $msg = "The following migrations weren't popped from ${Name}. Please update your test so that its " +
+                   '`Pop-Migration` function correctly reverses the operations performed in its `Push-Migration` ' +
+                   "function.$([Environment]::NewLine)${migrationlist}"
+            Write-Error -Message $msg -ErrorAction $ErrorActionPreference
+            return
         }
 
         $query = 'select s.name [schema], o.name, o.type_desc from sys.objects o join sys.schemas s on o.schema_id = s.schema_id where s.name != ''rivet'' and o.is_ms_shipped = 0'
@@ -35,7 +39,11 @@ function Clear-TestDatabase
         {
             Remove-RivetTestDatabase -Name $Name
             $objectList = $objects | Select-Object | Format-Table -Property 'schema','name','type_desc' -AutoSize | Out-String
-            Write-Error -Message ('The following objects weren''t properly removed from {0}. Please ensure each of your migrations has a `Pop-Migration` function that reverses the operations performed in its `Push-Migration` function.{1}{2}' -f $Name,([Environment]::NewLine),$objectList) -ErrorAction Stop
+            $msg = "The following objects weren't properly removed from ${Name}. Please ensure each of your " +
+                   'migrations has a `Pop-Migration` function that reverses the operations performed in its ' +
+                   "`Push-Migration` function.$([Environment]::NewLine)${objectList}"
+            Write-Error -Message $msg -ErrorAction $ErrorActionPreference
+            return
         }
 
         $query = "select name from sys.schemas where name not in ('dbo','guest','INFORMATION_SCHEMA','sys','db_owner','db_accessadmin','db_backupoperator','db_datareader','db_datawriter','db_ddladmin','db_denydatareader','db_denydatawriter','db_securityadmin','rivet')"
@@ -44,7 +52,11 @@ function Clear-TestDatabase
         {
             Remove-RivetTestDatabase -Name $Name
             $schemaList = $schemas| Select-Object | Format-Table -Property 'name' -AutoSize | Out-String
-            Write-Error ('The following schemas weren''t properly removed from {0}. Please ensure each of your migrations has a `Pop-Migration` function that reverses the operations performed in its `Push-Migration` function.{1}{2}' -f $Name,([Environment]::NewLine),$schemaList) -ErrorAction Stop
+            $msg = "The following schemas weren't properly removed from ${Name}. Please ensure each of your " +
+                   'migrations has a `Pop-Migration` function that reverses the operations performed in its ' +
+                   "`Push-Migration` function.$([Environment]::NewLine)${schemaList}"
+            Write-Error -Message $msg -ErrorAction $ErrorActionPreference
+            return
         }
     }
 

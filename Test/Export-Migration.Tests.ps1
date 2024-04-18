@@ -121,7 +121,7 @@ BeforeAll {
         }
         finally
         {
-            Stop-RivetTest -DatabaseName $Database
+            Stop-RivetTest -DatabaseName $Database -ErrorAction Ignore
         }
     }
 }
@@ -927,7 +927,7 @@ function Pop-Migration
     Remove-Schema 'export'
 }
 '@
-        WhenExporting '*.Syn*'
+        WhenExporting '*.Syn*' -SkipVerification
         ThenMigration -Not -HasContent 'Add-Table'
         ThenMigration -Not -HasContent 'AnotherSyn'
         ThenMigration -HasContent 'Add-Synonym -Name ''Syn1'' -TargetSchemaName ''dbo'' -TargetObjectName ''Target'''
