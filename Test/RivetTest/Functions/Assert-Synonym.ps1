@@ -2,23 +2,22 @@
 function Assert-Synonym
 {
     param(
-        [Parameter(Mandatory=$true)]
-        [string]
         # The name of the synonym.
-        $Name,
+        [Parameter(Mandatory=$true)]
+        [String] $Name,
 
-        [string]
         # The synonym's schema.
-        $SchemaName = 'dbo',
+        [String] $SchemaName = 'dbo',
 
-        [string]
         # The base object name of what the synonym points to.
-        $TargetObjectName
+        [String] $TargetObjectName,
+
+        [String] $DatabaseName
     )
 
     Set-StrictMode -Version 'Latest'
 
-    $synonym = Get-Synonym -SchemaName $SchemaName -Name $Name
+    $synonym = Get-Synonym -SchemaName $SchemaName -Name $Name -DatabaseName $DatabaseName
 
     $synonym | Should -Not -BeNullOrEmpty -Because ('Synonym ''{0}.{1}'' not found.' -f $SchemaName,$Name)
 

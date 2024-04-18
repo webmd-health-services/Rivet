@@ -6,15 +6,16 @@ function Get-DefaultConstraint
     Gets the default constraints in a database.
     #>
     param(
-        [string]
         # The name of the default constraint to get.
-        $Name
+        [String] $Name,
+
+        [String] $DatabaseName
     )
-    
+
     Set-StrictMode -Version Latest
 
     $query = @'
-    select * 
+    select *
     from sys.default_constraints
 '@
     if( $Name )
@@ -25,7 +26,7 @@ function Get-DefaultConstraint
         [name] = '{1}'
 '@ -f $query,$Name
     }
-    
-    Invoke-RivetTestQuery -Query $query
+
+    Invoke-RivetTestQuery -Query $query -DatabaseName $DatabaseName
 
 }

@@ -6,146 +6,154 @@ BeforeAll {
     Set-StrictMode -Version 'Latest'
 
     & (Join-Path -Path $PSScriptRoot -ChildPath 'Initialize-Test.ps1' -Resolve)
+    Remove-Item -Path 'alias:GivenMigration'
+    Remove-Item -Path 'alias:WhenMigrating'
+    Remove-Item -Path 'alias:ThenTable'
+
+    $script:testDirPath = $null
+    $script:testNum = 0
+    $script:rivetJsonPath = $null
+    $script:dbName = 'New-XmlColumn'
+
+    function GivenMigration
+    {
+        param(
+            [Parameter(Mandatory, Position=0)]
+            [String] $Named,
+
+            [Parameter(Mandatory, Position=1)]
+            [String] $WithContent
+        )
+
+        $WithContent |
+            New-TestMigration -Named $Named -DatabaseName $script:dbName -ConfigFilePath $script:rivetJsonPath
+    }
 
     function ThenMigrationPoppable
     {
-        Invoke-RTRivet -Pop
+        { Invoke-Rivet -Pop -ConfigFilePath $script:rivetJsonPath } | Should -Not -Throw
+    }
+
+    function ThenColumn
+    {
+        param(
+            [String] $Named,
+
+            [String] $OnTable,
+
+            [String] $HasDataType
+        )
+
+        Assert-Column -Name $Named -DataType $HasDataType -TableName $OnTable -DatabaseName $script:dbName
     }
 
     function ThenTable
     {
+        [CmdletBinding()]
         param(
-            [Parameter(Mandatory)]
-            [string]
-            $Named,
+            [String] $Named,
 
-            [Parameter(Mandatory)]
-            [string]
-            $HasXmlColumn,
-
-            [Switch]
-            $NoSchema
+            [switch] $Exists
         )
 
-        $column = Get-Column -Name $HasXmlColumn -TableName $Named
-        It ('should create column' ) {
-            $column | Should -Not -BeNullOrEmpty
-            $column.type_name | Should -Be 'xml'
-            if( $NoSchema )
-            {
-                $column.is_xml_document | Should -BeFalse
-                $column.xml_collection_id | Should -Be 0
-            }
-        }
+        Assert-Table 'WithXmlContent' -Exists -DatabaseName $script:dbName
     }
 
     function WhenPushing
     {
-        Invoke-RTRivet -Push
+        Invoke-Rivet -Push -ConfigFilePath $script:rivetJsonPath
     }
 }
 
 Describe 'New-XmlColumn' {
-    BeforeEach {
-        Start-RivetTest
+    BeforeAll {
+        Remove-RivetTestDatabase -Name $script:dbName
+        Invoke-RivetTestQuery -DatabaseName 'master' -Query "create database [${script:dbName}]"
+        Invoke-RivetTestQuery -DatabaseName $script:dbName -Query @'
+            create xml schema collection EmptyXsd as
+            N'
+            <xsd:schema targetNamespace="http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelManuInstructions"
+            xmlns          ="http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelManuInstructions"
+            elementFormDefault="qualified"
+            attributeFormDefault="unqualified"
+            xmlns:xsd="http://www.w3.org/2001/XMLSchema" >
+
+                <xsd:element  name="root" />
+
+            </xsd:schema>
+            ';
+'@
     }
 
-    AfterEach {
-        Stop-RivetTest
+    BeforeEach {
+        $script:testDirPath = Join-Path -Path $TestDrive -ChildPath ($script:testNum++)
+        New-Item -Path $script:testDirPath -ItemType Directory
+        $Global:Error.Clear()
+        $script:migrations = @()
+        $script:rivetJsonPath = GivenRivetJsonFile -In $script:testDirPath -Database $script:dbName -PassThru
     }
 
     It 'should create xml column with content' {
-        @"
-    function Push-Migration
-    {
-             Invoke-Ddl -Query @'
-    create xml schema collection EmptyXsd as
-    N'
-    <xsd:schema targetNamespace="http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelManuInstructions"
-       xmlns          ="http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelManuInstructions"
-       elementFormDefault="qualified"
-       attributeFormDefault="unqualified"
-       xmlns:xsd="http://www.w3.org/2001/XMLSchema" >
+        GivenMigration 'CreateXmlColumn' @"
+            function Push-Migration
+            {
+                Add-Table -Name 'WithXmlContent' -Column {
+                    VarChar 'One' -Max -NotNull
+                    Xml 'Two' -XmlSchemaCollection 'EmptyXsd'
+                }
+            }
 
-        <xsd:element  name="root" />
+            function Pop-Migration
+            {
+                Remove-Table 'WithXmlContent'
+                Invoke-Ddl 'drop xml schema collection EmptyXsd'
+            }
+"@
 
-    </xsd:schema>
-    ';
-'@
-
-        Add-Table -Name 'WithXmlContent' -Column {
-            VarChar 'One' -Max -NotNull
-            Xml 'Two' -XmlSchemaCollection 'EmptyXsd'
-        }
-    }
-
-    function Pop-Migration
-    {
-        Remove-Table 'WithXmlContent'
-        Invoke-Ddl 'drop xml schema collection EmptyXsd'
-    }
-"@ | New-TestMigration -Name 'CreateXmlColumn'
-
-        Invoke-RTRivet -Push 'CreateXmlColumn'
-
-        Assert-Table 'WithXmlContent'
-        Assert-Column -Name 'Two' -DataType 'Xml' -TableName 'WithXmlContent'
+        WhenPushing
+        ThenTable 'WithXmlContent' -Exists
+        ThenColumn 'Two' -OnTable 'WithXmlContent' -HasDataType 'Xml'
     }
 
 
     It 'should create xml column with document' {
-        @"
-    function Push-Migration
-    {
-             Invoke-Ddl -Query @'
-    create xml schema collection EmptyXsd as
-    N'
-    <xsd:schema targetNamespace="http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelManuInstructions"
-       xmlns          ="http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelManuInstructions"
-       elementFormDefault="qualified"
-       attributeFormDefault="unqualified"
-       xmlns:xsd="http://www.w3.org/2001/XMLSchema" >
+        GivenMigration 'CreateXmlColumn' @"
+            function Push-Migration
+            {
+                Add-Table -Name 'WithXmlDocument' -Column {
+                    VarChar 'One' -Max -NotNull
+                    Xml 'Two' -Document -XmlSchemaCollection 'EmptyXsd'
+                }
+            }
 
-        <xsd:element  name="root" />
+            function Pop-Migration
+            {
+                Remove-Table 'WithXmlDocument'
+                Invoke-Ddl 'drop xml schema collection EmptyXsd'
+            }
+"@
 
-    </xsd:schema>
-    ';
-'@
-
-        Add-Table -Name 'WithXmlDocument' -Column {
-            VarChar 'One' -Max -NotNull
-            Xml 'Two' -Document -XmlSchemaCollection 'EmptyXsd'
-        }
-    }
-
-    function Pop-Migration
-    {
-        Remove-Table 'WithXmlDocument'
-        Invoke-Ddl 'drop xml schema collection EmptyXsd'
-    }
-"@ | New-TestMigration -Name 'CreateXmlColumn'
-
-        Invoke-RTRivet -Push 'CreateXmlColumn'
-
-        Assert-Table 'WithXmlDocument'
-        Assert-Column -Name 'Two' -DataType 'Xml' -TableName 'WithXmlDocument'
+        WhenPushing
+        ThenTable 'WithXmlDocument' -Exists
+        ThenColumn 'Two' -OnTable 'WithXmlDocument' -HasDataType 'Xml'
     }
 
     It 'does not require xml schema' {
         GivenMigration -Named 'Migration' @'
-    function Push-Migration
-    {
-        Add-Table -Name 'WithXmlColumn' -Column {
-            Xml 'Two'
-        }
-    }
-    function Pop-Migration
-    {
-        Remove-Table 'WithXmlColumn'
-    }
+            function Push-Migration
+            {
+                Add-Table -Name 'WithXmlColumn' -Column {
+                    Xml 'Two'
+                }
+            }
+            function Pop-Migration
+            {
+                Remove-Table 'WithXmlColumn'
+            }
 '@
-        WhenMigrating 'Migration'
-        ThenTable 'WithXmlColumn' -HasXmlColumn 'Two' -NoSchema
+        WhenPushing
+        ThenTable 'WithXmlColumn' -Exists
+        ThenColumn 'Two' -OnTable 'WithXmlColumn' -HasDataType 'Xml'
         ThenMigrationPoppable
     }
 }

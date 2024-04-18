@@ -4,21 +4,16 @@ function Import-RivetPlugin
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]
-        [AllowEmptyCollection()]
-        [String[]]$Path,
-
-        [Parameter(Mandatory)]
-        [AllowEmptyCollection()]
-        [String[]]$ModuleName
+        [Rivet_Session] $Session
     )
 
     Set-StrictMode -Version 'Latest'
     Use-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-    
+
     Write-Timing -Message 'Import-RivetPlugin  BEGIN' -Indent
 
     $moduleNames = & {
-        foreach( $pluginPath in $Path )
+        foreach( $pluginPath in $Session.PluginPaths )
         {
             if( [IO.Path]::GetExtension($pluginPath) -eq '.ps1' )
             {
@@ -27,13 +22,13 @@ function Import-RivetPlugin
             }
 
             Write-Timing -Message "  Import  BEGIN  $($pluginPath)"
-            Import-Module -Name $pluginPath -Global -Force -PassThru |
+            Import-Module -Name $pluginPath -Global -Force -PassThru -Verbose:$false |
                 Select-Object -ExpandProperty 'Name' |
                 Write-Output
             Write-Timing -Message "  Import  END    $($pluginPath)"
         }
 
-        $ModuleName | Write-Output
+        $Session.PluginModules | Write-Output
     }
 
     $commands = & {
@@ -59,9 +54,9 @@ function Import-RivetPlugin
         Get-Command -CommandType Function | Where-Object { -not $_.Module }
         Write-Timing -Message ('  Get Functions  End')
     }
- 
-    $script:plugins = & {
-        foreach( $command in $commands ) 
+
+    $Session.Plugins = & {
+        foreach( $command in $commands )
         {
             if( -not ($command | Get-Member -Name 'ScriptBlock') )
             {
@@ -88,7 +83,7 @@ function Import-RivetPlugin
         }
     }
 
-    Write-Timing -Message ('  Discovered {0} plugins.' -f ($plugins | Measure-Object).Count)
+    Write-Timing -Message ('  Discovered {0} plugins.' -f ($Session.Plugins | Measure-Object).Count)
 
     Write-Timing -Message 'Import-RivetPlugin  END' -Outdent
 }

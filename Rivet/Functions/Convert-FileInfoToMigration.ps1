@@ -57,13 +57,19 @@ function Convert-FileInfoToMigration
                     $pluginParameter = @{ Migration = $Migration ; Operation = $_ }
 
                     [Rivet.Operations.Operation[]]$operations = & {
-                            Invoke-RivetPlugin -Session $Session `
-                                               -Event ([Rivet.Events]::BeforeOperationLoad) `
-                                               -Parameter $pluginParameter
+                            if (-not $Migration.IsRivetMigration)
+                            {
+                                Invoke-RivetPlugin -Session $Session `
+                                                   -Event ([Rivet.Events]::BeforeOperationLoad) `
+                                                   -Parameter $pluginParameter
+                            }
                             $operationItem
-                            Invoke-RivetPlugin -Session $Session `
-                                               -Event ([Rivet.Events]::AfterOperationLoad) `
-                                               -Parameter $pluginParameter
+                            if (-not $Migration.IsRivetMigration)
+                            {
+                                Invoke-RivetPlugin -Session $Session `
+                                                   -Event ([Rivet.Events]::AfterOperationLoad) `
+                                                   -Parameter $pluginParameter
+                            }
                         } |
                         Where-Object { $_ -is [Rivet.Operations.Operation] } |
                         Repair-Operation
@@ -73,16 +79,14 @@ function Convert-FileInfoToMigration
             }
         }
 
-        function Clear-Migration
+        function Clear-MigrationFunction
         {
             ('function:Push-Migration','function:Pop-Migration') |
                 Where-Object { Test-Path -Path $_ } |
                 Remove-Item -WhatIf:$false -Confirm:$false
         }
 
-        Clear-Migration
-
-        Import-RivetPlugin -Path $Session.PluginPaths -ModuleName $Session.PluginModules
+        Clear-MigrationFunction
     }
 
     process
@@ -94,7 +98,11 @@ function Convert-FileInfoToMigration
             Connect-Database -Session $Session -Name $dbName
 
             $m = [Rivet.Migration]::New($fileInfo.MigrationID, $fileInfo.MigrationName, $fileInfo.FullName, $dbName)
-            $m | Add-Member -Name 'IsRivetMigration' -MemberType NoteProperty -Value $fileInfo.IsRivetMigration
+            foreach ($noteProperty in ($fileInfo | Get-Member -MemberType NoteProperty))
+            {
+                $propertyName = $noteProperty.Name
+                $m | Add-Member -Name $propertyName -MemberType NoteProperty -Value ($fileInfo.$propertyName)
+            }
 
             Write-Timing -Message ('Convert-FileInfoToMigration  {0}' -f $m.FullName)
 
@@ -146,15 +154,18 @@ Pop-Migration function not found. All migrations are required to have a Pop-Migr
 
                 $afterMigrationLoadParameter = @{ Migration = $m }
                 & {
-                    Invoke-RivetPlugin -Session $Session `
-                                       -Event ([Rivet.Events]::AfterMigrationLoad) `
-                                       -Parameter $afterMigrationLoadParameter
+                    if (-not $m.IsRivetMigration)
+                    {
+                        Invoke-RivetPlugin -Session $Session `
+                                           -Event ([Rivet.Events]::AfterMigrationLoad) `
+                                           -Parameter $afterMigrationLoadParameter
+                    }
                 }
                 $m | Write-Output
             }
             finally
             {
-                Clear-Migration
+                Clear-MigrationFunction
             }
         }
     }

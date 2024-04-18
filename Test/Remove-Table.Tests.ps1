@@ -5,45 +5,110 @@ Set-StrictMode -Version 'Latest'
 BeforeAll {
     Set-StrictMode -Version 'Latest'
 
-    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
+    & (Join-Path -Path $PSScriptRoot -ChildPath 'Initialize-Test.ps1' -Resolve)
+    Remove-Item -Path 'alias:GivenMigration'
+    Remove-Item -Path 'alias:ThenTable'
+
+    $script:testDirPath = $null
+    $script:testNum = 0
+    $script:rivetJsonPath = $null
+    $script:dbName = 'Remove-Table'
+
+    function GivenMigration
+    {
+        param(
+            [Parameter(Mandatory, Position=0)]
+            [String] $Named,
+
+            [Parameter(Mandatory, Position=1)]
+            [String] $WithContent
+        )
+
+        $WithContent | New-TestMigration -Name $Named -ConfigFilePath $script:rivetJsonPath -DatabaseName $script:dbName
+    }
+
+    function ThenTable
+    {
+        param(
+            [Parameter(Mandatory, Position=0)]
+            [String] $Named,
+
+            [String] $InSchema,
+
+            [switch] $Not,
+
+            [Parameter(Mandatory)]
+            [switch] $Exists
+        )
+
+        $schemaArg = @{}
+        if ($InSchema)
+        {
+            $schemaArg['SchemaName'] = $InSchema
+        }
+
+        $exists = Test-Table -Name $Named -DatabaseName $script:dbName @schemaArg
+        if ($Not)
+        {
+            $exists | Should -BeFalse
+        }
+        else
+        {
+            $exists | Should -BeTrue
+        }
+    }
+
+    function WhenPopping
+    {
+        Invoke-Rivet -Pop -ConfigFilePath $script:rivetJsonPath
+    }
+
+    function WhenPushing
+    {
+        Invoke-Rivet -Push -ConfigFilePath $script:rivetJsonPath
+    }
 }
 
 Describe 'Remove-Table' {
+    BeforeAll {
+        Remove-RivetTestDatabase -Name $script:dbName
+    }
+
     BeforeEach {
-        Start-RivetTest
+        $script:testDirPath = Join-Path -Path $TestDrive -ChildPath ($script:testNum++)
+        New-Item -Path $script:testDirPath -ItemType Directory
+        $script:rivetJsonPath = GivenRivetJsonFile -In $script:testDirPath -Database $script:dbName -PassThru
+        $Global:Error.Clear()
     }
 
     AfterEach {
-        Stop-RivetTest
+        Invoke-Rivet -Pop -All -Force -ConfigFilePath $script:rivetJsonPath
     }
 
     It 'should remove table' {
-        @'
-    function Push-Migration()
-    {
-        Add-Table -Name 'Ducati' {
-            Int 'ID' -Identity
-        } # -SchemaName
+        GivenMigration 'AddTable' @'
+            function Push-Migration()
+            {
+                Add-Table -Name 'Ducati' {
+                    Int 'ID' -Identity
+                } # -SchemaName
 
-    }
+            }
 
-    function Pop-Migration()
-    {
-        Remove-Table -Name 'Ducati'
-    }
-'@ | New-TestMigration -Name 'AddTable'
-        Invoke-RTRivet -Push 'AddTable'
-        (Test-Table 'Ducati') | Should -BeTrue
+            function Pop-Migration()
+            {
+                Remove-Table -Name 'Ducati'
+            }
+'@
+        WhenPushing
+        ThenTable 'Ducati' -Exists
 
-        Invoke-RTRivet -Pop ([Int32]::MaxValue)
-        (Test-Table 'Ducati') | Should -BeFalse
+        WhenPopping
+        ThenTable 'Ducati' -Not -Exists
     }
 
     It 'should remove table in custom schema' {
-        $Name = 'Ducati'
-        $CustomSchemaName = 'notDbo'
-
-    @'
+        GivenMigration 'AddTablesInDifferentSchemas' @'
     function Push-Migration()
     {
         Add-Table -Name 'Ducati' {
@@ -51,26 +116,26 @@ Describe 'Remove-Table' {
         }
         Add-Schema -Name 'notDbo'
 
-        Add-Table -Name 'Ducati' {
+        Add-Table -Name 'DucatiNotDbo' {
             Int 'ID' -Identity
         } -SchemaName 'notDbo'
     }
 
     function Pop-Migration()
     {
-        Remove-Table -Name 'Ducati' -SchemaName 'notDbo'
+        Remove-Table -Name 'DucatiNotDbo' -SchemaName 'notDbo'
         Remove-Table 'Ducati'
         Remove-Schema 'notDbo'
     }
-'@ | New-TestMigration -Name 'AddTablesInDifferentSchemas'
+'@
 
-        Invoke-RTRivet -Push 'AddTablesInDifferentSchemas'
+        WhenPushing
 
-        (Test-Table -Name $Name) | Should -BeTrue
-        (Test-Table -Name $Name -SchemaName $CustomSchemaName) | Should -BeTrue
+        ThenTable 'Ducati' -Exists
+        ThenTable 'DucatiNotDbo' -InSchema 'notDbo' -Exists
 
-        Invoke-RTRivet -Pop ([Int32]::MaxValue)
-        (Test-Table -Name $Name) | Should -BeFalse
-        (Test-Table -Name $Name -SchemaName $CustomSchemaName) | Should -BeFalse
+        WhenPopping
+        ThenTable 'Ducati' -Not -Exists
+        ThenTable 'DucatiNotDbo' -InSchema 'notDbo' -Not -Exists
     }
 }

@@ -5,20 +5,43 @@ Set-StrictMode -Version 'Latest'
 BeforeAll {
     Set-StrictMode -Version 'Latest'
 
-    & (Join-Path -Path $PSScriptRoot -ChildPath 'RivetTest\Import-RivetTest.ps1' -Resolve)
+    & (Join-Path -Path $PSScriptRoot -ChildPath 'Initialize-Test.ps1' -Resolve)
+    Remove-Item -Path 'alias:GivenMigration'
+
+    $script:testDirPath = $null
+    $script:testNum = 0
+    $script:rivetJsonPath = $null
+    $script:dbName = 'Remove-Synonym'
+
+    function GivenMigration
+    {
+        param(
+            [Parameter(Mandatory, Position=0)]
+            [String] $Named,
+
+            [Parameter(Mandatory, Position=1)]
+            [String] $WithContent
+        )
+
+        $WithContent | New-TestMigration -Name $Named -ConfigFilePath $script:rivetJsonPath -DatabaseName $script:dbName
+    }
 }
 
 Describe 'Remove-Synonym' {
     BeforeEach {
-        Start-RivetTest
+        $script:testDirPath = Join-Path -Path $TestDrive -ChildPath ($script:testNum++)
+        New-Item -Path $script:testDirPath -ItemType Directory
+        $script:migrations = @()
+        $script:rivetJsonPath = GivenRivetJsonFile -In $script:testDirPath -Database $script:dbName -PassThru
+        $Global:Error.Clear()
     }
 
     AfterEach {
-        Stop-RivetTest
+        Invoke-Rivet -Pop -All -Force -ConfigFilePath $script:rivetJsonPath
     }
 
     It 'should remove synonym' {
-        @'
+        GivenMigration 'RemoveSynonym' @'
     function Push-Migration
     {
         Add-Synonym -Name 'Buzz' -TargetObjectName 'Fizz'
@@ -28,13 +51,13 @@ Describe 'Remove-Synonym' {
     {
         Remove-Synonym -Name 'Buzz'
     }
-'@ | New-TestMigration -Name 'RemoveSynonym'
+'@
 
-        Invoke-RTRivet -Push 'RemoveSynonym'
-        Assert-Synonym -Name 'Buzz' -TargetObjectName '[dbo].[Fizz]'
+        Invoke-Rivet -Push 'RemoveSynonym' -ConfigFilePath $script:rivetJsonPath
+        Assert-Synonym -Name 'Buzz' -TargetObjectName '[dbo].[Fizz]' -DatabaseName $script:dbName
 
-        Invoke-RTRivet -Pop 1
+        Invoke-Rivet -Pop -ConfigFilePath $script:rivetJsonPath
 
-        (Get-Synonym -Name 'Buzz') | Should -BeNullOrEmpty
+        (Get-Synonym -Name 'Buzz' -DatabaseName $script:dbName) | Should -BeNullOrEmpty
     }
 }

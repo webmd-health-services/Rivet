@@ -14,6 +14,7 @@ class Rivet_Session
         $this.PluginModules = $settings.PluginModules
         $this.PluginPaths = $settings.PluginPaths
         $this.SqlServerName = $settings.SqlServerName
+        $this.Plugins = @()
     }
 
     [Object] $Connection
@@ -39,6 +40,8 @@ class Rivet_Session
     [Object] $CurrentTransaction
 
     [Rivet.Configuration.Database] $CurrentDatabase
+
+    [Object[]] $Plugins
 }
 
 $RivetSchemaName = 'rivet'
@@ -67,8 +70,6 @@ function Pop-Migration
 $timer = New-Object 'Diagnostics.Stopwatch'
 $timerForWrites = New-Object 'Diagnostics.Stopwatch'
 $timingLevel = 0
-
-$plugins = @()
 
 function Write-Timing
 {

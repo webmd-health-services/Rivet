@@ -11,29 +11,30 @@ BeforeAll {
 Describe 'Rivet' {
     It 'exports all functions' {
         $privateFunctions = @{
-                                'Connect-Database' = $true;
-                                'Disconnect-Database' = $true;
-                                'Enable-ForeignKey' = $true;  #OBSOLETE
-                                'Disable-ForeignKey' = $true; #OBSOLETE
-                                'Export-Row' = $true;
-                                'Get-MigrationFile' = $true;
-                                'Convert-FileInfoToMigration' = $true;
-                                'Get-MigrationScript' = $true;
-                                'Import-Rivet' = $true;
-                                'Invoke-Query' = $true;
-                                'Invoke-MigrationOperation' = $true;
-                                'New-ConstraintName' = $true;
-                                'New-TestMigration' = $true;
-                                'New-MigrationObject' = $true;
-                                'Repair-Operation' = $true;
-                                'Split-SqlBatchQuery' = $true;
-                                'Test-Migration' = $true;
-                                'Test-Schema' = $true;
-                                'Test-Table' = $true;
-                                'Update-Database' = $true;
-                                'Use-CallerPreference' = $true;
-                                'Write-RivetError' = $true;
-                             }
+            'Checkpoint-Migration' = $true;
+            'Connect-Database' = $true;
+            'Disconnect-Database' = $true;
+            'Enable-ForeignKey' = $true;  #OBSOLETE
+            'Disable-ForeignKey' = $true; #OBSOLETE
+            'Export-Row' = $true;
+            'Get-MigrationFile' = $true;
+            'Convert-FileInfoToMigration' = $true;
+            'Get-MigrationScript' = $true;
+            'Import-Rivet' = $true;
+            'Invoke-Query' = $true;
+            'Invoke-MigrationOperation' = $true;
+            'New-ConstraintName' = $true;
+            'New-TestMigration' = $true;
+            'New-MigrationObject' = $true;
+            'Repair-Operation' = $true;
+            'Split-SqlBatchQuery' = $true;
+            'Test-Migration' = $true;
+            'Test-Schema' = $true;
+            'Test-Table' = $true;
+            'Update-Database' = $true;
+            'Use-CallerPreference' = $true;
+            'Write-RivetError' = $true;
+        }
 
         $private =
             & {

@@ -2,33 +2,48 @@
 function New-File
 {
     param(
-        $Name,
-        $Content
+        [Parameter(Mandatory, Position=0)]
+        [String] $Name,
+
+        [Parameter(Mandatory, Position=1)]
+        [String] $Content,
+
+        [String] $In,
+
+        [switch] $PassThru
     )
 
     Set-StrictMode -Version 'Latest'
 
-    if ($TestDrive | Get-Member 'FullName')
+    if (-not $In)
     {
-        $root = $TestDrive.FullName
-    }
-    else
-    {
-        $root = $TestDrive
+        if ($TestDrive | Get-Member 'FullName')
+        {
+            $In = $TestDrive.FullName
+        }
+        else
+        {
+            $In = $TestDrive
+        }
+
+        if( $RTTestRoot )
+        {
+            $In = $RTTestRoot
+        }
     }
 
-    if( $RTTestRoot )
-    {
-        $root = $RTTestRoot
-    }
-
-    $path = Join-Path -Path $root -ChildPath $Name
+    $path = Join-Path -Path $In -ChildPath $Name
     $directoryPath = $path | Split-Path
     if( -not (Test-Path -Path $directoryPath -PathType Container) )
     {
         New-Item -Path $directoryPath -ItemType 'Directory' | Out-Null
     }
     $Content | Set-Content -Path $path
+
+    if ($PassThru)
+    {
+        return $path
+    }
 }
 
 Set-Alias -Name 'GivenFile' -Value 'New-File'

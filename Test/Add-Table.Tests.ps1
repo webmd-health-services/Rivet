@@ -23,7 +23,12 @@ Describe 'Add-Table' {
     function Push-Migration()
     {
         Add-Table -Name 'AddTable' -Description 'Testing Add-Table migration' -Column {
-            VarChar 'varchar' -Max -NotNull -Default "'default'" -Description 'varchar(max) constraint DF_AddTable_varchar default default'
+            VarChar 'varchar' `
+                    -Max `
+                    -NotNull `
+                    -Default "'default'" `
+                    -Description 'varchar(max) constraint DF_AddTable_varchar default default' `
+                    -DefaultConstraintName 'DF_AddTable_varchar'
             BigInt 'id' -Identity
         } -Option 'data_compression = none'
 
@@ -39,7 +44,11 @@ Describe 'Add-Table' {
         Invoke-RTRivet -Push 'CreateTable'
 
         Assert-Table 'AddTable' -Description 'Testing Add-Table migration'
-        Assert-Column -Name 'varchar' 'varchar' -NotNull -Description 'varchar(max) constraint DF_AddTable_varchar default default' -TableName 'AddTable'
+        Assert-Column -Name 'varchar' `
+                      'varchar' `
+                      -NotNull `
+                      -Description 'varchar(max) constraint DF_AddTable_varchar default default' `
+                      -TableName 'AddTable'
         Assert-Column -Name 'id' 'bigint' -NotNull -Seed 1 -Increment 1 -TableName 'AddTable'
 
         # Sql 2012 feature
@@ -140,7 +149,12 @@ Describe 'Add-Table' {
     function Push-Migration()
     {
         Add-Table 'AddTableWithOption' -Description 'Testing Add-Table migration' -Column {
-            VarChar 'varchar' -Max -NotNull -Default "'default'" -Description 'varchar(max) constraint DF_AddTable_varchar default default'
+            VarChar 'varchar' `
+                    -Max `
+                    -NotNull `
+                    -Default "'default'" `
+                    -Description 'varchar(max) constraint DF_AddTable_varchar default default' `
+                    -DefaultConstraintName 'DF_AddTableWithOption_varchar'
             BigInt 'id' -Identity
         } -Option 'data_compression = page'
     }
@@ -200,7 +214,7 @@ function Pop-Migration
     Remove-Table 'Default'
 }
 '@
-        WhenMigrating 'CustomDefaultConstraint'
+        WhenMigrating -Push 'CustomDefaultConstraint'
         ThenDefaultConstraint 'DF_my_custom_constraint_name' -Is '0'
     }
 }

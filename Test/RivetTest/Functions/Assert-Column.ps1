@@ -2,68 +2,57 @@
 function Assert-Column
 {
     param(
-        [Parameter(Position=0,Mandatory=$true)]
-        [string]
-        $Name,
+        [Parameter(Position=0, Mandatory)]
+        [String] $Name,
 
-        [Parameter(Position=1,Mandatory=$true)]
-        [string]
+        [Parameter(Position=1, Mandatory)]
+        [String]
         $DataType,
 
         $Description,
 
-        [Switch]
-        $Max,
+        [switch] $Max,
 
-        [int]
-        $Size,
+        [int] $Size,
 
-        [int]
-        $Precision,
+        [int] $Precision,
 
-        [int]
-        $Scale,
+        [int] $Scale,
 
-        [Switch]
-        $Sparse,
+        [switch] $Sparse,
 
-        [Switch]
-        $NotNull,
+        [switch] $NotNull,
 
-        [int]
-        $Seed,
+        [int] $Seed,
 
-        [int]
-        $Increment,
+        [int] $Increment,
 
-        [Switch]
-        $NotForReplication,
+        [switch] $NotForReplication,
 
-        [Switch]
-        $RowGuidCol,
+        [switch] $RowGuidCol,
 
-        [Switch]
-        $Document,
+        [switch] $Document,
 
-        [Switch]
-        $FileStream,
+        [switch] $FileStream,
 
-        [string]
-        $Collation,
+        [String] $Collation,
 
-        [Object]
-        $Default,
+        [Object] $Default,
 
-        [Parameter(Mandatory=$true)]
-        $TableName,
+        [Parameter(Mandatory)]
+        [String] $TableName,
 
         [Alias('TableSchema')]
-        $SchemaName = 'dbo'
+        [String] $SchemaName = 'dbo',
+
+        [String] $DefaultConstraintName,
+
+        [String] $DatabaseName
     )
 
     Set-StrictMode -Version Latest
 
-    $column = Get-Column -SchemaName $SchemaName -TableName $TableName -Name $Name
+    $column = Get-Column -SchemaName $SchemaName -TableName $TableName -Name $Name -DatabaseName $DatabaseName
 
     $column | Should -Not -BeNullOrEmpty
 
@@ -113,8 +102,11 @@ function Assert-Column
     if( $Default )
     {
         $column.default_constraint | Should -Not -BeNullOrEmpty
-        $dfConstraintName = New-RTConstraintName -SchemaName $SchemaName -TableName $TableName -ColumnName $Name -Default
-        $column.default_constraint_name | Should -Be $dfConstraintName
+        if (-not $DefaultConstraintName)
+        {
+            $DefaultConstraintName = New-RTConstraintName -SchemaName $SchemaName -TableName $TableName -ColumnName $Name -Default
+        }
+        $column.default_constraint_name | Should -Be $DefaultConstraintName
         $column.default_constraint | Should -Match ('{0}' -f ([Text.RegularExpressions.Regex]::Escape($Default)))
     }
 

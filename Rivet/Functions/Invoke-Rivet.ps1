@@ -56,7 +56,6 @@ function Invoke-Rivet
         [Parameter(ParameterSetName='Redo')]
         [Parameter(ParameterSetName='DropDatabase')]
         [Parameter(ParameterSetName='Checkpoint')]
-        [Parameter(ParameterSetName='InitializeSchema')]
         [String[]] $Database,
 
         # The environment you're working in.  Controls which settings Rivet loads from the `rivet.json` configuration file.
@@ -69,7 +68,6 @@ function Invoke-Rivet
         [Parameter(ParameterSetName='Redo')]
         [Parameter(ParameterSetName='DropDatabase')]
         [Parameter(ParameterSetName='Checkpoint')]
-        [Parameter(ParameterSetName='InitializeSchema')]
         [String] $Environment,
 
         # The path to the Rivet configuration file.  Default behavior is to look in the current directory for a
@@ -83,21 +81,16 @@ function Invoke-Rivet
         [Parameter(ParameterSetName='Redo')]
         [Parameter(ParameterSetName='DropDatabase')]
         [Parameter(ParameterSetName='Checkpoint')]
-        [Parameter(ParameterSetName='InitializeSchema')]
         [String] $ConfigFilePath,
 
         # Drops the database(s) for the current environment when given. User will be prompted for confirmation when
         # used.
-        [Parameter(ParameterSetName='DropDatabase')]
+        [Parameter(Mandatory, ParameterSetName='DropDatabase')]
         [switch] $DropDatabase,
 
         # Checkpoints the current state of the database so that it can be re-created.
-        [Parameter(ParameterSetName='Checkpoint')]
-        [switch] $Checkpoint,
-
-        # Initializes the database, including baseline schema. Use the -Checkpoint switch to create a database baseline.
-        [Parameter(ParameterSetName='InitializeSchema')]
-        [switch] $InitializeSchema
+        [Parameter(Mandatory, ParameterSetName='Checkpoint')]
+        [switch] $Checkpoint
     )
 
     Set-StrictMode -Version 'Latest'
@@ -160,7 +153,7 @@ Found no databases to migrate. This can be a few things:
                 {
                     foreach( $databaseItem in $databaseList )
                     {
-                        $query = "drop database $($databaseItem.Name)"
+                        $query = "drop database [$($databaseItem.Name)]"
                         Invoke-Query -Session $session -Query $query
                     }
                 }

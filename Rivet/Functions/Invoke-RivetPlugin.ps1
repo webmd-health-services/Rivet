@@ -18,13 +18,15 @@ function Invoke-RivetPlugin
 
     Write-Timing -Message 'Invoke-RivetPlugin  BEGIN' -Indent
 
-
     try
     {
         $responders =
-            $plugins |
+            $Session.Plugins |
+            Where-Object { $_ } |
+            Where-Object { $_ | Get-Member -Name 'ScriptBlock' } |
             Where-Object {
-                $_.ScriptBlock.Attributes | Where-Object { $_ -is [Rivet.PluginAttribute] -and $_.RespondsTo -eq $Event }
+                $_.ScriptBlock.Attributes |
+                    Where-Object { $_ -is [Rivet.PluginAttribute] -and $_.RespondsTo -eq $Event }
             }
 
         if( -not $responders )

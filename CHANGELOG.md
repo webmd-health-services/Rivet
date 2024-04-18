@@ -3,6 +3,25 @@
 
 # Rivet Changelog
 
+## 0.23.0
+
+### Changed
+
+* `Export-Migration` no longer includes owner information when it exports `Add-Schema` operations (i.e. the `Owner`
+parameter is omitted). When exporting a schema to DDL in SQL Server Management Studio, the owner information is also
+omitted so we think this change should be OK.
+* Pushing to a database will now apply the baseline schema if it hasn't been applied.
+
+### Fixed
+
+* Baseline schema in schema.ps1 doesn't get applied when pushing migrations.
+* The `DropDatabase` command fails if the database name has non alphanumeric characters in its name.
+
+### Removed
+
+Removed the `InitializeSchema` switch from `rivet.ps1` and `Invoke-Rivet` as it was not actually implemented.
+
+
 ## 0.22.0
 
 > Released 6 Jul 2023

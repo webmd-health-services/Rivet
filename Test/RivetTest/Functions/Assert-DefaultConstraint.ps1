@@ -9,23 +9,25 @@ function Assert-DefaultConstraint
     param(
         [Parameter(ParameterSetName='NoName')]
         # The table's schema.  Default is `dbo`.
-        [string]$SchemaName = 'dbo',
+        [string] $SchemaName = 'dbo',
 
         [Parameter(Mandatory,ParameterSetName='NoName')]
         # The name of the table
-        [String]$TableName,
+        [String] $TableName,
 
         [Parameter(Mandatory,ParameterSetName='NoName')]
         # Array of Column Names
-        [String[]]$ColumnName,
+        [String[]] $ColumnName,
 
         [Parameter(Position=0)]
         # The name of the constraint.
-        [String]$Name,
+        [String] $Name,
 
         # The expected expression.
         [Alias('Definition')]
-        [String]$Is
+        [String] $Is,
+
+        [String] $DatabaseName
     )
 
     Set-StrictMode -Version Latest
@@ -36,7 +38,7 @@ function Assert-DefaultConstraint
         $Name = New-RTConstraintName -ColumnName $ColumnName -TableName $TableName -SchemaName $SchemaName -Default
     }
 
-    $constraint = Get-DefaultConstraint -Name $Name
+    $constraint = Get-DefaultConstraint -Name $Name -DatabaseName $DatabaseName
 
     $constraint | Should -Not -BeNullOrEmpty -Because ('Default constraint "{0}" not found.' -f $Name)
 

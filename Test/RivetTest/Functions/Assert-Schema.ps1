@@ -2,12 +2,11 @@
 function Assert-Schema
 {
     param(
-        [Parameter(Mandatory=$true)]
-        [string]
         # The schema name.
-        $Name,
+        [Parameter(Mandatory)]
+        [String] $Name,
 
-        $DatabaseName
+        [String] $DatabaseName
     )
 
     Set-StrictMode -Version 'Latest'

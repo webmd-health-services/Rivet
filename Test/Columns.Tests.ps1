@@ -146,36 +146,36 @@ N'
     }
 
     Update-Table -Name 'AddColumnDefaultsNotNull' -AddColumn {
-        VarChar 'varchar' -Size 20 -NotNull -Default "'varchar'" -Description 'varchar(20) not null'
-        VarChar 'varcharmax' -Max -NotNull -Default "'varcharmax'" -Description 'varchar(max) not null'
-        Char 'char' -Size 10 -NotNull -Default "'char'" -Description 'char(10) not null'
-        NChar 'nchar' -Size 35 -NotNull -Default "'nchar'" -Description 'nchar(35) not null'
-        NVarChar 'nvarchar' -Size 30 -NotNull -Default "'nvarchar'" -Description 'nvarchar(30) not null'
-        NVarChar 'nvarcharmax' -Max -NotNull -Default "'nvarcharmax'" -Description 'nvarchar(max) not null'
-        Binary 'binary' -Size 40 -NotNull -Default 1 -Description 'binary(40) not null'
-        VarBinary 'varbinary' -Size 45 -NotNull -Default 2 -Description 'varbinary(45) not null'
-        VarBinary 'varbinarymax' -Max -NotNull -Default 3 -Description 'varbinary(max) not null'
-        BigInt 'bigint' -NotNull -Default ([int64]::MaxValue) -Description 'bigint not null'
-        Int 'int' -NotNull -Default ([int]::MaxValue) -Description 'int not null'
-        SmallInt 'smallint' -NotNull -Default ([int16]::MaxValue) -Description 'smallint not null'
-        TinyInt 'tinyint' -NotNull -Default ([byte]::MaxValue) -Description 'tinyint not null'
-        Decimal 'decimal' -Precision 4 -NotNull -Default '3.33' -Description 'decimal(4) not null'
-        Decimal 'decimalwithscale' -Precision 5 -Scale 5 -NotNull -Default '4.44' -Description 'decimal(5,5) not null'
-        Bit 'bit' -NotNull -Default '1' -Description 'bit not null'
-        Money 'money' -NotNull -Default '6.66' -Description 'money not null'
-        SmallMoney 'smallmoney' -NotNull -Default '7.77' -Description 'smallmoney not null'
-        Float 'float' -NotNull -Default '8.88' -Description 'float not null'
-        Float 'floatwithprecision' -Precision 53 -NotNull -Default '9.99' -Description 'float(53) not null'
-        Real 'real' -NotNull -Default '10.10' -Description 'real not null'
-        Date 'date' -NotNull -Default 'getdate()' -Description 'date not null'
-        DateTime2 'datetime2' -NotNull -Default 'getdate()' -Description 'datetime2 not null'
-        DateTimeOffset 'datetimeoffset' -NotNull -Default 'getdate()' -Description 'datetimeoffset not null'
-        SmallDateTime 'smalldatetime' -NotNull -Default 'getdate()' -Description 'smalldatetime not null'
-        Time 'time' -NotNull -Default 'getdate()' -Description 'time not null'
-        UniqueIdentifier 'uniqueidentifier' -NotNull -Default 'newid()' -Description 'uniqueidentifier not null'
-        Xml 'xml' -XmlSchemaCollection 'EmptyXsd' -NotNull -Default "'<empty />'" -Description 'xml not null'
-        SqlVariant 'sql_variant' -NotNull -Default "'sql_variant'" -Description 'sql_variant not null'
-        HierarchyID 'hierarchyid' -NotNull -Default '0x11' -Description 'hierarchyid not null'
+        VarChar 'varchar' -Size 20 -NotNull -Default "'varchar'" -Description 'varchar(20) not null' -DefaultConstraintName 'DF_One'
+        VarChar 'varcharmax' -Max -NotNull -Default "'varcharmax'" -Description 'varchar(max) not null' -DefaultConstraintName 'DF_Two'
+        Char 'char' -Size 10 -NotNull -Default "'char'" -Description 'char(10) not null' -DefaultConstraintName 'DF_Three'
+        NChar 'nchar' -Size 35 -NotNull -Default "'nchar'" -Description 'nchar(35) not null' -DefaultConstraintName 'DF_Four'
+        NVarChar 'nvarchar' -Size 30 -NotNull -Default "'nvarchar'" -Description 'nvarchar(30) not null' -DefaultConstraintName 'DF_Five'
+        NVarChar 'nvarcharmax' -Max -NotNull -Default "'nvarcharmax'" -Description 'nvarchar(max) not null' -DefaultConstraintName 'DF_Six'
+        Binary 'binary' -Size 40 -NotNull -Default 1 -Description 'binary(40) not null' -DefaultConstraintName 'DF_Seven'
+        VarBinary 'varbinary' -Size 45 -NotNull -Default 2 -Description 'varbinary(45) not null' -DefaultConstraintName 'DF_Eight'
+        VarBinary 'varbinarymax' -Max -NotNull -Default 3 -Description 'varbinary(max) not null' -DefaultConstraintName 'DF_Nine'
+        BigInt 'bigint' -NotNull -Default ([int64]::MaxValue) -Description 'bigint not null' -DefaultConstraintName 'DF_Ten'
+        Int 'int' -NotNull -Default ([int]::MaxValue) -Description 'int not null' -DefaultConstraintName 'DF_Eleven'
+        SmallInt 'smallint' -NotNull -Default ([int16]::MaxValue) -Description 'smallint not null' -DefaultConstraintName 'DF_Twelve'
+        TinyInt 'tinyint' -NotNull -Default ([byte]::MaxValue) -Description 'tinyint not null' -DefaultConstraintName 'DF_Thirteen'
+        Decimal 'decimal' -Precision 4 -NotNull -Default '3.33' -Description 'decimal(4) not null' -DefaultConstraintName 'DF_Fourteen'
+        Decimal 'decimalwithscale' -Precision 5 -Scale 5 -NotNull -Default '4.44' -Description 'decimal(5,5) not null' -DefaultConstraintName 'DF_Fifteen'
+        Bit 'bit' -NotNull -Default '1' -Description 'bit not null' -DefaultConstraintName 'DF_Sixteen'
+        Money 'money' -NotNull -Default '6.66' -Description 'money not null' -DefaultConstraintName 'DF_Seventeen'
+        SmallMoney 'smallmoney' -NotNull -Default '7.77' -Description 'smallmoney not null' -DefaultConstraintName 'DF_Eighteen'
+        Float 'float' -NotNull -Default '8.88' -Description 'float not null' -DefaultConstraintName 'DF_Nineteen'
+        Float 'floatwithprecision' -Precision 53 -NotNull -Default '9.99' -Description 'float(53) not null' -DefaultConstraintName 'DF_Twenty'
+        Real 'real' -NotNull -Default '10.10' -Description 'real not null' -DefaultConstraintName 'DF_TwentyOne'
+        Date 'date' -NotNull -Default 'getdate()' -Description 'date not null' -DefaultConstraintName 'DF_TwentyTwo'
+        DateTime2 'datetime2' -NotNull -Default 'getdate()' -Description 'datetime2 not null' -DefaultConstraintName 'DF_TwentyThree'
+        DateTimeOffset 'datetimeoffset' -NotNull -Default 'getdate()' -Description 'datetimeoffset not null' -DefaultConstraintName 'DF_TwentyFour'
+        SmallDateTime 'smalldatetime' -NotNull -Default 'getdate()' -Description 'smalldatetime not null' -DefaultConstraintName 'DF_TwentyFive'
+        Time 'time' -NotNull -Default 'getdate()' -Description 'time not null' -DefaultConstraintName 'DF_TwentySix'
+        UniqueIdentifier 'uniqueidentifier' -NotNull -Default 'newid()' -Description 'uniqueidentifier not null' -DefaultConstraintName 'DF_TwentySeven'
+        Xml 'xml' -XmlSchemaCollection 'EmptyXsd' -NotNull -Default "'<empty />'" -Description 'xml not null' -DefaultConstraintName 'DF_TwentyEight'
+        SqlVariant 'sql_variant' -NotNull -Default "'sql_variant'" -Description 'sql_variant not null' -DefaultConstraintName 'DF_TwentyNine'
+        HierarchyID 'hierarchyid' -NotNull -Default '0x11' -Description 'hierarchyid not null' -DefaultConstraintName 'DF_Thirty'
     }
 }
 
@@ -192,36 +192,36 @@ function Pop-Migration()
         (Test-Table -Name 'AddColumnDefaultsNotNull') | Should -BeTrue
 
         $commonArgs = @{ TableName = 'AddColumnDefaultsNotNull'; NotNull = $true; }
-        Assert-Column -Name 'varchar' 'varchar' -Size 20 -Default "'varchar'" -Description 'varchar(20) not null' @commonArgs
-        Assert-Column -Name 'varcharmax' 'varchar' -Max -Default "'varcharmax'" -Description 'varchar(max) not null' @commonArgs
-        Assert-Column -Name 'char' 'char' -Size 10 -Default "'char'" -Description 'char(10) not null' @commonArgs
-        Assert-Column -Name 'nvarchar' 'nvarchar' -Size 30 -Default "'nvarchar'" -Description 'nvarchar(30) not null' @commonArgs
-        Assert-Column -Name 'nvarcharmax' 'nvarchar' -Max -Default "'nvarcharmax'" -Description 'nvarchar(max) not null' @commonArgs
-        Assert-Column -Name 'nchar' 'nchar' -Size 35 -Default "'nchar'" -Description 'nchar(35) not null' @commonArgs
-        Assert-Column -Name 'binary' 'binary' -Size 40 -Default 1 -Description 'binary(40) not null' @commonArgs
-        Assert-Column -Name 'varbinary' 'varbinary' -Size 45 -Default 2 -Description 'varbinary(45) not null' @commonArgs
-        Assert-Column -Name 'varbinarymax' 'varbinary' -Max -Default 3 -Description 'varbinary(max) not null' @commonArgs
-        Assert-Column -Name 'bigint' 'bigint' -Default ([int64]::MaxValue) -Description 'bigint not null' @commonArgs
-        Assert-Column -Name 'int' 'int' -Default ([int]::MaxValue) -Description 'int not null' @commonArgs
-        Assert-Column -Name 'smallint' 'smallint' -Default ([int16]::MaxValue) -Description 'smallint not null' @commonArgs
-        Assert-Column -Name 'tinyint' 'tinyint' -Default ([byte]::MaxValue) -Description 'tinyint not null' @commonArgs
-        Assert-Column -Name 'decimal' 'decimal' -Precision 4 -Default '3.33' -Description 'decimal(4) not null' @commonArgs
-        Assert-Column -Name 'decimalwithscale' 'decimal' -Precision 5 -Scale 5 -Default '4.44' -Description 'decimal(5,5) not null' @commonArgs
-        Assert-Column -Name 'bit' 'bit' -Default '1' -Description 'bit not null' @commonArgs
-        Assert-Column -Name 'money' 'money' -Default '6.66' -Description 'money not null' @commonArgs
-        Assert-Column -Name 'smallmoney' 'smallmoney' -Default '7.77' -Description 'smallmoney not null' @commonArgs
-        Assert-Column -Name 'float' 'float' -Default '8.88' -Description 'float not null' @commonArgs
-        Assert-Column -Name 'floatwithprecision' 'float' -Precision 53 -Default '9.99' -Description 'float(53) not null' @commonArgs
-        Assert-Column -Name 'real' 'real' -Default '10.10' -Description 'real not null' @commonArgs
-        Assert-Column -Name 'date' 'date' -Default 'getdate()' -Description 'date not null' @commonArgs
-        Assert-Column -Name 'datetime2' 'datetime2' -Default 'getdate()' -Description 'datetime2 not null' @commonArgs
-        Assert-Column -Name 'datetimeoffset' 'datetimeoffset' -Default 'getdate()' -Description 'datetimeoffset not null' @commonArgs
-        Assert-Column -Name 'smalldatetime' 'smalldatetime' -Default 'getdate()' -Description 'smalldatetime not null' @commonArgs
-        Assert-Column -Name 'time' 'time' -Default 'getdate()' -Description 'time not null' @commonArgs
-        Assert-Column -Name 'xml' 'xml' -Default "'<empty />'" -Description 'xml not null' @commonArgs
-        Assert-Column -Name 'sql_variant' 'sql_variant' -Default "'sql_variant'" -Description 'sql_variant not null' @commonArgs
-        Assert-Column -Name 'uniqueidentifier' 'uniqueidentifier' -Default 'newid()' -Description 'uniqueidentifier not null' @commonArgs
-        Assert-Column -Name 'hierarchyid' 'hierarchyid' -Default '0x11' -Description 'hierarchyid not null' @commonArgs
+        Assert-Column -Name 'varchar' 'varchar' -Size 20 -Default "'varchar'" -Description 'varchar(20) not null' -DefaultConstraintName 'DF_One' @commonArgs
+        Assert-Column -Name 'varcharmax' 'varchar' -Max -Default "'varcharmax'" -Description 'varchar(max) not null' -DefaultConstraintName 'DF_Two' @commonArgs
+        Assert-Column -Name 'char' 'char' -Size 10 -Default "'char'" -Description 'char(10) not null' -DefaultConstraintName 'DF_Three' @commonArgs
+        Assert-Column -Name 'nchar' 'nchar' -Size 35 -Default "'nchar'" -Description 'nchar(35) not null' -DefaultConstraintName 'DF_Four' @commonArgs
+        Assert-Column -Name 'nvarchar' 'nvarchar' -Size 30 -Default "'nvarchar'" -Description 'nvarchar(30) not null' -DefaultConstraintName 'DF_Five' @commonArgs
+        Assert-Column -Name 'nvarcharmax' 'nvarchar' -Max -Default "'nvarcharmax'" -Description 'nvarchar(max) not null' -DefaultConstraintName 'DF_Six' @commonArgs
+        Assert-Column -Name 'binary' 'binary' -Size 40 -Default 1 -Description 'binary(40) not null' -DefaultConstraintName 'DF_Seven' @commonArgs
+        Assert-Column -Name 'varbinary' 'varbinary' -Size 45 -Default 2 -Description 'varbinary(45) not null' -DefaultConstraintName 'DF_Eight' @commonArgs
+        Assert-Column -Name 'varbinarymax' 'varbinary' -Max -Default 3 -Description 'varbinary(max) not null' -DefaultConstraintName 'DF_Nine' @commonArgs
+        Assert-Column -Name 'bigint' 'bigint' -Default ([int64]::MaxValue) -Description 'bigint not null' -DefaultConstraintName 'DF_Ten' @commonArgs
+        Assert-Column -Name 'int' 'int' -Default ([int]::MaxValue) -Description 'int not null' -DefaultConstraintName 'DF_Eleven' @commonArgs
+        Assert-Column -Name 'smallint' 'smallint' -Default ([int16]::MaxValue) -Description 'smallint not null' -DefaultConstraintName 'DF_Twelve' @commonArgs
+        Assert-Column -Name 'tinyint' 'tinyint' -Default ([byte]::MaxValue) -Description 'tinyint not null' -DefaultConstraintName 'DF_Thirteen' @commonArgs
+        Assert-Column -Name 'decimal' 'decimal' -Precision 4 -Default '3.33' -Description 'decimal(4) not null' -DefaultConstraintName 'DF_Fourteen' @commonArgs
+        Assert-Column -Name 'decimalwithscale' 'decimal' -Precision 5 -Scale 5 -Default '4.44' -Description 'decimal(5,5) not null' -DefaultConstraintName 'DF_Fifteen' @commonArgs
+        Assert-Column -Name 'bit' 'bit' -Default '1' -Description 'bit not null' -DefaultConstraintName 'DF_Sixteen' @commonArgs
+        Assert-Column -Name 'money' 'money' -Default '6.66' -Description 'money not null' -DefaultConstraintName 'DF_Seventeen' @commonArgs
+        Assert-Column -Name 'smallmoney' 'smallmoney' -Default '7.77' -Description 'smallmoney not null' -DefaultConstraintName 'DF_Eighteen' @commonArgs
+        Assert-Column -Name 'float' 'float' -Default '8.88' -Description 'float not null' -DefaultConstraintName 'DF_Nineteen' @commonArgs
+        Assert-Column -Name 'floatwithprecision' 'float' -Precision 53 -Default '9.99' -Description 'float(53) not null' -DefaultConstraintName 'DF_Twenty' @commonArgs
+        Assert-Column -Name 'real' 'real' -Default '10.10' -Description 'real not null' -DefaultConstraintName 'DF_TwentyOne' @commonArgs
+        Assert-Column -Name 'date' 'date' -Default 'getdate()' -Description 'date not null' -DefaultConstraintName 'DF_TwentyTwo' @commonArgs
+        Assert-Column -Name 'datetime2' 'datetime2' -Default 'getdate()' -Description 'datetime2 not null' -DefaultConstraintName 'DF_TwentyThree' @commonArgs
+        Assert-Column -Name 'datetimeoffset' 'datetimeoffset' -Default 'getdate()' -Description 'datetimeoffset not null' -DefaultConstraintName 'DF_TwentyFour' @commonArgs
+        Assert-Column -Name 'smalldatetime' 'smalldatetime' -Default 'getdate()' -Description 'smalldatetime not null' -DefaultConstraintName 'DF_TwentyFive' @commonArgs
+        Assert-Column -Name 'time' 'time' -Default 'getdate()' -Description 'time not null' -DefaultConstraintName 'DF_TwentySix' @commonArgs
+        Assert-Column -Name 'uniqueidentifier' 'uniqueidentifier' -Default 'newid()' -Description 'uniqueidentifier not null' -DefaultConstraintName 'DF_TwentySeven' @commonArgs
+        Assert-Column -Name 'xml' 'xml' -Default "'<empty />'" -Description 'xml not null' -DefaultConstraintName 'DF_TwentyEight' @commonArgs
+        Assert-Column -Name 'sql_variant' 'sql_variant' -Default "'sql_variant'" -Description 'sql_variant not null' -DefaultConstraintName 'DF_TwentyNine' @commonArgs
+        Assert-Column -Name 'hierarchyid' 'hierarchyid' -Default '0x11' -Description 'hierarchyid not null' -DefaultConstraintName 'DF_Thirty' @commonArgs
     }
 
     It 'should create identities' {
@@ -575,7 +575,7 @@ function Push-Migration
 {
     Add-Table 'CustomColumns' {
         New-Column 'ID' 'int' -Identity -Seed 101 -Increment 11 -NotForReplication
-        New-Column 'one' 'varchar' -Collation 'Korean_100_CS_AS_KS_WS_SC' -Default '''fubar''' -Description 'snafu'
+        New-Column 'one' 'varchar' -Collation 'Korean_100_CS_AS_KS_WS_SC' -Default '''fubar''' -Description 'snafu' -DefaultConstraintName 'DF_CustomColumns_one'
         New-Column 'two' 'varchar' -Size 50 -NotNull
         New-Column 'three' 'varchar' -Size 51 -Sparse
         New-Column 'four' 'decimal' -Precision 4 -Scale 2 -NotNull
@@ -604,10 +604,10 @@ function Pop-Migration
     Remove-Table 'CustomColumns'
 }
 '@
-        WhenMigrating 'Columns'
+        WhenMigrating -Push 'Columns'
         Assert-Table 'CustomColumns'
         Assert-Column -TableName 'CustomColumns' -Name 'ID' -DataType 'int' -NotNull -Seed 101 -Increment 11 -NotForReplication
-        Assert-Column -TableName 'CustomColumns' -Name 'one' -DataType 'varchar' -Size 1 -Collation 'Korean_100_CS_AS_KS_WS_SC' -Default 'fubar' -Description 'snafu'
+        Assert-Column -TableName 'CustomColumns' -Name 'one' -DataType 'varchar' -Size 1 -Collation 'Korean_100_CS_AS_KS_WS_SC' -Default 'fubar' -Description 'snafu' -DefaultConstraintName 'DF_CustomColumns_one'
         Assert-Column -TableName 'CustomColumns' -Name 'two' -DataType 'varchar' -Size 50 -NotNull
         Assert-Column -TableName 'CustomColumns' -Name 'three' -DataType 'varchar' -Size 51 -Sparse
         Assert-Column -TableName 'CustomColumns' -Name 'four' -DataType 'decimal' -Precision 4 -Scale 2 -NotNull
