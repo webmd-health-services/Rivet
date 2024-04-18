@@ -21,8 +21,10 @@ Describe 'Add-DefaultConstraint' {
             Int 'Default Constraint Me' -NotNull
         }
 
-        Add-DefaultConstraint -TableName 'AddDefaultConstraint' -ColumnName 'Default Constraint Me' -Expression 101
-
+        Add-DefaultConstraint -TableName 'AddDefaultConstraint' `
+                              -ColumnName 'Default Constraint Me' `
+                              -Expression 101 `
+                              -Name 'DF_AddDefaultConstraint_Default Constraint Me'
     }
 
     function Pop-Migration()
@@ -32,8 +34,7 @@ Describe 'Add-DefaultConstraint' {
 '@ | New-TestMigration -Name 'AddDefaultConstraint'
 
         Invoke-RTRivet -Push 'AddDefaultConstraint'
-        Assert-DefaultConstraint -TableName 'AddDefaultConstraint' -ColumnName 'Default Constraint Me'
-
+        Assert-DefaultConstraint -Name 'DF_AddDefaultConstraint_Default Constraint Me'
     }
 
     It 'should add default constraint with values' {
@@ -44,7 +45,11 @@ Describe 'Add-DefaultConstraint' {
             Int 'DefaultConstraintMe' -NotNull
         }
 
-        Add-DefaultConstraint -TableName 'AddDefaultConstraint' -ColumnName 'DefaultConstraintMe' -Expression 101 -WithValues
+        Add-DefaultConstraint -TableName 'AddDefaultConstraint' `
+                              -ColumnName 'DefaultConstraintMe' `
+                              -Expression 101 `
+                              -WithValues `
+                              -Name 'DF_AddDefaultConstraint_DefaultConstraintMe'
     }
 
     function Pop-Migration()
@@ -54,7 +59,7 @@ Describe 'Add-DefaultConstraint' {
 '@ | New-TestMigration -Name 'AddDefaultConstraintWithValues'
 
         Invoke-RTRivet -Push 'AddDefaultConstraintWithValues'
-        Assert-DefaultConstraint -TableName 'AddDefaultConstraint' -ColumnName 'DefaultConstraintMe'
+        Assert-DefaultConstraint -Name 'DF_AddDefaultConstraint_DefaultConstraintMe'
         $Global:Error.Count | Should -Be 0
     }
 
@@ -67,7 +72,10 @@ Describe 'Add-DefaultConstraint' {
             Int 'DefaultConstraintMe' -NotNull
         }
 
-        Add-DefaultConstraint -TableName 'Add-DefaultConstraint' -ColumnName 'DefaultConstraintMe' -Expression 101
+        Add-DefaultConstraint -TableName 'Add-DefaultConstraint' `
+                              -ColumnName 'DefaultConstraintMe' `
+                              -Expression 101 `
+                              -Name 'DF_Add-DefaultConstraint_DefaultConstraintMe'
 
     }
 
@@ -78,7 +86,7 @@ Describe 'Add-DefaultConstraint' {
 '@ | New-TestMigration -Name 'AddDefaultConstraintQuotesName'
 
         Invoke-RTRivet -Push 'AddDefaultConstraintQuotesName'
-        Assert-DefaultConstraint -TableName 'Add-DefaultConstraint' -ColumnName 'DefaultConstraintMe'
+        Assert-DefaultConstraint -Name 'DF_Add-DefaultConstraint_DefaultConstraintMe'
 
     }
 
@@ -90,7 +98,10 @@ Describe 'Add-DefaultConstraint' {
             Int 'DefaultConstraintMe' -NotNull
         }
 
-        Add-DefaultConstraint 'AddDefaultConstraint' 'DefaultConstraintMe' 101
+        Add-DefaultConstraint 'AddDefaultConstraint' `
+                              'DefaultConstraintMe' `
+                              101 `
+                              -Name 'DF_AddDefaultConstraint_DefaultConstraintMe'
 
     }
 
@@ -101,8 +112,7 @@ Describe 'Add-DefaultConstraint' {
 '@ | New-TestMigration -Name 'AddDefaultConstraintOptionalParameterNames'
 
         Invoke-RTRivet -Push 'AddDefaultConstraintOptionalParameterNames'
-        Assert-DefaultConstraint -TableName 'AddDefaultConstraint' -ColumnName 'DefaultConstraintMe'
-
+        Assert-DefaultConstraint -Name 'DF_AddDefaultConstraint_DefaultConstraintMe'
     }
 
     It 'should use the user''s constraint name' {
