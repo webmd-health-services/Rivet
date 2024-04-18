@@ -6,242 +6,321 @@ BeforeAll {
     Set-StrictMode -Version 'Latest'
 
     & (Join-Path -Path $PSScriptRoot -ChildPath 'Initialize-Test.ps1' -Resolve)
+    Remove-Item -Path 'alias:GivenMigration'
+    Remove-Item -Path 'alias:ThenTable'
+    Remove-Item -Path 'alias:ThenDefaultConstraint'
+
+    $script:testDirPath = $null
+    $script:testNum = 0
+    $script:rivetJsonPath = $null
+    $script:dbName = 'Update-Table'
+
+    function GivenMigration
+    {
+        param(
+            [Parameter(Mandatory, Position=0)]
+            [String] $Named,
+
+            [Parameter(Mandatory, Position=1)]
+            [String] $WithContent
+        )
+
+        $WithContent | New-TestMigration -Name $Named -ConfigFilePath $script:rivetJsonPath -DatabaseName $script:dbName
+    }
+
+    function ThenColumn
+    {
+        param(
+            [String] $Named,
+
+            [String] $OnTable,
+
+            [hashtable] $Is
+        )
+
+        Assert-Column -Name $Named -TableName $OnTable -DatabaseName $script:dbName @Is
+    }
+
+    function ThenDefaultConstraint
+    {
+        param(
+            [String] $Named,
+
+            [String] $Is
+        )
+
+        Assert-DefaultConstraint -Name $Named -Is $Is -DatabaseName $script:dbName
+    }
+
+    function ThenTable
+    {
+        param(
+            [Parameter(Mandatory, Position=0)]
+            [String] $Named,
+
+            [switch] $Not,
+
+            [Parameter(Mandatory)]
+            [switch] $Exists
+        )
+
+        $exists = Test-Table -Name $Named -DatabaseName $script:dbName
+
+        if ($Not)
+        {
+            $exists | Should -BeFalse
+        }
+        else
+        {
+            $exists | Should -BeTrue
+        }
+    }
+
+    function WhenPushing
+    {
+        Invoke-Rivet -Push -ConfigFilePath $script:rivetJsonPath
+    }
 }
 
 Describe 'Update-Table' {
+    BeforeAll {
+        Remove-RivetTestDatabase -Name $script:dbName
+    }
+
     BeforeEach {
-        Start-RivetTest
+        $script:testDirPath = Join-Path -Path $TestDrive -ChildPath ($script:testNum++)
+        New-Item -Path $script:testDirPath -ItemType Directory
+        $script:rivetJsonPath = GivenRivetJsonFile -In $script:testDirPath -Database $script:dbName -PassThru
+        $Global:Error.Clear()
     }
 
     AfterEach {
-        Stop-RivetTest
+        Invoke-Rivet -Pop -All -Force -ConfigFilePath $script:rivetJsonPath
     }
 
     It 'should update column from int to bigint with description' {
-        @'
-function Push-Migration
-{
-    Add-Table -Name 'Foobar' -Column {
-        Int 'id' -Description 'Foo'
-    } -Option 'data_compression = none'
+        GivenMigration 'UpdateDateColumnWithDescription' @'
+            function Push-Migration
+            {
+                Add-Table -Name 'Foobar' -Column {
+                    Int 'id' -Description 'Foo'
+                } -Option 'data_compression = none'
 
-    Update-Table -Name 'Foobar' -UpdateColumn {
-        BigInt 'id' -Description 'Bar'
-    }
-}
+                Update-Table -Name 'Foobar' -UpdateColumn {
+                    BigInt 'id' -Description 'Bar'
+                }
+            }
 
-function Pop-Migration
-{
-    Remove-Table 'Foobar'
-}
+            function Pop-Migration
+            {
+                Remove-Table 'Foobar'
+            }
+'@
 
-'@ | New-TestMigration -Name 'UpdateDateColumnWithDescription'
-
-        Invoke-RTRivet -Push 'UpdateDateColumnWithDescription'
-
-        Assert-Table 'Foobar'
-        Assert-Column -Name 'id' -DataType 'BigInt' -TableName 'Foobar' -Description 'Bar'
+        WhenPushing
+        ThenTable 'Foobar' -Exists
+        ThenColumn 'id' -OnTable 'Foobar' -Is @{ DataType = 'BigInt' ; Description = 'Bar' }
     }
 
     It 'should update column from binary to varbinary' {
-        @'
-function Push-Migration
-{
-    Add-Table -Name 'Foobar' -Column {
-        Binary 'id' -NotNull -Size 50
-    }
+        GivenMigration 'ShouldUpdateColumnFromBinarytoVarBinary' @'
+            function Push-Migration
+            {
+                Add-Table -Name 'Foobar' -Column {
+                    Binary 'id' -NotNull -Size 50
+                }
 
-    Update-Table -Name 'Foobar' -UpdateColumn {
-        VarBinary 'id' -Size 40 -Sparse
-    }
-}
+                Update-Table -Name 'Foobar' -UpdateColumn {
+                    VarBinary 'id' -Size 40 -Sparse
+                }
+            }
 
-function Pop-Migration
-{
-    Remove-Table 'Foobar'
-}
+            function Pop-Migration
+            {
+                Remove-Table 'Foobar'
+            }
+'@
 
-'@ | New-TestMigration -Name 'ShouldUpdateColumnFromBinarytoVarBinary'
-
-        Invoke-RTRivet -Push 'ShouldUpdateColumnFromBinarytoVarBinary'
-
-        Assert-Table 'Foobar'
-        Assert-Column -Name 'id' -DataType 'VarBinary' -TableName 'Foobar' -Sparse -Size 40
+        WhenPushing
+        ThenTable 'Foobar' -Exist
+        ThenColumn 'id' -OnTable 'Foobar' -Is @{ DataType = 'VarBinary' ; Sparse = $true ; Size = 40 }
     }
 
     It 'should update column from nchar to nvarchar' {
-        @'
-function Push-Migration
-{
-    Add-Table -Name 'Foobar' -Column {
-        NChar 'id' 30
-    }
+        GivenMigration 'ShouldUpdateColumnFromNChartoNVarChar' @'
+            function Push-Migration
+            {
+                Add-Table -Name 'Foobar' -Column {
+                    NChar 'id' 30
+                }
 
-    Update-Table -Name 'Foobar' -UpdateColumn {
-        NVarChar 'id' -Max -Collation "Chinese_Taiwan_Stroke_CI_AS" -NotNull
-    }
-}
+                Update-Table -Name 'Foobar' -UpdateColumn {
+                    NVarChar 'id' -Max -Collation "Chinese_Taiwan_Stroke_CI_AS" -NotNull
+                }
+            }
 
-function Pop-Migration
-{
-    Remove-Table 'Foobar'
-}
+            function Pop-Migration
+            {
+                Remove-Table 'Foobar'
+            }
+'@
 
-'@ | New-TestMigration -Name 'ShouldUpdateColumnFromNChartoNVarChar'
+        WhenPushing
 
-        Invoke-RTRivet -Push 'ShouldUpdateColumnFromNChartoNVarChar'
-
-        Assert-Table 'Foobar'
-        Assert-Column -Name 'id' -DataType 'NVarChar' -TableName 'Foobar' -NotNull -Max -Collation "Chinese_Taiwan_Stroke_CI_AS"
+        ThenTable 'Foobar' -Exists
+        ThenColumn 'id' -OnTable 'Foobar' -Is @{
+            DataType = 'NVarChar'
+            NotNull = $true;
+            Max = $true;
+            Collation = "Chinese_Taiwan_Stroke_CI_AS";
+        }
     }
 
     It 'should update column from nvarchar to xml' {
+        GivenMigration 'ShouldUpdateColumnFromNVarChartoXml'@"
+            function Push-Migration
+            {
+                    Invoke-Ddl -Query @'
+                        create xml schema collection EmptyXsd as
+                        N'
+                        <xsd:schema targetNamespace="http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelManuInstructions"
+                        xmlns          ="http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelManuInstructions"
+                        elementFormDefault="qualified"
+                        attributeFormDefault="unqualified"
+                        xmlns:xsd="http://www.w3.org/2001/XMLSchema" >
 
-@"
-function Push-Migration
-{
-         Invoke-Ddl -Query @'
-create xml schema collection EmptyXsd as
-N'
-<xsd:schema targetNamespace="http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelManuInstructions"
-   xmlns          ="http://schemas.microsoft.com/sqlserver/2004/07/adventure-works/ProductModelManuInstructions"
-   elementFormDefault="qualified"
-   attributeFormDefault="unqualified"
-   xmlns:xsd="http://www.w3.org/2001/XMLSchema" >
+                            <xsd:element  name="root" />
 
-    <xsd:element  name="root" />
-
-</xsd:schema>
-';
+                        </xsd:schema>
+                        ';
 '@
 
-    Add-Table -Name 'WithXmlContent' -Column {
-        VarChar 'One' -Max -NotNull
-        Xml 'Two' -XmlSchemaCollection 'EmptyXsd'
-    }
+                Add-Table -Name 'WithXmlContent' -Column {
+                    VarChar 'One' -Max -NotNull
+                    Xml 'Two' -XmlSchemaCollection 'EmptyXsd'
+                }
 
-    Update-Table -Name 'WithXmlContent' -UpdateColumn{
-        Xml 'Two' -XmlSchemaCollection 'EmptyXsd'
-    }
-}
+                Update-Table -Name 'WithXmlContent' -UpdateColumn{
+                    Xml 'Two' -XmlSchemaCollection 'EmptyXsd'
+                }
+            }
 
-function Pop-Migration
-{
-    Remove-Table 'WithXmlContent'
-    Invoke-Ddl 'drop xml schema collection EmptyXsd'
-}
-"@ | New-TestMigration -Name 'ShouldUpdateColumnFromNVarChartoXml'
+            function Pop-Migration
+            {
+                Remove-Table 'WithXmlContent'
+                Invoke-Ddl 'drop xml schema collection EmptyXsd'
+            }
+"@
 
-        Invoke-RTRivet -Push 'ShouldUpdateColumnFromNVarChartoXml'
+        WhenPushing
 
-        Assert-Table 'WithXmlContent'
-        Assert-Column -Name 'Two' -DataType 'Xml' -TableName 'WithXmlContent'
+        ThenTable 'WithXmlContent' -Exists
+        ThenColumn -Name 'Two' -OnTable 'WithXmlContent' -Is @{ DataType = 'Xml' }
     }
 
     It 'should update column after add column in update table' {
-        @'
-function Push-Migration
-{
-    Add-Table -Name 'Foobar' -Column {
-        Int 'id' -Description 'Foo'
-    }
+        GivenMigration 'UpdateDateColumnWithDescription' @'
+            function Push-Migration
+            {
+                Add-Table -Name 'Foobar' -Column {
+                    Int 'id' -Description 'Foo'
+                }
 
-    Update-Table -Name 'Foobar' -AddColumn {
-        VarChar 'id2' -Max -Description 'Foo2'
-    }
+                Update-Table -Name 'Foobar' -AddColumn {
+                    VarChar 'id2' -Max -Description 'Foo2'
+                }
 
-    Update-Table -Name 'FooBar' -UpdateColumn {
-        BigInt 'id2' -Description 'Bar'
-    }
+                Update-Table -Name 'FooBar' -UpdateColumn {
+                    BigInt 'id2' -Description 'Bar'
+                }
 
-    Update-Table -Name 'Foobar' -UpdateColumn {
-        VarChar 'id' -Max -Description 'Bar2'
-    } -AddColumn {
-        BigInt 'id3' -Description 'Foo'
-    }
-}
+                Update-Table -Name 'Foobar' -UpdateColumn {
+                    VarChar 'id' -Max -Description 'Bar2'
+                } -AddColumn {
+                    BigInt 'id3' -Description 'Foo'
+                }
+            }
 
-function Pop-Migration
-{
-    Remove-Table 'Foobar'
-}
+            function Pop-Migration
+            {
+                Remove-Table 'Foobar'
+            }
+'@
 
-'@ | New-TestMigration -Name 'UpdateDateColumnWithDescription'
+        WhenPushing
 
-        Invoke-RTRivet -Push 'UpdateDateColumnWithDescription'
-
-        Assert-Table 'Foobar'
-        Assert-Column -Name 'id' -DataType 'VarChar' -TableName 'Foobar' -Max -Description 'Bar2'
-        Assert-Column -Name 'id2' -DataType 'BigInt' -TableName 'Foobar' -Description 'Bar'
-        Assert-Column -Name 'id3' -DataType 'BigInt' -TableName 'Foobar' -Description 'Foo'
+        ThenTable 'Foobar' -Exists
+        ThenColumn 'id' -OnTable 'Foobar' -Is @{ DataType = 'VarChar' ; Max = $true ; Description = 'Bar2' }
+        ThenColumn 'id2' -OnTable 'Foobar' -Is @{ DataType = 'BigInt' ; Description = 'Bar' }
+        ThenColumn 'id3' -OnTable 'Foobar' -Is @{ DataType = 'BigInt' ; Description = 'Foo' }
     }
 
     It 'should use custom constraint name' {
         GivenMigration -Named 'CustomConstraintNames' @'
-function Push-Migration
-{
-    Add-Table 'CustomConstraintNames' {
-        int 'ID'
-    }
+            function Push-Migration
+            {
+                Add-Table 'CustomConstraintNames' {
+                    int 'ID'
+                }
 
-    Update-Table 'CustomConstraintNames' -AddColumn {
-        int 'column2' -NotNull -Default 2 -DefaultConstraintName 'DF_Two'
-        int 'column3' -Identity
-    }
-}
+                Update-Table 'CustomConstraintNames' -AddColumn {
+                    int 'column2' -NotNull -Default 2 -DefaultConstraintName 'DF_Two'
+                    int 'column3' -Identity
+                }
+            }
 
-function Pop-Migration
-{
-    Remove-Table 'CustomConstraintNames'
-}
+            function Pop-Migration
+            {
+                Remove-Table 'CustomConstraintNames'
+            }
 '@
-        WhenMigrating 'CustomConstraintNames'
+        WhenPushing
         ThenDefaultConstraint 'DF_Two' -Is 'snafu'
     }
 
     It 'does not add default constraint to an existing column' {
-        GivenMigration -Named 'DefaultConstraintOnExistingColumn' @'
-function Push-Migration
-{
-    Add-Table 'DefaultConstraintOnExistingColumn' {
-        int 'column1'
-    }
+        GivenMigration 'DefaultConstraintOnExistingColumn' @'
+            function Push-Migration
+            {
+                Add-Table 'DefaultConstraintOnExistingColumn' {
+                    int 'column1'
+                }
 
-    Update-Table 'DefaultConstraintOnExistingColumn' -UpdateColumn {
-        int 'column1' -NotNull -Default 2 -DefaultConstraintName 'DF_Two'
-    }
-}
+                Update-Table 'DefaultConstraintOnExistingColumn' -UpdateColumn {
+                    int 'column1' -NotNull -Default 2 -DefaultConstraintName 'DF_Two'
+                }
+            }
 
-function Pop-Migration
-{
-    Remove-Table 'DefaultConstraintOnExistingColumn'
-}
+            function Pop-Migration
+            {
+                Remove-Table 'DefaultConstraintOnExistingColumn'
+            }
 '@
-        { WhenMigrating 'DefaultConstraintOnExistingColumn' } | Should -Throw
-        ThenWroteError 'Use the Add-DefaultConstraint operation'
+        { WhenPushing } | Should -Throw
+        ThenError -Matches 'Use the Add-DefaultConstraint operation'
         ThenTable 'DefaultConstraintOnExistingColumn' -Not -Exists
     }
 
     It 'rejects adding an idenity to an existng column' {
         GivenMigration -Named 'IdentityOnExistingColumn' @'
-function Push-Migration
-{
-    Add-Table 'IdentityOnExistingColumn' {
-        int 'column1'
-    }
+            function Push-Migration
+            {
+                Add-Table 'IdentityOnExistingColumn' {
+                    int 'column1'
+                }
 
-    Update-Table 'IdentityOnExistingColumn' -UpdateColumn {
-        int 'column1' -Identity
-    }
-}
+                Update-Table 'IdentityOnExistingColumn' -UpdateColumn {
+                    int 'column1' -Identity
+                }
+            }
 
-function Pop-Migration
-{
-    Remove-Table 'IdentityOnExistingColumn'
-}
+            function Pop-Migration
+            {
+                Remove-Table 'IdentityOnExistingColumn'
+            }
 '@
-        { WhenMigrating 'IdentityOnExistingColumn' } | Should -Throw
-        ThenWroteError 'identity'
+        { WhenPushing } | Should -Throw
+        ThenError -Matches 'identity'
         ThenTable 'IdentityOnExistingColumn' -Not -Exists
     }
 }

@@ -2,12 +2,14 @@
 function Test-Table
 {
     param(
-        $Name,
-        
-        [Parameter()]
-        [string]
+        [Parameter(Mandatory)]
+        [String] $Name,
+
         # The schema name of the table.  Defaults to `dbo`.
-        $SchemaName = 'dbo'
+        [String] $SchemaName = 'dbo',
+
+        [String] $DatabaseName
     )
-    return Test-DatabaseObject -Table -Name $Name -SchemaName $SchemaName
+
+    return Test-DatabaseObject -Table -Name $Name -SchemaName $SchemaName -DatabaseName $DatabaseName
 }

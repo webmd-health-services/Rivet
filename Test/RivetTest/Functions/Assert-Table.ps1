@@ -12,12 +12,14 @@ function Assert-Table
 
         [switch]$Not,
 
-        [switch]$Exists
+        [switch]$Exists,
+
+        [String] $DatabaseName
     )
 
     Set-StrictMode -Version Latest
 
-    $table = Get-Table -Name $Name -SchemaName $SchemaName | Select-Object -First 1
+    $table = Get-Table -Name $Name -SchemaName $SchemaName -DatabaseName $DatabaseName | Select-Object -First 1
 
     if( $Not -and $Exists )
     {

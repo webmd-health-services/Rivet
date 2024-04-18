@@ -71,6 +71,7 @@
         'Assert-Column',
         'Assert-DataType',
         'Assert-DefaultConstraint',
+        'Assert-Error',
         'Assert-ForeignKey',
         'Assert-Index',
         'Assert-PrimaryKey',
@@ -115,6 +116,7 @@
         'New-RTConstraintName',
         'New-Database',
         'New-File',
+        'New-RivetJsonFile',
         'New-TestMigration',
         'New-SqlConnection',
         'Remove-RivetTestDatabase',
@@ -168,7 +170,10 @@
     AliasesToExport = @(
         'GivenFile',
         'GivenMigration',
+        'GivenRivetJson',
+        'GivenRivetJsonFile',
         'ThenDefaultConstraint',
+        'ThenError',
         'ThenTable',
         'ThenWroteError',
         'WhenMigrating'

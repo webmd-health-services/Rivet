@@ -3,7 +3,7 @@ function New-TestMigration
 {
     [CmdletBinding(DefaultParameterSetName='NamedMigration')]
     param(
-        [Parameter(Mandatory,ValueFromPipeline,Position=0)]
+        [Parameter(Mandatory, ValueFromPipeline, Position=0)]
         # The migration contents to output.
         [String]$InputObject,
 
@@ -18,7 +18,9 @@ function New-TestMigration
         [String]$ConfigFilePath = $RTConfigFilePath,
 
         [Parameter(Mandatory, ParameterSetName='SchemaPs1')]
-        [switch] $AsCheckpoint
+        [switch] $AsCheckpoint,
+
+        [UInt64] $WithID
     )
 
     Set-StrictMode -Version 'Latest'
@@ -33,6 +35,10 @@ function New-TestMigration
     if ($AsCheckpoint)
     {
         $migrationFileName = 'schema.ps1'
+    }
+    elseif ($PSBoundParameters.ContainsKey('WithID'))
+    {
+        $migrationFileName = "$('{0:00000000000000}' -f $WithID)_${Named}.ps1"
     }
     else
     {

@@ -4,267 +4,387 @@ Set-StrictMode -Version 'Latest'
 
 BeforeAll {
     Set-StrictMode -Version 'Latest'
+
     & (Join-Path -Path $PSScriptRoot -ChildPath 'Initialize-Test.ps1' -Resolve)
+    Remove-Item -Path 'alias:GivenMigration'
+    Remove-Item -Path 'alias:ThenTable'
+
+    $script:testDirPath = $null
+    $script:testNum = 0
+    $script:rivetJsonPath = $null
+    $script:dbName = 'Pop-Migration'
 
     $script:migration1 = $null
     $script:migration2 = $null
     $script:migration3 = $null
     $script:migration4 = $null
-}
 
-Describe 'Pop-Migration' {
-    BeforeEach {
-        Start-RivetTest
-        $Global:Error.Clear()
+    $script:migrationCount = 0
 
-        $script:migration1 = @'
-    function Push-Migration
+    function GivenMigration
     {
-        Add-Table 'Migration1' { int ID -Identity }
+        param(
+            [Parameter(Mandatory, Position=0)]
+            [String] $Named,
+
+            [Parameter(Mandatory, Position=1)]
+            [String] $WithContent
+        )
+
+        $WithContent | New-TestMigration -Name $Named -ConfigFilePath $script:rivetJsonPath -DatabaseName $script:dbName
     }
-    function Pop-Migration
+
+    function ThenMigrationsTable
     {
-        Remove-Table 'Migration1'
-    }
-'@ | New-TestMigration -Name 'Migration1'
+        [CmdletBinding()]
+        param(
+            [UInt32] $HasCount,
 
-        $script:migration2 = @'
-    function Push-Migration
-    {
-        Add-Table 'Migration2' { int ID -Identity }
-    }
-    function Pop-Migration
-    {
-        Remove-Table 'Migration2'
-    }
-'@ | New-TestMigration -Name 'Migration2'
+            [switch] $IsNotEmpty,
 
-        $script:migration3 = @'
-    function Push-Migration
-    {
-        Add-Table 'Migration3' { int ID -Identity }
-    }
-    function Pop-Migration
-    {
-        Remove-Table 'Migration3'
-    }
-'@ | New-TestMigration -Name 'Migration3'
+            [switch] $IsEmpty,
 
-        $script:migration4 = @'
-    function Push-Migration
-    {
-        Add-Table 'Migration4' { int ID -Identity }
-    }
-    function Pop-Migration
-    {
-        Remove-Table 'Migration4'
-    }
-'@ | New-TestMigration -Name 'Migration4'
+            [UInt32] $Lost
+        )
 
-        Invoke-RTRivet -Push
+        $count = Measure-Migration -InDatabase $script:dbName
 
-        $expectedCount = Measure-MigrationScript
-        (Measure-Migration) | Should -Be $expectedCount
-    }
+        if ($PSBoundParameters.ContainsKey('HasCount'))
+        {
+            $count | Should -Be $HasCount
+        }
 
-    AfterEach {
-        Stop-RivetTest
-    }
+        if ($PSBoundParameters.ContainsKey('IsNotEmpty'))
+        {
+            $count | Should -BeGreaterThan 0
+        }
 
-    It 'should pop all migrations' {
-        $migrationCount = Measure-Migration
-        ($migrationCount -gt 1) | Should -BeTrue
+        if ($PSBoundParameters.ContainsKey('IsEmpty'))
+        {
+            $count | Should -Be 0
+        }
 
-        Invoke-RTRivet -Pop $migrationCount
-
-        (Measure-Migration) | Should -Be 0
-
-        Get-MigrationScript | ForEach-Object {
-
-            $id,$name = $_.BaseName -split '_'
-
-            (Test-Table -Name $name) | Should -BeFalse
+        if ($PSBoundParameters.ContainsKey('Lost'))
+        {
+            $count | Should -Be ($script:migrationCount - $Lost)
         }
     }
 
+    function ThenTable
+    {
+        param(
+            [Parameter(Mandatory, Position=0)]
+            [String] $Named,
+
+            [switch] $Not,
+
+            [Parameter(Mandatory)]
+            [switch] $Exists
+        )
+
+        Assert-Table -Name $Named -Not:$Not -Exists -DatabaseName $script:dbName
+    }
+
+    function WhenPopping
+    {
+        [CmdletBinding(DefaultParameterSetName='LastMigration')]
+        param(
+            [Parameter(Mandatory, ParameterSetName='ByCount')]
+            [UInt32] $Count,
+
+            [Parameter(Mandatory, ParameterSetName='ByName')]
+            [String] $Named,
+
+            [Parameter(Mandatory, ParameterSetName='ByID')]
+            [String] $WithID,
+
+            [Parameter(Mandatory, ParameterSetName='All')]
+            [switch] $All,
+
+            [Parameter(ParameterSetName='All')]
+            [switch] $Force
+        )
+
+        $commonArgs = @{
+            ConfigFilePath = $script:rivetJsonPath
+        }
+
+        if ($PSCmdlet.ParameterSetName -eq 'ByCount')
+        {
+            Invoke-Rivet -Pop -Count $Count @commonArgs
+        }
+        elseif ($PSCmdlet.ParameterSetName -eq 'ByName')
+        {
+            Invoke-Rivet -Pop -Name $Named @commonArgs
+        }
+        elseif ($PSCmdlet.ParameterSetName -eq 'ByID')
+        {
+            Invoke-Rivet -Pop -Name $WithID @commonArgs
+        }
+        elseif ($PSCmdlet.ParameterSetName -eq 'All')
+        {
+            Invoke-Rivet -Pop -All -Force:$Force @commonArgs
+        }
+        else
+        {
+            Invoke-Rivet -Pop @commonArgs
+        }
+    }
+}
+
+Describe 'Pop-Migration' {
+    BeforeAll {
+        Remove-RivetTestDatabase -Name $script:dbName
+    }
+
+    BeforeEach {
+        $script:testDirPath = Join-Path -Path $TestDrive -ChildPath ($script:testNum++)
+        New-Item -Path $script:testDirPath -ItemType Directory
+        $script:migrations = @()
+        $script:rivetJsonPath = GivenRivetJsonFile -In $script:testDirPath -Database $script:dbName -PassThru
+        $script:result = $null
+        $Global:Error.Clear()
+
+        $script:migration1 = GivenMigration 'Migration1' @'
+            function Push-Migration
+            {
+                Add-Table 'Migration1' { int ID -Identity }
+            }
+            function Pop-Migration
+            {
+                Remove-Table 'Migration1'
+            }
+'@
+
+        $script:migration2 = GivenMigration 'Migration2' @'
+            function Push-Migration
+            {
+                Add-Table 'Migration2' { int ID -Identity }
+            }
+            function Pop-Migration
+            {
+                Remove-Table 'Migration2'
+            }
+'@
+
+        $script:migration3 = GivenMigration 'Migration3' @'
+            function Push-Migration
+            {
+                Add-Table 'Migration3' { int ID -Identity }
+            }
+            function Pop-Migration
+            {
+                Remove-Table 'Migration3'
+            }
+'@
+
+        $script:migration4 = GivenMigration 'Migration4' @'
+            function Push-Migration
+            {
+                Add-Table 'Migration4' { int ID -Identity }
+            }
+            function Pop-Migration
+            {
+                Remove-Table 'Migration4'
+            }
+'@
+
+        Invoke-Rivet -Push -ConfigFilePath $script:rivetJsonPath
+
+        $dbMigrationsDirPath =
+            Join-Path -Path $script:testDirPath -ChildPath "Databases\${script:dbName}" -Resolve
+        $expectedCount = Measure-MigrationScript -In $dbMigrationsDirPath
+        ThenMigrationsTable -HasCount $expectedCount
+
+        $script:migrationCount = Measure-Migration -InDatabase $script:dbName
+    }
+
+    AfterEach {
+        Invoke-Rivet -Pop -All -Force -ConfigFilePath $script:rivetJsonPath
+    }
+
+    It 'should pop all migrations' {
+        ThenMigrationsTable -IsNotEmpty
+        ThenTable 'Migration1' -Exists
+        ThenTable 'Migration2' -Exists
+        ThenTable 'Migration3' -Exists
+        ThenTable 'Migration4' -Exists
+        WhenPopping -Count $script:migrationCount
+        ThenMigrationsTable -Lost $script:migrationCount
+        ThenTable 'Migration1' -Not -Exists
+        ThenTable 'Migration2' -Not -Exists
+        ThenTable 'Migration3' -Not -Exists
+        ThenTable 'Migration4' -Not -Exists
+    }
+
     It 'should write to activity table on pop' {
-        $migrationCount = Measure-Migration
-        ($migrationCount -gt 1) | Should -BeTrue
+        ThenMigrationsTable -IsNotEmpty
+        WhenPopping
+        ThenMigrationsTable -Lost 1
 
-        Invoke-RTRivet -Pop
-
-        (Measure-Migration) | Should -Be ($migrationCount-1)
-
-        $rows = Get-ActivityInfo
+        $rows = Get-ActivityInfo -DatabaseName $script:dbName
 
         $rows[-1].Operation | Should -Be 'Pop'
         $rows[-1].Name | Should -Be 'Migration4'
     }
 
     It 'should pop specific number of database migrations' {
-        $rivetCount = Measure-Migration
-        ($rivetCount -gt 1) | Should -BeTrue
-
-        Invoke-RTRivet -Pop 2
-
-        (Measure-Migration) | Should -Be ($rivetCount - 2)
+        ThenMigrationsTable -IsNotEmpty
+        WhenPopping -Count 2
+        ThenMigrationsTable -Lost 2
     }
 
     It 'should pop one migration by default' {
-        $totalMigrations = Measure-Migration
-
-        Invoke-RTRivet -Pop
-
-        (Measure-Migration) | Should -Be ($totalMigrations - 1)
-
-        $firstMigration = Get-MigrationScript | Select-Object -First 1
-
-        $id,$name = $firstMigration.BaseName -split '_'
-        (Test-Table -Name $name) | Should -BeTrue
+        WhenPopping
+        ThenMigrationsTable -Lost 1
+        ThenTable 'Migration4' -Not -Exists
+        ThenTable 'Migration3' -Exists
+        ThenTable 'Migration2' -Exists
+        ThenTable 'Migration1' -Exist
     }
 
     It 'should not re pop migrations' {
-        $originalMigrationCount = Measure-Migration
-        Invoke-RTRivet -Pop
-        $Global:Error.Count | Should -Be 0
-        (Measure-Migration) | Should -Be ($originalMigrationCount - 1)
+        WhenPopping
+        ThenError -IsEmpty
+        ThenMigrationsTable -Lost 1
 
-        Invoke-RTRivet -Pop 2
-        $Global:Error.Count | Should -Be 0
-        (Measure-Migration) | Should -Be ($originalMigrationCount - 2)
+        WhenPopping -Count 2
+        ThenError -IsEmpty
+        ThenMigrationsTable -Lost 3
 
-        Invoke-RTRivet -Pop 2
-        $Global:Error.Count | Should -Be 0
-        (Measure-Migration) | Should -Be ($originalMigrationCount - 2)
+        WhenPopping -Count 2
+        ThenError -IsEmpty
+        ThenMigrationsTable -Lost $script:migrationCount
     }
 
     It 'should support popping more than available migrations' {
-        $migrationCount = Measure-Migration
-        Invoke-RTRivet -Pop ($migrationCount * 2)
-        $Global:Error.Count | Should -Be 0
-        (Measure-Migration) | Should -Be 0
+        WhenPopping -Count ($script:migrationCount * 2)
+        ThenError -IsEmpty
+        ThenMigrationsTable -IsEmpty
     }
 
 
     It 'should stop popping migrations if one gives an error' {
-        $migrationFileInfo = @'
-    function Push-Migration
-    {
-        Add-Table 'Migration5' {
-            int 'ID' -Identity
-        }
-    }
+        $m = GivenMigration 'PopFails' @'
+            function Push-Migration
+            {
+                Add-Table 'Migration5' {
+                    int 'ID' -Identity
+                }
+            }
 
-    function Pop-Migration
-    {
-        Remove-Table 'Migration38'
-    }
-'@ | New-TestMigration -Name 'PopFails'
+            function Pop-Migration
+            {
+                Remove-Table 'DoNotExist'
+            }
+'@
 
         try
         {
-            Invoke-RTRivet -Push
-            $Global:Error.Count | Should -Be 0
+            Invoke-Rivet -Push -ConfigFilePath $script:rivetJsonPath
+            ThenError -IsEmpty
 
-            { Invoke-RTRivet -Pop (Measure-Migration) } | Should -Throw '*cannot drop the table ''dbo.Migration38''*'
+            { WhenPopping -All } | Should -Throw '*cannot drop the table ''dbo.DoNotExist''*'
 
             $Global:Error.Count | Should -BeGreaterThan 0
 
-            (Test-Table -Name 'Migration5') | Should -BeTrue
-            (Test-Table -Name 'Migration4') | Should -BeTrue
-            (Test-Table -Name 'Migration3') | Should -BeTrue
-            (Test-Table -Name 'Migration2') | Should -BeTrue
-            (Test-Table -Name 'Migration1') | Should -BeTrue
+            ThenTable 'Migration5' -Exists
+            ThenTable 'Migration4' -Exists
+            ThenTable 'Migration3' -Exists
+            ThenTable 'Migration2' -Exists
+            ThenTable 'Migration1' -Exists
         }
         finally
         {
             @'
-    function Push-Migration
-    {
-        Add-Table 'Migration5' {
-            int 'ID' -Identity
-        }
-    }
+            function Push-Migration
+            {
+                Add-Table 'Migration5' {
+                    int 'ID' -Identity
+                }
+            }
 
-    function Pop-Migration
-    {
-        Remove-Table 'Migration5'
-    }
-'@ | Set-Content -Path $migrationFileInfo
+            function Pop-Migration
+            {
+                Remove-Table 'Migration5'
+            }
+'@ | Set-Content -Path $m.FullName
         }
     }
 
     It 'should pop by name' {
-        Invoke-RTRivet -Pop 'Migration1'
+        WhenPopping -Named 'Migration1'
 
-        (Test-Table -Name 'Migration4') | Should -BeTrue
-        (Test-Table -Name 'Migration3') | Should -BeTrue
-        (Test-Table -Name 'Migration2') | Should -BeTrue
-        (Test-Table -Name 'Migration1') | Should -BeFalse
+        ThenTable 'Migration4' -Exists
+        ThenTable 'Migration3' -Exists
+        ThenTable 'Migration2' -Exists
+        ThenTable 'Migration1' -Not -Exists
     }
 
     It 'should pop by name with wildcard' {
-        Invoke-RTRivet -Pop 'Migration*'
+        WhenPopping -Named 'Migration*'
 
-        (Test-Table -Name 'Migration4') | Should -BeFalse
-        (Test-Table -Name 'Migration3') | Should -BeFalse
-        (Test-Table -Name 'Migration2') | Should -BeFalse
-        (Test-Table -Name 'Migration1') | Should -BeFalse
+        ThenTable 'Migration4' -Not -Exists
+        ThenTable 'Migration3' -Not -Exists
+        ThenTable 'Migration2' -Not -Exists
+        ThenTable 'Migration1' -Not -Exists
     }
 
 
     It 'should pop by name with no match' {
-        { Invoke-RTRivet -Pop 'Blah' } | Should -Throw '*Blah*does not exist*'
+        { WhenPopping -Named 'Blah' } | Should -Throw '*Blah*does not exist*'
 
-        (Test-Table -Name 'Migration4') | Should -BeTrue
-        (Test-Table -Name 'Migration3') | Should -BeTrue
-        (Test-Table -Name 'Migration2') | Should -BeTrue
-        (Test-Table -Name 'Migration1') | Should -BeTrue
+        ThenTable 'Migration4' -Exists
+        ThenTable 'Migration3' -Exists
+        ThenTable 'Migration2' -Exists
+        ThenTable 'Migration1' -Exists
     }
 
     It 'should pop by ID' {
-        $name = $script:migration1.BaseName.Substring(0,14)
-        Invoke-RTRivet -Pop $name
-        Assert-Table -Name 'Migration4'
-        Assert-Table -Name 'Migration3'
-        Assert-Table -Name 'Migration2'
-        (Test-Table -Name 'Migration1') | Should -BeFalse
+        $id = $script:migration1.BaseName.Substring(0,14)
+        WhenPopping -WithID $id
+        ThenTable 'Migration4' -Exists
+        ThenTable 'Migration3' -Exists
+        ThenTable 'Migration2' -Exists
+        ThenTable 'Migration1' -Not -Exists
     }
 
     It 'should pop by ID with wildcard' {
-        $name = '{0}*' -f $RTTimestamp.ToString().Substring(0,8)
-        Invoke-RTRivet -Pop $name
-        (Test-Table -Name 'Migration4') | Should -BeFalse
-        (Test-Table -Name 'Migration3') | Should -BeFalse
-        (Test-Table -Name 'Migration2') | Should -BeFalse
-        (Test-Table -Name 'Migration1') | Should -BeFalse
+        WhenPopping -WithID '20150101*'
+        ThenMigrationsTable -IsEmpty
+        ThenTable 'Migration4' -Not -Exists
+        ThenTable 'Migration3' -Not -Exists
+        ThenTable 'Migration2' -Not -Exists
+        ThenTable 'Migration1' -Not -Exists
     }
 
     It 'should pop all' {
-        Invoke-RTRivet -Pop -All
-        (Test-Table -Name 'Migration4') | Should -BeFalse
-        (Test-Table -Name 'Migration3') | Should -BeFalse
-        (Test-Table -Name 'Migration2') | Should -BeFalse
-        (Test-Table -Name 'Migration1') | Should -BeFalse
+        WhenPopping -All
+        ThenTable 'Migration4' -Not -Exists
+        ThenTable 'Migration3' -Not -Exists
+        ThenTable 'Migration2' -Not -Exists
+        ThenTable 'Migration1' -Not -Exists
     }
 
     It 'should confirm popping anothers migration' {
-        Invoke-RivetTestQuery -Query 'update [rivet].[Migrations] set Who = ''LittleLionMan'''
+        Invoke-RivetTestQuery -Query 'update [rivet].[Migrations] set Who = ''LittleLionMan''' `
+                              -DatabaseName $script:dbName
 
-        Invoke-RTRivet -Pop -All -Force
-        (Test-Table 'Migration4') | Should -BeFalse
-        (Test-Table 'Migration3') | Should -BeFalse
-        (Test-Table 'Migration2') | Should -BeFalse
-        (Test-Table 'Migration1') | Should -BeFalse
+        WhenPopping -All -Force
+        ThenTable 'Migration4' -Not -Exists
+        ThenTable 'Migration3' -Not -Exists
+        ThenTable 'Migration2' -Not -Exists
+        ThenTable 'Migration1' -Not -Exists
     }
 
     It 'should confirm popping old migrations' {
-        Invoke-RivetTestQuery -Query 'update [rivet].[Migrations] set AtUtc = dateadd(minute, -21, AtUtc)'
+        Invoke-RivetTestQuery -Query 'update [rivet].[Migrations] set AtUtc = dateadd(minute, -21, AtUtc)' `
+                              -DatabaseName $script:dbName
 
-        Invoke-RTRivet -Pop -All -Force
-        (Test-Table 'Migration4') | Should -BeFalse
-        (Test-Table 'Migration3') | Should -BeFalse
-        (Test-Table 'Migration2') | Should -BeFalse
-        (Test-Table 'Migration1') | Should -BeFalse
+        WhenPopping -All -Force
+        ThenTable 'Migration4' -Not -Exists
+        ThenTable 'Migration3' -Not -Exists
+        ThenTable 'Migration2' -Not -Exists
+        ThenTable 'Migration1' -Not -Exists
     }
 }

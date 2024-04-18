@@ -2,55 +2,48 @@
 function Test-DatabaseObject
 {
     param(
-        [Parameter(Mandatory=$true,ParameterSetName='U')]
-        [Switch]
-        $Table,
-        
-        [Parameter(Mandatory=$true,ParameterSetName='P')]
-        [Switch]
-        $StoredProcedure,
-        
-        [Parameter(Mandatory=$true,ParameterSetName='FN')]
-        [Switch]
-        $ScalarFunction,
-        
-        [Parameter(Mandatory=$true,ParameterSetName='V')]
-        [Switch]
-        $View,
+        [Parameter(Mandatory, ParameterSetName='U')]
+        [switch] $Table,
 
-        [Parameter(Mandatory=$true,ParameterSetName='TA')]
-        [Switch]
-        $AssemblyTrigger,
+        [Parameter(Mandatory, ParameterSetName='P')]
+        [switch] $StoredProcedure,
 
-        [Parameter(Mandatory=$true,ParameterSetName='TR')]
-        [Switch]
-        $SQLTrigger,
+        [Parameter(Mandatory, ParameterSetName='FN')]
+        [switch] $ScalarFunction,
 
-        [Parameter(Mandatory=$true,ParameterSetName='F')]
-        [Switch]
-        $ForeignKey,
-        
-        [Parameter(Mandatory=$true,Position=1)]
-        [string]
-        $Name,
-        
+        [Parameter(Mandatory, ParameterSetName='V')]
+        [switch] $View,
+
+        [Parameter(Mandatory, ParameterSetName='TA')]
+        [switch] $AssemblyTrigger,
+
+        [Parameter(Mandatory, ParameterSetName='TR')]
+        [switch] $SQLTrigger,
+
+        [Parameter(Mandatory, ParameterSetName='F')]
+        [switch] $ForeignKey,
+
+        [Parameter(Mandatory, Position=1)]
+        [String] $Name,
+
         [Parameter(Position=2)]
-        [string]
-        $SchemaName = 'dbo'
+        [String] $SchemaName = 'dbo',
+
+        [String] $DatabaseName
     )
-    
-    
+
+
     #$query = "select count(*) from sys.objects where type = '{0}' and name = '{1}'"
     $query = @'
-    select 
-        count(*) 
-    from 
-        sys.objects o join 
-        sys.schemas s on o.schema_id = s.schema_id 
-    where 
+    select
+        count(*)
+    from
+        sys.objects o join
+        sys.schemas s on o.schema_id = s.schema_id
+    where
         o.type = '{0}' and o.name = '{1}' and s.name = '{2}'
 '@ -f $pscmdlet.ParameterSetName,$Name,$SchemaName
 
-    $objectCount = Invoke-RivetTestQuery -Query $query -AsScalar
+    $objectCount = Invoke-RivetTestQuery -Query $query -AsScalar -DatabaseName $DatabaseName
     return ($objectCount -eq 1)
 }

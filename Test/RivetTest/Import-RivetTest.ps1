@@ -25,13 +25,11 @@ if( (Test-Path -Path 'env:APPVEYOR') )
         & (Join-Path -Path $PSScriptRoot -ChildPath '..\..\Rivet\Import-Rivet.ps1' -Resolve)
     }
 
-    if( -not (Get-Module 'RivetTest') )
-    {
-        Import-Module -Name $rivetTestPsd1Path -ArgumentList $rivetRoot
-    }
+    # Always import until tests have moved away from Start-RivetTest/Stop-RivetTest shenanigans.
+    Import-Module -Name $rivetTestPsd1Path -ArgumentList $rivetRoot -Force -Verbose:$false
 }
 else
 {
     & (Join-Path -Path $PSScriptRoot -ChildPath '..\..\Rivet\Import-Rivet.ps1' -Resolve)
-    Import-Module -Name $rivetTestPsd1Path -Force -ArgumentList $rivetRoot
+    Import-Module -Name $rivetTestPsd1Path -Force -ArgumentList $rivetRoot -Verbose:$false
 }

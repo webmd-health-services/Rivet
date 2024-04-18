@@ -18,6 +18,7 @@ $RTConfigFilePath =
     $script:RTSession =  $null
 
 $script:RTTimestamp = 20150101000000
+$script:moduleRoot = $PSScriptRoot
 
 if( -not $RivetRoot )
 {

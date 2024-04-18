@@ -6,22 +6,22 @@ function Get-Synonym
     Gets a synonym.
     #>
     param(
-        [Parameter(Mandatory=$true)]
-        [string]
         # The name of the synonym.
-        $Name,
+        [Parameter(Mandatory)]
+        [String] $Name,
 
-        [string]
         # The synonym's schema.
-        $SchemaName = 'dbo'
+        [String] $SchemaName = 'dbo',
+
+        [String] $DatabaseName
     )
-    
+
     Set-StrictMode -Version Latest
 
     $query = @'
-    select 
-        sc.name, sy.* 
-    from 
+    select
+        sc.name, sy.*
+    from
         sys.synonyms sy join
         sys.schemas sc on sy.schema_id = sc.schema_id
     where
@@ -29,6 +29,6 @@ function Get-Synonym
         sy.name = '{1}'
 '@ -f $SchemaName,$Name
 
-    Invoke-RivetTestQuery -Query $query
+    Invoke-RivetTestQuery -Query $query -DatabaseName $DatabaseName
 
 }

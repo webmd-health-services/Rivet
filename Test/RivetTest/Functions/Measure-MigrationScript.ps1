@@ -2,9 +2,10 @@
 function Measure-MigrationScript
 {
     param(
+        [String] $In
     )
 
-    Get-MigrationScript | 
-        Measure-Object | 
+    Get-MigrationScript -In $In |
+        Measure-Object |
         Select-Object -ExpandProperty Count
 }

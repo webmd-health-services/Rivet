@@ -6,6 +6,14 @@ BeforeAll {
     Set-StrictMode -Version 'Latest'
 
     & (Join-Path -Path $PSScriptRoot -ChildPath 'Initialize-Test.ps1' -Resolve)
+    Remove-Item -Path 'alias:GivenMigration'
+
+    $script:dbName = 'Invoke-Rivet'
+    $script:db2Name = 'Invoke-Rivet2'
+    $script:virtualDbName = 'Invoke-RivetISHOULDNOTEXIST'
+    $script:testDirPath = $null
+    $script:testNum = 0
+    $script:sqlServerName = Get-Content -Path (Join-Path -Path $PSScriptRoot -ChildPath 'Server.txt') -ReadCount 1
 
     function Assert-OperationsReturned
     {
@@ -16,329 +24,326 @@ BeforeAll {
         $Operation | Should -Not -BeNullOrEmpty
     }
 
-    function Init
+    function GivenDirectory
     {
         param(
-            $PluginPath
+            [String] $Named
         )
 
-        Start-RivetTest -PluginPath $PluginPath
-        $Global:Error.Clear()
+        $path = Join-Path $script:testDirPath -ChildPath $Named
+        if (-not (Test-Path -Path $path))
+        {
+            New-Item -Path $path -ItemType Directory
+        }
     }
 
-    function Reset
+    function GivenMigration
     {
         param(
-            [string[]]
-            $Plugin
+            [Parameter(Mandatory, Position=0)]
+            [String] $Named,
+
+            [Parameter(Mandatory, Position=1)]
+            [String] $WithContent,
+
+            [string] $ForDatabase = $script:dbName,
+
+            [UInt64] $WithID
         )
 
-        Stop-RivetTest
-        Remove-Module -Name $Plugin
+        $optionalArgs = @{}
+        if ($WithID)
+        {
+            $optionalArgs['WithID'] = $WithID
+        }
+
+        $WithContent | New-TestMigration -Name $Named `
+                                         -ConfigFilePath $script:rivetJsonPath `
+                                         -DatabaseName $ForDatabase `
+                                         @optionalArgs
     }
 
+    function ThenOperationsReturned
+    {
+        Assert-OperationsReturned -Operation $script:result
     }
+
+    function WhenRivetInvoked
+    {
+        [CmdletBinding()]
+        param(
+            [hashtable] $WithArgs
+        )
+
+        if (-not $WithArgs.ContainsKey('Database'))
+        {
+            $WithArgs['Database'] = $script:dbName
+        }
+
+        $script:result = Invoke-Rivet -ConfigFilePath $script:rivetJsonPath @WithArgs
+    }
+}
 
 Describe 'Invoke-Rivet' {
-    BeforeEach {
-        Start-RivetTest -IgnoredDatabase 'Ignored'
-        $Global:Error.Clear()
+    BeforeAll {
+        Remove-RivetTestDatabase -Name $script:dbName
+        Remove-RivetTestDatabase -Name $script:db2Name
     }
 
-    AfterEach {
-        try
-        {
-            Stop-RivetTest
-        }
-        catch
-        {
-        }
-        Clear-TestDatabase -Name $RTDatabase2Name
+    BeforeEach {
+        $script:testDirPath = Join-Path -Path $TestDrive -ChildPath ($script:testNum++)
+        New-Item -Path $script:testDirPath -ItemType Directory
+        $script:migrations = @()
+        $script:rivetJsonPath = GivenRivetJsonFile -In $script:testDirPath -Database $script:dbName -PassThru
+        $script:result = $null
+        $Global:Error.Clear()
     }
 
     It 'should create database' {
-        Remove-RivetTestDatabase
-
-        $query = 'select 1 from sys.databases where name=''{0}''' -f $RTDatabaseName
+        $query = "select 1 from sys.databases where name='${script:dbName}'"
 
         (Invoke-RivetTestQuery -Query $query -Master -AsScalar) | Should -BeNullOrEmpty
 
-        @'
-    function Push-Migration
-    {
-        Add-Schema 'fubar'
-    }
+        GivenMigration 'CreateDatabase' @'
+            function Push-Migration
+            {
+                Add-Schema 'fubar'
+            }
 
-    function Pop-Migration
-    {
-        Remove-Schema 'fubar'
-    }
-'@ | New-TestMigration -Name 'CreateDatabase'
-
-        $result = Invoke-Rivet -ConfigFilePath $RTConfigFilePath -Database $RTDatabaseName -Push
-        $Global:Error.Count | Should -Be 0
-        Assert-OperationsReturned $result
+            function Pop-Migration
+            {
+                Remove-Schema 'fubar'
+            }
+'@
+        WhenRivetInvoked -WithArgs @{ Push = $true }
+        ThenError -IsEmpty
+        ThenOperationsReturned
 
         (Invoke-RivetTestQuery -Query $query -Master -AsScalar) | Should -Be 1
     }
 
-    It 'should apply migrations to duplicate database' {
-        $config = Get-Content -Raw -Path $RTConfigFilePath | ConvertFrom-Json
-        $config | Add-Member -MemberType NoteProperty -Name 'TargetDatabases' -Value @{ $RTDatabaseName = @( $RTDatabaseName, $RTDatabase2Name ) }
-        $config | ConvertTo-Json | Set-Content -Path $RTConfigFilePath
+    Context 'TargetDatabases' {
+        BeforeEach {
+            Remove-RivetTestDatabase -Name $script:virtualDbName
+            Remove-RivetTestDatabase -Name $script:dbName
+            Remove-RivetTestDatabase -Name $script:db2Name
+            $script:rivetJsonPath =
+                GivenRivetJson -In $script:testDirPath `
+                               -Database $script:dbName `
+                               -TargetDatabase @{ $script:virtualDbName = @($script:dbName,$script:db2Name) } `
+                               -PassThru
+        }
 
-        @'
-    function Push-Migration
-    {
-        Add-Schema 'TargetDatabases'
-    }
+        It 'should apply migrations to duplicate database' {
+            GivenMigration 'TargetDatabases' -ForDatabase $script:virtualDbName @'
+                function Push-Migration
+                {
+                    Add-Schema 'TargetDatabases'
+                }
 
-    function Pop-Migration
-    {
-        Remove-Schema 'TargetDatabases'
-    }
-'@ | New-TestMigration -Name 'TargetDatabases' -Database $RTDatabaseName
+                function Pop-Migration
+                {
+                    Remove-Schema 'TargetDatabases'
+                }
+'@
 
-        $result = Invoke-Rivet -ConfigFilePath $RTConfigFilePath -Database $RTDatabaseName -Push
-        $Global:Error.Count | Should -Be 0
-        Assert-OperationsReturned $result
+            WhenRivetInvoked -WithArgs @{ Push = $true ; Database = $script:virtualDbName }
+            ThenError -IsEmpty
+            ThenOperationsReturned
+            Assert-Schema -Name 'TargetDatabases' -DatabaseName $script:dbName
+            Assert-Schema -Name 'TargetDatabases' -DatabaseName $script:db2Name
+        }
 
-        Assert-Schema -Name 'TargetDatabases'
-        Assert-Schema -Name 'TargetDatabases' -DatabaseName $RTDatabase2Name
-    }
+        It 'should create target databases' {
+            WhenRivetInvoked -WithArgs @{ Push = $true ; Database = $script:virtualDbName }
+            ThenError -IsEmpty
+            (Test-Database $script:virtualDbName) | Should -BeFalse
+            (Test-Database $script:dbName) | Should -BeTrue
+            (Test-Database $script:db2Name) | Should -BeTrue
+        }
 
-    It 'should create target databases' {
-        Remove-RivetTestDatabase
-        Remove-RivetTestDatabase -Name $RTDatabase2Name
+        It 'drops virtual databases' {
+            WhenRivetInvoked -WithArgs @{ Push = $true ; Database = $script:virtualDbName }
+            ThenError -IsEmpty
+            (Test-Database $script:virtualDbName) | Should -BeFalse
+            (Test-Database $script:dbName) | Should -BeTrue
+            (Test-Database $script:db2Name) | Should -BeTrue
 
-        $config = Get-Content -Raw -Path $RTConfigFilePath | ConvertFrom-Json
-        $config | Add-Member -MemberType NoteProperty -Name 'TargetDatabases' -Value @{ $RTDatabaseName = @( $RTDatabaseName, $RTDatabase2Name ) }
-        $config | ConvertTo-Json | Set-Content -Path $RTConfigFilePath
+            # Now drop the databases
+            WhenRivetInvoked -WithArgs @{ DropDatabase = $true ; Database = $script:virtualDbName ; Force = $true }
+            ThenError -IsEmpty
+            (Test-Database $script:virtualDbName) | Should -BeFalse
+            (Test-Database $script:dbName) | Should -BeFalse
+            (Test-Database $script:db2Name) | Should -BeFalse
+        }
 
-        Remove-Item -Path $RTDatabaseMigrationRoot -Recurse
-
-        $result = Invoke-Rivet -ConfigFilePath $RTConfigFilePath -Database $RTDatabaseName -Push
-        $Global:Error.Count | Should -Be 0
-        (Test-Database) | Should -BeTrue
-        (Test-Database $RTDatabase2Name) | Should -BeTrue
     }
 
     It 'should write error if migrating ignored database' {
-        Push-Location -Path (Split-Path -Parent -Path $RTConfigFilePath)
-        try
-        {
-            & $RTRivetPath -Push -Database 'Ignored' -ErrorAction SilentlyContinue
-            $Global:Error.Count | Should -BeGreaterThan 0
-            $Global:Error[0] | Should -Match ([regex]::Escape($RTConfigFilePath))
-        }
-        finally
-        {
-            Pop-Location
-        }
+        $script:rivetJsonPath =
+            GivenRivetJson -In $script:testDirPath -Database $script:dbName -IgnoredDatabase 'Ignored' -PassThru
+        WhenRivetInvoked -WithArgs @{ Push = $true ; Database = 'Ignored' } -ErrorAction SilentlyContinue
+        ThenError -Matches 'database is on the ignore list'
     }
 
     It 'should prohibit reserved rivet migration IDs' {
-        $startedAt = Get-Date
-        $file = @'
-    function Push-Migration
-    {
-        Add-Schema 'fubar'
-    }
+        GivenMigration 'HasReservedID' -WithID 10100999999 @'
+            function Push-Migration
+            {
+                Add-Schema 'fubar'
+            }
 
-    function Pop-Migration
-    {
-        Remove-Schema 'fubar'
-    }
-'@ | New-TestMigration -Name 'HasReservedID' -Database $RTDatabaseName
+            function Pop-Migration
+            {
+                Remove-Schema 'fubar'
+            }
+'@
 
-        $file | Should -Not -BeNullOrEmpty
-        $file = Rename-Item -Path $file -NewName ('00010100999999_HasReservedID.ps1') -PassThru
-
-        { Invoke-Rivet -ConfigFilePath $RTConfigFilePath -Database $RTDatabaseName -Push } |
-            Should -Throw '*reserved*'
+        { WhenRivetInvoked -WithArgs @{ Push = $true } } | Should -Throw '*reserved*'
         (Test-Schema -Name 'fubar') | Should -BeFalse
-
-        $Global:Error.Clear()
-        Rename-Item -Path $file -NewName ('00010101000000_HasReservedID.ps1')
-        Invoke-Rivet -ConfigFilePath $RTConfigFilePath -Database $RTDatabaseName -Push
-        $Global:Error.Count | Should -Be 0
-        Assert-Schema -Name 'fubar'
     }
 
     It 'handles connection failure' {
-        $config = Get-Content -Raw -Path $RTConfigFilePath | ConvertFrom-Json
-        $originalSqlServerName = $config.SqlServerName
-        $config.SqlServerName = '.\IDoNotExist'
-        $config | ConvertTo-Json | Set-Content -Path $RTConfigFilePath
-
-        try
-        {
-            { Invoke-Rivet -ConfigFilePath $RTConfigFilePath -Database $RTDatabaseName -Push } |
-                Should -Throw '*network-related or instance-specific error*'
-        }
-        finally
-        {
-            $config = Get-Content -Raw -Path $RTConfigFilePath | ConvertFrom-Json
-            $config.SqlServerName = $originalSqlServerName
-            $config | ConvertTo-Json | Set-Content -Path $RTConfigFilePath
-        }
+        $script:rivetJsonPath = GivenRivetJson -In $script:testDirPath `
+                                               -Database $script:dbName `
+                                               -SqlServerName '.\IDoNotExist' `
+                                               -ConnectionTimeout 1 `
+                                               -PassThru
+        { WhenRivetInvoked -WithArgs @{ Push = $true } } |
+            Should -Throw '*network-related or instance-specific error*'
     }
 
     It 'should create multiple migrations' {
-        $m = Invoke-Rivet -New -Name 'One','Two' -ConfigFilePath $RTConfigFilePath
-        try
-        {
-            $Global:Error | Should -BeNullOrEmpty
-            ,$m | Should -BeOfType ([object[]])
-            $m[0].Name | Should -BeLike '*_One.ps1'
-            $m[1].Name | Should -BeLike '*_Two.ps1'
-        }
-        finally
-        {
-            $m | Remove-Item
-        }
+        WhenRivetInvoked -WithArgs @{ New = $true ; Name = 'One', 'Two' }
+        ThenError -IsEmpty
+        ,$script:result | Should -BeOfType ([object[]])
+        $script:result[0].Name | Should -BeLike '*_One.ps1'
+        $script:result[1].Name | Should -BeLike '*_Two.ps1'
     }
 
     It 'should push multiple migrations' {
-        $m = @( 'One', 'Two', 'Three' ) |
-                ForEach-Object {
-                                    @'
+        # Make sure database initialized.
+        WhenRivetInvoked -WithArgs @{ Push = $true }
+        foreach ($name in @( 'One', 'Two', 'Three' ))
+        {
+            GivenMigration $name @'
     function Push-Migration { Invoke-Ddl 'select 1' }
     function Pop-Migration { Invoke-Ddl 'select 1' }
-'@ | New-TestMigration -Name $_
-                }
-        [Rivet.OperationResult[]]$result = Invoke-Rivet -Name 'One','Three' -ConfigFilePath $RTConfigFilePath -Push
-        Assert-OperationsReturned $result
-        $result[0].Migration.Name | Should -Be 'One'
-        $result[1].Migration.Name | Should -Be 'Three'
+'@
+        }
+        WhenRivetInvoked -WithArgs @{ Push = $true ; Name = 'One', 'Three' }
+        ThenOperationsReturned
+        $script:result[0].Migration.Name | Should -Be 'One'
+        $script:result[1].Migration.Name | Should -Be 'Three'
     }
 
     It 'should pop multiple migrations' {
-        $m = @( 'One', 'Two', 'Three' ) |
-                ForEach-Object {
-                                    @'
+        foreach ($name in @( 'One', 'Two', 'Three' ))
+        {
+            GivenMigration $name @'
     function Push-Migration { Invoke-Ddl 'select 1' }
     function Pop-Migration { Invoke-Ddl 'select 1' }
-'@ | New-TestMigration -Name $_
-                }
-        Invoke-Rivet -Name 'One','Three' -ConfigFilePath $RTConfigFilePath -Push
-        [Rivet.OperationResult[]]$result = Invoke-Rivet -Pop -Name 'One','Three' -ConfigFilePath $RTConfigFilePath
-        Assert-OperationsReturned $result
-        $result[0].Migration.Name | Should -Be 'Three'
-        $result[1].Migration.Name | Should -Be 'One'
+'@
+        }
+        WhenRivetInvoked -WithArgs @{ Push = $true ; Name = 'One', 'Three' }
+        WhenRivetInvoked -WithArgs @{ Pop = $true ; Name = 'One', 'Three' }
+        ThenOperationsReturned
+        $script:result[0].Migration.Name | Should -Be 'Three'
+        $script:result[1].Migration.Name | Should -Be 'One'
     }
 
-    It 'should drop all databases given -DropDatabase with no databases specified' {
-        Remove-RivetTestDatabase
-        Remove-RivetTestDatabase -Name $RTDatabase2Name
+    Context '-DropDatabase' {
+        BeforeEach {
+            Remove-RivetTestDatabase -Name $script:dbName
+            Remove-RivetTestDatabase -Name $script:db2Name
+        }
 
-        $config = Get-Content -Raw -Path $RTConfigFilePath | ConvertFrom-Json
-        $config | Add-Member -MemberType NoteProperty -Name 'TargetDatabases' -Value @{ $RTDatabaseName = @( $RTDatabaseName, $RTDatabase2Name ) }
-        $config | ConvertTo-Json | Set-Content -Path $RTConfigFilePath
+        It 'drops specific database' {
+            $script:rivetJsonPath =
+                GivenRivetJson -In $script:testDirPath -Database $script:dbName, $script:db2Name -PassThru
+            WhenRivetInvoked -WithArgs @{ Push = $true ; Database = $script:dbName,$script:db2Name }
+            ThenError -IsEmpty
+            (Test-Database $script:dbName) | Should -BeTrue
+            (Test-Database $script:db2Name) | Should -BeTrue
 
-        # Create databases first
-        Invoke-Rivet -ConfigFilePath $RTConfigFilePath -Database $RTDatabaseName -Push
-        $Global:Error.Count | Should -Be 0
-        (Test-Database) | Should -BeTrue
-        (Test-Database $RTDatabase2Name) | Should -BeTrue
+            # Now drop the database
+            WhenRivetInvoked -WithArgs @{ DropDatabase = $true ; Database = $script:db2Name ; Force = $true }
+            ThenError -IsEmpty
+            (Test-Database $script:dbName) | Should -BeTrue
+            (Test-Database $script:db2Name) | Should -BeFalse
+        }
 
-        # Now drop the databases
-        Invoke-Rivet -ConfigFilePath $RTConfigFilePath -Database $RTDatabaseName -DropDatabase -Force
-        $Global:Error.Count | Should -Be 0
-        (Test-Database) | Should -BeFalse
-        (Test-Database $RTDatabase2Name) | Should -BeFalse
+        It 'handles non existent database' {
+            # Check that database doesn't exist first
+            (Test-Database $script:dbName) | Should -BeFalse
+
+            # Now drop the database
+            WhenRivetInvoked -WithArgs @{ DropDatabase = $true ; Database = $script:dbName ; Force = $true}
+            ThenError -IsEmpty
+            (Test-Database $script:dbName) | Should -BeFalse
+        }
     }
 
-    It 'should drop a specific database given -DropDatabase with a database name' {
-        Remove-RivetTestDatabase
-        Remove-RivetTestDatabase -Name $RTDatabase2Name
+    Context 'Plugins' {
+        AfterEach {
+            Get-Module -Name 'InvokeRivetTestPlugin*' | Remove-Module -Force
+        }
 
-        $config = Get-Content -Raw -Path $RTConfigFilePath | ConvertFrom-Json
-        $config | Add-Member -MemberType NoteProperty -Name 'TargetDatabases' -Value @{ $RTDatabaseName = @( $RTDatabaseName, $RTDatabase2Name ) }
-        $config | ConvertTo-Json | Set-Content -Path $RTConfigFilePath
-
-        # Create databases first
-        Invoke-Rivet -ConfigFilePath $RTConfigFilePath -Database $RTDatabaseName -Push
-        $Global:Error.Count | Should -Be 0
-        (Test-Database) | Should -BeTrue
-        (Test-Database $RTDatabase2Name) | Should -BeTrue
-
-        # Now drop the database
-        Invoke-Rivet -ConfigFilePath $RTConfigFilePath -DropDatabase -Force -Database 'RivetTest2'
-        $Global:Error.Count | Should -Be 0
-        (Test-Database) | Should -BeTrue
-        (Test-Database $RTDatabase2Name) | Should -BeFalse
-    }
-
-    It 'should do nothing when given -DropDatabase with a database name that doesn''t exist' {
-        Remove-RivetTestDatabase
-        # Check that database doesn't exist first
-        (Test-Database) | Should -BeFalse
-
-        # Now drop the database
-        Invoke-Rivet -ConfigFilePath $RTConfigFilePath -DropDatabase -Force -Database 'RivetTest'
-        $Global:Error.Count | Should -Be 0
-        (Test-Database) | Should -BeFalse
-    }
-}
-
-Describe 'Invoke-Rivet' {
-    BeforeEach { Init -PluginPath 'InvokeRivetTestPlugin' }
-    AfterEach { Reset -Plugin 'InvokeRivetTestPlugin' }
-    It 'loads plugins' {
-        GivenFile 'InvokeRivetTestPlugin\InvokeRivetTestPlugin.psm1' @'
-function MyPlugin
+        It 'loads single plugin' {
+            GivenFile 'InvokeRivetTestPlugin1\InvokeRivetTestPlugin1.psm1' -In $script:testDirPath @'
+function MyPlugin1
 {
 }
 '@
-        Invoke-Rivet -ConfigFilePath $RTConfigFilePath -Database $RTDatabaseName -Push
-        Get-Module -Name 'InvokeRivetTestPlugin' | Should -Not -BeNullOrEmpty
-    }
-}
+            $rivetJsonPath = GivenRivetJsonFile -In $script:testDirPath -PluginPath 'InvokeRivetTestPlugin1' -PassThru
+            Invoke-Rivet -ConfigFilePath $rivetJsonPath -Database $script:dbName -Push
+            Get-Module -Name 'InvokeRivetTestPlugin1' | Should -Not -BeNullOrEmpty
+            Get-Command -Name 'MyPlugin1' | Should -Not -BeNullOrEmpty
+        }
 
-Describe 'Invoke-Rivet' {
-    BeforeEach { Init -PluginPath 'InvokeRivetTestPlugin','InvokeRivetTestPlugin2' }
-    AfterEach { Reset -Plugin 'InvokeRivetTestPlugin','InvokeRivetTestPlugin2' }
-    It 'loads multiple plugins' {
-        GivenFile 'InvokeRivetTestPlugin\InvokeRivetTestPlugin.psm1' @'
-function MyPlugin
-{
-}
-'@
-        GivenFile 'InvokeRivetTestPlugin2\InvokeRivetTestPlugin2.psm1' @'
+        It 'loads multiple plugins' {
+            GivenFile 'InvokeRivetTestPlugin2\InvokeRivetTestPlugin2.psm1' -In $script:testDirPath @'
 function MyPlugin2
 {
 }
 '@
-        Invoke-Rivet -ConfigFilePath $RTConfigFilePath -Database $RTDatabaseName -Push
-        Get-Module -Name 'InvokeRivetTestPlugin' | Should -Not -BeNullOrEmpty
-        Get-Module -Name 'InvokeRivetTestPlugin2' | Should -Not -BeNullOrEmpty
-    }
-}
-
-Describe 'Invoke-Rivet' {
-    BeforeEach { Init -PluginPath 'InvokeRivetTestPlugin' }
-    AfterEach { Reset -Plugin 'InvokeRivetTestPlugin' }
-    It 'reloads plugins' {
-        GivenFile 'InvokeRivetTestPlugin\InvokeRivetTestPlugin.psm1' @'
-function MyPlugin
+            GivenFile 'InvokeRivetTestPlugin3\InvokeRivetTestPlugin3.psm1' -In $script:testDirPath @'
+function MyPlugin3
 {
 }
 '@
-        Invoke-Rivet -ConfigFilePath $RTConfigFilePath -Database $RTDatabaseName -Push
-        Get-Module -Name 'InvokeRivetTestPlugin' | Should -Not -BeNullOrEmpty
-        Get-Command -Name 'MyPlugin' | Should -Not -BeNullOrEmpty
+            $rivetJsonPath = GivenRivetJsonFile -In $script:testDirPath `
+                                                -PluginPath 'InvokeRivetTestPlugin2', 'InvokeRivetTestPlugin3' `
+                                                -PassThru
+            Invoke-Rivet -ConfigFilePath $rivetJsonPath -Database $script:dbName -Push
+            Get-Module -Name 'InvokeRivetTestPlugin2' | Should -Not -BeNullOrEmpty
+            Get-Command -Name 'MyPlugin2' | Should -Not -BeNullOrEmpty
+            Get-Module -Name 'InvokeRivetTestPlugin3' | Should -Not -BeNullOrEmpty
+            Get-Command -Name 'MyPlugin3' | Should -Not -BeNullOrEmpty
+        }
 
-        # Now, change the module.
-        GivenFile 'InvokeRivetTestPlugin\InvokeRivetTestPlugin.psm1' @'
-function NewMyPlugin
+        It 'reloads plugins' {
+            GivenFile 'InvokeRivetTestPlugin4\InvokeRivetTestPlugin4.psm1' -In $script:testDirPath @'
+function MyPlugin4
 {
 }
 '@
-        Invoke-Rivet -ConfigFilePath $RTConfigFilePath -Database $RTDatabaseName -Push
-        Get-Module -Name 'InvokeRivetTestPlugin' | Should -Not -BeNullOrEmpty
-        Get-Command -Name 'MyPlugin' -ErrorAction Ignore | Should -BeNullOrEmpty
-        Get-Command -Name 'NewMyPlugin' | Should -Not -BeNullOrEmpty
+            $rivetJsonPath = GivenRivetJsonFile -In $script:testDirPath -PluginPath 'InvokeRivetTestPlugin4' -PassThru
+            Invoke-Rivet -ConfigFilePath $rivetJsonPath -Database $script:dbName -Push
+            Get-Module -Name 'InvokeRivetTestPlugin4' | Should -Not -BeNullOrEmpty
+            Get-Command -Name 'MyPlugin4' | Should -Not -BeNullOrEmpty
+
+            # Now, change the module.
+            GivenFile 'InvokeRivetTestPlugin4\InvokeRivetTestPlugin4.psm1' -In $script:testDirPath @'
+function MyPlugin5
+{
+}
+'@
+            Invoke-Rivet -ConfigFilePath $rivetJsonPath -Database $script:dbName -Push
+            Get-Module -Name 'InvokeRivetTestPlugin4' | Should -Not -BeNullOrEmpty
+            Get-Command -Name 'MyPlugin4' -ErrorAction Ignore | Should -BeNullOrEmpty
+            Get-Command -Name 'MyPlugin5' | Should -Not -BeNullOrEmpty
+        }
     }
 }
 

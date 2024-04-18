@@ -6,10 +6,15 @@ BeforeAll {
     Set-StrictMode -Version 'Latest'
 
     & (Join-Path -Path $PSScriptRoot -ChildPath 'Initialize-Test.ps1' -Resolve)
+    Remove-Item -Path 'alias:GivenMigration'
 
     $script:pluginModuleName = 'GetMigrationPlugins'
     $script:pluginModulePath = '{0}\{0}.psm1' -f $script:pluginModuleName
     $script:migrations = $null
+    $script:rivetJsonPath = $null
+    $script:testDir = $null
+    $script:testNum = 0
+    $script:dbName = 'Get-Migration'
 
     $script:noOpMigration = @'
     function Push-Migration
@@ -31,7 +36,7 @@ BeforeAll {
         )
 
         Set-StrictMode -Version 'Latest'
-        $Global:Error.Count | Should -Be 0
+        $Global:Error | Should -BeNullOrEmpty
         $m | Should -Not -BeNullOrEmpty
         $m | Should -BeOfType ([Rivet.Migration])
         $m.Name | Should -Be 'ShouldGetMigrationsUsingCurrentRivetJsonFile'
@@ -47,19 +52,28 @@ BeforeAll {
         $popOp.Name | Should -Be 'ShouldGetMigrationsUsingCurrentRivetJsonFile'
     }
 
-    function Init
+    function GivenMigration
     {
         param(
-            [hashtable] $StartArgument = @{}
+            [Parameter(Mandatory, Position=0)]
+            [String] $Named,
+
+            [Parameter(Mandatory, Position=1)]
+            [String] $WithContent
         )
-        $Global:Error.Clear()
-        Start-RivetTest @StartArgument
-        $script:migrations = @()
+
+        $WithContent |
+            New-TestMigration -Named $Named -DatabaseName $script:dbName -ConfigFilePath $script:rivetJsonPath
     }
 
-    function Reset
+    function GivenPlugin
     {
-        Stop-RivetTest
+        [CmdletBinding()]
+        param(
+            [String] $WithContent
+        )
+
+        GivenFile $script:pluginModulePath -In $script:testDir $WithContent
     }
 
     function WhenGettingMigrations
@@ -68,762 +82,734 @@ BeforeAll {
         param(
         )
 
-        $script:migrations = Get-Migration -ConfigFilePath $RTConfigFilePath
+        $script:migrations = Get-Migration -ConfigFilePath $script:rivetJsonPath
     }
 }
 
 Describe 'Get-Migration' {
     BeforeEach {
-        Init
+        $script:testDir = Join-Path -Path $TestDrive -ChildPath ($script:testNum++)
+        New-Item -Path $script:testDir -ItemType Directory
+        $Global:Error.Clear()
+        $script:migrations = @()
+        $script:rivetJsonPath = GivenRivetJsonFile -In $script:testDir -Database $script:dbName -PassThru
     }
 
-    AfterEach {
-        Reset
-    }
-
-    It 'should get migrations using current rivet json file' {
-        New-Item -Path (Join-Path -Path $TestDrive -ChildPath ('Databases\{0}\Migrations' -f $RTDatabaseName)) -ItemType 'Directory' -Force
-
-        $rivetJsonPath = Join-Path -Path $TestDrive -ChildPath 'rivet.json'
-        (@'
-        {{
-            DatabasesRoot: 'Databases',
-            SqlServerName: {0}
-        }}
-'@ -f ($RTServer.ToString() | ConvertTo-Json)) | Set-Content -Path $rivetJsonPath
-
-        @'
-        function Push-Migration
-        {
-            Add-Schema 'ShouldGetMigrationsUsingCurrentRivetJsonFile'
+    Context 'minimal configuration' {
+        BeforeEach {
+            $script:rivetJsonPath = GivenRivetJsonFile -In $script:testDir -Database $script:dbName -PassThru
         }
 
-        function Pop-Migration
-        {
-            Remove-Schema 'ShouldGetMigrationsUsingCurrentRivetJsonFile'
+        It 'should get migrations using current rivet json file' {
+            GivenMigration 'ShouldGetMigrationsUsingCurrentRivetJsonFile' @'
+                function Push-Migration
+                {
+                    Add-Schema 'ShouldGetMigrationsUsingCurrentRivetJsonFile'
+                }
+
+                function Pop-Migration
+                {
+                    Remove-Schema 'ShouldGetMigrationsUsingCurrentRivetJsonFile'
+                }
+'@
+
+            Push-Location -Path $script:testDir -StackName $PSCommandPath
+            try
+            {
+                Assert-GetMigration (Get-Migration)
+                Assert-GetMigration (Get-Migration -Database $script:dbName -ConfigFilePath $script:rivetJsonPath)
+                $Global:Error | Should -BeNullOrEmpty
+            }
+            finally
+            {
+                Pop-Location -StackName $PSCommandPath
+            }
+
+            # Now, use an explicit path.
+            Assert-GetMigration (Get-Migration -ConfigFilePath $script:rivetJsonPath)
         }
-'@ | New-TestMigration -Name 'ShouldGetMigrationsUsingCurrentRivetJsonFile' -ConfigFilePath $rivetJsonPath | Format-Table | Out-String | Write-Verbose
 
-        Push-Location -Path $TestDrive -StackName $PSCommandPath
-        try
-        {
-            Assert-GetMigration (Get-Migration)
-            Assert-GetMigration (Get-Migration -Database $RTDatabaseName  -ConfigFilePath $rivetJsonPath)
-            $Global:Error.Count | Should -Be 0
+        It 'should protect against items returned from pipeline' {
+            GivenMigration 'ShouldProtectAgainstItemsReturnedFromPipeline' @'
+                function Push-Migration
+                {
+                    Invoke-Ddl 'select 1'
+                }
+                1 # See that guy? We should protect ourselves against 💩 like that.
+                function Pop-Migration
+                {
+                    Invoke-Ddl 'select 1'
+                }
+'@
+
+            $m = Get-Migration -ConfigFilePath $script:rivetJsonPath
+            $Global:Error | Should -BeNullOrEmpty
+            $m | Should -BeOfType ([Rivet.Migration])
         }
-        finally
-        {
-            Pop-Location -StackName $PSCommandPath
-        }
 
-        # Now, use an explicit path.
-        Assert-GetMigration (Get-Migration -ConfigFilePath $rivetJsonPath)
-    }
+        It 'should ignore migration with empty push' {
+            GivenMigration 'EmptyPush' @'
+                function Push-Migration
+                {
+                    # I'm empty.
+                }
 
-    It 'should protect against items returned from pipeline' {
-        @'
-    function Push-Migration
-    {
-        Invoke-Ddl 'select 1'
-    }
-    1 # See that guy? We should protect ourselves against 💩 like that.
-    function Pop-Migration
-    {
-        Invoke-Ddl 'select 1'
-    }
-'@ | New-TestMigration -Name 'ShouldProtectAgainstItemsReturnedFromPipeline'
+                function Pop-Migration
+                {
+                    Invoke-Ddl 'select 1'
+                }
+'@
 
-        $m = Get-Migration -ConfigFilePath $RTConfigFilePath
-        $Global:Error.Count | Should -Be 0
-        $m | Should -BeOfType ([Rivet.Migration])
-    }
-
-    It 'should ignore migration with empty push' {
-        $m = @'
-    function Push-Migration
-    {
-        # I'm empty.
-    }
-
-    function Pop-Migration
-    {
-        Invoke-Ddl 'select 1'
-    }
-'@ | New-TestMigration -Name 'EmptyPush'
-
-        try
-        {
-            $result = Get-Migration -ConfigFilePath $RTConfigFilePath -ErrorAction SilentlyContinue
+            $result = Get-Migration -ConfigFilePath $script:rivetJsonPath -ErrorAction SilentlyContinue
             $result | Should -BeNullOrEmpty
             $Global:Error | Should -BeNullOrEmpty
         }
-        finally
-        {
-            Remove-Item -Path $m.FullName
-        }
-    }
 
-    It 'should ignore migration with empty pop' {
-        $m = @'
-    function Push-Migration
-    {
-        Invoke-Ddl 'select 1'
-    }
+        It 'should ignore migration with empty pop' {
+            GivenMigration 'EmptyPop' @'
+                function Push-Migration
+                {
+                    Invoke-Ddl 'select 1'
+                }
 
-    function Pop-Migration
-    {
-        # I'm empty.
-    }
-'@ | New-TestMigration -Name 'EmptyPop'
+                function Pop-Migration
+                {
+                    # I'm empty.
+                }
+'@
 
-        try
-        {
-            $result = Get-Migration -ConfigFilePath $RTConfigFilePath -ErrorAction SilentlyContinue
+            $result = Get-Migration -ConfigFilePath $script:rivetJsonPath -ErrorAction SilentlyContinue
             $result | Should -BeNullOrEmpty
             $Global:Error | Should -BeNullOrEmpty
         }
-        finally
-        {
-            Remove-Item -Path $m.FullName
-        }
-    }
 
-    It 'should reject migration with no push migration function' {
-        $m = @'
-    function Pop-Migration
-    {
-        Invoke-Ddl 'select 1'
-    }
-'@ | New-TestMigration -Name 'MissingPush'
+        It 'should reject migration with no push migration function' {
+            GivenMigration 'MissingPush' @'
+                function Pop-Migration
+                {
+                    Invoke-Ddl 'select 1'
+                }
+'@
 
-        try
-        {
             $result =
-                { Get-Migration -ConfigFilePath $RTConfigFilePath } |
+                { Get-Migration -ConfigFilePath $script:rivetJsonPath } |
                 Should -Throw '*Push-Migration function not found*'
             $result | Should -BeNullOrEmpty
             $Global:Error.Count | Should -BeGreaterThan 0
             $Global:Error[0] | Should -Match 'Push-Migration.*not found'
         }
-        finally
-        {
-            Remove-Item -Path $m.FullName
-        }
-    }
 
-    It 'should reject migration with no pop migration function' {
-        $m = @'
-    function Push-Migration
-    {
-        Invoke-Ddl 'select 1'
-    }
-'@ | New-TestMigration -Name 'MissingPop'
+        It 'should reject migration with no pop migration function' {
+            GivenMigration 'MissingPop' @'
+                function Push-Migration
+                {
+                    Invoke-Ddl 'select 1'
+                }
+'@
 
-        try
-        {
             $result =
-                { Get-Migration -ConfigFilePath $RTConfigFilePath } |
+                { Get-Migration -ConfigFilePath $script:rivetJsonPath } |
                 Should -Throw '*Pop-Migration function not found*'
             $result | Should -BeNullOrEmpty
             $Global:Error.Count | Should -BeGreaterThan 0
             $Global:Error[0] | Should -Match 'Pop-Migration.*not found'
         }
-        finally
-        {
-            Remove-Item -Path $m.FullName
+
+        It 'should write an error if included migration not found' {
+            { Get-Migration -ConfigFilePath $script:rivetJsonPath -Include 'nomigrationbythisname' } |
+                Should -Throw "*""nomigrationbythisname""*does not exist*"
+        }
+
+        It 'should not write an error if included wildcarded migration not found' {
+            $result = Get-Migration -ConfigFilePath $script:rivetJsonPath -Include '*fubar*'
+            $result | Should -BeNullOrEmpty
+            $Global:Error | Should -BeNullOrEmpty
+        }
+
+        It 'should include migration by name or ID' {
+            $m = GivenMigration 'ShouldIncludeMigrationByNameOrID' @'
+                function Push-Migration
+                {
+                    Invoke-Ddl 'select 1'
+                }
+
+                function Pop-Migration
+                {
+                    Invoke-Ddl 'select 1'
+                }
+'@
+
+            $id = ($m.BaseName -split '_')[0]
+
+            $result = Get-Migration -ConfigFilePath $script:rivetJsonPath -Include 'ShouldIncludeMigrationByNameOrID'
+            $result | Should -Not -BeNullOrEmpty
+            $id | Should -Be $result.ID
+            'ShouldIncludeMigrationByNameOrID' | Should -Be $result.Name
+            $m.BaseName | Should -Be $result.FullName
+
+            $result = Get-Migration -ConfigFilePath $script:rivetJsonPath -Include $id
+            $result | Should -Not -BeNullOrEmpty
+            $id | Should -Be $result.ID
+            'ShouldIncludeMigrationByNameOrID' | Should -Be $result.Name
+            $m.BaseName | Should -Be $result.FullName
+        }
+
+        It 'should include migration wildcard ID' {
+            $m = GivenMigration 'ShouldIncludeMigrationWildcardID' @'
+                function Push-Migration
+                {
+                    Invoke-Ddl 'select 1'
+                }
+
+                function Pop-Migration
+                {
+                    Invoke-Ddl 'select 1'
+                }
+'@
+
+            $id = ($m.BaseName -split '_')[0]
+
+            $result = Get-Migration -ConfigFilePath $script:rivetJsonPath -Include ('{0}*' -f $id.Substring(0,10))
+            $result | Should -Not -BeNullOrEmpty
+            $id | Should -Be $result.ID
+            'ShouldIncludeMigrationWildcardID' | Should -Be $result.Name
+            $m.BaseName | Should -Be $result.FullName
+        }
+
+        It 'should get a migration by base name' {
+            $m = GivenMigration 'ShouldGetAMigrationByBaseName' @'
+                function Push-Migration
+                {
+                    Invoke-Ddl 'select 1'
+                }
+
+                function Pop-Migration
+                {
+                    Invoke-Ddl 'select 1'
+                }
+'@
+
+            $id = ($m.BaseName -split '_')[0]
+
+            $result = Get-Migration -ConfigFilePath $script:rivetJsonPath -Include $m.BaseName
+            $result | Should -Not -BeNullOrEmpty
+            $id | Should -Be $result.ID
+            'ShouldGetAMigrationByBaseName' | Should -Be $result.Name
+            $m.BaseName | Should -Be $result.FullName
+        }
+
+        It 'should get a migration by base name with wildcard' {
+            $m = GivenMigration 'ShouldGetAMigrationByBaseNameWithWildcard' @'
+                function Push-Migration
+                {
+                    Invoke-Ddl 'select 1'
+                }
+
+                function Pop-Migration
+                {
+                    Invoke-Ddl 'select 1'
+                }
+'@
+
+            $id = ($m.BaseName -split '_')[0]
+
+            $result = Get-Migration -ConfigFilePath $script:rivetJsonPath -Include ('{0}*' -f $m.BaseName.Substring(0,20))
+            $result | Should -Not -BeNullOrEmpty
+            $id | Should -Be $result.ID
+            'ShouldGetAMigrationByBaseNameWithWildcard' | Should -Be $result.Name
+            $m.BaseName | Should -Be $result.FullName
+        }
+
+        It 'should match exclude pattern against ID, name, and base name and support wildcards' {
+            $m = GivenMigration 'ShouldExcludeMigrationByNameOrID' $script:noOpMigration
+            $id = ($m.BaseName -split '_')[0]
+
+            GivenMigration 'ShouldInclude' $script:noOpMigration
+            GivenMigration 'ShouldExcludeIfUsingWildcards' $script:noOpMigration
+
+            # When excluding a specific migration by name.
+            Get-Migration -ConfigFilePath $script:rivetJsonPath -Exclude 'ShouldExcludeMigrationByNameOrID' | Should -HaveCount 2
+            Get-Migration -ConfigFilePath $script:rivetJsonPath -Exclude 'ShouldExclude*'  | Should -HaveCount 1
+
+            # Should match against base name.
+            Get-Migration -ConfigFilePath $script:rivetJsonPath -Exclude $m.BaseName | Should -HaveCount 2
+            Get-Migration -ConfigFilePath $script:rivetJsonPath -Exclude "$($id.Substring(0, 4))*_ShouldExcludeMig*" | Should -HaveCount 2
+
+            # Should match against ID.
+            Get-Migration -ConfigFilePath $script:rivetJsonPath -Exclude $id | Should -HaveCount 2
+            Get-Migration -ConfigFilePath $script:rivetJsonPath -Exclude "$($id.Substring(0, 4))*" | Should -BeNullOrEmpty
+
+            # should match multiple exclude patterns
+            Get-Migration -ConfigFilePath $script:rivetJsonPath -Exclude '*Wildcards','*ID' | Should -HaveCount 1
+
+            $Global:Error | Should -BeNullOrEmpty
         }
     }
 
-    It 'should write an error if included migration not found' {
-        { Get-Migration -ConfigFilePath $RTConfigFilePath -Include 'nomigrationbythisname' } |
-            Should -Throw "*""nomigrationbythisname""*does not exist*"
-    }
+    Context 'CommandTimeout' {
+        It 'should set timeout duration to default 30 seconds on Rivet operations when CommandTimeout isn''t specified in the Rivet configuration' {
+            GivenMigration 'SetCommandTimeout' @'
+                function Push-Migration
+                {
+                    Invoke-Ddl 'select 1'
+                }
+                function Pop-Migration
+                {
+                    Invoke-Ddl 'select 1'
+                }
+'@
 
-    It 'should not write an error if included wildcarded migration not found' {
-        $result = Get-Migration -ConfigFilePath $RTConfigFilePath -Include '*fubar*'
-        $result | Should -BeNullOrEmpty
-        $Global:Error.Count | Should -Be 0
-    }
-
-    It 'should include migration by name or ID' {
-        $m = @'
-    function Push-Migration
-    {
-        Invoke-Ddl 'select 1'
-    }
-
-    function Pop-Migration
-    {
-        Invoke-Ddl 'select 1'
-    }
-'@ | New-TestMigration -Name 'ShouldIncludeMigrationByNameOrID'
-
-        $id = ($m.BaseName -split '_')[0]
-
-        $result = Get-Migration -ConfigFilePath $RTConfigFilePath -Include 'ShouldIncludeMigrationByNameOrID'
-        $result | Should -Not -BeNullOrEmpty
-        $id | Should -Be $result.ID
-        'ShouldIncludeMigrationByNameOrID' | Should -Be $result.Name
-        $m.BaseName | Should -Be $result.FullName
-
-        $result = Get-Migration -ConfigFilePath $RTConfigFilePath -Include $id
-        $result | Should -Not -BeNullOrEmpty
-        $id | Should -Be $result.ID
-        'ShouldIncludeMigrationByNameOrID' | Should -Be $result.Name
-        $m.BaseName | Should -Be $result.FullName
-    }
-
-    It 'should include migration wildcard ID' {
-        $m = @'
-    function Push-Migration
-    {
-        Invoke-Ddl 'select 1'
-    }
-
-    function Pop-Migration
-    {
-        Invoke-Ddl 'select 1'
-    }
-'@ | New-TestMigration -Name 'ShouldIncludeMigrationWildcardID'
-
-        $id = ($m.BaseName -split '_')[0]
-
-        $result = Get-Migration -ConfigFilePath $RTConfigFilePath -Include ('{0}*' -f $id.Substring(0,10))
-        $result | Should -Not -BeNullOrEmpty
-        $id | Should -Be $result.ID
-        'ShouldIncludeMigrationWildcardID' | Should -Be $result.Name
-        $m.BaseName | Should -Be $result.FullName
-    }
-
-    It 'should get a migration by base name' {
-        $m = @'
-    function Push-Migration
-    {
-        Invoke-Ddl 'select 1'
-    }
-
-    function Pop-Migration
-    {
-        Invoke-Ddl 'select 1'
-    }
-'@ | New-TestMigration -Name 'ShouldGetAMigrationByBaseName'
-
-        $id = ($m.BaseName -split '_')[0]
-
-        $result = Get-Migration -ConfigFilePath $RTConfigFilePath -Include $m.BaseName
-        $result | Should -Not -BeNullOrEmpty
-        $id | Should -Be $result.ID
-        'ShouldGetAMigrationByBaseName' | Should -Be $result.Name
-        $m.BaseName | Should -Be $result.FullName
-    }
-
-    It 'should get a migration by base name with wildcard' {
-        $m = @'
-    function Push-Migration
-    {
-        Invoke-Ddl 'select 1'
-    }
-
-    function Pop-Migration
-    {
-        Invoke-Ddl 'select 1'
-    }
-'@ | New-TestMigration -Name 'ShouldGetAMigrationByBaseNameWithWildcard'
-
-        $id = ($m.BaseName -split '_')[0]
-
-        $result = Get-Migration -ConfigFilePath $RTConfigFilePath -Include ('{0}*' -f $m.BaseName.Substring(0,20))
-        $result | Should -Not -BeNullOrEmpty
-        $id | Should -Be $result.ID
-        'ShouldGetAMigrationByBaseNameWithWildcard' | Should -Be $result.Name
-        $m.BaseName | Should -Be $result.FullName
-    }
-
-    It 'should set timeout duration to default 30 seconds on Rivet operations when CommandTimeout isn''t specified in the Rivet configuration' {
-        @'
-        function Push-Migration
-        {
-            Invoke-Ddl 'select 1'
+            $m = Get-Migration -ConfigFilePath $script:rivetJsonPath
+            $Global:Error | Should -BeNullOrEmpty
+            $m | Should -BeOfType ([Rivet.Migration])
+            $m.PopOperations[0].CommandTimeout | Should -Be 30
+            $m.PushOperations[0].CommandTimeout | Should -Be 30
         }
-        function Pop-Migration
-        {
-            Invoke-Ddl 'select 1'
-        }
-'@ | New-TestMigration -Name 'SetCommandTimeout'
 
-        $m = Get-Migration -ConfigFilePath $RTConfigFilePath
-        $Global:Error.Count | Should -Be 0
-        $m | Should -BeOfType ([Rivet.Migration])
-        $m.PopOperations[0].CommandTimeout | Should -Be 30
-        $m.PushOperations[0].CommandTimeout | Should -Be 30
-    }
+        It 'should set timeout duration on Rivet operations when CommandTimeout is specified in the Rivet configuration' {
+            $script:rivetJsonPath =
+                GivenRivetJsonFile -In $script:testDir -Database $script:dbName -PassThru -CommandTimeout 60
 
-    It 'should set timeout duration on Rivet operations when CommandTimeout is specified in the Rivet configuration' {
-        Start-RivetTest -CommandTimeout 60
-        @'
-        function Push-Migration
-        {
-            Invoke-Ddl 'select 1'
-        }
-        function Pop-Migration
-        {
-            Invoke-Ddl 'select 1'
-        }
-'@ | New-TestMigration -Name 'SetCommandTimeout'
+            GivenMigration 'SetCommandTimeout' @'
+            function Push-Migration
+            {
+                Invoke-Ddl 'select 1'
+            }
+            function Pop-Migration
+            {
+                Invoke-Ddl 'select 1'
+            }
+'@
 
-        $m = Get-Migration -ConfigFilePath $RTConfigFilePath
-        $Global:Error.Count | Should -Be 0
-        $m | Should -BeOfType ([Rivet.Migration])
-        $m.PopOperations[0].CommandTimeout | Should -Be 60
-        $m.PushOperations[0].CommandTimeout | Should -Be 60
-    }
-
-    It 'should match exclude pattern against ID, name, and base name and support wildcards' {
-        $m = $script:noOpMigration | New-TestMigration -Name 'ShouldExcludeMigrationByNameOrID'
-        $id = ($m.BaseName -split '_')[0]
-
-        $script:noOpMigration | New-TestMigration -Name 'ShouldInclude'
-        $script:noOpMigration | New-TestMigration -Name 'ShouldExcludeIfUsingWildcards'
-
-        # When excluding a specific migration by name.
-        Get-Migration -ConfigFilePath $RTConfigFilePath -Exclude 'ShouldExcludeMigrationByNameOrID' | Should -HaveCount 2
-        Get-Migration -ConfigFilePath $RTConfigFilePath -Exclude 'ShouldExclude*'  | Should -HaveCount 1
-
-        # Should match against base name.
-        Get-Migration -ConfigFilePath $RTConfigFilePath -Exclude $m.BaseName | Should -HaveCount 2
-        Get-Migration -ConfigFilePath $RTConfigFilePath -Exclude "$($id.Substring(0, 4))*_ShouldExcludeMig*" | Should -HaveCount 2
-
-        # Should match against ID.
-        Get-Migration -ConfigFilePath $RTConfigFilePath -Exclude $id | Should -HaveCount 2
-        Get-Migration -ConfigFilePath $RTConfigFilePath -Exclude "$($id.Substring(0, 4))*" | Should -BeNullOrEmpty
-
-        # should match multiple exclude patterns
-        Get-Migration -ConfigFilePath $RTConfigFilePath -Exclude '*Wildcards','*ID' | Should -HaveCount 1
-
-        $Global:Error | Should -BeNullOrEmpty
-    }
-}
-
-Describe 'Get-Migration' {
-    BeforeEach {
-        Init -StartArgument @{ PluginPath = $script:pluginModuleName }
-    }
-
-    AfterEach {
-        Reset
-        if ((Get-Module $script:pluginModuleName))
-        {
-            Remove-Module $script:pluginModuleName
+            $m = Get-Migration -ConfigFilePath $script:rivetJsonPath
+            $Global:Error | Should -BeNullOrEmpty
+            $m | Should -BeOfType ([Rivet.Migration])
+            $m.PopOperations[0].CommandTimeout | Should -Be 60
+            $m.PushOperations[0].CommandTimeout | Should -Be 60
         }
     }
 
-    It ('should run the plugin') {
-        GivenFile $script:pluginModulePath @'
-function OnAdd
-{
-    [Rivet.Plugin([Rivet.Events]::BeforeOperationLoad)]
-    param(
-        $Migration,
-        $Operation
-    )
+    Context 'Plugins' {
+        BeforeEach {
+            $script:rivetJsonPath = GivenRivetJsonFile -In $script:testDir `
+                                                       -Database $script:dbName `
+                                                       -PluginPath $script:pluginModuleName `
+                                                       -PassThru
+        }
 
-    Add-Schema 'boom'
-}
+        AfterEach {
+            if ((Get-Module $script:pluginModuleName))
+            {
+                Remove-Module $script:pluginModuleName
+            }
+        }
+
+        It 'should run the plugin' {
+            GivenPlugin @'
+                function OnAdd
+                {
+                    [Rivet.Plugin([Rivet.Events]::BeforeOperationLoad)]
+                    param(
+                        $Migration,
+                        $Operation
+                    )
+
+                    Add-Schema 'boom'
+                }
 '@
-        @'
-function Push-Migration
-{
-    Invoke-Ddl 'select 1'
-}
-function Pop-Migration
-{
-    Invoke-Ddl 'select 2'
-}
-'@ | New-TestMigration -Name 'One'
-        WhenGettingMigrations
-        $script:migrations | Should -Not -BeNullOrEmpty
-        $script:migrations.PushOperations | Where-Object { $_ -is [Rivet.Operations.AddSchemaOperation] } | Should -Not -BeNullOrEmpty
-        $script:migrations.PushOperations[1] | Should -BeOfType ([Rivet.Operations.RawDdlOperation])
-        $script:migrations.PopOperations | Where-Object { $_ -is [Rivet.Operations.AddSchemaOperation] } | Should -Not -BeNullOrEmpty
-        $script:migrations.PopOperations[1] | Should -BeOfType ([Rivet.Operations.RawDdlOperation])
-    }
-
-    It ('should run all the plugins') {
-        GivenFile $script:pluginModulePath @'
-function OnAdd
-{
-    [Rivet.Plugin([Rivet.Events]::BeforeOperationLoad)]
-    param(
-        $Migration,
-        $Operation
-    )
-
-    Add-Schema 'boom'
-}
-
-function AnotherOnAdd
-{
-    [Rivet.Plugin([Rivet.Events]::BeforeOperationLoad)]
-    param(
-        $Migration,
-        $Operation
-    )
-
-    Add-Schema 'boom'
-}
+            GivenMigration 'One' @'
+                function Push-Migration
+                {
+                    Invoke-Ddl 'select 1'
+                }
+                function Pop-Migration
+                {
+                    Invoke-Ddl 'select 2'
+                }
 '@
-        @'
-function Push-Migration
-{
-    Invoke-Ddl 'select 1'
-}
-function Pop-Migration
-{
-    Invoke-Ddl 'select 2'
-}
-'@ | New-TestMigration -Name 'One'
-        WhenGettingMigrations
-        $script:migrations | Should -Not -BeNullOrEmpty
-        $script:migrations.PushOperations | Where-Object { $_ -is [Rivet.Operations.AddSchemaOperation] } | Should -HaveCount 2
-        $script:migrations.PopOperations | Where-Object { $_ -is [Rivet.Operations.AddSchemaOperation] } | Should -HaveCount 2
-    }
+            WhenGettingMigrations
+            $script:migrations | Should -Not -BeNullOrEmpty
+            $script:migrations.PushOperations | Where-Object { $_ -is [Rivet.Operations.AddSchemaOperation] } | Should -Not -BeNullOrEmpty
+            $script:migrations.PushOperations[1] | Should -BeOfType ([Rivet.Operations.RawDdlOperation])
+            $script:migrations.PopOperations | Where-Object { $_ -is [Rivet.Operations.AddSchemaOperation] } | Should -Not -BeNullOrEmpty
+            $script:migrations.PopOperations[1] | Should -BeOfType ([Rivet.Operations.RawDdlOperation])
+        }
 
-    It 'runs before operation load plugins' {
-        GivenFile $script:pluginModulePath @'
-function OnAdd
-{
-    [Rivet.Plugin([Rivet.Events]::BeforeOperationLoad)]
-    param(
-        $Operation
-    )
+        It ('should run all the plugins') {
+            GivenPlugin @'
+                function OnAdd
+                {
+                    [Rivet.Plugin([Rivet.Events]::BeforeOperationLoad)]
+                    param(
+                        $Migration,
+                        $Operation
+                    )
 
-    Add-Schema -Name 'Fubar'
-}
+                    Add-Schema 'boom'
+                }
+
+                function AnotherOnAdd
+                {
+                    [Rivet.Plugin([Rivet.Events]::BeforeOperationLoad)]
+                    param(
+                        $Migration,
+                        $Operation
+                    )
+
+                    Add-Schema 'boom'
+                }
 '@
-        @'
-function Push-Migration
-{
-    Invoke-Ddl 'select 1'
-}
-function Pop-Migration
-{
-    Invoke-Ddl 'select 2'
-}
-'@ | New-TestMigration -Name 'One'
-        { WhenGettingMigrations } |
-            Should -Throw '*"BeforeOperationLoad" event must have a named "Migration" parameter*'
-        $script:migrations | Should -BeNullOrEmpty
-    }
-
-    It 'ignores objects returned by plugin' {
-        GivenFile $script:pluginModulePath @'
-function BeforeOpLoad
-{
-    [Rivet.Plugin([Rivet.Events]::BeforeOperationLoad)]
-    param(
-        $Migration,
-        $Operation
-    )
-
-    return 'BeforeOperationLoad'
-}
-
-function AfterOpLoad
-{
-    [Rivet.Plugin([Rivet.Events]::AfterOperationLoad)]
-    param(
-        $Migration,
-        $Operation
-    )
-
-    return 'AfterOperationLoad'
-}
-
-function AfterMigrationLoad
-{
-    [Rivet.Plugin([Rivet.Events]::BeforeOperationLoad)]
-    [Rivet.Plugin([Rivet.Events]::AfterOperationLoad)]
-    [Rivet.Plugin([Rivet.Events]::AfterMigrationLoad)]
-    param(
-        $Migration,
-        $Operation
-    )
-
-    return 'AfterMigrationLoad'
-}
+            GivenMigration 'One' @'
+                function Push-Migration
+                {
+                    Invoke-Ddl 'select 1'
+                }
+                function Pop-Migration
+                {
+                    Invoke-Ddl 'select 2'
+                }
 '@
-        @'
-function Push-Migration
-{
-    Invoke-Ddl 'select 1'
-}
-function Pop-Migration
-{
-    Invoke-Ddl 'select 2'
-}
-'@ | New-TestMigration -Name 'One'
-        { WhenGettingMigrations } | Should -Not -Throw
-    }
+            WhenGettingMigrations
+            $script:migrations | Should -Not -BeNullOrEmpty
+            $script:migrations.PushOperations | Where-Object { $_ -is [Rivet.Operations.AddSchemaOperation] } | Should -HaveCount 2
+            $script:migrations.PopOperations | Where-Object { $_ -is [Rivet.Operations.AddSchemaOperation] } | Should -HaveCount 2
+        }
 
-    It ('should fail') {
-        GivenFile $script:pluginModulePath @'
-function OnAdd
-{
-    [Rivet.Plugin([Rivet.Events]::BeforeOperationLoad)]
-    param(
-        $Migration
-    )
+        It 'runs before operation load plugins' {
+            GivenPlugin @'
+                function OnAdd
+                {
+                    [Rivet.Plugin([Rivet.Events]::BeforeOperationLoad)]
+                    param(
+                        $Operation
+                    )
 
-    Add-Schema -Name 'Fubar'
-}
+                    Add-Schema -Name 'Fubar'
+                }
 '@
-        @'
-function Push-Migration
-{
-    Invoke-Ddl 'select 1'
-}
-function Pop-Migration
-{
-    Invoke-Ddl 'select 2'
-}
-'@ | New-TestMigration -Name 'One'
-        { WhenGettingMigrations } |
-            Should -Throw '*"BeforeOperationLoad" event must have a named "Operation" parameter*'
-        $script:migrations | Should -BeNullOrEmpty
-    }
-
-    It ('should run the plugin') {
-        GivenFile $script:pluginModulePath @'
-function OnAdd
-{
-    [Rivet.Plugin([Rivet.Events]::AfterOperationLoad)]
-    param(
-        $Migration,
-        $Operation
-    )
-
-    Add-Schema 'boom'
-}
+            GivenMigration 'One' @'
+                function Push-Migration
+                {
+                    Invoke-Ddl 'select 1'
+                }
+                function Pop-Migration
+                {
+                    Invoke-Ddl 'select 2'
+                }
 '@
-        @'
-function Push-Migration
-{
-    Invoke-Ddl 'select 1'
-}
-function Pop-Migration
-{
-    Invoke-Ddl 'select 2'
-}
-'@ | New-TestMigration -Name 'One'
-        WhenGettingMigrations
-        $script:migrations | Should -Not -BeNullOrEmpty
-        $script:migrations.PushOperations | Where-Object { $_ -is [Rivet.Operations.AddSchemaOperation] } | Should -Not -BeNullOrEmpty
-        $script:migrations.PushOperations[0] | Should -BeOfType ([Rivet.Operations.RawDdlOperation])
-        $script:migrations.PopOperations | Where-Object { $_ -is [Rivet.Operations.AddSchemaOperation] } | Should -Not -BeNullOrEmpty
-        $script:migrations.PopOperations[0] | Should -BeOfType ([Rivet.Operations.RawDdlOperation])
-    }
+            { WhenGettingMigrations } |
+                Should -Throw '*"BeforeOperationLoad" event must have a named "Migration" parameter*'
+            $script:migrations | Should -BeNullOrEmpty
+        }
 
-    It ('should run all the plugins') {
-        GivenFile $script:pluginModulePath @'
-function OnAdd
-{
-    [Rivet.Plugin([Rivet.Events]::AfterOperationLoad)]
-    param(
-        $Migration,
-        $Operation
-    )
+        It 'ignores objects returned by plugin' {
+            GivenPlugin @'
+                function BeforeOpLoad
+                {
+                    [Rivet.Plugin([Rivet.Events]::BeforeOperationLoad)]
+                    param(
+                        $Migration,
+                        $Operation
+                    )
 
-    Add-Schema 'boom'
-}
+                    return 'BeforeOperationLoad'
+                }
 
-function AnotherOnAdd
-{
-    [Rivet.Plugin([Rivet.Events]::AfterOperationLoad)]
-    param(
-        $Migration,
-        $Operation
-    )
+                function AfterOpLoad
+                {
+                    [Rivet.Plugin([Rivet.Events]::AfterOperationLoad)]
+                    param(
+                        $Migration,
+                        $Operation
+                    )
 
-    Add-Schema 'boom'
-}
+                    return 'AfterOperationLoad'
+                }
+
+                function AfterMigrationLoad
+                {
+                    [Rivet.Plugin([Rivet.Events]::BeforeOperationLoad)]
+                    [Rivet.Plugin([Rivet.Events]::AfterOperationLoad)]
+                    [Rivet.Plugin([Rivet.Events]::AfterMigrationLoad)]
+                    param(
+                        $Migration,
+                        $Operation
+                    )
+
+                    return 'AfterMigrationLoad'
+                }
 '@
-        @'
-function Push-Migration
-{
-    Invoke-Ddl 'select 1'
-}
-function Pop-Migration
-{
-    Invoke-Ddl 'select 2'
-}
-'@ | New-TestMigration -Name 'One'
-        WhenGettingMigrations
-        $script:migrations | Should -Not -BeNullOrEmpty
-        $script:migrations.PushOperations | Where-Object { $_ -is [Rivet.Operations.AddSchemaOperation] } | Should -HaveCount 2
-        $script:migrations.PopOperations | Where-Object { $_ -is [Rivet.Operations.AddSchemaOperation] } | Should -HaveCount 2
-    }
-
-    It ('should fail') {
-        GivenFile $script:pluginModulePath @'
-function OnAdd
-{
-    [Rivet.Plugin([Rivet.Events]::AfterOperationLoad)]
-    param(
-        $Operation
-    )
-
-    Add-Schema -Name 'Fubar'
-}
+            GivenMigration 'One' @'
+                function Push-Migration
+                {
+                    Invoke-Ddl 'select 1'
+                }
+                function Pop-Migration
+                {
+                    Invoke-Ddl 'select 2'
+                }
 '@
-        @'
-function Push-Migration
-{
-    Invoke-Ddl 'select 1'
-}
-function Pop-Migration
-{
-    Invoke-Ddl 'select 2'
-}
-'@ | New-TestMigration -Name 'One'
-        { WhenGettingMigrations } | Should -Throw '*"AfterOperationLoad" event must have a named "Migration" parameter*'
-        $script:migrations | Should -BeNullOrEmpty
-    }
+            { WhenGettingMigrations } | Should -Not -Throw
+        }
 
-    It ('should fail') {
-        GivenFile $script:pluginModulePath @'
-function OnAdd
-{
-    [Rivet.Plugin([Rivet.Events]::AfterOperationLoad)]
-    param(
-        $Migration
-    )
+        It ('should fail') {
+            GivenPlugin @'
+                function OnAdd
+                {
+                    [Rivet.Plugin([Rivet.Events]::BeforeOperationLoad)]
+                    param(
+                        $Migration
+                    )
 
-    Add-Schema -Name 'Fubar'
-}
+                    Add-Schema -Name 'Fubar'
+                }
 '@
-        @'
-function Push-Migration
-{
-    Invoke-Ddl 'select 1'
-}
-function Pop-Migration
-{
-    Invoke-Ddl 'select 2'
-}
-'@ | New-TestMigration -Name 'One'
-        { WhenGettingMigrations } | Should -Throw '*"AfterOperationLoad" event must have a named "Operation" parameter*'
-        $script:migrations | Should -BeNullOrEmpty
-        $Global:Error | Should -Match
-    }
-
-    It ('should run the plugin') {
-        GivenFile $script:pluginModulePath @'
-function OnAdd
-{
-    [Rivet.Plugin([Rivet.Events]::AfterOperationLoad)]
-    param(
-        $Migration,
-        $Operation
-    )
-
-    1
-}
+            GivenMigration 'One' @'
+                function Push-Migration
+                {
+                    Invoke-Ddl 'select 1'
+                }
+                function Pop-Migration
+                {
+                    Invoke-Ddl 'select 2'
+                }
 '@
-        @'
-function Push-Migration
-{
-    Invoke-Ddl 'select 1'
-}
-function Pop-Migration
-{
-    Invoke-Ddl 'select 2'
-}
-'@ | New-TestMigration -Name 'One'
-        WhenGettingMigrations
-        $script:migrations | Should -Not -BeNullOrEmpty
-        $script:migrations.PushOperations | Should -BeOfType ([Rivet.Operations.Operation])
-        $script:migrations.PopOperations | Should -BeOfType ([Rivet.Operations.Operation])
-    }
+            { WhenGettingMigrations } |
+                Should -Throw '*"BeforeOperationLoad" event must have a named "Operation" parameter*'
+            $script:migrations | Should -BeNullOrEmpty
+        }
 
-    It ('should run the plugin when an AddSchemaOperation exists') {
-        GivenFile $script:pluginModulePath @'
-function OnAdd
-{
-    [Rivet.Plugin([Rivet.Events]::BeforeOperationLoad)]
-    param(
-        $Migration,
-        $Operation
-    )
+        It ('should run the plugin') {
+            GivenPlugin @'
+                function OnAdd
+                {
+                    [Rivet.Plugin([Rivet.Events]::AfterOperationLoad)]
+                    param(
+                        $Migration,
+                        $Operation
+                    )
 
-    Add-Schema 'boom'
-}
-
-function AfterMigration
-{
-
-    [Rivet.Plugin([Rivet.Events]::AfterMigrationLoad)]
-    param(
-        $Migration
-    )
-
-    $addSchemaOperation = $Migration.PushOperations | Where-Object{ $_ -is [Rivet.Operations.AddSchemaOperation]}
-
-    if( -not $addSchemaOperation )
-    {
-        Write-Error 'Please add a schema!'
-    }
-}
-
+                    Add-Schema 'boom'
+                }
 '@
-        @'
-function Push-Migration
-{
-    Invoke-Ddl 'select 1'
-}
-function Pop-Migration
-{
-    Invoke-Ddl 'select 2'
-}
-'@ | New-TestMigration -Name 'One'
-        WhenGettingMigrations
-        $script:migrations | Should -Not -BeNullOrEmpty
-        $script:migrations.PushOperations | Where-Object { $_ -is [Rivet.Operations.AddSchemaOperation] } | Should -Not -BeNullOrEmpty
-        $script:migrations.PushOperations[1] | Should -BeOfType ([Rivet.Operations.RawDdlOperation])
-        $script:migrations.PopOperations | Where-Object { $_ -is [Rivet.Operations.AddSchemaOperation] } | Should -Not -BeNullOrEmpty
-        $script:migrations.PopOperations[1] | Should -BeOfType ([Rivet.Operations.RawDdlOperation])
-    }
-
-    It ('should throw an error when AddSchemaOperation doesn''t exist') {
-        GivenFile $script:pluginModulePath @'
-function AfterMigration
-{
-
-    [Rivet.Plugin([Rivet.Events]::AfterMigrationLoad)]
-    param(
-        $Migration
-    )
-
-    $problems = $false
-    $addSchemaOperation = $Migration.PushOperations | Where-Object{ $_ -is [Rivet.Operations.AddSchemaOperation]}
-
-    if( -not $addSchemaOperation )
-    {
-        throw ('Please add a schema!')
-    }
-}
-
+            GivenMigration 'One' @'
+                function Push-Migration
+                {
+                    Invoke-Ddl 'select 1'
+                }
+                function Pop-Migration
+                {
+                    Invoke-Ddl 'select 2'
+                }
 '@
-        @'
-function Push-Migration
-{
-    Invoke-Ddl 'select 1'
-}
-function Pop-Migration
-{
-    Invoke-Ddl 'select 2'
-}
-'@ | New-TestMigration -Name 'One'
-        { WhenGettingMigrations } | Should -Throw '*Please add a schema!*'
-        $script:migrations | Should -BeNullOrEmpty
+            WhenGettingMigrations
+            $script:migrations | Should -Not -BeNullOrEmpty
+            $script:migrations.PushOperations | Where-Object { $_ -is [Rivet.Operations.AddSchemaOperation] } | Should -Not -BeNullOrEmpty
+            $script:migrations.PushOperations[0] | Should -BeOfType ([Rivet.Operations.RawDdlOperation])
+            $script:migrations.PopOperations | Where-Object { $_ -is [Rivet.Operations.AddSchemaOperation] } | Should -Not -BeNullOrEmpty
+            $script:migrations.PopOperations[0] | Should -BeOfType ([Rivet.Operations.RawDdlOperation])
+        }
+
+        It ('should run all the plugins') {
+            GivenPlugin @'
+                function OnAdd
+                {
+                    [Rivet.Plugin([Rivet.Events]::AfterOperationLoad)]
+                    param(
+                        $Migration,
+                        $Operation
+                    )
+
+                    Add-Schema 'boom'
+                }
+
+                function AnotherOnAdd
+                {
+                    [Rivet.Plugin([Rivet.Events]::AfterOperationLoad)]
+                    param(
+                        $Migration,
+                        $Operation
+                    )
+
+                    Add-Schema 'boom'
+                }
+'@
+            GivenMigration 'One' @'
+                function Push-Migration
+                {
+                    Invoke-Ddl 'select 1'
+                }
+                function Pop-Migration
+                {
+                    Invoke-Ddl 'select 2'
+                }
+'@
+            WhenGettingMigrations
+            $script:migrations | Should -Not -BeNullOrEmpty
+            $script:migrations.PushOperations | Where-Object { $_ -is [Rivet.Operations.AddSchemaOperation] } | Should -HaveCount 2
+            $script:migrations.PopOperations | Where-Object { $_ -is [Rivet.Operations.AddSchemaOperation] } | Should -HaveCount 2
+        }
+
+        It ('should fail') {
+            GivenPlugin @'
+                function OnAdd
+                {
+                    [Rivet.Plugin([Rivet.Events]::AfterOperationLoad)]
+                    param(
+                        $Operation
+                    )
+
+                    Add-Schema -Name 'Fubar'
+                }
+'@
+            GivenMigration 'One' @'
+                function Push-Migration
+                {
+                    Invoke-Ddl 'select 1'
+                }
+                function Pop-Migration
+                {
+                    Invoke-Ddl 'select 2'
+                }
+'@
+            { WhenGettingMigrations } | Should -Throw '*"AfterOperationLoad" event must have a named "Migration" parameter*'
+            $script:migrations | Should -BeNullOrEmpty
+        }
+
+        It ('should fail') {
+            GivenPlugin @'
+                function OnAdd
+                {
+                    [Rivet.Plugin([Rivet.Events]::AfterOperationLoad)]
+                    param(
+                        $Migration
+                    )
+
+                    Add-Schema -Name 'Fubar'
+                }
+'@
+            GivenMigration 'One' @'
+                function Push-Migration
+                {
+                    Invoke-Ddl 'select 1'
+                }
+                function Pop-Migration
+                {
+                    Invoke-Ddl 'select 2'
+                }
+'@
+            { WhenGettingMigrations } | Should -Throw '*"AfterOperationLoad" event must have a named "Operation" parameter*'
+            $script:migrations | Should -BeNullOrEmpty
+            $Global:Error | Should -Match
+        }
+
+        It ('should run the plugin') {
+            GivenPlugin @'
+                function OnAdd
+                {
+                    [Rivet.Plugin([Rivet.Events]::AfterOperationLoad)]
+                    param(
+                        $Migration,
+                        $Operation
+                    )
+
+                    1
+                }
+'@
+            GivenMigration 'One' @'
+                function Push-Migration
+                {
+                    Invoke-Ddl 'select 1'
+                }
+                function Pop-Migration
+                {
+                    Invoke-Ddl 'select 2'
+                }
+'@
+            WhenGettingMigrations
+            $script:migrations | Should -Not -BeNullOrEmpty
+            $script:migrations.PushOperations | Should -BeOfType ([Rivet.Operations.Operation])
+            $script:migrations.PopOperations | Should -BeOfType ([Rivet.Operations.Operation])
+        }
+
+        It ('should run the plugin when an AddSchemaOperation exists') {
+            GivenPlugin @'
+                function OnAdd
+                {
+                    [Rivet.Plugin([Rivet.Events]::BeforeOperationLoad)]
+                    param(
+                        $Migration,
+                        $Operation
+                    )
+
+                    Add-Schema 'boom'
+                }
+
+                function AfterMigration
+                {
+
+                    [Rivet.Plugin([Rivet.Events]::AfterMigrationLoad)]
+                    param(
+                        $Migration
+                    )
+
+                    $addSchemaOperation = $Migration.PushOperations | Where-Object{ $_ -is [Rivet.Operations.AddSchemaOperation]}
+
+                    if( -not $addSchemaOperation )
+                    {
+                        Write-Error 'Please add a schema!'
+                    }
+                }
+'@
+            GivenMigration 'One' @'
+                function Push-Migration
+                {
+                    Invoke-Ddl 'select 1'
+                }
+                function Pop-Migration
+                {
+                    Invoke-Ddl 'select 2'
+                }
+'@
+            WhenGettingMigrations
+            $script:migrations | Should -Not -BeNullOrEmpty
+            $script:migrations.PushOperations | Where-Object { $_ -is [Rivet.Operations.AddSchemaOperation] } | Should -Not -BeNullOrEmpty
+            $script:migrations.PushOperations[1] | Should -BeOfType ([Rivet.Operations.RawDdlOperation])
+            $script:migrations.PopOperations | Where-Object { $_ -is [Rivet.Operations.AddSchemaOperation] } | Should -Not -BeNullOrEmpty
+            $script:migrations.PopOperations[1] | Should -BeOfType ([Rivet.Operations.RawDdlOperation])
+        }
+
+        It ('should throw an error when AddSchemaOperation doesn''t exist') {
+            GivenPlugin @'
+                function AfterMigration
+                {
+
+                    [Rivet.Plugin([Rivet.Events]::AfterMigrationLoad)]
+                    param(
+                        $Migration
+                    )
+
+                    $problems = $false
+                    $addSchemaOperation = $Migration.PushOperations | Where-Object{ $_ -is [Rivet.Operations.AddSchemaOperation]}
+
+                    if( -not $addSchemaOperation )
+                    {
+                        throw ('Please add a schema!')
+                    }
+                }
+'@
+            GivenMigration 'One' @'
+                function Push-Migration
+                {
+                    Invoke-Ddl 'select 1'
+                }
+                function Pop-Migration
+                {
+                    Invoke-Ddl 'select 2'
+                }
+'@
+            { WhenGettingMigrations } | Should -Throw '*Please add a schema!*'
+            $script:migrations | Should -BeNullOrEmpty
+        }
     }
 }

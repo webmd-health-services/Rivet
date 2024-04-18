@@ -2,17 +2,18 @@
 function Get-ActivityInfo
 {
     param(
-        [string]
         # The name of the activity whose info to get.  Otherwise, returns all migrations.
-        $Name,
+        [string] $Name,
+
+        [String] $DatabaseName,
 
         $Connection
     )
-    
+
     Set-StrictMode -Version Latest
 
-    $query = "select * from $($RTRivetSchemaName).Activity where MigrationID >= $($script:firstMigrationId)"
-    if( $Name )
+    $query = "select * from [${RTRivetSchemaName}].[Activity] where MigrationID >= $($script:firstMigrationId)"
+    if ($Name)
     {
         $query = '{0} and name = ''{1}''' -f $query,$Name
     }
@@ -22,9 +23,9 @@ function Get-ActivityInfo
     }
 
     $connParam = @{ }
-    if( $Connection )
+    if ($Connection)
     {
         $connParam['Connection'] = $Connection
     }
-    Invoke-RivetTestQuery -Query $query @connParam
+    Invoke-RivetTestQuery -Query $query -DatabaseName $DatabaseName @connParam
 }

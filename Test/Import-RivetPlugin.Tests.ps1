@@ -134,7 +134,7 @@ Describe 'Import-RivetPlugin' {
     }
 '@ | New-TestMigration -Name 'AddMyTable'
 
-        Import-Module -Name (Join-Path -Path $RTTestRoot -ChildPath 'ImportRivetPluginPlugins' -Resolve)
+        Import-Module -Name (Join-Path -Path $RTTestRoot -ChildPath 'ImportRivetPluginPlugins' -Resolve) -Verbose:$false
         Mock -CommandName 'Import-Module' -ModuleName 'Rivet'
 
         Set-PluginPath -PluginModule 'ImportRivetPluginPlugins'
