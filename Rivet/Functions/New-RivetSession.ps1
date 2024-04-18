@@ -55,5 +55,9 @@ function New-RivetSession
         return
     }
 
-    return [Rivet_Session]::New($settings)
+    $session = [Rivet_Session]::New($settings)
+
+    Import-RivetPlugin -Session $session
+
+    return $session
 }

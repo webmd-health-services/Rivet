@@ -87,8 +87,6 @@ function Convert-FileInfoToMigration
         }
 
         Clear-MigrationFunction
-
-        Import-RivetPlugin -Path $Session.PluginPaths -ModuleName $Session.PluginModules
     }
 
     process
