@@ -7,7 +7,7 @@
 
 ### Changed
 
-* `Export-Migration` no longer creates an `Add-Schema` operation that includes owner information (i.e. the `Owner`
+* `Export-Migration` no longer includes owner information when it exports `Add-Schema` operations (i.e. the `Owner`
 parameter is omitted). When exporting a schema to DDL in SQL Server Management Studio, the owner information is also
 omitted so we think this change should be OK.
 * Pushing to a database will now apply the baseline schema if it hasn't been applied.
