@@ -85,11 +85,11 @@ function Invoke-Rivet
 
         # Drops the database(s) for the current environment when given. User will be prompted for confirmation when
         # used.
-        [Parameter(ParameterSetName='DropDatabase')]
+        [Parameter(Mandatory, ParameterSetName='DropDatabase')]
         [switch] $DropDatabase,
 
         # Checkpoints the current state of the database so that it can be re-created.
-        [Parameter(ParameterSetName='Checkpoint')]
+        [Parameter(Mandatory, ParameterSetName='Checkpoint')]
         [switch] $Checkpoint
     )
 
@@ -153,7 +153,7 @@ Found no databases to migrate. This can be a few things:
                 {
                     foreach( $databaseItem in $databaseList )
                     {
-                        $query = "drop database $($databaseItem.Name)"
+                        $query = "drop database [$($databaseItem.Name)]"
                         Invoke-Query -Session $session -Query $query
                     }
                 }

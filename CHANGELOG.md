@@ -15,6 +15,7 @@ omitted so we think this change should be OK.
 ### Fixed
 
 * Baseline schema in schema.ps1 doesn't get applied when pushing migrations.
+* The `DropDatabase` command fails if the database name has non alphanumeric characters in its name.
 
 ### Removed
 
