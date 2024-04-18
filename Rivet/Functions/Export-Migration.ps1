@@ -37,16 +37,19 @@ function Export-Migration
         [Parameter(Mandatory)]
         [String] $Database,
 
-        # The names of the objects to export. Must include the schema if exporting a specific object. Wildcards supported.
+        # The names of the objects to export. Must include the schema if exporting a specific object. Wildcards
+        # supported.
         #
         # The default behavior is to export all non-system objects.
         [String[]] $Include,
 
-        # The names of any objects *not* to export. Matches the object name *and* its schema name, i.e. `schema.name`. Wildcards supported.
+        # The names of any objects *not* to export. Matches the object name *and* its schema name, i.e. `schema.name`.
+        # Wildcards supported.
         [String[]] $Exclude,
 
         # Any object types to exclude.
-        [ValidateSet('CheckConstraint','DataType','DefaultConstraint','ForeignKey','Function','Index','PrimaryKey','Schema','StoredProcedure','Synonym','Table','Trigger','UniqueKey','View','XmlSchema')]
+        [ValidateSet('CheckConstraint','DataType','DefaultConstraint','ForeignKey','Function','Index','PrimaryKey',
+                     'Schema','StoredProcedure','Synonym','Table','Trigger','UniqueKey','View','XmlSchema')]
         [String[]] $ExcludeType,
 
         [Switch] $NoProgress,
@@ -145,7 +148,6 @@ function Export-Migration
         'UniqueKey' = 'UNIQUE_CONSTRAINT';
         'View' = 'VIEW';
     }
-
 
     function ConvertTo-SchemaParameter
     {
@@ -875,10 +877,10 @@ from
         $allColumns = $indexColumnsByObjectID[$Object.object_id] | Where-Object { $_.index_id -eq $Object.index_id }
 
         $includedColumns = $allColumns | Where-Object { $_.is_included_column } | Sort-Object -Property 'name' # I don't think order matters so order them discretely.
-        $include = ''
+        $idxInclude = ''
         if( $includedColumns )
         {
-            $include = ' -Include ''{0}''' -f (($includedColumns | Select-Object -ExpandProperty 'name') -join ''',''')
+            $idxInclude = ' -Include ''{0}''' -f (($includedColumns | Select-Object -ExpandProperty 'name') -join ''',''')
         }
 
         $columns = $allColumns | Where-Object { -not $_.is_included_column } | Sort-Object -Property 'key_ordinal'
@@ -893,7 +895,7 @@ from
         $columnNames = $columns | Select-Object -ExpandProperty 'name'
         Write-ExportingMessage -Schema $Object.schema_name -Name $Object.name -Type Index
         $schema = ConvertTo-SchemaParameter -SchemaName $Object.schema_name
-        '    Add-Index{0} -TableName ''{1}'' -ColumnName ''{2}'' -Name ''{3}''{4}{5}{6}{7}{8}' -f $schema,$Object.table_name,($columnNames -join ''','''),$Object.name,$clustered,$unique,$include,$descending,$where
+        '    Add-Index{0} -TableName ''{1}'' -ColumnName ''{2}'' -Name ''{3}''{4}{5}{6}{7}{8}' -f $schema,$Object.table_name,($columnNames -join ''','''),$Object.name,$clustered,$unique,$idxInclude,$descending,$where
         if( -not $ForTable )
         {
             Push-PopOperation ('Remove-Index{0} -TableName ''{1}'' -Name ''{2}''' -f $schema,$Object.table_name,$Object.name)
