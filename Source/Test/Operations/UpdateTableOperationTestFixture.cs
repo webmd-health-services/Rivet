@@ -36,7 +36,7 @@ namespace Rivet.Test.Operations
 			var op = new UpdateTableOperation(SchemaName, Name, addColumnList, null, null);
 
 			var expectedQuery =
-				$"alter table [schemaName].[name] add [name] varchar(50) not null constraint [{DefaultConstraintName}] default ''{Environment.NewLine}" + 
+				$"alter table [schemaName].[name] add [name] varchar(50) not null constraint [{DefaultConstraintName}] default ''{Environment.NewLine}" +
 				"alter table [schemaName].[name] add [int column] int identity not null";
 
 			Assert.AreEqual(expectedQuery, op.ToQuery());
@@ -48,7 +48,7 @@ namespace Rivet.Test.Operations
 			var op = new UpdateTableOperation(SchemaName, Name, null, updateColumnList, null);
 
 			var expectedQuery =
-				$"alter table [schemaName].[name] alter column [int column] int identity not null{Environment.NewLine}" + 
+				$"alter table [schemaName].[name] alter column [int column] int identity not null{Environment.NewLine}" +
 				$"alter table [schemaName].[name] alter column [name] varchar(50) not null constraint [{DefaultConstraintName}] default ''";
 
 			Assert.AreEqual(expectedQuery, op.ToQuery());
@@ -59,7 +59,7 @@ namespace Rivet.Test.Operations
 		{
 			var op = new UpdateTableOperation(SchemaName, Name, null, null, removeColumnList);
 
-			var expectedQuery = 
+			var expectedQuery =
 				string.Format("alter table [schemaName].[name] drop column [column 3]{0}alter table [schemaName].[name] drop column [column 4]", Environment.NewLine);
 
 			Assert.AreEqual(expectedQuery, op.ToQuery());
@@ -73,8 +73,8 @@ namespace Rivet.Test.Operations
 			var expectedQuery =
 				$"alter table [schemaName].[name] add [name] varchar(50) not null constraint [{DefaultConstraintName}] default ''{Environment.NewLine}" +
 				$"alter table [schemaName].[name] add [int column] int identity not null{Environment.NewLine}" +
-				$"alter table [schemaName].[name] alter column [int column] int identity not null{Environment.NewLine}" + 
-				$"alter table [schemaName].[name] alter column [name] varchar(50) not null constraint [{DefaultConstraintName}] default ''{Environment.NewLine}" + 
+				$"alter table [schemaName].[name] alter column [int column] int identity not null{Environment.NewLine}" +
+				$"alter table [schemaName].[name] alter column [name] varchar(50) not null constraint [{DefaultConstraintName}] default ''{Environment.NewLine}" +
 				$"alter table [schemaName].[name] drop column [column 3]{Environment.NewLine}alter table [schemaName].[name] drop column [column 4]";
 
 			Assert.AreEqual(expectedQuery, op.ToQuery());
@@ -113,7 +113,7 @@ namespace Rivet.Test.Operations
 		}
 
 		[Test]
-		public void ShouldAddDefaultExpressionAndConstraintNameToAddedColumnsAndDisableAddDefaultConstraint()
+		public void ShouldNotAddDefaultExpressionAndConstraintNameToAddedColumnsAndDisableAddDefaultConstraint()
 		{
 			var columns = new[]
 			{
@@ -125,15 +125,15 @@ namespace Rivet.Test.Operations
 				new AddDefaultConstraintOperation("SCHEMA", "TABLE", "NAME", "COLUMN2", "expression", false);
 			op.Merge(addDefaultConstraintOp);
 			Assert.That(op.Disabled, Is.False);
-			Assert.That(addDefaultConstraintOp.Disabled, Is.True);
+			Assert.That(addDefaultConstraintOp.Disabled, Is.False);
 			Assert.That(op.AddColumns[0].DefaultExpression, Is.Null);
 			Assert.That(op.AddColumns[0].DefaultConstraintName, Is.Null);
-			Assert.That(op.AddColumns[1].DefaultExpression, Is.EqualTo("expression"));
-			Assert.That(op.AddColumns[1].DefaultConstraintName, Is.EqualTo("NAME"));
+			Assert.That(op.AddColumns[1].DefaultExpression, Is.Null);
+			Assert.That(op.AddColumns[1].DefaultConstraintName, Is.Null);
 		}
 
 		[Test]
-		public void ShouldAddDefaultExpressionToUpdatedColumnsAndDisableAddDefaultConstraint()
+		public void ShouldNotAddDefaultExpressionToUpdatedColumnsAndDisableAddDefaultConstraint()
 		{
 			var columns = new[]
 			{
@@ -145,11 +145,11 @@ namespace Rivet.Test.Operations
 				new AddDefaultConstraintOperation("SCHEMA", "TABLE", "NAME", "COLUMN2", "expression", false);
 			op.Merge(addDefaultConstraintOp);
 			Assert.That(op.Disabled, Is.False);
-			Assert.That(addDefaultConstraintOp.Disabled, Is.True);
+			Assert.That(addDefaultConstraintOp.Disabled, Is.False);
 			Assert.That(op.UpdateColumns[0].DefaultExpression, Is.Null);
 			Assert.That(op.UpdateColumns[0].DefaultConstraintName, Is.Null);
-			Assert.That(op.UpdateColumns[1].DefaultExpression, Is.EqualTo("expression"));
-			Assert.That(op.UpdateColumns[1].DefaultConstraintName, Is.EqualTo("NAME"));
+			Assert.That(op.UpdateColumns[1].DefaultExpression, Is.Null);
+			Assert.That(op.UpdateColumns[1].DefaultConstraintName, Is.Null);
 		}
 
 		[Test]
@@ -395,7 +395,7 @@ namespace Rivet.Test.Operations
 				new[] { Column.Int("column1", new Identity(), null), Column.Bit("column2", Nullable.Null, null, null, null) },
 				new[] { Column.Int("column3", new Identity(), null), Column.Bit("column4", Nullable.Null, null, null, null) },
 				new[] { "column6", "column7" });
-			var otherUpdateOp = new UpdateTableOperation("SCHEMA", "NAME", 
+			var otherUpdateOp = new UpdateTableOperation("SCHEMA", "NAME",
 				new [] { Column.Int("COLUMN7", Nullable.Null, null, null, null), Column.Bit("column8", Nullable.NotNull, null, null, null) },
 				new [] { Column.BigInt("COLUMN1", new Identity(), null), Column.Bit("column9", Nullable.Null, null, null, null)},
 				new [] { "COLUMN2", "COLUMN4", "column10" });

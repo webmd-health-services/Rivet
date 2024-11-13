@@ -42,20 +42,6 @@ namespace Rivet.Operations
 
 			switch (operation)
 			{
-				case AddDefaultConstraintOperation otherAsAddDefaultConstraintOp when !otherAsAddDefaultConstraintOp.WithValues:
-				{
-					var column = FindColumn(otherAsAddDefaultConstraintOp.ColumnName);
-					if (column != null)
-					{
-						column.DefaultExpression = otherAsAddDefaultConstraintOp.Expression;
-						column.DefaultConstraintName = otherAsAddDefaultConstraintOp.Name;
-						otherAsAddDefaultConstraintOp.Disabled = true;
-						return MergeResult.Continue;
-					}
-
-					break;
-				}
-
 				case AddRowGuidColOperation otherAsAddRowGuidColOp:
 				{
 					var column = FindColumn(otherAsAddRowGuidColOp.ColumnName);
