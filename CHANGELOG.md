@@ -3,7 +3,16 @@
 
 # Rivet Changelog
 
+## 0.23.1
+
+### Fixed
+
+* Fixed: Rivet generates invalid SQL when merging a migration that contains an update to a column and adding a default
+constraint to that same column.
+
 ## 0.23.0
+
+> Released 10 Sep 2024
 
 ### Changed
 

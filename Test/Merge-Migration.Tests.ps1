@@ -767,4 +767,25 @@ as
         $columns[1].Name | Should -Be 'errorId'
         $result[1].PushOperations | Should -HaveCount 0
     }
+
+    # bug
+    It 'merges not null and default constraint operations into separate queries' {
+        $result = Invoke-MergeMigration {
+            New-MigrationObject 'two' {
+                Update-Table -Name 'table1' -UpdateColumn {
+                    bit 'TestColumn' -NotNull
+                }
+
+                Add-DefaultConstraint -TableName 'table1' `
+                                      -ColumnName 'TestColumn' `
+                                      -Name 'DF_table1_TestColumn' `
+                                      -Expression 1
+            }
+        }
+
+        $result | Should -HaveCount 1
+        $pushes = $result[0].PushOperations
+        $pushes | Should -HaveCount 2
+
+    }
 }
