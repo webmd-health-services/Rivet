@@ -3,6 +3,12 @@
 
 # Rivet Changelog
 
+## 0.23.2
+
+### Fixed
+
+* Fixed: System tables are incorretly included when exporting objects from a database.
+
 ## 0.23.1
 
 ### Fixed
