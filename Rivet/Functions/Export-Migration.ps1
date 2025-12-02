@@ -941,8 +941,23 @@ from
     sys.objects parent_objects
         on sys.objects.parent_object_id = parent_objects.object_id
 where
-    sys.objects.is_ms_shipped = 0 and
-    (parent_objects.is_ms_shipped is null or parent_objects.is_ms_shipped = 0) and
+    CAST(
+ case 
+    when sys.objects.is_ms_shipped = 1 then 1
+    when (
+        select 
+            major_id 
+        from 
+            sys.extended_properties 
+        where 
+            major_id = sys.objects.object_id and 
+            minor_id = 0 and 
+            class = 1 and 
+            name = N''microsoft_database_tools_support'') 
+        is not null then 1
+    else 0
+end          
+             AS bit) = 0 and
     sys.schemas.name != ''rivet'''
     function Export-Object
     {
