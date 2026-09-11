@@ -87,13 +87,14 @@ namespace Rivet.Test.Operations
 			const string whereString = "whereString";
 			const string onString = "onString";
 			const string fileStreamOnString = "fileStreamOnString";
-            var include = new[] { "include1", "include2" };
+			var include = new[] { "include1", "include2" };
 
 			var op = new AddIndexOperation(schemaName, tableName, name, columnName, @descending, unique, clustered, options, whereString, onString, fileStreamOnString, include);
 			var expectedQuery = $"create unique clustered index [{name}] on [{schemaName}].[{tableName}] ([{columnName[0]}] desc, [{columnName[1]}]) " +
-			                             $"include ( [{string.Join("], [", include)}] ) with ( {string.Join(", ", options)} ) " +
+			                             $"include ( [{string.Join("], [", include)}] ) where ( {whereString} ) " +
 			                             // ReSharper disable once StringLiteralTypo
-			                             $"where ( {whereString} ) on {onString} filestream_on {fileStreamOnString}";
+			                             $"with ( {string.Join(", ", options)} ) " +
+			                             $"on {onString} filestream_on {fileStreamOnString}";
 
 			Assert.AreEqual(expectedQuery, op.ToQuery());
 		}

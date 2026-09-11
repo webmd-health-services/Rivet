@@ -7,8 +7,8 @@ namespace Rivet.Operations
 	public sealed class AddIndexOperation : TableObjectOperation
 	{
 		// All Columns ASC
-		public AddIndexOperation(string schemaName, string tableName, string name, string[] columnName, 
-			bool unique, bool clustered, string[] options, string where, string on, string fileStreamOn, string[] include) 
+		public AddIndexOperation(string schemaName, string tableName, string name, string[] columnName,
+			bool unique, bool clustered, string[] options, string where, string on, string fileStreamOn, string[] include)
 			: base(schemaName, tableName, name)
 		{
 			ColumnName = new List<string>(columnName ?? new string[0]);
@@ -118,7 +118,7 @@ namespace Rivet.Operations
 			var columnClause = string.Join(", ", ColumnName.ToArray());
 
 			var query =
-				$"create{uniqueClause}{clusteredClause} index [{Name}] on [{SchemaName}].[{TableName}] ({columnClause}){includeClause}{optionsClause}{whereClause}{onClause}{fileStreamClause}";
+				$"create{uniqueClause}{clusteredClause} index [{Name}] on [{SchemaName}].[{TableName}] ({columnClause}){includeClause}{whereClause}{optionsClause}{onClause}{fileStreamClause}";
 			return query;
 		}
 	}
