@@ -42,10 +42,14 @@ environment:
     MSSQL_INSTANCE_NAME: (local)\SQL2019
     MSSQL_SERVICE_NAME: MSSQL$SQL2019
 
+  - job_name: SQL Server 2022/PowerShell 7
+    job_group: pwsh
+    appveyor_build_worker_image: Visual Studio 2026
+    MSSQL_INSTANCE_NAME: (local)\SQL2022
+    MSSQL_SERVICE_NAME: MSSQL$SQL2022
 
 artifacts:
 - path: .output\*
-
 
 for:
 # Build in Windows PowerShell
@@ -53,7 +57,7 @@ for:
     only:
     - job_group: ps
   build_script:
-  - ps: |
+  - ps: &build |
         $ProgressPreference = 'SilentlyContinue'
         iwr https://raw.githubusercontent.com/webmd-health-services/Prism/main/Scripts/init.ps1 | iex | Format-Table
         .\init.ps1 -SqlServerName "$($env:MSSQL_INSTANCE_NAME)"
@@ -64,8 +68,4 @@ for:
     only:
     - job_group: pwsh
   build_script:
-  - pwsh: |
-        $ProgressPreference = 'SilentlyContinue'
-        iwr https://raw.githubusercontent.com/webmd-health-services/Prism/main/Scripts/init.ps1 | iex | Format-Table
-        ./init.ps1 -SqlServerName "$($env:MSSQL_INSTANCE_NAME)"
-        ./build.ps1
+  - pwsh: *build

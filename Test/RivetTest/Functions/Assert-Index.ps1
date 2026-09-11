@@ -115,7 +115,8 @@ function Assert-Index
     {
         for ($i = 0; $i -lt $columns.Length; $i++)
         {
-            $columns[$i].is_descending_key | Should -Be $Descending[$i]
+            $columns[$i].is_descending_key |
+                Should -Be $Descending[$i] -Because "Descending[${i}] $($columns[$i].name) should be $($Descending[$i])"
         }
     }
     else

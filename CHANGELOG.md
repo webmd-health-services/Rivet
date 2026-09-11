@@ -3,13 +3,21 @@
 
 # Rivet Changelog
 
+## 0.23.3
+
+Fixed: Add-Index fails with a syntax error if both `Option` and `Where` parameters are used.
+
 ## 0.23.2
+
+> Released 3 Dec 2025
 
 ### Fixed
 
 * Fixed: System tables are incorretly included when exporting objects from a database.
 
 ## 0.23.1
+
+> Released 15 Nov 2024
 
 ### Fixed
 

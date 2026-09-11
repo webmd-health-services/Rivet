@@ -408,4 +408,48 @@ Describe 'Add-Index' {
         $op = Add-Index -TableName 'fubar' -ColumnName 'snafu' -Timeout 0
         $op.CommandTimeout | Should -Be 0
     }
+
+    It 'adds index using all parameters' {
+        @'
+    function Push-Migration()
+    {
+        Add-Table -Name 'Add Index' {
+            Int 'Index Me' -NotNull
+            Char 'IndexMe2' -Size 255 -NotNull
+            Int 'EndDate' -NotNull
+            Int 'Include Me' -NotNull
+        }
+
+        #Add an Index to 'IndexMe'
+        Add-Index -TableName 'Add Index' `
+                  -ColumnName 'Index Me' `
+                  -Name 'IX_Add Index_Index Me' `
+                  -Unique `
+                  -Option @('ALLOW_ROW_LOCKS = OFF') `
+                  -Where 'EndDate IS NOT NULL' `
+                  -Descending @($true) `
+                  -Include 'Include Me'
+
+    }
+
+    function Pop-Migration()
+    {
+        Remove-Table 'Add Index'
+    }
+'@ | New-TestMigration -Name 'AddIndex'
+
+        Invoke-RTRivet -Push 'AddIndex'
+
+        ##Assert Table and Column
+        (Test-Table 'Add Index') | Should -BeTrue
+        (Test-Column -Name 'Index Me' -TableName 'Add Index') | Should -BeTrue
+
+        Assert-Index -Name 'IX_Add Index_Index Me' `
+                     -ColumnName 'Index Me' `
+                     -Unique `
+                     -DenyRowLocks `
+                     -Filter '([EndDate] IS NOT NULL)' `
+                     -Descending @($false, $true) `
+                     -Include 'Include Me'
+    }
 }
